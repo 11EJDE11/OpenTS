@@ -1,0 +1,75 @@
+# OpenTS repository instructions
+
+These instructions apply to the entire repository. A more specific `AGENTS.md`
+may add rules for its subtree.
+
+## Required context
+
+Read `CONTRIBUTING.md` before changing the project. Read `docs/BUILDING.md`
+before making or repeating a build claim, and read `docs/STYLE.md` before
+changing source.
+
+## Project intent
+
+OpenTS gives equal weight to a maintained, playable engine and to a capable
+modding and engine-development platform. Internal implementation may evolve,
+while externally consumed behavior changes deliberately and with migration
+guidance when compatibility is broken.
+
+The archived TibSun reconstruction and original executable are historical
+evidence. Binary matching is not the acceptance criterion for active OpenTS
+development.
+
+Visual Studio 2022 Win32 Debug and Release are the supported build target.
+Build support does not establish runtime behavior or a player release.
+
+## Source changes
+
+- Use C++20 for new and substantially rewritten code, but modernize inherited
+  code incrementally.
+- Keep mechanical changes separate from behavior and format only touched code.
+- Follow local naming and layout; do not rename honest reconstruction
+  placeholders without evidence.
+- Classify a behavior difference as preserved behavior, a bug fix, or an
+  intentional change and state the evidence.
+- Treat configuration, data formats, persistence, replays, networking,
+  deterministic simulation, COM, ABI, and layout-sensitive structures as
+  compatibility boundaries.
+- Trace initialization, ownership, callers, persistence, and external effects
+  before moving state or replacing a subsystem.
+- Preserve historical file headers and all SPDX, copyright, modification, and
+  GPL Section 7 notices.
+- Correct an inaccurate ordinary historical comment narrowly; a substantial
+  amendment adopts the current comment style. Keep new comments sparse and
+  concise; comment what the code cannot show, never the edit itself. Use `//`
+  or a plain `/* */` block for ordinary new prose rather than the Westwood
+  `**` decoration, and reserve `///` for genuine XML documentation however
+  the surrounding lines use it.
+
+## Documentation and validation
+
+- Every change must account for its documentation impact. Update the owning
+  documentation with every material behavior, interface, configuration, build,
+  architecture, compatibility, or workflow change.
+- If no documentation changes are needed, state why the existing documentation
+  remains accurate.
+- Give each fact one owner and link to it instead of copying it.
+- Run the narrowest relevant checks first and report exact commands,
+  configurations, environments, results, and material checks not run.
+- Use `docs/BUILDING.md` as the authority for build support. Never turn a
+  configuration or build result into a runtime claim.
+- Automated tests must not require proprietary game assets or original game
+  executables.
+
+## Repository safety
+
+- Never commit game assets, original binaries, proprietary SDKs, credentials,
+  personal data, IDE state, or build output.
+- Preserve unrelated work in a dirty worktree.
+- Commit, rewrite history, push, publish, or release only on explicit user
+  request.
+- Never add `Co-authored-by` trailers or AI-attribution lines.
+- Use an imperative commit subject of at most 72 characters. Omit the body by
+  default; add only a brief factual exception when necessary.
+- Never put inventories, validation logs, pull-request summaries, or narrative
+  descriptions in commit messages.

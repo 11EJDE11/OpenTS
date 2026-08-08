@@ -1,0 +1,51 @@
+# Compiled output
+[Dd]ebug/
+[Rr]elease/
+/Run/*
+!/Run/place_steam_build_here
+*.obj
+*.exe
+*.dll
+*.lib
+*.res
+*.ilk
+*.map
+*.exp
+
+# MSVC intermediate files
+*.aps
+*.pdb
+*.idb
+*.pch
+
+# CMake and Visual Studio 2022
+[Bb]uild/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.sln
+*.suo
+*.user
+*.vcxproj
+*.vcxproj.*
+.vs/
+
+# Editors and language servers
+*~
+*.bak
+*.swp
+*.code-workspace
+.idea/
+.vscode/
+.history/
+/.cache/
+/.clangd
+/compile_commands.json
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Manual tooling temp snapshots (interrupted manage.py runs)
+manual/data/.manual-check-*/
+manual/data/.manual-generate-*/
