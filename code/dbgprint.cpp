@@ -180,7 +180,7 @@ char const * Last_Error_Text(void)
  * HISTORY:                                                                                    *
  *    4/17/96 9:58AM ST : Created                                                              *
  *=============================================================================================*/
-void Assert_Failure (char *expression, int line, char *file)
+void Assert_Failure (char const *expression, int line, char const *file)
 {
 	char	assertbuf[256];
 	char   timebuff[512];

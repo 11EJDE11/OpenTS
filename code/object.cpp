@@ -1247,7 +1247,7 @@ void ObjectClass::Debug_Dump(MonoClass * mono) const
 		mono->Set_Cursor(20, 5);mono->Printf("%08X", Next);
 	}
 	if (Tag != NULL) {
-		mono->Text_Print(Tag->Class->IniName, 11, 3);
+		mono->Text_Print((char const *)Tag->Class->IniName, 11, 3);
 	}
 	mono->Set_Cursor(34, 1);mono->Printf("%3d", Strength);
 

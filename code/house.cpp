@@ -3813,7 +3813,7 @@ bool HouseClass::Flag_To_Die(void)
 		IsToDie = true;
 		BorrowedTime = TICKS_PER_MINUTE * Rule->SavourDelay;
 		if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-			int time = Frame + MAX(BorrowedTime, (int)Session.MaxAhead);
+			int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
 			BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 		}
 		DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);
@@ -3844,7 +3844,7 @@ bool HouseClass::Flag_To_Win(bool silent)
 		if (!silent) {
 			BorrowedTime = int(TICKS_PER_MINUTE * Rule->SavourDelay);
 			if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-				int time = Frame + MAX(BorrowedTime, (int)Session.MaxAhead);
+				int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
 				BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 			}
 			DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);
@@ -3888,7 +3888,7 @@ bool HouseClass::Flag_To_Lose(bool silent)
 		if (!silent) {
 			BorrowedTime = int(TICKS_PER_MINUTE * Rule->SavourDelay);
 			if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-				int time = Frame + MAX(BorrowedTime, (int)Session.MaxAhead);
+				int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
 				BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 			}
 			DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);

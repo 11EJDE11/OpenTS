@@ -1577,7 +1577,7 @@ long VQA_SetStop(VQAHandle *vqa, long stop)
 *
 ****************************************************************************/
 
-char *VQA_Version(void)
+char const *VQA_Version(void)
 {
 	return(VQA_VERSION);
 }
@@ -1636,7 +1636,7 @@ long VQA_GetBlockInfo(VQAHandle *vqa, long & blockw, long & blockh, long & clrmo
 *
 ****************************************************************************/
 
-char *VQA_IDString(void)
+char const *VQA_IDString(void)
 {
 	return(VQA_IDSTRING);
 }

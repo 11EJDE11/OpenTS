@@ -164,8 +164,3 @@ template <class T> T max(T a,T b)
 #ifndef _stricmp
 #define _stricmp stricmp
 #endif
-
-/// The override keyword is C++11, so define it away for VC6 builds.
-#ifndef __INTELLISENSE__
-#define override
-#endif

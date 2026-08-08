@@ -376,7 +376,7 @@ void Send_Statistics_Packet(void)
 	if (divisor != 0) {
 		stats.Add_Field (FIELD_FRAME_RATE, (unsigned int) Frame / (GameEndTime/60) );
 	} else {
-		stats.Add_Field (FIELD_FRAME_RATE, 0l);
+		stats.Add_Field (FIELD_FRAME_RATE, (unsigned int)0);
 	}
 
 	/*

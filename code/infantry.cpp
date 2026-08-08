@@ -378,7 +378,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 		damage = 0;
 		int variation = Random_Pick(-warhead->WebDurationVariation, warhead->WebDurationVariation);
 		int duration = warhead->WebDuration + variation;
-		ProneStruggleTimer = MAX(ProneStruggleTimer, duration);
+		ProneStruggleTimer = MAX((int)ProneStruggleTimer, duration);
 
 		Do_Action(DO_STRUGGLE, true, true);
 

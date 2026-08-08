@@ -27,6 +27,6 @@
 #ifdef NDEBUG
 #define assert(__ignore) ((void)0)
 #else
-void Assert_Failure(char * expression, int line, char * file);
+void Assert_Failure(char const * expression, int line, char const * file);
 #define assert(expr)   ((expr)?(void)0:Assert_Failure(#expr,__LINE__,__FILE__))
 #endif
