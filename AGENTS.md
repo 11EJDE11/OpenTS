@@ -9,6 +9,10 @@ Read `CONTRIBUTING.md` before changing the project. Read `docs/BUILDING.md`
 before making or repeating a build claim, and read `docs/STYLE.md` before
 changing source.
 
+For work under `manual/`, read and follow `manual/AGENTS.md`; it supplements
+these instructions and routes authoring and maintenance work to the owning
+manual guides.
+
 ## Project intent
 
 OpenTS gives equal weight to a maintained, playable engine and to a capable
@@ -21,17 +25,20 @@ evidence. Binary matching is not the acceptance criterion for active OpenTS
 development.
 
 Visual Studio 2022 Win32 Debug and Release are the supported build target.
-Build support does not establish runtime behavior or a player release.
+A build result is not runtime evidence.
 
 ## Source changes
 
 - Use C++20 for new and substantially rewritten code, but modernize inherited
   code incrementally.
+- Shape new and substantially rewritten code so the incremental migration
+  toward an entity-component architecture stays possible; `docs/DIRECTION.md`
+  records the direction.
 - Keep mechanical changes separate from behavior and format only touched code.
 - Follow local naming and layout; do not rename honest reconstruction
   placeholders without evidence.
-- Classify a behavior difference as preserved behavior, a bug fix, or an
-  intentional change and state the evidence.
+- Classify what a change does to externally visible behavior — preserved,
+  fixed, or intentionally changed — and state the evidence.
 - Treat configuration, data formats, persistence, replays, networking,
   deterministic simulation, COM, ABI, and layout-sensitive structures as
   compatibility boundaries.

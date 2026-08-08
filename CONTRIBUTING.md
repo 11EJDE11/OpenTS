@@ -84,6 +84,10 @@ owning documentation in the same contribution. A purely mechanical, test-only,
 or internal refactor may need no prose change, but the contributor must state
 why the existing documentation remains accurate.
 
+Player- or modder-visible engine changes must update the
+[OpenTS manual](manual/README.md) and the applicable lifecycle record in the
+same contribution.
+
 Give each fact one owner and link to it instead of copying it between guides.
 Document current behavior, supported inputs, relevant limitations, and
 migration requirements; do not turn plans or assumptions into current-state
@@ -94,6 +98,11 @@ are encouraged to use them when useful, but remain responsible for checking
 every claim against current source or observed evidence, applying project
 style, and reviewing the final result. AI output is not evidence and must not
 receive commit attribution.
+
+For manual content, read [Authoring](manual/AUTHORING.md) and
+[Manual style](manual/STYLE.md). Changes to manual tooling, schemas, generated
+data contracts, lifecycle machinery, routes, or publication behavior also
+require [Maintaining](manual/MAINTAINING.md).
 
 ## Validation
 
