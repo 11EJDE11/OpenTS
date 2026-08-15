@@ -14,7 +14,6 @@
 #include "_pk.h"
 #include "addon.h"
 #include "ccfile.h"
-#include "cd.h"
 #include "grphmenu.h"
 #include "init.h"
 #include "loaddlg.h"
@@ -249,15 +248,12 @@ int NewMenuClass::Select_Game_Type(void)
 				retry = false;
 				break;
 
-			case GMENU_FIRESTORM: {
+			case GMENU_FIRESTORM:
 				Disable_Addon(ADDON_ANY);
 				Enable_Addon(ADDON_FIRESTORM);
 				Set_Required_Addon(ADDON_FIRESTORM);
-				CD cd;
-				cd.Set_Required_Disk(DISK_FIRESTORM);
-				retry = cd.Force_Available(DISK_FIRESTORM) == false;
-			}
-			break;
+				retry = false;
+				break;
 
 			default:
 				retry = false;

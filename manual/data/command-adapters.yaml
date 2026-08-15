@@ -478,13 +478,13 @@ launch_options:
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CHECKMAP', guard: _DEBUG }
   - id: launch:cd-path
-    title: File-search drives
-    syntax: -CD<search drives>
-    description: Replaces the debug file-search drive string with the text following -CD.
-    audience: debug
-    availability: *debug
+    title: Local data path
+    syntax: -CD<path>
+    description: Adds the path following -CD to the local file-search list.
+    audience: developer
+    availability: *all
     sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CD', guard: _DEBUG }
+      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CD' }
   - id: launch:destination-network
     title: IPX destination network
     syntax: -DESTNET<hex network address>

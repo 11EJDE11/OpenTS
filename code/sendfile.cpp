@@ -38,7 +38,6 @@
 
 #include "always.h"
 
-#include "cd.h"
 #include "conquer.h"
 #include "dbgprint.h"
 #include "globals.h"
@@ -672,7 +671,7 @@ bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, b
  * HISTORY:                                                                                    *
  *    8/23/96 12:36PM ST : Created                                                             *
  *=============================================================================================*/
-bool Find_Local_Scenario (char *filename, unsigned int length, char *digest, bool official, bool checkcd)
+bool Find_Local_Scenario (char *filename, unsigned int length, char *digest, bool official)
 {
 //FILE *fp;
 //fp = fopen("findscen.txt","wt");
@@ -689,19 +688,6 @@ bool Find_Local_Scenario (char *filename, unsigned int length, char *digest, boo
 			if (!strcmp (Session.Scenarios[index]->Get_Filename(), filename)) {
 	//DebugString("found matching description.\n");
 				CCFileClass file (Session.Scenarios[index]->Get_Filename());
-
-				if (!file.Is_Available() && checkcd == true) {
-					MultiMission *mm = Session.Scenarios[index];
-					if (!mm->Is_On_CD(CD::Get_Current_Disk())) {
-						CD::Set_Required_Disk(mm->On_Which_CD());
-					}
-					Session.Suspended++;
-					if (!CD().Force_Available()) {
-						Session.Suspended--;
-						return(false);
-					}
-					Session.Suspended--;
-				}
 
 				/*
 				**	Possible rejection on the basis of availability.

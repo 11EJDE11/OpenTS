@@ -3327,7 +3327,7 @@ bool Net2ReadyToGo(int load_game)
 	**	need to request that it is sent. If we can identify the scenario locally then
 	**	we need to fix up the file name so we load the right one.
 	*/
-	if (Find_Local_Scenario (Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial, true) == true) {
+	if (Find_Local_Scenario (Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial) == true) {
 		DebugString("Found local scenario, file name is %d\n", Session.ScenarioFileName);
 
 		/*

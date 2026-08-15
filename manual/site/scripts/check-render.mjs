@@ -69,6 +69,8 @@ const cases = [
 	['commands/fixed-map-zoom/index.html', ['Map zoom', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
 	['formats/mix/index.html', ['MIX archives', 'Binary format', '<dt>Role</dt>', 'code/ccfile.cpp', 'Source files', 'code/mixfile.h']],
 	['changes/opents-manual/index.html', ['OpenTS manual', 'Planned for', '0.1.0', 'reference pages for every']],
+	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'numerical results may differ', 'matching OpenTS versions']],
+	['changes/cd-search-path/index.html', ['Remove CD-ROM-dependent startup behavior', 'local data search path', 'PlayIntro']],
 ];
 
 const renderedMain = (relative) => {

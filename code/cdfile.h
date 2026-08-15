@@ -35,15 +35,14 @@
 #include "bfiofile.h"
 
 /*
-**	This class is derived from the BufferIOFileClass. This class adds the functionality of searching
-**	across multiple directories or drives. It is designed for the typical case of a CD-ROM game
-**	were some data exists in the current directory (hard drive) and the rest exists on the CD-ROM.
-**	Searching for the file occurs by first examining the current directory. If the file does not
-**	exist there, then all the paths available are examined in turn until the file can be found.
-**	For opening files to write, only the current directory is examined. The directory search order
-**	is controlled by the path list as submitted to Set_Search_Drives(). The format of the path
-**	string is the same as the DOS path string.
-*/
+ * This class is derived from the BufferIOFileClass, and adds the ability to search across
+ * several directories for a file. The current directory is examined first, and if the file
+ * is not there then every directory in the search list is tried in turn. A file being
+ * opened for writing is only ever looked for in the current directory.
+ *
+ * The search order is whatever order the directories were handed to Set_Search_Drives(),
+ * which takes them in the same semicolon separated form the DOS PATH variable used.
+ */
 class CDFileClass : public BufferIOFileClass
 {
 		typedef BufferIOFileClass BASECLASS;
@@ -59,14 +58,9 @@ class CDFileClass : public BufferIOFileClass
 
 		void Searching(int on) {IsDisabled = !on;};
 
-		static bool Is_There_Search_Drives(void) {return(First != NULL);};
 		static int Set_Search_Drives(char * pathlist);
 		static void Add_Search_Drive(char *path);
 		static void Clear_Search_Drives(void);
-		static void Refresh_Search_Drives(void);
-		static void Set_CD_Drive(int drive);
-		static int  Get_CD_Drive(void) {return(CurrentCDDrive);};
-		static int  Get_Last_CD_Drive(void) {return(LastCDDrive);};
 
 		static bool Find_First_File(char *buffer);
 		static bool Find_Next_File(char *buffer);
@@ -92,19 +86,4 @@ class CDFileClass : public BufferIOFileClass
 		**	This points to the first path record.
 		*/
 		static SearchDriveType * First;
-
-		/*
-		**	This is a copy of the unparsed search path list
-		*/
-		static char RawPath[512];
-
-		/*
-		**	The drive letter of the current cd drive
-		*/
-		static int CurrentCDDrive;
-
-		/*
-		**	The drive letter of the last used CD drive
-		*/
-		static int LastCDDrive;
 };

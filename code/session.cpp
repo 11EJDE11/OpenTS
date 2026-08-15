@@ -1396,7 +1396,6 @@ MultiMission::MultiMission(INIClass const & ini, char const * name)
 	IsOfficial = true;
 	MinPlayers = 2;
 	MaxPlayers = 4;
-	Disks.Clear();
 
 	if (name != NULL) {
 
@@ -1406,15 +1405,6 @@ MultiMission::MultiMission(INIClass const & ini, char const * name)
 		ini.Get_String(name, "Description", "", ScenarioDescription, sizeof(ScenarioDescription));
 		MinPlayers = ini.Get_Int(name, "MinPlayers", MinPlayers);
 		MaxPlayers = ini.Get_Int(name, "MinPlayers", MaxPlayers);
-
-		if (ini.Get_String(name, "CD", "", buffer, sizeof(buffer))) {
-			token = strtok(buffer, ",");
-
-			while (token != NULL && *token != '\0') {
-				Disks.Add((DiskID)atoi(token));
-				token = strtok(NULL, ",");
-			}
-		}
 
 		CCFileClass file(Filename);
 
@@ -1447,9 +1437,7 @@ MultiMission::MultiMission(INIClass const & ini, char const * name)
 
 /// <summary>
 /// Constructs a mission from a map file found on disk.
-/// The map itself is consulted for a better description, for the player limits and for the
-/// discs it expects to be found on. A map that says nothing about discs is presumed to live
-/// on the hard drive.
+/// The map itself is consulted for a better description and for the player limits.
 /// </summary>
 /// <param name="filename">The map file this mission is played from.</param>
 /// <param name="description">The description to show in the scenario list.</param>
@@ -1463,7 +1451,6 @@ MultiMission::MultiMission(char const * filename, char const * description, char
 	Set_Official(official);
 	MinPlayers = 2;
 	MaxPlayers = 4;
-	Disks.Clear();
 
 	CCFileClass file(filename);
 
@@ -1480,55 +1467,7 @@ MultiMission::MultiMission(char const * filename, char const * description, char
 
 		MinPlayers = ccini.Get_Int("Multiplay", "MinPlayers", MinPlayers);
 		MaxPlayers = ccini.Get_Int("Multiplay", "MinPlayers", MaxPlayers);
-
-		if (ccini.Get_String("Multiplay", "CD", "", buffer, sizeof(buffer))) {
-			char *tok = strtok(buffer, ",");
-			while (tok != NULL && tok[0] != '\0') {
-				Disks.Add((DiskID)atoi(tok));
-
-				tok = strtok(NULL, ",");
-			}
-		}
 	}
-
-	if (Disks.Count() == 0) {
-		Disks.Add(DISK_LOCAL);
-	}
-}
-
-
-/// <summary>
-/// Can this mission be played from the specified disk?
-/// This routine is used when deciding whether a scenario may be offered to the player,
-/// since a multiplayer map might live on the hard drive or on either of the game discs.
-/// </summary>
-/// <param name="cd">The disk to look for the mission on.</param>
-/// <returns>bool; Is the mission reachable from that disk?</returns>
-bool MultiMission::Is_On_CD(DiskID cd) const
-{
-	if (cd == DISK_LOCAL) {
-		return(RawFileClass(Filename).Is_Available());
-	}
-
-	if (Disks.Is_In_List(DISK_ANY) == true) {
-		return(true);
-	}
-
-	if (Disks.Is_In_List(DISK_GDI) == true || Disks.Is_In_List(DISK_NOD) == true) {
-		return(true);
-	}
-
-	return(Disks.Is_In_List(cd));
-}
-
-
-/// <summary>
-/// Fetches the disk this mission should be looked for on.
-/// </summary>
-/// <returns>Returns with the first disk the mission was registered against.</returns>
-DiskID MultiMission::On_Which_CD(void) const
-{
-	return(Disks[0]);
 }
 
 

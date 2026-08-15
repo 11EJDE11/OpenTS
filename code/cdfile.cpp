@@ -41,22 +41,16 @@
 
 #include "cdfile.h"
 
-#include "diskswap.h"
-
 /*
 **	Pointer to the first search path record.
 */
 CDFileClass::SearchDriveType * CDFileClass::First = NULL;
 
-int  CDFileClass::CurrentCDDrive = 0;
-int  CDFileClass::LastCDDrive = 0;
-char CDFileClass::RawPath[512] = {0};
-
 
 /// <summary>
 /// Constructs a CD file object for the file specified.
-/// The name is run through the multiple drive scan, so the object ends up referring to
-/// wherever the file actually lives -- the hard drive, a search path, or the CD.
+/// The name is searched in the current directory and every configured path, so the object
+/// refers to the first matching local file.
 /// </summary>
 /// <param name="filename">The name of the file this object should refer to.</param>
 CDFileClass::CDFileClass(char const *filename) :
@@ -74,39 +68,6 @@ CDFileClass::CDFileClass(char const *filename) :
 CDFileClass::CDFileClass(void) :
 	IsDisabled(false)
 {
-}
-
-
-/***********************************************************************************************
- * Is_Disk_Inserted -- Checks to see if a disk is inserted in specified drive.                 *
- *                                                                                             *
- *    This routine will examine the drive specified to see if there is a disk inserted. It     *
- *    can be used for floppy drives as well as for the CD-ROM.                                 *
- *                                                                                             *
- * INPUT:   disk  -- The drive number to examine. 0=A, 1=B, etc.                               *
- *                                                                                             *
- * OUTPUT:  bool; Is a disk inserted into the specified drive?                                 *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/20/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-int Is_Disk_Inserted(int disk)
-{
-	WIN32_FIND_DATA fb;
-	HANDLE file_handle;
-
-	char	scan[] = "?:\\*.*";
-
-	scan[0] = (char)('A' + disk);
-
-	file_handle = FindFirstFile(scan, &fb);
-	if (file_handle == INVALID_HANDLE_VALUE) {
-		return(false);
-	}
-	FindClose(file_handle);
-	return(true);
 }
 
 
@@ -132,190 +93,17 @@ int CDFileClass::Open(int rights)
 }
 
 
-/***********************************************************************************************
- * CDFC::Refresh_Search_Drives -- Updates the search path when a CD changes or is added        *
- *                                                                                             *
- *                                                                                             *
- *                                                                                             *
- * INPUT:    Nothing                                                                           *
- *                                                                                             *
- * OUTPUT:   Nothing                                                                           *
- *                                                                                             *
- * WARNINGS: None                                                                              *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *    5/22/96 9:01AM ST : Created                                                              *
- *=============================================================================================*/
-void CDFileClass::Refresh_Search_Drives (void)
-{
-	Clear_Search_Drives();
-	Set_Search_Drives(RawPath);
-}
-
-#if 0
-/***********************************************************************************************
- * CDFileClass::Set_Search_Drives -- Sets a list of search paths for file access.              *
- *                                                                                             *
- *    This routine sets up a list of search paths to use when accessing files. The path list   *
- *    is scanned if the file could not be found in the current directory. This is the primary  *
- *    method of supporting CD-ROM drives, but is also useful for scanning network and other    *
- *    directories. The pathlist as passed to this routine is of the same format as the path    *
- *    list used by DOS -- paths are separated by semicolons and need not end in an antivirgule.*
- *                                                                                             *
- *    If a path entry begins with "?:" then the question mark will be replaced with the first  *
- *    CD-ROM drive letter available. If there is no CD-ROM driver detected, then this path     *
- *    entry will be ignored. By using this feature, you can always pass the CD-ROM path        *
- *    specification to this routine and it will not break if the CD-ROM is not loaded (as in   *
- *    the case during development).                                                            *
- *                                                                                             *
- *    Here is an example path specification:                                                   *
- *                                                                                             *
- *       Set_Search_Drives("DATA;?:\DATA;F:\PROJECT\DATA");                                    *
- *                                                                                             *
- *    In this example, the current directory will be searched first, followed by a the         *
- *    subdirectory "DATA" located off of the current directory. If not found, then the CD-ROM  *
- *    will be searched in a directory called "\DATA". If not found or the CD-ROM is not        *
- *    present, then it will look to the hard coded path of "F:\PROJECTS\DATA" (maybe a         *
- *    network?). If all of these searches fail, the file system will default to the current    *
- *    directory and let the normal file error system take over.                                *
- *                                                                                             *
- * INPUT:   pathlist -- Pointer to string of path specifications (separated by semicolons)     *
- *                      that will be used to search for files.                                 *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/18/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Adds a list of directories to search when a file is not in the current directory.
+/// The list is written the way DOS wrote a PATH -- entries separated by semicolons, with
+/// or without a trailing backslash. Each entry is appended to the search chain in the
+/// order given, so the first directory named is the first one tried.
+/// </summary>
+/// <param name="pathlist">The semicolon separated list of directories to add.</param>
+/// <returns>int; Zero if at least one directory was added, or 1 if the list held none.</returns>
 int CDFileClass::Set_Search_Drives(char * pathlist)
 {
-	int found = false;
-	int empty = false;
-
-	/*
-	**	If there is no pathlist to add, then just return.
-	*/
-	if (!pathlist) return(0);
-
-	char const * ptr = strtok(pathlist, ";");
-	while (ptr) {
-		char path[PATH_MAX];						// Working path buffer.
-		SearchDriveType *srch;					// Working pointer to path object.
-
-		/*
-		**	Fixup the path to be legal. Legal is defined as all that is necessary to
-		**	create a pathname is to append the actual filename submitted to the
-		**	file system. This means that it must have either a trailing ':' or '\'
-		**	character.
-		*/
-		strcpy(path, ptr);
-		switch (path[strlen(path)-1]) {
-			case ':':
-			case '\\':
-				break;
-
-			default:
-				strcat(path, "\\");
-				break;
-		}
-
-		/*
-		**	If there is a drive letter specified, and this drive letter is '?', then it should
-		**	be substituted with the CD-ROM drive letter. In the case of no CD-ROM attached, then
-		**	merely ignore this path entry.
-		*/
-		if (strncmp(path, "?:", 2) == 0) {
-			int cd = 10;
-			found = cd;
-			empty = !Is_Disk_Inserted(cd);
-			if (!found || empty) goto nextpath;
-			path[0] = (char)('A' + cd);
-		}
-
-		/*
-		**	Allocate a record structure.
-		*/
-		srch	= new SearchDriveType;
-		if (srch) {
-			found	= true;
-
-			/*
-			**	Attach the path to this structure.
-			*/
-			srch->Path = strdup(path);
-			srch->Next = NULL;
-
-			/*
-			**	Attach this path record to the end of the path chain.
-			*/
-			if (!First) {
-				First = srch;
-			} else {
-				SearchDriveType * chain = First;
-
-				while (chain->Next) {
-					chain = (SearchDriveType *)chain->Next;
-				}
-				chain->Next = srch;
-			}
-		}
-
-		/*
-		**	Find the next path string and resubmit.
-		*/
-nextpath:
-		ptr = strtok(NULL, ";");
-	}
-	if (!found) return(1);
-	if (empty) return(2);
-	return(0);
-}
-#endif
-
-
-/***********************************************************************************************
- * CDFileClass::Set_Search_Drives -- Sets a list of search paths for file access.              *
- *                                                                                             *
- *    This routine sets up a list of search paths to use when accessing files. The path list   *
- *    is scanned if the file could not be found in the current directory. This is the primary  *
- *    method of supporting CD-ROM drives, but is also useful for scanning network and other    *
- *    directories. The pathlist as passed to this routine is of the same format as the path    *
- *    list used by DOS -- paths are separated by semicolons and need not end in an antivirgule.*
- *                                                                                             *
- *    If a path entry begins with "?:" then the question mark will be replaced with the first  *
- *    CD-ROM drive letter available. If there is no CD-ROM driver detected, then this path     *
- *    entry will be ignored. By using this feature, you can always pass the CD-ROM path        *
- *    specification to this routine and it will not break if the CD-ROM is not loaded (as in   *
- *    the case during development).                                                            *
- *                                                                                             *
- *    Here is an example path specification:                                                   *
- *                                                                                             *
- *       Set_Search_Drives("DATA;?:\DATA;F:\PROJECT\DATA");                                    *
- *                                                                                             *
- *    In this example, the current directory will be searched first, followed by a the         *
- *    subdirectory "DATA" located off of the current directory. If not found, then the CD-ROM  *
- *    will be searched in a directory called "\DATA". If not found or the CD-ROM is not        *
- *    present, then it will look to the hard coded path of "F:\PROJECTS\DATA" (maybe a         *
- *    network?). If all of these searches fail, the file system will default to the current    *
- *    directory and let the normal file error system take over.                                *
- *                                                                                             *
- * INPUT:   pathlist -- Pointer to string of path specifications (separated by semicolons)     *
- *                      that will be used to search for files.                                 *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/18/1994 JLB : Created.                                                                 *
- *   05/21/1996 ST  : Modified to recognise multiple CD drives                                 *
- *=============================================================================================*/
-int CDFileClass::Set_Search_Drives(char * pathlist)
-{
-	bool found = FALSE;
-	//int empty = FALSE;
+	bool found = false;
 
 	/*
 	**	If there is no pathlist to add, then just return.
@@ -323,15 +111,6 @@ int CDFileClass::Set_Search_Drives(char * pathlist)
 	if (!pathlist) return(0);
 
 	char *copy_pathlist = strdup(pathlist);
-
-	/*
-	**	Save the path as it was passed in so we can parse it again later.
-	**	Check for the case where RawPath was passed in.
-	*/
-	if (copy_pathlist != RawPath) {
-		strcat (RawPath, ";");
-		strcat (RawPath, copy_pathlist);
-	}
 
 	char const * ptr = strtok(copy_pathlist, ";");
 	while (ptr != NULL) {
@@ -356,33 +135,6 @@ int CDFileClass::Set_Search_Drives(char * pathlist)
 					break;
 			}
 
-			/*
-			**	If there is a drive letter specified, and this drive letter is '?', then it should
-			**	be substituted with the CD-ROM drive letter. In the case of no CD-ROM attached, then
-			**	merely ignore this path entry.
-			**	Adds an extra entry for each CD drive in the system that has a C&C disc inserted.
-			**																							ST - 5/21/96 4:40PM
-			*/
-			if (strncmp(path, "?:", 2) == 0) {
-				if (CurrentCDDrive) {
-					found = true;
-
-					/*
-					**	If the drive has a C&C CD in it then add it to the path
-					*/
-					if (DiskSwap::Get_Disk_ID(CurrentCDDrive, 2*60) > -1) {
-						path[0] = (char)(CurrentCDDrive + 'A');
-						Add_Search_Drive(path);
-					}
-				}
-
-				/*
-				**	Find the next path string and resubmit.
-				*/
-				ptr = strtok(NULL, ";");
-				continue;
-			}
-
 			found	= true;
 			Add_Search_Drive(path);
 		}
@@ -396,7 +148,6 @@ int CDFileClass::Set_Search_Drives(char * pathlist)
 	free(copy_pathlist);
 
 	if (!found) return(1);
-	//if (empty) return(2);
 	return(0);
 }
 
@@ -446,27 +197,6 @@ void CDFileClass::Add_Search_Drive(char *path)
 
 
 /***********************************************************************************************
- * CDFC::Set_CD_Drive -- sets the current CD drive letter                                      *
- *                                                                                             *
- *                                                                                             *
- *                                                                                             *
- * INPUT:    Nothing                                                                           *
- *                                                                                             *
- * OUTPUT:   Nothing                                                                           *
- *                                                                                             *
- * WARNINGS: None                                                                              *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *    5/22/96 9:39AM ST : Created                                                              *
- *=============================================================================================*/
-void CDFileClass::Set_CD_Drive (int drive)
-{
-	LastCDDrive = CurrentCDDrive;
-	CurrentCDDrive = drive;
-}
-
-
-/***********************************************************************************************
  * CDFileClass::Clear_Search_Drives -- Removes all record of a search path.                    *
  *                                                                                             *
  *    Use this routine to clear out any previous path(s) set with Set_Search_Drives()          *
@@ -501,27 +231,12 @@ void CDFileClass::Clear_Search_Drives(void)
 }
 
 
-/***********************************************************************************************
- * CDFileClass::Set_Name -- Performs a multiple directory scan to set the filename.            *
- *                                                                                             *
- *    This routine will scan all the directories specified in the path list and if the file    *
- *    was found in one of the directories, it will set the filename to a composite of the      *
- *    correct directory and the filename. It is used to allow path searching when searching    *
- *    for files. Typical use is to support CD-ROM drives. This routine examines the current    *
- *    directory first before scanning through the path list. If after scanning the entire      *
- *    path list, the file still could not be found, then the file object's name is set with    *
- *    just the raw filename as passed to this routine.                                         *
- *                                                                                             *
- * INPUT:   filename -- Pointer to the filename to set as the name of this file object.        *
- *                                                                                             *
- * OUTPUT:  Returns a pointer to the final and complete filename of this file object. This     *
- *          may have a path attached to the file.                                              *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/18/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Searches the current directory and configured local data paths for a file.
+/// The first match becomes this object's filename; if none is found, the raw filename is kept.
+/// </summary>
+/// <param name="filename">The file name to search for.</param>
+/// <returns>The selected file name, including a configured path when one supplies the match.</returns>
 char const * CDFileClass::Set_Name(char const *filename)
 {
 	/*
@@ -548,11 +263,8 @@ char const * CDFileClass::Set_Name(char const *filename)
 		strcpy(path, srch->Path);
 		strcat(path, filename);
 
-		/*
-		**	Check to see if the file could be found. The low level Is_Available logic will
-		**	prompt if necessary when the CD-ROM drive has been removed. In all other cases,
-		**	it will return false and the search process will continue.
-		*/
+		// Check this path. Is_Available returns false when the file cannot be opened,
+		// allowing the search to continue with the next configured path.
 		BASECLASS::Set_Name(path);
 		if (BASECLASS::Is_Available()) {
 			return(File_Name());

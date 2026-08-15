@@ -85,7 +85,6 @@
 #include "campaign.h"
 #include "ccrand.h"
 #include "cctooltip.h"
-#include "cd.h"
 #include "cell.h"
 #include "conquer.h"
 #include "convert.h"
@@ -357,40 +356,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 
 	Theme.Stop();
 
-#ifdef _DEBUG
-	/// If swap override then assume everything is available locally.
-	if (!CD::Is_Override_Swap()) {
-#endif
-		CD::Set_Required_Disk(DISK_ANY);
-
-		if (Session.Type == GAME_NORMAL) {
-			if (Scen->Campaign != CAMPAIGN_NONE) {
-				CD::Set_Required_Disk((DiskID)Campaigns[Scen->Campaign]->CDNumber);
-			}
-		} else {
-			if (Session.Options.ScenarioIndex != -1) {
-				MultiMission * multi = Session.Scenarios[Session.Options.ScenarioIndex];
-				if (multi->Is_On_CD(CD::Get_Current_Disk()) == false) {
-					CD::Set_Required_Disk(multi->On_Which_CD());
-				}
-			}
-		}
-
-		Session.Suspended++;
-
-		if (!CD::Force_Available()) {
-			Session.Suspended--;
-			return(false);
-		}
-		Session.Suspended--;
-#ifdef _DEBUG
-	}
-#endif
-
-	if (briefing == true &&
-		campaign != CAMPAIGN_NONE &&
-		Scen->Scenario == 1 &&
-		Campaigns[Scen->Campaign]->CDNumber < 2) {
+	if ((briefing == true) && (campaign != CAMPAIGN_NONE) && (Scen->Scenario == 1) && (Campaigns[Scen->Campaign]->CDNumber < 2)) {
 		Play_Movie("INTRO.VQA", THEME_NONE, true);
 	}
 
@@ -1460,10 +1426,6 @@ void ScenarioClass::Set_Scenario_Name(char const * name)
  *=============================================================================================*/
 bool Read_Scenario_INI(char const * fname, bool)
 {
-	if (CD::Force_Available() == false) {
-		return(false);
-	}
-
 	Frame = 0;
 
 	if (TournamentTime > 0) {

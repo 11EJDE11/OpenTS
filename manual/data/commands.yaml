@@ -1764,14 +1764,14 @@ launch_options:
 - id: launch:cd-path
   route_id: cd-path
   kind: launch
-  title: File-search drives
-  description: Replaces the debug file-search drive string with the text following -CD.
-  audience: debug
-  availability: *id002
-  syntax: -CD<search drives>
+  title: Local data path
+  description: Adds the path following -CD to the local file-search list.
+  audience: developer
+  availability: *id001
+  syntax: -CD<path>
   _provenance:
     source: code/init.cpp
-    guard: _DEBUG
+    guard: null
 - id: launch:destination-network
   route_id: destination-network
   kind: launch

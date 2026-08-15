@@ -62,7 +62,7 @@
 /*
 **	Disable warning about non virtual base class destructor for these objects.
 */
-//lint -esym(1509,GraphicBufferClass,GraphicViewPortClass,BufferClass,VideoViewPortClass,GetCDClass)
+//lint -esym(1509,GraphicBufferClass,GraphicViewPortClass,BufferClass,VideoViewPortClass)
 //lint -esym(1509,BasicTimerClass,FlyClass,FuseClass,StageClass,FlasherClass,CargoClass,DoorClass)
 //lint -esym(1509,AbstractTypeClass)
 

@@ -46,7 +46,6 @@
 
 #include "_surface.h"
 #include "assert.h"
-#include "cdcntrl.h"
 #include "data.h"
 #include "dbgprint.h"
 #include "getcpu.h"
@@ -223,24 +222,20 @@ int Exception_Dialog(void)
 				DebugString("Resource not found\n");
 				retval = DialogBoxParam(ProgramInstance, MAKEINTRESOURCE(IDD_EXCEPTION_SIMPLE), MainWindow, Exception_Proc, 0);
 			}
-			CDControl.Unlock_All_CD_Trays();
 			ShowCursor(FALSE);
 			break;
 		}
 
 		case 3:
-			CDControl.Unlock_All_CD_Trays();
 			ExitProcess(EXIT_SUCCESS);
 			retval = IDC_EXCEPT_QUIT;
 			break;
 
 		case 2:
-			CDControl.Unlock_All_CD_Trays();
 			retval = IDC_EXCEPT_QUIT;
 			break;
 
 		case 1:
-			CDControl.Unlock_All_CD_Trays();
 			if (!AllocConsole()) {
 				FreeConsole();
 				AllocConsole();
@@ -766,7 +761,6 @@ int Exception_Handler(int exception_code, EXCEPTION_POINTERS *e_info)
 
 	if (Any_Locked() && WinVersion.Is_Win9x() || GetCurrentThreadId() != (DWORD)MainThread) {
 		DebugString("Can't bring up exception dialog due to Win16 mutex or threading issues\n");
-		CDControl.Unlock_All_CD_Trays();
 		return(EXCEPTION_CONTINUE_SEARCH);
 	}
 
@@ -785,8 +779,6 @@ int Exception_Handler(int exception_code, EXCEPTION_POINTERS *e_info)
 	if (g_TopWindow) {
 		OwnerDraw::End_Dialog(g_TopWindow);
 	}
-
-	CDControl.Unlock_All_CD_Trays();
 
 	return(EXCEPTION_EXECUTE_HANDLER);
 }

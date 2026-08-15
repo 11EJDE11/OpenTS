@@ -863,8 +863,7 @@ bool ModemGuest::Receive(void)
 				if (Find_Local_Scenario (Session.ScenarioFileName,
 										Session.ScenarioFileLength,
 										Session.ScenarioDigest,
-										Session.ScenarioIsOfficial,
-										true) == true) {
+										Session.ScenarioIsOfficial) == true) {
 
 					/*
 					**	We have the scenario. Tell the host that I am ready to go.

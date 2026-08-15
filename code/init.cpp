@@ -94,8 +94,6 @@
 #include "campaign.h"
 #include "ccfile.h"
 #include "cctooltip.h"
-#include "cd.h"
-#include "cdcntrl.h"
 #include "cell.h"
 #include "command.h"
 #include "conquer.h"
@@ -171,7 +169,6 @@
 #include "unittype.h"
 #include "vein.h"
 #include "voc.h"
-#include "volinfo.h"
 #include "vox.h"
 #include "vqoption.h"
 #include "wave.h"
@@ -230,7 +227,6 @@ static void Init_Heaps(void);
 static bool Init_Expansion_Files(void);
 static bool Init_One_Time_Systems(void);
 static bool Init_Fonts(void);
-static bool Init_CDROM_Access(void);
 static bool Init_Bootstrap_Mixfiles(void);
 static bool Init_Secondary_Mixfiles(void);
 static void Init_Mouse(void);
@@ -348,17 +344,6 @@ int Init_Game(int , char * [])
 	DebugString("Init Mouse\n");
 
 	Init_Mouse();
-
-	/*
-	**	Initialize access to the CD-ROM and ensure that the CD is inserted. This can, and
-	**	most likely will, result in a visible prompt.
-	*/
-	DebugString("Init CDROM\n");
-
-	if (!Init_CDROM_Access()) {
-		DebugString("Failed to initialize CDROM access!\n");
-		return(1);
-	}
 
 	/*
 	**	Register and cache any secondary mixfiles.
@@ -1680,13 +1665,10 @@ restart:
 					if (Debug_Flag) {
 						Play_Intro(Debug_Flag);
 					} else {
-						bool available = (!CCFileClass("Intro.VQA").Is_Available() || !CCFileClass("SIZZLE1.VQA").Is_Available());
-						if (!available || (CD::Set_Required_Disk(DISK_GDI), CD().Force_Available(DISK_FIRST))) {
-							Play_Movie("INTRO.VQA");
-							Clear_Option(OPTION_PLAY_FROM_MIXFILE);
-							Play_Movie("SIZZLE1.VQA");
-							Set_Option(OPTION_PLAY_FROM_MIXFILE);
-						}
+						Play_Movie("INTRO.VQA");
+						Clear_Option(OPTION_PLAY_FROM_MIXFILE);
+						Play_Movie("SIZZLE1.VQA");
+						Set_Option(OPTION_PLAY_FROM_MIXFILE);
 					}
 					Theme.Queue_Song(Fetch_Main_Menu_Theme());
 					selection = SEL_NONE;
@@ -1988,16 +1970,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 	Debug_Unshroud = false;
 #endif
 
-	/*
-	 * Debug builds assume all the data files are local, and the Demo has no concept of "CDs".
-	 * Both treat every data file as local, so the game never polls the CD drive and never
-	 * prompts for a disc.
-	 */
-#if defined(_DEMO) || defined(_DEBUG)
-	CD::Override_Swap(true);
-	CCFileClass::Set_Search_Drives((char *)"-CD.");
-#endif
-
 	for (int index = 1; index < argc; index++) {
 		char * string;		// Pointer to argument.
 		string = strupr(argv[index]);
@@ -2063,16 +2035,13 @@ bool Parse_Command_Line(int argc, char * argv[])
 
 #endif
 
-#ifdef _DEBUG
 		/*
 		**	File search path override.
 		*/
 		if (strstr(string, "-CD")) {
-			CD::Override_Swap(true);
 			CCFileClass::Set_Search_Drives(&string[3]);
 			continue;
 		}
-#endif
 
 		/*
 		**	Specify destination connection for network play
@@ -2660,118 +2629,6 @@ static bool Init_Fonts(void)
 }
 
 
-/***********************************************************************************************
- * Init_CDROM_Access -- Initialize the CD-ROM access handler.                                  *
- *                                                                                             *
- *    This routine is called to setup the CD-ROM access or emulation handler. It will ensure   *
- *    that the appropriate CD-ROM is present (dependant on the RequiredCD global).             *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   The fonts, palettes, and other bootstrap systems must have been initialized     *
- *             prior to calling this routine since this routine will quite likely display      *
- *             a dialog box requesting the appropriate CD be inserted.                         *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/03/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-static bool Init_CDROM_Access(void)
-{
-	/*
-	**	Always try to look at the CD-ROM for data files.
-	*/
-	if (CCFileClass::Is_There_Search_Drives() == false) {
-		/*
-		**	This call is needed because of a side effect of this function. It will examine the
-		**	CD-ROMs attached to this computer and set the appropriate status values. Without this
-		**	call, the "?:\\" could not be filled in correctly.
-		*/
-		DebugString("Calling Force_CD_Available\n");
-
-		if (!CD().Force_Available(DISK_ANY)) {
-			DebugString("Failed to find disk (user cancel)!\n");
-			return(false);
-		}
-
-		/*
-		**	If there are no search drives specified then we must be playing
-		**	off cd, so read files from there.
-		*/
-		int error;
-
-		do {
-			error = CCFileClass::Set_Search_Drives((char *)"?:\\");
-			switch (error) {
-				case 1:
-					HiddenSurface->Fill(0);
-					Update_Visible_Surface();
-					Set_Palette(GamePalette);
-					WWMessageBox().Process(TXT_CD_ERROR1, TXT_OK);
-					return(false);
-
-				case 2:
-					HiddenSurface->Fill(0);
-					Update_Visible_Surface();
-					Set_Palette(GamePalette);
-					if (WWMessageBox()._Process(TXT_CD_DIALOG_1, 0, TXT_OK, TXT_CANCEL) == 1) {
-						DebugString("Failed to find disk (user cancel)!\n");
-						return(false);
-					}
-					break;
-
-				default:
-					HiddenSurface->Fill(0);
-					Update_Visible_Surface();
-					if (CD::Force_Available() == false) {
-						DebugString("Failed to find disk (user cancel)!\n");
-						return(false);
-					}
-					break;
-			}
-		} while (error);
-
-		CD::Set_Required_Disk(DISK_ANY);
-
-		if (!VolumeCheck()) {
-			DebugString("VolumeCheck FAILED!!\n");
-			HiddenSurface->Fill(0);
-			Update_Visible_Surface(true, HiddenSurface);
-			WWMessageBox().Process(TXT_CD_ERROR1, TXT_OK);
-			return(false);
-		} else {
-			CDControl.Unlock_CD_Tray(CDFileClass::Get_CD_Drive());
-			CDControl.Lock_CD_Tray(CDFileClass::Get_CD_Drive());
-			DiskID disk = CD::Get_Current_Disk();
-			if (!Special.IsFromInstall && (disk == DISK_GDI || disk == DISK_NOD)) {
-				char buffer[64];
-				sprintf(buffer, "PlaySide%02d", disk);
-				Special.IsFromInstall = ConfigINI.Get_Bool("Intro", buffer, true);
-			}
-			if (Special.IsFromInstall == true) {
-				CCFileClass sun_ini("SUN.INI");
-				if (disk == DISK_GDI || disk == DISK_NOD) {
-					char buffer[64];
-					sprintf(buffer, "PlaySide%02d", disk);
-					ConfigINI.Put_Bool("Intro", buffer, false);
-				}
-				ConfigINI.Save(sun_ini, false);
-			}
-		}
-	} else {
-		/*
-		**	If there are search drives specified then all files are to be
-		**	considered local.
-		*/
-		DebugString("-CD parameter was specified. No CD init - all files must be local\n");
-		CD::Set_Required_Disk(DISK_LOCAL);
-	}
-
-	return(true);
-}
-
-
 /// <summary>
 /// Mounts a named expansion mixfile straight off the disk.
 /// The archive must be a loose file. Unlike its cached counterpart, this routine will not
@@ -2914,10 +2771,6 @@ static bool Init_Bootstrap_Mixfiles(void)
 	//int index;
 	//char name[64];
 	//MFCD * expand;
-	DiskID temp;
-
-	temp = CD::Get_Required_Disk();
-	CD::Set_Required_Disk(DISK_LOCAL);
 
 	Init_Patch_Mixfiles();
 	Init_Expand_Mixfiles();
@@ -2958,8 +2811,6 @@ static bool Init_Bootstrap_Mixfiles(void)
 
 	DebugStringNoPrefix(" LOCAL.MIX");
 
-	CD::Set_Required_Disk(temp);
-
 	return(true);
 }
 
@@ -2982,7 +2833,6 @@ static bool Init_Bootstrap_Mixfiles(void)
 static bool Init_Secondary_Mixfiles(void)
 {
 	char name[_MAX_PATH];
-	int id;
 
 	/*
 	**	Inform the file system of the various MIX files.
@@ -2998,11 +2848,8 @@ static bool Init_Secondary_Mixfiles(void)
 		return(false);
 	}
 
-	id = ((int)CD::Get_Current_Disk() + 1);
-
-#if defined(_DEMO) || defined(_DEBUG)
 	MFCD * mix;
-	if (CD::Is_Override_Swap() == true) {
+
 		strcpy(name, "MAPS*.MIX");
 
 		if (CDFileClass::Find_First_File(name) == true) {
@@ -3023,20 +2870,6 @@ static bool Init_Secondary_Mixfiles(void)
 
 			CDFileClass::Find_Close();
 		}
-
-	} else {
-#endif
-		sprintf(name, "MAPS%02d.MIX", id);
-
-		if (CCFileClass(name).Is_Available()) {
-			MapsMix = new MFCD(name, &FastKey);
-			assert(MapsMix != NULL);
-		}
-
-		DebugStringNoPrefix(" %s", name);
-#if defined(_DEMO) || defined(_DEBUG)
-	}
-#endif
 
 #ifndef _DEMO
 
@@ -3105,8 +2938,6 @@ static bool Init_Secondary_Mixfiles(void)
 	ScoresPresent = true;
 	Theme.Scan();
 
-#if defined(_DEMO) || defined(_DEBUG)
-	if (CD::Is_Override_Swap() == true) {
 		strcpy(name, "MOVIES*.MIX");
 
 		if (CDFileClass::Find_First_File(name) == true) {
@@ -3127,20 +2958,6 @@ static bool Init_Secondary_Mixfiles(void)
 
 			CDFileClass::Find_Close();
 		}
-
-	} else {
-#endif
-		sprintf(name, "MOVIES%02d.MIX", id);
-
-		if (CCFileClass(name).Is_Available()) {
-			MoviesMix = new MFCD(name, &FastKey);
-			assert(MoviesMix != NULL);
-		}
-
-		DebugStringNoPrefix(" %s", name);
-#if defined(_DEMO) || defined(_DEBUG)
-	}
-#endif
 
 	if (MoviesMix == NULL) {
 		return(false);
@@ -3172,14 +2989,6 @@ static bool Bootstrap(void)
 
 	if (!HicolorFlag) {
 		Set_Palette(BlackPalette);
-	}
-
-	/*
-	**	Be sure to short circuit the CD-ROM check if there is a CD-ROM override
-	**	path.
-	*/
-	if (CD::Is_Override_Swap() == true) {
-		CD::Set_Required_Disk(DISK_LOCAL);
 	}
 
 	/*
@@ -3766,13 +3575,8 @@ int Main_Menu(unsigned int timeout)
 
 	timeout = 0;
 
-	CD::Set_Required_Disk(DISK_ANY);
-
-	if (CD::Force_Available() == false) {
-		return(SEL_EXIT);
-	}
-
 	dialog = OwnerDraw::Begin_Dialog(IDD_MAIN_MENU, (DLGPROC) Main_Menu_Dialog_Proc);
+	assert(dialog != NULL);
 
 	if (dialog != NULL) {
 		SetWindowLong(dialog, DWL_USER, (LONG)&retval);

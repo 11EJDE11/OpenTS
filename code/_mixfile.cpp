@@ -44,7 +44,5 @@ MFCD * SideCMix = NULL;
 MFCD * SideNCMix = NULL;
 MFCD * SideCDMix = NULL;
 
-#if defined(_DEMO) || defined(_DEBUG)
 DynamicVectorClass<MFCD *> MapsMixLocal;
 DynamicVectorClass<MFCD *> MoviesMixLocal;
-#endif

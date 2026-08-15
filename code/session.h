@@ -46,7 +46,6 @@
 
 #include "dialog.hh"
 #include "diff.hh"
-#include "diskid.hh"
 
 //---------------------------------------------------------------------------
 // Forward declarations
@@ -537,9 +536,6 @@ class MultiMission
 		char const * Get_Digest(void) const {return(Digest);}
 		bool Get_Official(void) { return(IsOfficial); }
 
-		bool Is_On_CD(DiskID cd) const;
-		DiskID On_Which_CD(void) const;
-
 	private:
 		char ScenarioDescription[DESCRIP_MAX];
 		char Filename[_MAX_PATH];
@@ -552,12 +548,6 @@ class MultiMission
 		 */
 		int MinPlayers;
 		int MaxPlayers;
-
-		/*
-		 * This is the list of disks the mission may be played from, taken from its own "CD"
-		 * key. A mission that names none is assumed to be on the hard drive.
-		 */
-		TypeList<DiskID> Disks;
 };
 
 

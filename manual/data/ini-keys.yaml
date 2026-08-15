@@ -4005,7 +4005,7 @@ CD:
       kind: identifier
       source: campaign
     value_type: integer
-    status: needs_review
+    status: generated
     _provenance:
       default_candidate: '-1'
       declared_in: CampaignClass
@@ -4013,36 +4013,6 @@ CD:
       source: code/campaign.cpp
       guard: null
     level: CampaignClass
-  - applies_to:
-    - map packets
-    file: scenario packet (.pkt)
-    section:
-      kind: identifier
-      source: multiplayer-map
-    value_type: string
-    status: needs_review
-    _provenance:
-      default_candidate: ''
-      declared_in: MultiMission
-      member: null
-      source: code/session.cpp
-      guard: null
-    level: MultiMission
-  - applies_to:
-    - multiplayer maps
-    file: map file (.mpr)
-    section:
-      kind: literal
-      name: Multiplay
-    value_type: string
-    status: needs_review
-    _provenance:
-      default_candidate: ''
-      declared_in: MultiMission
-      member: null
-      source: code/session.cpp
-      guard: null
-    level: MultiMission
 CallWaitString:
   key: CallWaitString
   scopes:
@@ -15618,6 +15588,24 @@ PlacementDelay:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+PlayIntro:
+  key: PlayIntro
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Intro
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'yes'
+      declared_in: Startup
+      member: Special
+      source: code/startup.cpp
+      guard: null
+    level: Startup
 Player:
   key: Player
   scopes:

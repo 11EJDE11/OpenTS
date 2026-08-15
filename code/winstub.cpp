@@ -51,7 +51,6 @@
 #include "_tooltip.h"
 #include "ccfile.h"
 #include "cctooltip.h"
-#include "cdcntrl.h"
 #include "convert.h"
 #include "dbgprint.h"
 #include "draw.h"
@@ -269,7 +268,6 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			return(1);
 
 		case WM_CLOSE:
-			CDControl.Unlock_All_CD_Trays();
 			break;
 
 		case WM_CREATE:
@@ -293,7 +291,6 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 				delete ToolTips;
 				ToolTips = NULL;
 			}
-			CDControl.Unlock_All_CD_Trays();
 			MainWindow = 0;
 
 			/*
@@ -350,7 +347,6 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			switch ( wParam ) {
 
 				case SC_CLOSE:
-					CDControl.Unlock_All_CD_Trays();
 					/*
 					**	Windows sent us a close message. Probably in response to Alt-F4. Ignore it by
 					**	pretending to handle the message and returning true;

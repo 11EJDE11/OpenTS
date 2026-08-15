@@ -53,7 +53,8 @@ extern MFCD * SideCMix;
 extern MFCD * SideNCMix;
 extern MFCD * SideCDMix;
 
-#if defined(_DEMO) || defined(_DEBUG)
+/*
+ * Every MAPS*.MIX and MOVIES*.MIX beyond the first one found.
+ */
 extern DynamicVectorClass<MFCD *> MapsMixLocal;
 extern DynamicVectorClass<MFCD *> MoviesMixLocal;
-#endif

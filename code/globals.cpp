@@ -64,7 +64,6 @@
 #include "mission.h"
 #include "nullmgr.h"
 #include "partsys.h"
-#include "playcd.h"
 #include "queue.h"
 #include "rndstraw.h"
 #include "rules.h"
@@ -546,8 +545,6 @@ char BuildDate   [64] = {"Insert1Build2Date3Here4     " "\x00" "\xD9" "\xC7" "\x
 */
 int ReadyToQuit = 0;
 bool IsOldSaveGame = false;
-
-GetCDClass		CDList;
 
 bool TacticalActive;
 

@@ -42,7 +42,6 @@
 #include "loaddlg.h"
 
 #include "campaign.h"
-#include "cd.h"
 #include "conquer.h"
 #include "data.h"
 #include "globals.h"
@@ -459,18 +458,10 @@ bool LoadOptionsClass::Dialog(void)
 						**	to allow the user to try another game
 						*/
 						case LOAD: {
-							DiskID old_disk = CD().Get_Current_Disk();
-							if (entry->Num == -1) {
-								CD::Set_Required_Disk(DISK_ANY);
-							} else {
+							if (entry->Num != -1) {
 								Init_Campaigns();
-								CD::Set_Required_Disk((DiskID)Campaigns[entry->Num]->CDNumber);
 							}
 
-							if (!CD::Force_Available()) {
-								CD::Set_Required_Disk(old_disk);
-								State = STATE_PENDING;
-							} else {
 								ShowWindow(dialog, SW_HIDE);
 								UpdateWindow(MainWindow);
 								IsOldSaveGame = entry->Old;
@@ -481,7 +472,6 @@ bool LoadOptionsClass::Dialog(void)
 									State = STATE_PENDING;
 								}
 								IsOldSaveGame = false;
-							}
 							break;
 						}
 

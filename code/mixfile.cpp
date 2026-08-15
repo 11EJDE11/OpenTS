@@ -48,7 +48,6 @@
 #include "bsearch.h"
 #include "buff.h"
 #include "ccfile.h"
-#include "cd.h"
 #include "conquer.h"
 #include "crc.h"
 #include "globals.h"
@@ -119,16 +118,6 @@ MixFileClass::MixFileClass(char const * filename, PKey const * key) :
 	HeaderBuffer(NULL),
 	Data(NULL)
 {
-
-	/*
-	**	Check to see if the file is available. If it isn't, then
-	**	no further processing is needed or possible.
-	*/
-	if (!CD::Force_Available()) {
-		Emergency_Exit();
-		exit(EXIT_FAILURE);
-	}
-
 	CCFileClass file(filename);		// Working file object.
 	Filename = strdup(file.File_Name());
 	FileStraw fstraw(file);

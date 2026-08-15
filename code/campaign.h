@@ -38,8 +38,9 @@ class CampaignClass : public AbstractTypeClass
 
 	public:
 		/*
-		 * This is the number of the game disc that this campaign's scenarios are found on. The
-		 * CD handling code will demand that disc before the campaign is allowed to start.
+		 * This is the side the campaign is played as, read from its "CD" key. The key is
+		 * named for the game disc the campaign shipped on, one disc per side, which is why
+		 * 0 means GDI, 1 means Nod and 2 means Firestorm. Only the first two get an intro.
 		 */
 		int CDNumber;
 

@@ -47,7 +47,6 @@
 
 #include "_mixfile.h"
 #include "assert.h"
-#include "cd.h"
 #include "mixfile.h"
 
 #include <new>
@@ -95,35 +94,16 @@ CCFileClass::CCFileClass(void) :
 }
 
 
-/***********************************************************************************************
- * CCFileClass::Error -- Handles displaying a file error message.                              *
- *                                                                                             *
- *    Display an error message as indicated. If it is allowed to retry, then pressing a key    *
- *    will return from this function. Otherwise, it will exit the program with "exit()".       *
- *                                                                                             *
- * INPUT:   error    -- The error number (same as the DOSERR.H error numbers).                 *
- *                                                                                             *
- *          canretry -- Can this routine exit normally so that retrying can occur? If this is  *
- *                      false, then the program WILL exit in this routine.                     *
- *                                                                                             *
- *          filename -- Optional filename to report with this error. If no filename is         *
- *                      supplied, then no filename is listed in the error message.             *
- *                                                                                             *
- * OUTPUT:  none, but this routine might not return at all if the "canretry" parameter is      *
- *          false or the player pressed ESC.                                                   *
- *                                                                                             *
- * WARNINGS:   This routine may not return at all. It handles being in text mode as well as    *
- *             if in a graphic mode.                                                           *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/17/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Handles a file error reported by the file system.
+/// This was the hook that asked the player for the disc a missing file lived on. Every file
+/// is local now, so the caller's own failure path deals with it.
+/// </summary>
+/// <param name="error">The error number, using the DOSERR.H numbering.</param>
+/// <param name="canretry">Is the caller able to retry, so that this routine may return?</param>
+/// <param name="filename">The file the error refers to, or NULL if it is not known.</param>
 void CCFileClass::Error(int , int , char const * )
 {
-	if (CD().Force_Available(CD::Get_Required_Disk())) {
-		//Prog_End();
-		//Emergency_Exit(EXIT_FAILURE);
-	}
 }
 
 

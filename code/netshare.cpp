@@ -12,7 +12,6 @@
 #include "netshare.h"
 
 #include "_rules.h"
-#include "cd.h"
 #include "conquer.h"
 #include "data.h"
 #include "dbgprint.h"
@@ -1363,7 +1362,7 @@ void Update_Network_Dialog_Preview(HWND win)
 
 	switch (Session.Type) {
 		case GAME_IPX:
-			if (WS_Top_Window_ID() == IDD_MPLAYER_GUEST && !Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial, false)) {
+			if (WS_Top_Window_ID() == IDD_MPLAYER_GUEST && !Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial)) {
 				GlobalPacketType packet;
 				memset(&packet, 0, sizeof(packet));
 				packet.Command = NET_REQ_PREVIEW;
@@ -1406,7 +1405,7 @@ void Update_Network_Dialog_Preview(HWND win)
 				}
 				bool file_available = false;
 				bool is_local = false;
-				if (Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial, false)) {
+				if (Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial)) {
 					is_local = true;
 				} else {
 					file_available = true;
@@ -1433,7 +1432,7 @@ void Update_Network_Dialog_Preview(HWND win)
 
 		case GAME_MODEM:
 		case GAME_NULL_MODEM:
-			if (!Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial, false)) {
+			if (!Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial)) {
 				SerialPacketType packet;
 				memset ((void*)&packet, 0, sizeof (packet));
 				packet.Command = SERIAL_REQ_PREVIEW;
@@ -1562,14 +1561,8 @@ bool Set_Scenario_Info_From_Index(int index)
 	bool unavailable = CCFileClass(Session.Scenarios[index]->Get_Filename()).Is_Available() == false;
 
 	if (unavailable) {
-		if (CD::Get_Required_Disk() != DISK_LOCAL) {
-			if (!Session.Scenarios[index]->Is_On_CD(CD::Get_Current_Disk()) && !CD().Force_Available(Session.Scenarios[index]->On_Which_CD())) {
-				return(false);
-			}
-		} else {
-			WWMessageBox().Process(TXT_UNABLE_READ_SCENARIO, TXT_OK);
-			return(false);
-		}
+		WWMessageBox().Process(TXT_UNABLE_READ_SCENARIO, TXT_OK);
+		return(false);
 	}
 
 	strcpy(Session.Options.ScenarioDescription, Session.Scenarios[index]->Description());

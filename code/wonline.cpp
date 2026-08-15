@@ -2652,7 +2652,7 @@ static __forceinline HRESULT Handle_Public_Game_Options(struct User * user, cons
 		}
 
 		/// For a non-random map, check whether the scenario file already exists locally.
-		if (Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial, 0)) {
+		if (Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial)) {
 			RawFileClass file(Session.ScenarioFileName);
 			file.Is_Available();
 		}
@@ -9770,8 +9770,7 @@ void Sync_Scenario_With_Guests(void)
 		if (Find_Local_Scenario (Session.ScenarioFileName,
 			Session.ScenarioFileLength,
 			Session.ScenarioDigest,
-			Session.ScenarioIsOfficial,
-			true) == true) {
+			Session.ScenarioIsOfficial) == true) {
 
 			/*
 			**	We have the scenario. Tell the host that I am ready to go.

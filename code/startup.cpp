@@ -62,8 +62,6 @@
 #include "bullet.h"
 #include "bullettype.h"
 #include "campaign.h"
-#include "cd.h"
-#include "cdcntrl.h"
 #include "cell.h"
 #include "classfactory.h"
 #include "command.h"
@@ -107,7 +105,6 @@
 #include "ovrlight.h"
 #include "particle.h"
 #include "partsys.h"
-#include "playcd.h"
 #include "psystype.h"
 #include "ptype.h"
 #include "rules.h"
@@ -953,16 +950,12 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		MouseCursor = new WWMouseClass(VisibleSurface, MainWindow);
 		MouseCursor->Capture_Mouse();
 
-		CDFileClass::Set_CD_Drive (CDList.Get_First_CD_Drive());
-
 		/*
 		**	Check for forced intro movie run disabling. If the conquer
 		**	configuration file says "no", then don't run the intro.
 		*/
-		DiskID disk = CD::Get_Current_Disk();
-		if (!Special.IsFromInstall && (disk == DISK_GDI || disk == DISK_NOD)) {
-			sprintf(buffer, "PlaySide%02d", disk);
-			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", buffer, true);
+		if (!Special.IsFromInstall) {
+			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", "PlayIntro", true);
 		}
 
 		/*
@@ -970,10 +963,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		**	gonna change it to say "no" in the future.
 		*/
 		if (Special.IsFromInstall == true) {
-			if ((disk == DISK_GDI || disk == DISK_NOD)) {
-				sprintf(buffer, "PlaySide%02d", disk);
-				ConfigINI.Put_Bool("Intro", buffer, false);
-			}
+			ConfigINI.Put_Bool("Intro", "PlayIntro", false);
 			cfile->Close();
 			cfile->Open();
 			ConfigINI.Save(*cfile, false);
@@ -1257,18 +1247,14 @@ void __cdecl Prog_End(void)
 		PreviewSurface = NULL;
 	}
 
-	CDControl.Unlock_All_CD_Trays();
-
 	if (MoviesMix != NULL) {
 		delete MoviesMix;
 		MoviesMix = NULL;
 	}
-#if defined(_DEMO) || defined(_DEBUG)
 	while (MoviesMixLocal.Count() > 0) {
 		delete MoviesMixLocal[0];
 		MoviesMixLocal.Delete_Index(0);
 	}
-#endif
 	if (ScoresMix != NULL) {
 		delete ScoresMix;
 		ScoresMix = NULL;
@@ -1322,12 +1308,10 @@ void __cdecl Prog_End(void)
 		delete MapsMix;
 		MapsMix = NULL;
 	}
-#if defined(_DEMO) || defined(_DEBUG)
 	while (MapsMixLocal.Count() > 0) {
 		delete MapsMixLocal[0];
 		MapsMixLocal.Delete_Index(0);
 	}
-#endif
 	if (MultiMix != NULL) {
 		delete MultiMix;
 		MultiMix = NULL;

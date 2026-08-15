@@ -87,7 +87,6 @@ class RulesClass;
 class TagClass;
 class ScenarioClass;
 
-class GetCDClass;
 class RandomStraw;
 class VersionClass;
 class GameOptionsClass;
@@ -136,7 +135,6 @@ extern int NewINIFormat;
 */
 extern MissionControlClass			MissionControl[MISSION_COUNT];
 extern IndexClass<int, char *> 		TutorialText;
-extern GetCDClass					CDList;
 extern int							MapTriggerID;
 extern int							LogicTriggerID;
 extern RandomStraw					CryptRandom;
