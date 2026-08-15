@@ -5039,8 +5039,8 @@ void MapGeneratorClass::Init_Map(bool full_init)
 	int size_index = SeedData.NumPlayers - 2;
 	float width_frac = SeedData.Width * (1.0f / 3.0f);
 	float height_frac = SeedData.Height * (1.0f / 3.0f);
-	LocalWidth = (int)(_width_min[size_index] * (1.0f - width_frac) + _width_max[size_index] * width_frac);
-	LocalHeight = (int)(_height_min[size_index] * (1.0f - height_frac) + _height_max[size_index] * height_frac);
+	LocalWidth = (int)std::lerp((double)_width_min[size_index], (double)_width_max[size_index], (double)width_frac);
+	LocalHeight = (int)std::lerp((double)_height_min[size_index], (double)_height_max[size_index], (double)height_frac);
 
 	CCINIClass ini;
 

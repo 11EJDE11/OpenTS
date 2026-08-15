@@ -159,10 +159,6 @@
 #include <io.h>
 #include <cfloat>
 
-extern "C" {
-	void __cdecl set_control_word(void);
-};
-
 bool VideoBackBufferAllowed = true;
 
 extern	HINSTANCE LanguageResources;
@@ -695,9 +691,6 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 
 		DebugString ("Got AutoPlayMutex okay.\n");
 	}
-
-	_controlfp(_RC_CHOP, MCW_RC);
-	set_control_word();
 
 	atexit(Prog_End);
 

@@ -101,15 +101,15 @@ set(OPENTS_COMPILE_OPTIONS
     $<$<CONFIG:Debug>:
 
         # ---------- C++ ----------
-        # /arch:IA32 -- no SSE/SSE2; use the x87 FPU for floating point (matches
-        # the reference compiler's x87 floating-point behavior).
+        # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
+        # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /Od /RTC1 /Gr /GR /MP /EHsc /Oy- /MTd /Zc:__cplusplus /arch:IA32
+            /Zi /Od /RTC1 /Gr /GR /MP /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
         $<$<COMPILE_LANGUAGE:C>:
-            /Zi /Od /RTC1 /MP /Oy- /arch:IA32
+            /Zi /Od /RTC1 /MP /Oy- /arch:SSE2 /fp:precise
         >
 
         # ---------- MASM ----------
@@ -122,15 +122,15 @@ set(OPENTS_COMPILE_OPTIONS
     $<$<CONFIG:Release>:
 
         # ---------- C++ ----------
-        # /arch:IA32 -- no SSE/SSE2; use the x87 FPU for floating point (matches
-        # the reference compiler's x87 floating-point behavior).
+        # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
+        # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /O2 /GF /Gr /GR /MP /EHsc /MT /Zc:__cplusplus /arch:IA32
+            /Zi /O2 /GF /Gr /GR /MP /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
         $<$<COMPILE_LANGUAGE:C>:
-            /Zi /O2 /GF /MP /arch:IA32
+            /Zi /O2 /GF /MP /arch:SSE2 /fp:precise
         >
 
         # ---------- MASM ----------

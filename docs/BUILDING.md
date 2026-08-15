@@ -10,6 +10,7 @@
 | Component | Requirement |
 | --- | --- |
 | Host and architecture | Windows, 32-bit (`Win32`) target |
+| Processor | SSE2, so a Pentium 4 or Athlon 64 onward |
 | Generator and compiler | Visual Studio 2022 MSVC 19.30 or newer |
 | Windows SDK | A Visual Studio-installed Windows SDK |
 | CMake | 3.23 or newer |

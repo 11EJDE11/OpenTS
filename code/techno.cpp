@@ -7900,12 +7900,12 @@ void TechnoClass::Rock(Coord const & coord, float force)
 		Vector3 vec2 = vec1;
 
 		float theta = PrimaryFacing.Current().As_Radian();
-		float sangle = std::sin(theta);
-		float cangle = std::cos(theta);
+		double sangle = std::sin(theta);
+		double cangle = std::cos(theta);
 
 		float dist1 = vec1.Length();
 
-		float scale = (0.04f - dist1 * 0.000025f) * force / TClass->Weight;
+		float scale = (float)((0.04f - (double)dist1 * 0.000025f) * force / TClass->Weight);
 
 		if (fabs(dist1) >= 0.00002 && scale >= 0.01f) {
 			if (scale > 0.05f) {
@@ -7915,16 +7915,18 @@ void TechnoClass::Rock(Coord const & coord, float force)
 			vec2.Z = 0.0;
 			vec1 = Normalize(vec2);
 
-			dist1 = vec1.X * cangle + vec1.Y * sangle;
-			vec2.X = -(vec1.Z * sangle);
-			vec2.Y = +(vec1.Z * cangle);
-			vec2.Z = ((vec1.X * sangle) - (vec1.Y * cangle));
+			dist1 = (float)(vec1.X * cangle + vec1.Y * sangle);
+			vec2.X = (float)-(vec1.Z * sangle);
+			vec2.Y = (float)+(vec1.Z * cangle);
+			vec2.Z = (float)((vec1.X * sangle) - (vec1.Y * cangle));
 			float dist2 = vec2.Length();
+			/// This flips the sign of dist2, so it decides which way the object
+			/// rocks, and that reaches the multiplayer checksum.
 			if (fabs(cangle * dist1 - sangle * dist2 - vec1.X) > 0.0002 || fabs(cangle * dist2 + sangle * dist1 - vec1.Y) > 0.0002) {
 				dist2 = -dist2;
 			}
-			RockingForwardsPerFrame = dist1 * scale / 2.0f;
-			RockingSidewaysPerFrame = -(dist2 * scale);
+			RockingForwardsPerFrame = (float)((double)dist1 * scale / 2.0);
+			RockingSidewaysPerFrame = (float)-((double)dist2 * scale);
 		}
 	}
 }

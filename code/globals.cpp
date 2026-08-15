@@ -548,6 +548,4 @@ bool IsOldSaveGame = false;
 
 bool TacticalActive;
 
-int FPU_FLAG = 0x00000E7F; /// double precision, rounding towards zero (chop mode).
-
 Buffer * UnkBuffer; /// Possibly TheaterBuffer.

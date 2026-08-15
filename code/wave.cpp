@@ -364,10 +364,11 @@ void WaveClass::Sonic_Add_Cell(Cell const & cell)
 /// <returns>Returns with the coordinate that lies that far along the line between them.</returns>
 Coord Lerp(Coord const & a, Coord const & b, float t)
 {
-	double inv = 1.0 - t;
-	return(Coord(int((a.X * inv) + (b.X * t)),
-				 int((a.Y * inv) + (b.Y * t)),
-				 int((a.Z * inv) + (b.Z * t))));
+	/// std::lerp returns the second endpoint exactly when t is one, which the
+	/// a*(1-t) + b*t form does not.
+	return(Coord(int(std::lerp((double)a.X, (double)b.X, (double)t)),
+				 int(std::lerp((double)a.Y, (double)b.Y, (double)t)),
+				 int(std::lerp((double)a.Z, (double)b.Z, (double)t))));
 }
 
 
@@ -378,9 +379,8 @@ Coord Lerp(Coord const & a, Coord const & b, float t)
 /// <returns>Returns with the point that lies that far along the line between them.</returns>
 Point2D Lerp(Point2D const & a, Point2D const & b, float t)
 {
-	double inv = 1.0 - t;
-	int x = int((a.X * inv) + (b.X * t));
-	int y = int((a.Y * inv) + (b.Y * t));
+	int x = int(std::lerp((double)a.X, (double)b.X, (double)t));
+	int y = int(std::lerp((double)a.Y, (double)b.Y, (double)t));
 	return(Point2D(x,y));
 }
 

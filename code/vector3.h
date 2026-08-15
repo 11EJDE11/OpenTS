@@ -215,9 +215,10 @@ inline Vector3 operator - (const Vector3 &a,const Vector3 &b)
  *========================================================================*/
 inline float operator * (const Vector3 &a,const Vector3 &b)
 {
-	return	(a.X*b.X +
-			 a.Y*b.Y +
-			 a.Z*b.Z);
+	/// Accumulated in double, then narrowed once.
+	return	(float)((double)a.X*(double)b.X +
+			 (double)a.Y*(double)b.Y +
+			 (double)a.Z*(double)b.Z);
 }
 
 /**************************************************************************
@@ -322,5 +323,5 @@ inline float Vector3::Length(void) const
  *========================================================================*/
 inline float Vector3::Length2(void) const
 {
-	return(X*X + Y*Y + Z*Z);
+	return((float)((double)X*(double)X + (double)Y*(double)Y + (double)Z*(double)Z));
 }

@@ -14,6 +14,7 @@
 #include "voxdrsys.h"
 #include "wwfile.h"
 
+#include <algorithm>
 #include <climits>
 
 
@@ -817,22 +818,24 @@ void VoxelLibrary::Render_Object(VoxelRenderStruct & voxel, Vector3 & center)
 	arg.StrideY = x_size * VoxelRenderOrientations[orientation].YIndexStride;
 	arg.StartIndex = (x_size - 1) * VoxelRenderOrientations[orientation].ZIndexFactor + x_size * (y_size - 1) * VoxelRenderOrientations[orientation].YIndexFactor;
 
-	arg.TransformMatrix[0].I = short(float(corner_0.X + 128 - center.X) * 256);
-	arg.TransformMatrix[0].J = short(float(corner_0.Y + 128 - center.Y) * 256);
-	arg.TransformMatrix[0].K = short(float(corner_0.Z + 128 - center.Z) * 256);
+	/// The drawer sums these deltas down the length of the model, so an error of
+	/// one unit here becomes one unit per voxel by the far end.
+	arg.TransformMatrix[0].I = short(float((double)corner_0.X + 128 - (double)center.X) * 256);
+	arg.TransformMatrix[0].J = short(float((double)corner_0.Y + 128 - (double)center.Y) * 256);
+	arg.TransformMatrix[0].K = short(float((double)corner_0.Z + 128 - (double)center.Z) * 256);
 
-	arg.TransformMatrix[1].I = short(float(corner_x.X - corner_0.X) / x_size * 256);
-	arg.TransformMatrix[2].I = short(float(corner_y.X - corner_0.X) / y_size * 256);
-	arg.TransformMatrix[3].I = short(float(corner_z.X - corner_0.X) / z_size * 256);
+	arg.TransformMatrix[1].I = short(float(corner_x.X - corner_0.X) / (double)x_size * 256);
+	arg.TransformMatrix[2].I = short(float(corner_y.X - corner_0.X) / (double)y_size * 256);
+	arg.TransformMatrix[3].I = short(float(corner_z.X - corner_0.X) / (double)z_size * 256);
 
-	arg.TransformMatrix[1].J = short(float(corner_x.Y - corner_0.Y) / x_size * 256);
-	arg.TransformMatrix[2].J = short(float(corner_y.Y - corner_0.Y) / y_size * 256);
-	arg.TransformMatrix[3].J = short(float(corner_z.Y - corner_0.Y) / z_size * 256);
+	arg.TransformMatrix[1].J = short(float(corner_x.Y - corner_0.Y) / (double)x_size * 256);
+	arg.TransformMatrix[2].J = short(float(corner_y.Y - corner_0.Y) / (double)y_size * 256);
+	arg.TransformMatrix[3].J = short(float(corner_z.Y - corner_0.Y) / (double)z_size * 256);
 
 	if (VoxelDrawSystem::EnableZBuffer) {
-		arg.TransformMatrix[1].K = short(float(corner_x.Z - corner_0.Z) / x_size * 256);
-		arg.TransformMatrix[2].K = short(float(corner_y.Z - corner_0.Z) / y_size * 256);
-		arg.TransformMatrix[3].K = short(float(corner_z.Z - corner_0.Z) / z_size * 256);
+		arg.TransformMatrix[1].K = short(float(corner_x.Z - corner_0.Z) / (double)x_size * 256);
+		arg.TransformMatrix[2].K = short(float(corner_y.Z - corner_0.Z) / (double)y_size * 256);
+		arg.TransformMatrix[3].K = short(float(corner_z.Z - corner_0.Z) / (double)z_size * 256);
 	}
 
 	int funcnum = VoxelRenderOrientations[orientation].Reversed;
@@ -2348,7 +2351,7 @@ void Precalculate_Normal_Lookup(Vector3 const & light, int normal_type)
 		if (diffuse < 0.0) {
 			VoxelNormalTranslateTable[i] = 0;
 		} else {
-			VoxelNormalTranslateTable[i] = (unsigned char)(diffuse * VOXEL_PALETTE_LOOKUP_NEUTRAL);
+			VoxelNormalTranslateTable[i] = (unsigned char)((double)diffuse * VOXEL_PALETTE_LOOKUP_NEUTRAL);
 		}
 	}
 
@@ -2409,13 +2412,13 @@ void Precalculate_Normal_Lookup(Vector3 const & light, Vector3 const & viewer, f
 		float brightness = diffuse + specular;
 
 		/*
-		 * Convert to palette index range [0, VOXEL_PALETTE_LOOKUP_NEUTRAL]
+		 * Neutral is the unshaded row and a highlight belongs above it, so the
+		 * ceiling is the last row rather than neutral. The clamp is
+		 * load-bearing: specular has no natural bound, and the drawers index
+		 * this row unchecked.
 		 */
-		if (brightness < 0.0) {
-			VoxelNormalTranslateTable[i] = 0;
-		} else {
-			VoxelNormalTranslateTable[i] = (unsigned char)(brightness * VOXEL_PALETTE_LOOKUP_NEUTRAL);
-		}
+		int row = (int)((double)brightness * VOXEL_PALETTE_LOOKUP_NEUTRAL);
+		VoxelNormalTranslateTable[i] = (unsigned char)std::clamp(row, 0, MAX_PALETTE_LOOKUP_ENTRIES - 1);
 	}
 
 	VoxelNormalTranslateTable[VOXEL_PALETTE_SIZE - 1] = VOXEL_PALETTE_LOOKUP_NEUTRAL;

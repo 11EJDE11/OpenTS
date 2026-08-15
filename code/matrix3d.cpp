@@ -214,9 +214,11 @@ void Matrix3D::Make_Identity(void)
  *=============================================================================================*/
 void Matrix3D::Translate(float x, float y, float z)
 {
-	Row[0].W += (float)(Row[0].X*x + Row[0].Y*y + Row[0].Z*z);
-	Row[1].W += (float)(Row[1].X*x + Row[1].Y*y + Row[1].Z*z);
-	Row[2].W += (float)(Row[2].X*x + Row[2].Y*y + Row[2].Z*z);
+	double dx = x, dy = y, dz = z;
+
+	Row[0].W += (float)(Row[0].X*dx + Row[0].Y*dy + Row[0].Z*dz);
+	Row[1].W += (float)(Row[1].X*dx + Row[1].Y*dy + Row[1].Z*dz);
+	Row[2].W += (float)(Row[2].X*dx + Row[2].Y*dy + Row[2].Z*dz);
 }
 
 
@@ -590,7 +592,7 @@ void Matrix3D::Pre_Rotate_Z(float theta)
 /// <param name="theta">The angle to rotate by, in radians.</param>
 void Matrix3D::Rotate_X(float theta)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 	float s,c;
 
 	s = (float)std::sin(theta);
@@ -620,7 +622,7 @@ void Matrix3D::Rotate_X(float theta)
 /// <param name="c">The cosine of the angle to rotate by.</param>
 void Matrix3D::Rotate_X(float s,float c)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 
 	tmp1 = Row[0].Y; tmp2 = Row[0].Z;
 	Row[0].Y = (float)( c*tmp1 + s*tmp2);
@@ -642,7 +644,7 @@ void Matrix3D::Rotate_X(float s,float c)
 /// <param name="theta">The angle to rotate by, in radians.</param>
 void Matrix3D::Rotate_Y(float theta)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 	float s,c;
 
 	s = (float)std::sin(theta);
@@ -671,7 +673,7 @@ void Matrix3D::Rotate_Y(float theta)
 /// <param name="c">The cosine of the angle to rotate by.</param>
 void Matrix3D::Rotate_Y(float s,float c)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 
 	tmp1 = Row[0].X; tmp2 = Row[0].Z;
 	Row[0].X = (float)(c*tmp1 - s*tmp2);
@@ -693,7 +695,7 @@ void Matrix3D::Rotate_Y(float s,float c)
 /// <param name="theta">The angle to rotate by, in radians.</param>
 void Matrix3D::Rotate_Z(float theta)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 	float s, c;
 
 	c = (float)std::cos(theta);
@@ -722,7 +724,7 @@ void Matrix3D::Rotate_Z(float theta)
 /// <param name="c">The cosine of the angle to rotate by.</param>
 void Matrix3D::Rotate_Z(float s,float c)
 {
-	float tmp1,tmp2;
+	double tmp1,tmp2;
 
 	tmp1 = Row[0].X; tmp2 = Row[0].Y;
 	Row[0].X = (float)( c*tmp1 + s*tmp2);
@@ -956,28 +958,29 @@ void Matrix3D::Obj_Look_At(const Vector3 &p, const Vector3 &t, float roll)
 *=============================================================================================*/
 inline void Matrix3D::Multiply(const Matrix3D & A, const Matrix3D & B, Matrix3D * set_result)
 {
-	float a00 = A.Row[0].X;
-	float a01 = A.Row[0].Y;
-	float a02 = A.Row[0].Z;
-	float a10 = A.Row[1].X;
-	float a11 = A.Row[1].Y;
-	float a12 = A.Row[1].Z;
-	float a20 = A.Row[2].X;
-	float a21 = A.Row[2].Y;
-	float a22 = A.Row[2].Z;
+	/// Widened so the sums below accumulate in double and narrow once, on store.
+	double a00 = A.Row[0].X;
+	double a01 = A.Row[0].Y;
+	double a02 = A.Row[0].Z;
+	double a10 = A.Row[1].X;
+	double a11 = A.Row[1].Y;
+	double a12 = A.Row[1].Z;
+	double a20 = A.Row[2].X;
+	double a21 = A.Row[2].Y;
+	double a22 = A.Row[2].Z;
 
-	float b00 = B.Row[0].X;
-	float b01 = B.Row[0].Y;
-	float b02 = B.Row[0].Z;
-	float b03 = B.Row[0].W;
-	float b10 = B.Row[1].X;
-	float b11 = B.Row[1].Y;
-	float b12 = B.Row[1].Z;
-	float b13 = B.Row[1].W;
-	float b20 = B.Row[2].X;
-	float b21 = B.Row[2].Y;
-	float b22 = B.Row[2].Z;
-	float b23 = B.Row[2].W;
+	double b00 = B.Row[0].X;
+	double b01 = B.Row[0].Y;
+	double b02 = B.Row[0].Z;
+	double b03 = B.Row[0].W;
+	double b10 = B.Row[1].X;
+	double b11 = B.Row[1].Y;
+	double b12 = B.Row[1].Z;
+	double b13 = B.Row[1].W;
+	double b20 = B.Row[2].X;
+	double b21 = B.Row[2].Y;
+	double b22 = B.Row[2].Z;
+	double b23 = B.Row[2].W;
 
 	set_result->Row[0].X = a00 * b00 + a01 * b10 + a02 * b20;
 	set_result->Row[1].X = a10 * b00 + a11 * b10 + a12 * b20;
@@ -1020,10 +1023,15 @@ Matrix3D operator * (const Matrix3D & a, const Matrix3D & b)
 /// <returns>Returns with the transformed point.</returns>
 Vector3 operator * (const Matrix3D & m, const Vector3 & vect)
 {
+	/// Accumulated in double; the drawer truncates the result into fixed point.
+	double x = (double)vect.X;
+	double y = (double)vect.Y;
+	double z = (double)vect.Z;
+
 	Vector3 vec(
-		(m.Row[0].X * vect.X + m.Row[0].Y * vect.Y + m.Row[0].Z * vect.Z + m.Row[0].W),
-		(m.Row[1].X * vect.X + m.Row[1].Y * vect.Y + m.Row[1].Z * vect.Z + m.Row[1].W),
-		(m.Row[2].X * vect.X + m.Row[2].Y * vect.Y + m.Row[2].Z * vect.Z + m.Row[2].W)
+		(float)((double)m.Row[0].X * x + (double)m.Row[0].Y * y + (double)m.Row[0].Z * z + (double)m.Row[0].W),
+		(float)((double)m.Row[1].X * x + (double)m.Row[1].Y * y + (double)m.Row[1].Z * z + (double)m.Row[1].W),
+		(float)((double)m.Row[2].X * x + (double)m.Row[2].Y * y + (double)m.Row[2].Z * z + (double)m.Row[2].W)
 	);
 	return(vec);
 }

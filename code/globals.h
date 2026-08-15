@@ -332,7 +332,3 @@ extern char Debug_ScenarioName[];
 extern Buffer * UnkBuffer;
 
 extern TiberianSunClassFactory TibSunFactory;
-
-extern "C"{
-	extern int FPU_FLAG;
-}

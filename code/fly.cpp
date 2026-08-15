@@ -1188,7 +1188,7 @@ int FlyLocomotionClass::Nearing_Target(bool stage_approach, CoordStruct coord)
 			int floor = Map.Get_Height_GL(LinkedTo->Get_Coord());
 			int level = floor + LinkedTo->TClass->Flight_Level();
 			float ratio = (float)proximity / Rule->HunterSeekerDescendProximity;
-			int newlevel = (int)((1.0f - ratio) * targetz + level * ratio) - floor;
+			int newlevel = (int)std::lerp((double)targetz, (double)level, (double)ratio) - floor;
 			if (newlevel < 10) {
 				newlevel = 10;
 			}
@@ -1246,8 +1246,8 @@ int FlyLocomotionClass::Nearing_Target(bool stage_approach, CoordStruct coord)
 				} else {
 					float frac = (float)(dist / LinkedTo->TClass->SlowdownDistance);
 					TechnoTypeClass const * ttype = LinkedTo->TClass;
-					FlightLevel = (int)((LinkedTo->TClass->Flight_Level() / 3) * (1.0f - frac) +
-						ttype->Flight_Level() * frac);
+					FlightLevel = (int)std::lerp((double)(LinkedTo->TClass->Flight_Level() / 3),
+						(double)ttype->Flight_Level(), (double)frac);
 				}
 			} else {
 				FlightLevel = LinkedTo->TClass->Flight_Level();

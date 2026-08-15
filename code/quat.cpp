@@ -17,6 +17,8 @@
 
 #include "matrix3d.h"
 
+#include <algorithm>
+
 #define SLERP_EPSILON 1e-5
 
 static float project_to_sphere(float r, float x, float y);
@@ -53,7 +55,10 @@ void Quaternion::Set(float x, float y, float z, float w)
 /// </summary>
 void Quaternion::Normalize(void)
 {
-	float len2 = X * X + Y * Y + Z * Z + W * W;
+	/// len2 stays a float: it is the divisor below, so widening it would change
+	/// the quotient rather than just the way the sum is reached.
+	float len2 = (float)((double)X * (double)X + (double)Y * (double)Y +
+						 (double)Z * (double)Z + (double)W * (double)W);
 
 	if (0.0f != len2) {
 		X /= len2;
@@ -355,7 +360,9 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 	double sin_t, cos_t; 		// sine, cosine of theta
 
 	// cos theta = dot product of p and q
-	cos_t = a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
+	/// Accumulated in double; the two epsilon tests below turn it into a branch.
+	cos_t = (double)a.X * (double)b.X + (double)a.Y * (double)b.Y +
+			(double)a.Z * (double)b.Z + (double)a.W * (double)b.W;
 
 	// if q is on opposite hemisphere from A, use -B instead
 	if ((cos_t + 1.0) > SLERP_EPSILON) {
@@ -366,14 +373,16 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 		 */
 		if ((1.0 - cos_t) > SLERP_EPSILON) {
 			// normal slerp!
-			theta = std::acos(cos_t);
+			/// The epsilon test bounds cos_t away from one but not from just
+			/// outside the domain, where acos would answer with a NaN.
+			theta = std::acos(std::clamp(cos_t, -1.0, 1.0));
 			sin_t = std::sin(theta);
-			beta = std::sin((1.0f - t) * theta) / sin_t;
-			alpha = std::sin(t * theta) / sin_t;
+			beta = std::sin((1.0 - (double)t) * theta) / sin_t;
+			alpha = std::sin((double)t * theta) / sin_t;
 		} else {
 			// if q is very close to p, just linearly interpolate
 			// between the two.
-			beta = 1.0f - t;
+			beta = 1.0 - (double)t;
 			alpha = t;
 
 		}
@@ -382,8 +391,8 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 			res[i] = (beta * a[i]) + (alpha * b[i]);
 		}
 	} else {
-		beta = std::sin((1.0f - t) * M_PI_2);
-		alpha = std::sin(t * M_PI_2);
+		beta = std::sin((1.0 - (double)t) * M_PI_2);
+		alpha = std::sin((double)t * M_PI_2);
 		/// Interpolate.
 		for (int i = 0; i < 4; i++) {
 			res[i] = (beta * a[i]) + (alpha * b[i]);
