@@ -38,9 +38,9 @@ void BounceClass::Init(Coord const & coord, double elasticity, double, double mi
 	double azimuth = Random_Double(0.0, 1.0) * DEG_TO_RAD(360);
 	double elevation = Random_Double(1.0, 2.0) * DEG_TO_RAD(45);
 
-	launch_velocity.X = fastmath::cos(elevation) * fastmath::cos(azimuth) * launch_speed;
-	launch_velocity.Y = fastmath::cos(elevation) * fastmath::sin(azimuth) * launch_speed;
-	launch_velocity.Z = fastmath::sin(elevation) * launch_speed;
+	launch_velocity.X = std::cos(elevation) * std::cos(azimuth) * launch_speed;
+	launch_velocity.Y = std::cos(elevation) * std::sin(azimuth) * launch_speed;
+	launch_velocity.Z = std::sin(elevation) * launch_speed;
 
 	Init(coord, elasticity, 3.0, 0.0, launch_velocity, 0.0);
 }

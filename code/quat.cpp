@@ -15,7 +15,6 @@
 
 #include "quat.h"
 
-#include "fastmath.h"
 #include "matrix3d.h"
 
 #define SLERP_EPSILON 1e-5
@@ -273,7 +272,7 @@ Quaternion Trackball(float x0, float y0, float x1, float y1, float size)
 	} else if (t < -1.0f) {
 		t = -1.0f;
 	}
-	phi = 2.0 * fastmath::asin(t);
+	phi = 2.0 * std::asin((double)t);
 
 	return(Axis_To_Quat(a, phi));
 }
@@ -298,8 +297,8 @@ Quaternion Axis_To_Quat(const Vector3 &a, float phi)
 	q.Y = tmp[1];
 	q.Z = tmp[2];
 
-	q.Scale(fastmath::sin(phi / 2.0f));
-	q.W = fastmath::cos(phi / 2.0f);
+	q.Scale(std::sin(phi / 2.0f));
+	q.W = std::cos(phi / 2.0f);
 
 	return(q);
 }
@@ -320,9 +319,9 @@ static float project_to_sphere(float r, float x, float y)
 
 	float d, t, z;
 
-	d = fastmath::sqrt(x * x + y * y);
+	d = std::sqrt(x * x + y * y);
 	if (d < r * (SQRT2 / 2.0f)) {
-		z = (float)fastmath::sqrt(r * r - d * d);
+		z = (float)std::sqrt(r * r - d * d);
 	} else {
 		t = r * (SQRT2 / 2.0f);
 		z = t * t / d;
@@ -367,10 +366,10 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 		 */
 		if ((1.0 - cos_t) > SLERP_EPSILON) {
 			// normal slerp!
-			theta = fastmath::acos(cos_t);
-			sin_t = fastmath::sin(theta);
-			beta = fastmath::sin((1.0f - t) * theta) / sin_t;
-			alpha = fastmath::sin(t * theta) / sin_t;
+			theta = std::acos(cos_t);
+			sin_t = std::sin(theta);
+			beta = std::sin((1.0f - t) * theta) / sin_t;
+			alpha = std::sin(t * theta) / sin_t;
 		} else {
 			// if q is very close to p, just linearly interpolate
 			// between the two.
@@ -383,8 +382,8 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 			res[i] = (beta * a[i]) + (alpha * b[i]);
 		}
 	} else {
-		beta = fastmath::sin((1.0f - t) * M_PI_2);
-		alpha = fastmath::sin(t * M_PI_2);
+		beta = std::sin((1.0f - t) * M_PI_2);
+		alpha = std::sin(t * M_PI_2);
 		/// Interpolate.
 		for (int i = 0; i < 4; i++) {
 			res[i] = (beta * a[i]) + (alpha * b[i]);
@@ -433,7 +432,7 @@ Quaternion Build_Quaternion(const Matrix3D& mat)
 
 	if (tr > 0.0) {
 
-		s = fastmath::sqrt(tr + 1.0);
+		s = std::sqrt(tr + 1.0);
 		q[3] = (s * 0.5);
 		s = 0.5 / s;
 
@@ -466,7 +465,7 @@ Quaternion Build_Quaternion(const Matrix3D& mat)
 		double dj = m[tab1[j]];
 		double dk = m[tab1[k]];
 
-		s = fastmath::sqrt(di - (dj + dk) + 1.0);
+		s = std::sqrt(di - (dj + dk) + 1.0);
 
 		q[i] = (s * 0.5);
 		s = 0.5 / s;

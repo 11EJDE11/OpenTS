@@ -41,7 +41,7 @@ test('Drop pod approach selection keeps its ordered candidates and unconditional
 
 	assert.match(
 		moveTo,
-		/double\s+dropradius\s*=\s*\(double\)Rule->DropPodHeight\s*\/\s*fastmath::tan\(Rule->DropPodAngle\)/,
+		/double\s+dropradius\s*=\s*\(double\)Rule->DropPodHeight\s*\/\s*std::tan\(Rule->DropPodAngle\)/,
 	);
 	assert.equal(
 		(moveTo.match(/Map\.In_Local_Radar\(dropcoord\)/g) ?? []).length,

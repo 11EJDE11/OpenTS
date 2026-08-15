@@ -14,7 +14,6 @@
 #pragma once
 
 #include "comtypes.h"
-#include "fastmath.h"
 #include "point.h"
 #include "sun.h"
 

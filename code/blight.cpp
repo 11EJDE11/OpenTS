@@ -124,7 +124,7 @@ void BuildingLightClass::Draw_It(Point2D const & point, Rect const & cliprect) c
 	int detection = Detection_Radius();
 
 	if (distance >= detection) {
-		double angle = fastmath::asin((double)detection / (double)distance);
+		double angle = std::asin((double)detection / (double)distance);
 
 		Matrix3D mat;
 		mat.Make_Identity();

@@ -23,7 +23,6 @@
 #include "cell.h"
 #include "combat.h"
 #include "dsurface.h"
-#include "fastmath.h"
 #include "globals.h"
 #include "goptions.h"
 #include "logic.h"
@@ -206,13 +205,13 @@ void WaveClass::Init_Statics(void)
 
 	for (int x = 0; x < _RADIUS_TABLE_SIZE; x++) {
 		for (int y = 0; y < _RADIUS_TABLE_SIZE; y++) {
-			RadiusTable[x][y] = fastmath::sqrt(x * x + y * y);
+			RadiusTable[x][y] = std::sqrt(x * x + y * y);
 		}
 	}
 
 	int i;
 	for (i = 0; i < _SINE_TABLE_SIZE; i++) {
-		SineTable[i] = (short)(fastmath::sin(i * _sine_duration) * _sine_amplitude + _offset);
+		SineTable[i] = (short)(std::sin(i * _sine_duration) * _sine_amplitude + _offset);
 	}
 
 	for (i = 0; i < _INTENSITY_TABLE_SIZE; i++) {
@@ -274,7 +273,7 @@ FacingType Facing_Between_Points(Point2D const & pt1, Point2D const & pt2)
 	int xdiff = pt2.X - pt1.X;
 	int ydiff = pt1.Y - pt2.Y;
 
-	double tangent = fastmath::sin(DEG_TO_RAD(22.5)) / fastmath::cos(DEG_TO_RAD(22.5));
+	double tangent = std::sin(DEG_TO_RAD(22.5)) / std::cos(DEG_TO_RAD(22.5));
 
 	if (xdiff != 0) {
 		double slope = (double)ydiff / (double)xdiff;
@@ -1112,12 +1111,12 @@ void WaveClass::Build_Wave_Shape(Coord const & source_coord, Coord const & targe
 	double dx = end_coord.X - start_coord.X;
 	double dy = end_coord.Y - start_coord.Y;
 	float dx_f = dx;
-	double dist = fastmath::sqrt(dy * dy + dx_f * dx_f);
+	double dist = std::sqrt(dy * dy + dx_f * dx_f);
 
 	if (dist < dx) dx = dist;
 	if (-dx > dist) dx = -dist;
 
-	double theta = fastmath::acos(dx / dist);
+	double theta = std::acos(dx / dist);
 	if (start_coord.Y > end_coord.Y) {
 		theta = -theta;
 	}

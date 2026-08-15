@@ -104,7 +104,7 @@ void HoverLocomotionClass::Gravity_AI(void)
 
 	double bob_time_span = (id & 1 ? 1.0 : 1.1) * Rule->HoverBob * TICKS_PER_MINUTE;
 
-	double bob_angle = fastmath::sin((double)((Frame + 2 * id) % (int)bob_time_span) * DEG_TO_RAD(360) / bob_time_span);
+	double bob_angle = std::sin((double)((Frame + 2 * id) % (int)bob_time_span) * DEG_TO_RAD(360) / bob_time_span);
 
 	height = int(2 * bob_angle + height);
 	if (height < 0) {

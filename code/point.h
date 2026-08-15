@@ -33,8 +33,7 @@
 
 #include "comtypes.h"
 
-/// fastmath::sqrt must be visible to the templates below under two-phase lookup (defined in fastmath.h).
-namespace fastmath { double __cdecl sqrt(double x); }
+#include <cmath>
 
 
 template<class T> class TRect;
@@ -78,9 +77,9 @@ class TPoint2D {
 
 		// Vector support functions.
 		//T Length(void) const {return(T(sqrt(double(X*X + Y*Y))));}
-		T Length(void) const {return(T(fastmath::sqrt((double)X*(double)X + (double)Y*(double)Y)));}
+		T Length(void) const {return(T(std::sqrt((double)X*(double)X + (double)Y*(double)Y)));}
 		TPoint2D<T> const Normalize(void) const {
-			double len = fastmath::sqrt(X*X + Y*Y);
+			double len = std::sqrt((double)(X*X + Y*Y));
 			if (len != 0.0) {
 				return(TPoint2D<T>((T)(X / len), (T)(Y / len)));
 			} else {
@@ -183,9 +182,9 @@ class TPoint3D : public TPoint2D<T> {
 
 		// Vector support functions.
 		//T Length(void) const {return(T(sqrt(double(X*X + Y*Y + Z*Z))));}
-		T Length(void) const {return(T(fastmath::sqrt((double)X*(double)X + (double)Y*(double)Y + (double)Z*(double)Z)));}
+		T Length(void) const {return(T(std::sqrt((double)X*(double)X + (double)Y*(double)Y + (double)Z*(double)Z)));}
 		TPoint3D<T> const Normalize(void) const {
-			double len = fastmath::sqrt(X*X + Y*Y + Z*Z);
+			double len = std::sqrt((double)(X*X + Y*Y + Z*Z));
 			if (len != 0.0) {
 				return(TPoint3D<T>((T)(X / len), (T)(Y / len), (T)(Z / len)));
 			} else {

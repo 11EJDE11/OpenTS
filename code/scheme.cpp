@@ -12,11 +12,11 @@
 #include "scheme.h"
 
 #include "_surface.h"
-#include "fastmath.h"
 #include "lightcon.h"
 #include "sun.h"
 #include "vector.h"
 
+#include <cmath>
 #include <cstring>
 
 bool _indexes[256] =
@@ -88,8 +88,8 @@ ConvertClass *Build_Light_Converter(HSVClass & hsv, const PaletteClass & base, c
 			cosval = DEG_TO_RAD(360.0/32.0); /// 11.25 degrees, expressed in radians.
 		}
 
-		int sat = int(fastmath::sin(sinval) * saturation);
-		int val = int(fastmath::cos(cosval) * value);
+		int sat = int(std::sin(sinval) * saturation);
+		int val = int(std::cos(cosval) * value);
 
 		(*remapped)[i + 16] = HSVClass(hue, sat, val);
 	}
@@ -128,8 +128,8 @@ ConvertClass *Build_Converter(HSVClass & hsv, const PaletteClass & base, const P
 			cosval = DEG_TO_RAD(360.0/32.0); /// 11.25 degrees, expressed in radians.
 		}
 
-		int sat = int(fastmath::sin(sinval) * saturation);
-		int val = int(fastmath::cos(cosval) * value);
+		int sat = int(std::sin(sinval) * saturation);
+		int val = int(std::cos(cosval) * value);
 
 		pal[i + 16] = HSVClass(hue, sat, val);
 	}

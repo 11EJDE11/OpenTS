@@ -113,5 +113,27 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT_2    0.707106781186547524401
 
+/// Single precision pi, for the float paths that would otherwise round M_PI at every use.
+#define M_FPI 3.141592654f
+
+/*
+**	Macros to convert between degrees and radians
+*/
+#ifndef RAD_TO_DEG
+#define RAD_TO_DEG(x)	(((double)x)*180.0/M_PI)
+#endif
+
+#ifndef DEG_TO_RAD
+#define DEG_TO_RAD(x)	(((double)x)*M_PI/180.0)
+#endif
+
+#ifndef RAD_TO_DEGF
+#define RAD_TO_DEGF(x)	(((float)x)*180.0f/M_PI)
+#endif
+
+#ifndef DEG_TO_RADF
+#define DEG_TO_RADF(x)	(((float)x)*M_PI/180.0f)
+#endif
+
 
 #endif

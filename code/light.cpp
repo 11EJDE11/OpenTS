@@ -174,7 +174,7 @@ void LightSourceClass::Recalculate_Affected_Cells(bool defer)
 					int dy = cell_coord.Y - Position.Y;
 					int dist = dx * dx + dy * dy;
 
-					if (int(fastmath::sqrt(dist)) <= Visibility) {
+					if (int(std::sqrt(dist)) <= Visibility) {
 						if (defer) {
 							PendingCells.Add(new PendingCellClass(test_cell));
 						} else {

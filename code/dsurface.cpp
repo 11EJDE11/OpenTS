@@ -51,7 +51,6 @@
 
 #include "blit.h"
 #include "dbgprint.h"
-#include "fastmath.h"
 #include "misc.h"
 #include "swap.h"
 
@@ -2307,13 +2306,13 @@ bool DSurface::Draw_Depth_Shaded_Line(Rect const & cliprect, Point2D const & sta
 		clipped_point.X = px - end.X;
 		double clipped_dx = (double)clipped_point.X;
 		clipped_point.Y = py - end.Y;
-		int clipped = (int)(int)fastmath::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
+		int clipped = (int)(int)std::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
 		Point2D full_point;
 		full_point.X = px - unclipped.X;
 		double full_dx = (double)full_point.X;
 		full_point.Y = py - unclipped.Y;
 		int amount = abs((int)(int)((double)clipped
-			/ (double)(int)(int)fastmath::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
+			/ (double)(int)(int)std::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
 			* (double)(zfirst - zlast)));
 		if (zfirst < zlast) {
 			zend = zfirst + amount;
@@ -2330,13 +2329,13 @@ bool DSurface::Draw_Depth_Shaded_Line(Rect const & cliprect, Point2D const & sta
 		clipped_point.X = start.X - unclipped.X;
 		double clipped_dx = (double)clipped_point.X;
 		clipped_point.Y = start.Y - unclipped.Y;
-		int clipped = (int)(int)fastmath::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
+		int clipped = (int)(int)std::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
 		Point2D full_point;
 		full_point.X = px - unclipped.X;
 		double full_dx = (double)full_point.X;
 		full_point.Y = py - unclipped.Y;
 		int amount = abs((int)(int)((double)clipped
-			/ (double)(int)(int)fastmath::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
+			/ (double)(int)(int)std::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
 			* (double)(zfirst - zlast)));
 		if (zlast > zfirst) {
 			zstart = zlast - amount;

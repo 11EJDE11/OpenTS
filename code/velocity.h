@@ -10,7 +10,8 @@
 #pragma once
 
 #include "face.h"
-#include "fastmath.h"
+
+#include <cmath>
 
 
 template <typename T>
@@ -26,7 +27,7 @@ class TVelocity2D
 
 		T Speed(void) const
 		{
-			return(fastmath::sqrt(X * X + Y * Y));
+			return(std::sqrt(X * X + Y * Y));
 		}
 
 		/*
@@ -37,8 +38,8 @@ class TVelocity2D
 		{
 			Nonzero_Check();
 			T horizontal_speed = Speed();
-			X = horizontal_speed * fastmath::cos(yaw.As_Radian());
-			Y = -horizontal_speed * fastmath::sin(yaw.As_Radian());
+			X = horizontal_speed * std::cos(yaw.As_Radian());
+			Y = -horizontal_speed * std::sin(yaw.As_Radian());
 		}
 
 		/*
@@ -55,7 +56,7 @@ class TVelocity2D
 
 		DirType Get_Yaw(void) const
 		{
-			return(fastmath::atan2((double)-Y, (double)X));
+			return(std::atan2((double)-Y, (double)X));
 		}
 
 		void Nonzero_Check(void)
@@ -101,9 +102,9 @@ class TVelocity3D : public TVelocity2D<T>
 			Z = z;
 		}
 
-		T Horizontal_Speed(void) const { return(fastmath::sqrt(X * X + Y * Y)); }
+		T Horizontal_Speed(void) const { return(std::sqrt(X * X + Y * Y)); }
 
-		T Speed(void) const { return(fastmath::sqrt(X * X + Y * Y + Z * Z)); }
+		T Speed(void) const { return(std::sqrt(X * X + Y * Y + Z * Z)); }
 
 		/*
 		 * Repoints the velocity to the given pitch, preserving the total speed
@@ -115,12 +116,12 @@ class TVelocity3D : public TVelocity2D<T>
 			double current_pitch = Get_Pitch().As_Radian();
 			T speed = Speed();
 			if (current_pitch != 0) {
-				X /= fastmath::cos(current_pitch);
-				Y /= fastmath::cos(current_pitch);
+				X /= std::cos(current_pitch);
+				Y /= std::cos(current_pitch);
 			}
-			X *= fastmath::cos(pitch.As_Radian());
-			Y *= fastmath::cos(pitch.As_Radian());
-			Z = speed * fastmath::sin(pitch.As_Radian());
+			X *= std::cos(pitch.As_Radian());
+			Y *= std::cos(pitch.As_Radian());
+			Z = speed * std::sin(pitch.As_Radian());
 		}
 
 		/*
@@ -151,7 +152,7 @@ class TVelocity3D : public TVelocity2D<T>
 
 		DirType Get_Pitch(void) const
 		{
-			return(fastmath::atan2((double)Z, Horizontal_Speed()));
+			return(std::atan2((double)Z, Horizontal_Speed()));
 		}
 
 		void Nonzero_Check(void)
@@ -186,9 +187,9 @@ template <typename T>
 TVelocity3D<T>::TVelocity3D(Dir256 pitch, Dir256 yaw, T magnitude)
 	: BASECLASS(
 		TVelocity2D<T>(
-			fastmath::cos(DirType(pitch).As_Radian()) * fastmath::cos(DirType(yaw).As_Radian()) * magnitude,
-			fastmath::cos(DirType(pitch).As_Radian()) * fastmath::sin(DirType(yaw).As_Radian()) * magnitude)),
-		Z(fastmath::sin(DirType(pitch).As_Radian()) * magnitude)
+			std::cos(DirType(pitch).As_Radian()) * std::cos(DirType(yaw).As_Radian()) * magnitude,
+			std::cos(DirType(pitch).As_Radian()) * std::sin(DirType(yaw).As_Radian()) * magnitude)),
+		Z(std::sin(DirType(pitch).As_Radian()) * magnitude)
 {
 }
 
@@ -201,9 +202,9 @@ template <typename T>
 TVelocity3D<T>::TVelocity3D(DirType const & yaw, DirType const & pitch, T magnitude)
 	: BASECLASS(
 		TVelocity2D<T>(
-			fastmath::cos(yaw.As_Radian()) * fastmath::cos(pitch.As_Radian()) * magnitude,
-			fastmath::sin(yaw.As_Radian()) * fastmath::cos(pitch.As_Radian()) * magnitude)),
-		Z(fastmath::sin(pitch.As_Radian()) * magnitude)
+			std::cos(yaw.As_Radian()) * std::cos(pitch.As_Radian()) * magnitude,
+			std::sin(yaw.As_Radian()) * std::cos(pitch.As_Radian()) * magnitude)),
+		Z(std::sin(pitch.As_Radian()) * magnitude)
 {
 }
 
@@ -216,7 +217,7 @@ TVelocity3D<T>::TVelocity3D(DirType const & yaw, DirType const & pitch, T magnit
 template <typename T>
 TVelocity3D<T>::TVelocity3D(double angle, T magnitude)
 {
-	X = magnitude * fastmath::cos(angle);
-	Y = -(magnitude * fastmath::sin(angle));
+	X = magnitude * std::cos(angle);
+	Y = -(magnitude * std::sin(angle));
 	Z = 0;
 }

@@ -119,7 +119,7 @@ void LevitateLocomotionClass::Hover_AI(void)
 		bob_scale = 1.1;
 	}
 
-	double bob = fastmath::sinf((double)((Frame + 2 * id) % (int)(bob_scale * Rule->HoverBob * TICKS_PER_MINUTE)) * DEG_TO_RAD(360) / (bob_scale * Rule->HoverBob * TICKS_PER_MINUTE));
+	double bob = std::sinf((double)((Frame + 2 * id) % (int)(bob_scale * Rule->HoverBob * TICKS_PER_MINUTE)) * DEG_TO_RAD(360) / (bob_scale * Rule->HoverBob * TICKS_PER_MINUTE));
 	int final_height = (int)(bob + bob + (double)height);
 	if (final_height < 0) {
 		Dampen = 0;
@@ -376,8 +376,8 @@ void LevitateLocomotionClass::Process_Recentering(void)
 		}
 
 		double angle = dir.As_Radian();
-		double sine = fastmath::sinf(angle);
-		double cosine = fastmath::cosf(angle);
+		double sine = std::sinf(angle);
+		double cosine = std::cosf(angle);
 
 		AccelerationsRemaining = 0;
 		MoveRate = 0;
@@ -456,8 +456,8 @@ void LevitateLocomotionClass::Accelerate(double & angle)
 
 	AccelerationsRemaining = GlobalControls.AccelerationDuration;
 
-	double sine = fastmath::sinf(angle);
-	double cosine = fastmath::cosf(angle);
+	double sine = std::sinf(angle);
+	double cosine = std::cosf(angle);
 
 	AccelerationX = +(GlobalControls.Acceleration * cosine);
 	AccelerationY = -(GlobalControls.Acceleration * sine);
@@ -518,8 +518,8 @@ void LevitateLocomotionClass::Drift_Towards(Coord const & coord)
 void LevitateLocomotionClass::Drift(DirType const & dir)
 {
 	double angle = dir.As_Radian();
-	double sine = fastmath::sinf(angle);
-	double cosine = fastmath::cosf(angle);
+	double sine = std::sinf(angle);
+	double cosine = std::cosf(angle);
 
 	AccelerationsRemaining = 0;
 	MoveRate = 0;
@@ -698,7 +698,7 @@ void LevitateLocomotionClass::Move_AI(void)
 /// <returns>The recomputed speed.</returns>
 double LevitateLocomotionClass::Update_Speed(void)
 {
-	Speed = fastmath::sqrt(MoveX * MoveX + MoveY * MoveY);
+	Speed = std::sqrt(MoveX * MoveX + MoveY * MoveY);
 	return(Speed);
 }
 

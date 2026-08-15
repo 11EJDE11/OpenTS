@@ -7559,7 +7559,7 @@ int HouseClass::Base_Cell_Weight_By_Defense_Coverage(HouseClass const & house, C
 	if (context != FACING_NONE) {
 		int x = cell.X - house.Base.PlacementCenter.X;
 		int y = cell.Y - house.Base.PlacementCenter.Y;
-		DirType dir = DirType(fastmath::atan2((double)-y, (double)x));
+		DirType dir = DirType(std::atan2((double)-y, (double)x));
 		offset = abs(DIR_STEP_8 * context - dir.As_Dir256());
 		if (offset >= DIR_STEP_2) {
 			offset = DIR_MAX - offset;
@@ -7639,7 +7639,7 @@ Cell HouseClass::Where_To_Place_Building(BuildingTypeClass *buildingtype, int (*
 			/// Face away from the mass of the base, so the structure lands on its outside.
 			int x = -(int)occupied_dir.X;
 			int y = -(int)occupied_dir.Y;
-			double angle = fastmath::atan2((double)-y, (double)x);
+			double angle = std::atan2((double)-y, (double)x);
 			DirType dir = DirType(angle);
 			FacingType facing = dir.As_Facing();
 
@@ -7809,7 +7809,7 @@ void HouseClass::Calculate_Defense_Values(BuildingClass const * building, int va
 	for (int y = y_min; y < y_max; ++y) {
 		for (int x = x_min; x < x_max; ++x) {
 			int y_offset = y - center.Y;
-			double distance = fastmath::sqrt((double)((x - center.X) * (x - center.X) + y_offset * y_offset));
+			double distance = std::sqrt((double)((x - center.X) * (x - center.X) + y_offset * y_offset));
 			if (distance < 6.0) {
 				double adjusted_distance = distance;
 				int x_offset = x - area.X;
@@ -7883,7 +7883,7 @@ bool HouseClass::AI_Build_Defense(int nodeindex, DynamicVectorClass<Cell> * cell
 	if (cells != NULL) {
 		for (i = 0; i < cells->Count(); i++) {
 			Cell offset = (*cells)[i] - Base.PlacementCenter;
-			DirType dir = DirType(fastmath::atan2((double)-offset.Y, (double)offset.X));
+			DirType dir = DirType(std::atan2((double)-offset.Y, (double)offset.X));
 			cells2[dir.As_Dir4()].Add((*cells)[i]);
 		}
 	}
@@ -7897,7 +7897,7 @@ bool HouseClass::AI_Build_Defense(int nodeindex, DynamicVectorClass<Cell> * cell
 		if (building->House == this) {
 			Cell offset = building->PositionCell - Base.PlacementCenter;
 			if (offset.X != 0 || offset.Y != 0) {
-				DirType dir = DirType(fastmath::atan2((double)-offset.Y, (double)offset.X));
+				DirType dir = DirType(std::atan2((double)-offset.Y, (double)offset.X));
 				int quadrant = dir.As_Dir4();
 				int air = building->Anti_Air_Defense_Value();
 				int armor = building->Anti_Armor_Defense_Value();

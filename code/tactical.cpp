@@ -272,7 +272,7 @@ int Tactical::Z_Lepton_To_Pixel(LEPTON lepton)
 	int fudge = 0;
 
 	static double pixels_per_lepton = ISO_TILE_PIXEL_W / CELL_LEPTON_DIAG;
-	static double z_pixels_per_lepton = fastmath::sin(RAD_60) * pixels_per_lepton;
+	static double z_pixels_per_lepton = std::sin(RAD_60) * pixels_per_lepton;
 
 	if (lepton >= (CELL_LEPTON * 3) + (CELL_LEPTON / 2) + 40) {
 		fudge = 1;
@@ -289,7 +289,7 @@ int Tactical::Z_Lepton_To_Pixel(LEPTON lepton)
 /// <returns>Returns with the height that the pixel lift stands for.</returns>
 LEPTON Tactical::Pixel_To_Z_Lepton(int pixel)
 {
-	static double z_leptons_per_pixel = CELL_LEPTON_DIAG / (fastmath::sin(RAD_60) * ISO_TILE_PIXEL_W);
+	static double z_leptons_per_pixel = CELL_LEPTON_DIAG / (std::sin(RAD_60) * ISO_TILE_PIXEL_W);
 
 	return(LEPTON(z_leptons_per_pixel * (pixel - 0.5)));
 }

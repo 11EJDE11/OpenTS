@@ -19,7 +19,6 @@
 #include "combat.h"
 #include "coord.h"
 #include "face.h"
-#include "fastmath.h"
 #include "foot.h"
 #include "globals.h"
 #include "house.h"

@@ -50,7 +50,6 @@
 
 #include "matrix3d.h"
 
-#include "fastmath.h"
 
 #include <cstring>
 
@@ -477,8 +476,8 @@ void Matrix3D::Shear_XZ(float x, float z)
  *=============================================================================================*/
 void Matrix3D::Pre_Rotate_X(float theta)
 {
-	float s = fastmath::sin(theta);
-	float c = fastmath::cos(theta);
+	float s = std::sin(theta);
+	float c = std::cos(theta);
 	float ns = -s;
 
 	float m10 = Row[1].X;
@@ -518,8 +517,8 @@ void Matrix3D::Pre_Rotate_X(float theta)
  *=============================================================================================*/
 void Matrix3D::Pre_Rotate_Y(float theta)
 {
-	float s = fastmath::sin(theta);
-	float c = fastmath::cos(theta);
+	float s = std::sin(theta);
+	float c = std::cos(theta);
 	float ns = -s;
 
 	float m00 = Row[0].X;
@@ -559,8 +558,8 @@ void Matrix3D::Pre_Rotate_Y(float theta)
  *=============================================================================================*/
 void Matrix3D::Pre_Rotate_Z(float theta)
 {
-	float s = fastmath::sin(theta);
-	float c = fastmath::cos(theta);
+	float s = std::sin(theta);
+	float c = std::cos(theta);
 	float ns = -s;
 
 	float m00 = Row[0].X;
@@ -594,8 +593,8 @@ void Matrix3D::Rotate_X(float theta)
 	float tmp1,tmp2;
 	float s,c;
 
-	s = (float)fastmath::sin(theta);
-	c = (float)fastmath::cos(theta);
+	s = (float)std::sin(theta);
+	c = (float)std::cos(theta);
 
 	tmp1 = Row[0].Y; tmp2 = Row[0].Z;
 	Row[0].Y = (float)( c*tmp1 + s*tmp2);
@@ -646,8 +645,8 @@ void Matrix3D::Rotate_Y(float theta)
 	float tmp1,tmp2;
 	float s,c;
 
-	s = (float)fastmath::sin(theta);
-	c = (float)fastmath::cos(theta);
+	s = (float)std::sin(theta);
+	c = (float)std::cos(theta);
 
 	tmp1 = Row[0].X; tmp2 = Row[0].Z;
 	Row[0].X = (float)(c*tmp1 - s*tmp2);
@@ -697,8 +696,8 @@ void Matrix3D::Rotate_Z(float theta)
 	float tmp1,tmp2;
 	float s, c;
 
-	c = (float)fastmath::cos(theta);
-	s = (float)fastmath::sin(theta);
+	c = (float)std::cos(theta);
+	s = (float)std::sin(theta);
 
 	tmp1 = Row[0].X; tmp2 = Row[0].Y;
 	Row[0].X = (float)( c*tmp1 + s*tmp2);
@@ -784,7 +783,7 @@ float Matrix3D::Get_Z_Val(void)
 float Matrix3D::Get_X_Rotation(void)
 {
 	Vector3 v = (*this) * Vector3(0, 1, 0);
-	return(fastmath::atan2(v.Z, v.Y));
+	return(std::atan2((double)v.Z, (double)v.Y));
 }
 
 
@@ -797,7 +796,7 @@ float Matrix3D::Get_X_Rotation(void)
 float Matrix3D::Get_Y_Rotation(void)
 {
 	Vector3 v = (*this) * Vector3(0, 0, 1);
-	return(fastmath::atan2(v.X, v.Z));
+	return(std::atan2(v.X, v.Z));
 }
 
 
@@ -810,7 +809,7 @@ float Matrix3D::Get_Y_Rotation(void)
 float Matrix3D::Get_Z_Rotation(void)
 {
 	Vector3 v = (*this) * Vector3(1, 0, 0);
-	return(fastmath::atan2(v.Y, v.X));
+	return(std::atan2(v.Y, v.X));
 }
 
 
@@ -848,8 +847,8 @@ void Matrix3D::Look_At(const Vector3 &p, const Vector3 &t, float roll)
 	float dy = t.Y - p.Y;
 	float dz = t.Z - p.Z;
 
-	float len1 = fastmath::sqrt(dx * dx + dy * dy + dz * dz);
-	float len2 = fastmath::sqrt(dx * dx + dz * dz);
+	float len1 = std::sqrt(dx * dx + dy * dy + dz * dz);
+	float len2 = std::sqrt(dx * dx + dz * dz);
 
 	if ( len1 != 0.0f ) {
 		sinp = dy / len1;
@@ -902,21 +901,21 @@ void Matrix3D::Obj_Look_At(const Vector3 &p, const Vector3 &t, float roll)
 		yaw = 0.0;
 	}
 	else {
-		yaw = fastmath::atan2(d.Y, d.X);
+		yaw = std::atan2(d.Y, d.X);
 	}
 
-	float len = fastmath::sqrt(d[1] * d[1] + d[0] * d[0]);
+	float len = std::sqrt(d[1] * d[1] + d[0] * d[0]);
 
-	float pitch = fastmath::atan2(-d.Z, len);
+	float pitch = std::atan2(-d.Z, len);
 
-	cosy = fastmath::cos(yaw);
-	siny = fastmath::sin(yaw);
+	cosy = std::cos(yaw);
+	siny = std::sin(yaw);
 
-	cosp = fastmath::cos(pitch);
-	sinp = fastmath::sin(pitch);
+	cosp = std::cos(pitch);
+	sinp = std::sin(pitch);
 
-	cosr = fastmath::cos(roll);
-	sinr = fastmath::sin(roll);
+	cosr = std::cos(roll);
+	sinr = std::sin(roll);
 
 	s.X = cosr * sinp * cosy + sinr * siny;
 	s.Y = cosr * sinp * siny - sinr * cosy;

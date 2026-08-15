@@ -3813,7 +3813,7 @@ Cell MapClass::Nearby_Location(Cell const & cell, SpeedType speed, int zone, MZo
 			if (visiblecount == 0) {
 				trycell = hidden[index];
 			}
-			double dist = fastmath::sqrt((double)((trycell.Y - nearto.Y) * (trycell.Y - nearto.Y) + (trycell.X - nearto.X) * (trycell.X - nearto.X)));
+			double dist = std::sqrt((double)((trycell.Y - nearto.Y) * (trycell.Y - nearto.Y) + (trycell.X - nearto.X) * (trycell.X - nearto.X)));
 			if (dist < bestdist) {
 				bestdist = dist;
 				best = trycell;
@@ -11992,7 +11992,7 @@ Cell MapClass::Closest_Passable_Cell(Cell const & tarcell, Cell const & objcell)
 			if (set->Fetch_Record_Pointer_Unsafe(x + y * iptr->Width) != NULL && In_Local_Radar(cell)) {
 				int xdiff = cell.X - objcell.X;
 				int ydiff = cell.Y - objcell.Y;
-				double dist = fastmath::sqrt(double(xdiff * xdiff + ydiff * ydiff));
+				double dist = std::sqrt(double(xdiff * xdiff + ydiff * ydiff));
 				if (dist < best_dist) {
 					best_dist = dist;
 					best_cell = cell;

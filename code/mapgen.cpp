@@ -29,7 +29,6 @@
 #include "coord.h"
 #include "data.h"
 #include "dbgprint.h"
-#include "fastmath.h"
 #include "house.h"
 #include "houstype.h"
 #include "incdec.h"
@@ -522,9 +521,9 @@ double MapRegionClass::Get_Angle_Score(const Cell & cell1, const Cell & cell2, d
 	int dx = cell2.X - cell1.X;
 	int dy = cell2.Y - cell1.Y;
 
-	double length = fastmath::sqrt((double)(dx * dx + dy * dy));
+	double length = std::sqrt((double)(dx * dx + dy * dy));
 
-	double angle = (dx != 0) ? fastmath::atan(-((double)dy / (double)dx)) : M_PI_2;
+	double angle = (dx != 0) ? std::atan(-((double)dy / (double)dx)) : M_PI_2;
 	if (dx < 0) {
 		angle += M_PI;
 	}
@@ -3109,7 +3108,7 @@ DynamicVectorClass<Cell> * Pick_Spread_Cells(DynamicVectorClass<Cell> & cells)
 					int dy = c1y - c2.Y;
 					int region2 = MapRegionClass::CellData::Get_Region(c2);
 
-					double score = fastmath::sqrt((double)(dy * dy + dx * dx)) + (double)(region2 != region1 ? 20 : 0);
+					double score = std::sqrt((double)(dy * dy + dx * dx)) + (double)(region2 != region1 ? 20 : 0);
 
 					/*
 					 * The check against zero here is always true; the inner cursor
@@ -3148,7 +3147,7 @@ DynamicVectorClass<Cell> * Pick_Spread_Cells(DynamicVectorClass<Cell> & cells)
 				int dy = c1.Y - c2.Y;
 				int region2 = MapRegionClass::CellData::Get_Region(c2);
 
-				double score = fastmath::sqrt((double)(dy * dy + dx * dx)) + (double)(region2 != region1 ? 20 : 0);
+				double score = std::sqrt((double)(dy * dy + dx * dx)) + (double)(region2 != region1 ? 20 : 0);
 				if (score < min_score) {
 					min_score = score;
 				}
@@ -4617,7 +4616,7 @@ double NormalDistribution::operator ()(void)
 	} while (s >= 1.0 || s == 0.0);
 
 	double l = log(s);
-	s = fastmath::sqrt((-l - l) / s);
+	s = std::sqrt((-l - l) / s);
 	Spare = s * v;
 	HasSpare = true;
 	return(s * u);
@@ -6053,7 +6052,7 @@ double MapGeneratorClass::Get_Ice_Score(const Cell & cell1, const Cell & cell2, 
 {
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
+	double dist = std::sqrt(x * x + y * y);
 	return(RMG_RANDOM_DOUBLE(random_range) + dist);
 }
 
@@ -6101,7 +6100,7 @@ double MapGeneratorClass::Get_Spread_Score(const Cell & cell1, const Cell & cell
 
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	float dist = fastmath::sqrt(x * x + y * y);
+	float dist = std::sqrt(x * x + y * y);
 
 	float random_value = _random_range * (float)Random_Fraction();
 	float step_term = (spread_step * _step_weight);
@@ -6182,8 +6181,8 @@ bool MapGeneratorClass::Seed_River(const Cell & cell, double start_angle, bool i
 	double stop_roll = 1.0;
 	while (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
 
-		double step_y = fastmath::cos(cur_angle);
-		double step_x = fastmath::sin(cur_angle);
+		double step_y = std::cos(cur_angle);
+		double step_x = std::sin(cur_angle);
 
 		int span = (int)(width + 0.5);
 		bool x_run = true;
@@ -6445,8 +6444,8 @@ bool MapGeneratorClass::Seed_Arctic_River(const Cell & cell, double start_angle)
 
 	while (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
 
-		double step_y = fastmath::cos(cur_angle);
-		double step_x = fastmath::sin(cur_angle);
+		double step_y = std::cos(cur_angle);
+		double step_x = std::sin(cur_angle);
 
 		int span = (int)(length + 0.5);
 		double px = cur_x - step_x * (double)(span - 1) * 0.5;
@@ -7386,7 +7385,7 @@ double MapGeneratorClass::Get_Angle_Score(const Cell & cell1, const Cell & cell2
 	int dx = cell2.X - cell1.X;
 	int dy = cell2.Y - cell1.Y;
 
-	double angle = (dx != 0) ? fastmath::atan(-((double)dy / (double)dx)) : M_PI_2;
+	double angle = (dx != 0) ? std::atan(-((double)dy / (double)dx)) : M_PI_2;
 	if (dx < 0) {
 		angle += M_PI;
 	}
@@ -7587,7 +7586,7 @@ bool MapGeneratorClass::Init_Start_Points(void)
 							newnode->Element = ncell;
 							int dx = ncell.X - seed.X;
 							int dy = ncell.Y - seed.Y;
-							newnode->Score = fastmath::sqrt((double)(dx * dx + dy * dy));
+							newnode->Score = std::sqrt((double)(dx * dx + dy * dy));
 							MapRegionClass::Get_Cell_Data(ncell).SpreadID = patch_id;
 							node_count++;
 							queue->Insert(*newnode++);
@@ -7670,7 +7669,7 @@ void MapGeneratorClass::Create_Tiberium(void)
 				int x = waypoint.X;
 				do {
 					Cell c = (*TiberiumLayoutCells)[tib_index];
-					total_distance += fastmath::sqrt((double)((c.X - x) * (c.X - x) + (c.Y - y) * (c.Y - y)));
+					total_distance += std::sqrt((double)((c.X - x) * (c.X - x) + (c.Y - y) * (c.Y - y)));
 					tib_index++;
 				} while (tib_index < TiberiumLayoutCells->Count());
 				tib_index = 0;
@@ -7896,7 +7895,7 @@ double MapGeneratorClass::Get_Tiberium_Score(const Cell & cell1, const Cell & ce
 
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
+	double dist = std::sqrt(x * x + y * y);
 	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
 }
 
@@ -8443,7 +8442,7 @@ double MapGeneratorClass::Get_Forest_Score(const Cell & cell1, const Cell & cell
 
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
+	double dist = std::sqrt(x * x + y * y);
 	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
 }
 
@@ -8521,7 +8520,7 @@ double MapGeneratorClass::Get_Tile_Patch_Score(const Cell & cell1, const Cell & 
 
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
+	double dist = std::sqrt(x * x + y * y);
 	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
 }
 

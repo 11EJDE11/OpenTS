@@ -514,7 +514,7 @@ void JumpjetLocomotionClass::Movement_AI(void)
 		CurrentWobble = 0;
 	}
 
-	int desired_height = fastmath::sin(CurrentWobble) * Rule->JumpjetWobbleDeviation + FlightLevel;
+	int desired_height = std::sin(CurrentWobble) * Rule->JumpjetWobbleDeviation + FlightLevel;
 	int height = LinkedTo->Height;
 	int ground_height = Map.Get_Height_GL(LinkedTo->PositionCoord);
 

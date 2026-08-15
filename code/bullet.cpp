@@ -448,7 +448,7 @@ void BulletClass::AI(void)
 		 */
 		double & rotvar = Rule->MissileROTVar;
 		double phase = ((Frame + Fetch_ID()) % TICKS_PER_SECOND) * (1.0 / TICKS_PER_SECOND);
-		int rot = (fastmath::sin(phase * DEG_TO_RAD(360)) * rotvar + (rotvar + 1)) * Class->ROT;
+		int rot = (std::sin(phase * DEG_TO_RAD(360)) * rotvar + (rotvar + 1)) * Class->ROT;
 
 		/*
 		 * Allow a sharper turn over the last cell of the approach so that the
@@ -887,7 +887,7 @@ int BulletClass::Shape_Number(void) const
 	int shapenum = 0;
 
 	if (!Class->IsFaceless) {
-		shapenum = UnitClass::BodyShape[DirType(fastmath::atan2(-Velocity.Y, Velocity.X)).As_Dir32()];
+		shapenum = UnitClass::BodyShape[DirType(std::atan2(-Velocity.Y, Velocity.X)).As_Dir32()];
 	}
 
 	if (Class->AnimLow || Class->AnimHigh) {

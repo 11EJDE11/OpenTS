@@ -1409,7 +1409,7 @@ Point2DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Point(void)
 	}
 
 	if (!LinkedTo->TClass->IsDropship && !IsLanding && !IsTakingOff && LinkedTo->HeightAGL > landing_altitude) {
-		y = (fastmath::sin((Frame % 20) * M_PI / 10)) * 1.5 + 0.5;
+		y = (std::sin((Frame % 20) * M_PI / 10)) * 1.5 + 0.5;
 	}
 
 	return(Point2D(0, y));

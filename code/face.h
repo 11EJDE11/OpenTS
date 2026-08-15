@@ -34,9 +34,10 @@
 
 #include "comtypes.h"
 #include "coord.h"
-#include "fastmath.h"
 #include "noinit.h"
+#include "visualc.h"
 
+#include <cmath>
 #include <cstdlib>
 
 class DirType;
@@ -111,7 +112,7 @@ class DirType
 				Facing = 0;
 			}
 
-			*this = DirType(fastmath::atan2((double)coord1.Y - (double)coord2.Y, (double)coord2.X - (double)coord1.X));
+			*this = DirType(std::atan2((double)coord1.Y - (double)coord2.Y, (double)coord2.X - (double)coord1.X));
 
 			return *this;
 		}
@@ -122,7 +123,7 @@ class DirType
 				Facing = 0;
 			}
 
-			*this = DirType(fastmath::atan2((double)cell1.Y - (double)cell2.Y, (double)cell2.X - (double)cell1.X));
+			*this = DirType(std::atan2((double)cell1.Y - (double)cell2.Y, (double)cell2.X - (double)cell1.X));
 
 			return *this;
 		}

@@ -840,14 +840,14 @@ bool Calculate_Projectile_Angle(bool high_arc, int speed, int distance, int heig
 		return(false); /// No valid trajectory
 	}
 
-	double numerator = !high_arc ? base + fastmath::sqrt(value)
-								  : base - fastmath::sqrt(value);
+	double numerator = !high_arc ? base + std::sqrt(value)
+								  : base - std::sqrt(value);
 
 	value = numerator / denominator;
 
 	if (value >= 0.0) {
 		/// Calculate the angle
-		angle = fastmath::acos(fastmath::sqrt(value) / v);
+		angle = std::acos(std::sqrt(value) / v);
 		return(true);
 	}
 	return(false);
@@ -864,7 +864,7 @@ bool Calculate_Projectile_Angle(bool high_arc, int speed, int distance, int heig
 /// <returns>Returns with the speed to launch the projectile at.</returns>
 MPHType Calculate_Projectile_Speed(int range, double gravity)
 {
-	return((MPHType)(int)fastmath::sqrt((double)range * gravity * 1.2));
+	return((MPHType)(int)std::sqrt((double)range * gravity * 1.2));
 }
 
 
@@ -911,8 +911,8 @@ bool Is_Projectile_Trajectory_Valid(int speed, int distance, int height, double 
 
 	double base = vsq - (dy * gravity);
 
-	if (((base + fastmath::sqrt(discriminant)) / denominator) >= 0.0 ||
-		((base - fastmath::sqrt(discriminant)) / denominator) >= 0.0) {
+	if (((base + std::sqrt(discriminant)) / denominator) >= 0.0 ||
+		((base - std::sqrt(discriminant)) / denominator) >= 0.0) {
 		return(true); /// Valid trajectory exists
 	}
 	return(false); /// No valid trajectory

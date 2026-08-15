@@ -19,6 +19,7 @@
 #include "vector4.h"
 #include "visualc.h"
 
+#include <cmath>
 #include <cstring>
 
 class Matrix3D
@@ -245,8 +246,8 @@ inline void Matrix3D::Set(	const Vector3	&x,		// x-axis unit vector
  *=============================================================================================*/
 inline void Matrix3D::Set(const Vector3 & axis,float angle)
 {
-	float c = fastmath::cos(angle);
-	float s = fastmath::sin(angle);
+	float c = std::cos((double)angle);
+	float s = std::sin((double)angle);
 
 	Set(axis,s,c);
 }

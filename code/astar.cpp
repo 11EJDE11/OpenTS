@@ -554,7 +554,7 @@ AStarClass::RegularOpenNode * AStarClass::Create_Node(RegularOpenNode * parent, 
 	int dx = abs(cell_id.X - to.X);
 	int dy = abs(cell_id.Y - to.Y);
 
-	open_node->Score = open_node->MovementCost + fastmath::sqrt(dx * dx + dy * dy);
+	open_node->Score = open_node->MovementCost + std::sqrt(dx * dx + dy * dy);
 	return(open_node);
 }
 

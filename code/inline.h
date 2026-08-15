@@ -77,6 +77,8 @@
 #include "facing.h"
 #include "sun.h"
 
+#include <cmath>
+
 
 extern Cell const							AdjacentCell[FACING_COUNT];
 extern Point2D const						AdjacentPoint[FACING_COUNT];
@@ -244,7 +246,7 @@ inline Coord Coord_Mid(Coord const & coord1, Coord const & coord2)
 inline Coord Move_Coord(Coord const & start, DirType const & dir, int distance)
 {
 	double radians = dir.As_Radian();
-	return(Coord((start.X + fastmath::cos(radians) * distance), (start.Y - fastmath::sin(radians) * distance), start.Z));
+	return(Coord((start.X + std::cos(radians) * distance), (start.Y - std::sin(radians) * distance), start.Z));
 }
 
 
@@ -269,7 +271,7 @@ inline Coord Move_Coord(Coord const & start, DirType const & dir, int distance)
 inline Cell Move_Cell(Cell const & start, DirType const & dir, short distance)
 {
 	double radians = dir.As_Radian();
-	return(Cell((start.X + fastmath::cos(radians) * distance), (start.Y - fastmath::sin(radians) * distance)));
+	return(Cell((start.X + std::cos(radians) * distance), (start.Y - std::sin(radians) * distance)));
 }
 
 
@@ -343,7 +345,7 @@ inline DirType Direction(Coord const & coord1, Coord const & coord2)
 	int x1 = coord1.X;
 	int x2 = coord2.X;
 
-	return(fastmath::atan2((double)coord1.Y - (double)coord2.Y, (double)x2 - (double)x1));
+	return(std::atan2((double)coord1.Y - (double)coord2.Y, (double)x2 - (double)x1));
 }
 
 
@@ -367,7 +369,7 @@ inline DirType Direction(Coord const & coord1, Coord const & coord2)
  *=============================================================================================*/
 inline DirType Direction(Cell const & cell1, Cell const & cell2)
 {
-	return(fastmath::atan2((double)(int)cell1.Y - (double)(int)cell2.Y, (double)(int)cell2.X - (double)(int)cell1.X));
+	return(std::atan2((double)(int)cell1.Y - (double)(int)cell2.Y, (double)(int)cell2.X - (double)(int)cell1.X));
 }
 
 
@@ -376,7 +378,7 @@ inline DirType Direction(Point2D const & coord1, Point2D const & coord2)
 	int x1 = coord1.X;
 	int x2 = coord2.X;
 
-	return(fastmath::atan2((double)coord1.Y - (double)coord2.Y, (double)x2 - (double)x1));
+	return(std::atan2((double)coord1.Y - (double)coord2.Y, (double)x2 - (double)x1));
 }
 
 

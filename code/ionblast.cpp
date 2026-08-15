@@ -218,8 +218,8 @@ void IonBlastClass::AI(void)
 							Vector3 flat = to_blast;
 
 							double facing_rad = occupier->PrimaryFacing.Current().As_Radian();
-							float facing_sin = (float)fastmath::sin(facing_rad);
-							float facing_cos = (float)fastmath::cos(facing_rad);
+							float facing_sin = (float)std::sin(facing_rad);
+							float facing_cos = (float)std::cos(facing_rad);
 
 							float blast_dist = to_blast.Length();
 
@@ -227,7 +227,7 @@ void IonBlastClass::AI(void)
 
 								flat.Z = 0.0;
 
-								double flat_len = fastmath::sqrt(flat.Y * flat.Y + flat.X * flat.X);
+								double flat_len = std::sqrt(flat.Y * flat.Y + flat.X * flat.X);
 
 								Vector3 normal;
 								if (flat_len != 0.0) {
@@ -240,7 +240,7 @@ void IonBlastClass::AI(void)
 								float sideways_zsin = -(normal.Z * facing_sin);
 								double sideways_zcos = normal.Z * facing_cos;
 								double sideways_y = normal.X * facing_sin - normal.Y * facing_cos;
-								float sideways = (float)fastmath::sqrt(sideways_zsin * sideways_zsin + sideways_zcos * sideways_zcos + sideways_y * sideways_y);
+								float sideways = (float)std::sqrt(sideways_zsin * sideways_zsin + sideways_zcos * sideways_zcos + sideways_y * sideways_y);
 
 								if (fabs(facing_cos * forwards - facing_sin * sideways - normal.X) > 0.0002
 									|| fabs(facing_cos * sideways + facing_sin * forwards - normal.Y) > 0.0002) {
@@ -248,8 +248,8 @@ void IonBlastClass::AI(void)
 								}
 
 								double decay = blast_dist + WaveAmplitudeFalloff;
-								double height = (fastmath::sin((blast_dist - (double)Lifetime * WavePhaseSpeed + 38.0) * WaveFrequency) * 3.5 + 3.0) * WaveAmplitudeFalloff;
-								double phase_cos = fastmath::cos((blast_dist - (double)Lifetime * WavePhaseSpeed + 38.0) * WaveFrequency);
+								double height = (std::sin((blast_dist - (double)Lifetime * WavePhaseSpeed + 38.0) * WaveFrequency) * 3.5 + 3.0) * WaveAmplitudeFalloff;
+								double phase_cos = std::cos((blast_dist - (double)Lifetime * WavePhaseSpeed + 38.0) * WaveFrequency);
 								double slope = ((phase_cos * WaveFrequency * WaveAmplitudeFalloff * 3.5) * decay - height) / (decay * decay);
 
 								occupier->AngleRotatedSideways = (float)(sideways * slope * WaveRockScale);
@@ -314,9 +314,9 @@ void IonBlastClass::One_Time(void)
 		for (int y = 63; y >= 0; y--) {
 			int y_dist_sq = y * y * 4;
 			for (int x = 127; x >= 0; x--) {
-				double dist = fastmath::sqrt(x * x + y_dist_sq);
+				double dist = std::sqrt(x * x + y_dist_sq);
 				if (dist >= min_dist && dist <= max_dist) {
-					double wave_height = (fastmath::sin((dist - frame * WavePhaseSpeed + 38.0) * WaveFrequency) * 3.5 + 3.0) / (dist / WaveAmplitudeFalloff + 1.0) + 0.5;
+					double wave_height = (std::sin((dist - frame * WavePhaseSpeed + 38.0) * WaveFrequency) * 3.5 + 3.0) / (dist / WaveAmplitudeFalloff + 1.0) + 0.5;
 					char spiral_index = Point_To_Spiral_Index(Point2D(0, wave_height));
 					int row = y << 8;
 					center[row + x] = spiral_index;  /// Quadrant I

@@ -61,8 +61,9 @@
 #pragma once
 
 #include "assert.h"
-#include "fastmath.h"
 #include "visualc.h"
+
+#include <cmath>
 
 /*
 **	Vector3 - 3-Dimensional Vectors
@@ -305,7 +306,7 @@ inline Vector3 Normalize(const Vector3 & vec)
  *========================================================================*/
 inline float Vector3::Length(void) const
 {
-	return((float)fastmath::sqrt(Length2()));
+	return((float)std::sqrt((double)Length2()));
 }
 
 /**************************************************************************

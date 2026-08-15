@@ -306,8 +306,8 @@ void VeinholeMonsterClass::AI(void)
 				ParticleClass * particle = GasSystem->Spawn_Particle(ParticleTypes[ParticleTypeClass::From_Name("GasCloudM1")], coord);
 				particle->GasDrift.Z = 12;
 				double angle = Random_Double(0.0, 1.0) * DEG_TO_RAD(360);
-				particle->GasDrift.X = fastmath::cos(angle) * 8;
-				particle->GasDrift.Y = fastmath::sin(angle) * 8;
+				particle->GasDrift.X = std::cos(angle) * 8;
+				particle->GasDrift.Y = std::sin(angle) * 8;
 				IsToPuffGas = true;
 			}
 		} else {

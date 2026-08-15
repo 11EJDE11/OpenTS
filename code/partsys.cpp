@@ -541,8 +541,8 @@ void ParticleSystemClass::Railgun_AI(void)
 		double dz_double = (double)dz;
 		double dy_double = (double)dy;
 		double dx_double = (double)dx;
-		int total_dist = (int)fastmath::sqrt(dx_double * dx_double + dy_double * dy_double + dz_double * dz_double);
-		int horiz_dist = (int)fastmath::sqrt(dy_double * dy_double + dx_double * dx_double);
+		int total_dist = (int)std::sqrt(dx_double * dx_double + dy_double * dy_double + dz_double * dz_double);
+		int horiz_dist = (int)std::sqrt(dy_double * dy_double + dx_double * dx_double);
 
 		int clamped_z = dz;
 		int clamped_x = dx;
@@ -556,8 +556,8 @@ void ParticleSystemClass::Railgun_AI(void)
 		int num_particles = (int)((double)total_dist * Class->ParticlesPerCoord);
 		float dist_f = (float)total_dist;
 
-		float elevation = (float)fastmath::asin((double)clamped_z / (double)dist_f);
-		float azimuth = (float)fastmath::acos((double)clamped_x / (double)horiz_dist);
+		float elevation = (float)std::asin((double)clamped_z / (double)dist_f);
+		float azimuth = (float)std::acos((double)clamped_x / (double)horiz_dist);
 
 		if (dy < 0) {
 			azimuth = -azimuth;
@@ -576,8 +576,8 @@ void ParticleSystemClass::Railgun_AI(void)
 				float frac = (float)i / num_particles_f;
 				double angle = dist_f * frac * Class->SpiralDeltaPerCoord;
 
-				double sine = fastmath::sin(angle);
-				double cosine = fastmath::cos(angle);
+				double sine = std::sin(angle);
+				double cosine = std::cos(angle);
 				Vector3 spiral(0.0f, cosine, sine);
 				spiral = mat * spiral;
 				Vector3 scaled = spiral * (float)Class->SpiralRadius;
@@ -658,7 +658,7 @@ void ParticleSystemClass::Fire_AI(void)
 			if (source->TarCom != NULL && source->PrimaryFacing.Is_Rotating()) {
 				Coord cc = source->TarCom->Center_Coord();
 				Coord delta = cc - source->Get_Coord();
-				int dist = (int)fastmath::sqrt((double)delta.X * (double)delta.X + (double)delta.Y * (double)delta.Y + (double)delta.Z * (double)delta.Z);
+				int dist = (int)std::sqrt((double)delta.X * (double)delta.X + (double)delta.Y * (double)delta.Y + (double)delta.Z * (double)delta.Z);
 				SpawnCoord = Move_Coord(source->Get_Coord(), source->PrimaryFacing.Current(), dist);
 				Set_Coord(source->Fire_Coord(0));
 				reaimed = true;
@@ -681,7 +681,7 @@ void ParticleSystemClass::Fire_AI(void)
 		int distsq = dx * dx + dy * dy + dz * dz;
 
 		int divisor;
-		if ((float)fastmath::sqrt((double)distsq) < 200.0f) {
+		if ((float)std::sqrt((double)distsq) < 200.0f) {
 			divisor = 3;
 		} else {
 			divisor = 1;

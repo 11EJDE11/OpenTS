@@ -1254,14 +1254,14 @@ DirType BuildingClass::Barrel_Pitch(AbstractClass * target) const
 			int d;
 
 			d = fire.X * fire.X + fire.Y * fire.Y;
-			dr = fastmath::sqrt(d);
+			dr = std::sqrt(d);
 			d = fire.Length();
 			dr = dr / d;
 			if (dr > 1) {
 				dr = 1;
 			}
 
-			DirType dir = (int)((fastmath::asin(dr) * 16384.0) * M_2_PI);
+			DirType dir = (int)((std::asin(dr) * 16384.0) * M_2_PI);
 			if (fire.Z < 0) {
 				dir = DirType(DIR_S) - dir;
 			}
@@ -1285,9 +1285,9 @@ DirType BuildingClass::Barrel_Pitch(AbstractClass * target) const
 		int distance2 = disp.X * disp.X + disp.Y * disp.Y;
 
 		DirType pitch;
-		bool valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), max_speed, fastmath::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
+		bool valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), max_speed, std::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
 		if (!valid) {
-			valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), max_speed * 10 / 8, fastmath::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
+			valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), max_speed * 10 / 8, std::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
 		}
 		return(pitch);
 	} else {
@@ -5942,9 +5942,9 @@ int BuildingClass::Do_MISSION_MISSILE(void)
 						int distance2 = disp.X * disp.X + disp.Y * disp.Y;
 
 						DirType pitch;
-						bool valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), speed, fastmath::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
+						bool valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), speed, std::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
 						if (!valid) {
-							valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), speed * 10 / 8, fastmath::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
+							valid = Calculate_Projectile_Pitch(Should_Use_High_Arc(0), speed * 10 / 8, std::sqrt(distance2), disp.Z, Rule->Gravity, pitch);
 							if (!valid) {
 								pitch = DirType(Dir256(DIR_NW + 26));
 								valid = true;
@@ -9738,10 +9738,10 @@ void BuildingClass::Draw_Radial_Indicator(void) const
 		 * was added to the radius.
 		 */
 		int leptons = Class->CloakRadiusInCells * CELL_LEPTON + CELL_LEPTON / 2;
-		double xspan = fastmath::sqrt((double)(leptons * leptons) * (16.0 / 17.0));
+		double xspan = std::sqrt((double)(leptons * leptons) * (16.0 / 17.0));
 		double yspan = xspan * 0.25;
 		double spansq = 0.25 * (4.0 * yspan * yspan + xspan * xspan);
-		int radius = (int)(fastmath::sqrt(spansq) * 0.265625 - _iso_tile_edge);
+		int radius = (int)(std::sqrt(spansq) * 0.265625 - _iso_tile_edge);
 
 		if (radius != 0) {
 			if (IsOn && House->Is_Player_Control()) {
@@ -9781,11 +9781,11 @@ void BuildingClass::Draw_Radial_Indicator(void) const
 
 								/// Intersect the spoke with the ellipse, then put the signs
 								/// back on according to which quadrant the angle lands in.
-								double slope = fastmath::tan(angle);
+								double slope = std::tan(angle);
 								double radius_y_sq = radius_y * radius_y;
 								double radius_x_sq = radius_x * radius_x;
-								double xdist = fastmath::sqrt(1.0 / (slope * slope / radius_y_sq + 1.0 / radius_x_sq));
-								double ydist = fastmath::sqrt((1.0 - xdist * xdist / radius_x_sq) * radius_y_sq);
+								double xdist = std::sqrt(1.0 / (slope * slope / radius_y_sq + 1.0 / radius_x_sq));
+								double ydist = std::sqrt((1.0 - xdist * xdist / radius_x_sq) * radius_y_sq);
 								double xoffset = angle > M_PI / 2 && angle < 3 * M_PI / 2 ? -xdist : xdist;
 
 								if (angle < M_PI) {

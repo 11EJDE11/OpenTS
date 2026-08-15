@@ -2920,7 +2920,7 @@ void TechnoClass::AI(void)
 				gravity = Get_Floater_Gravity();
 			}
 			DirType dir;
-			if (Calculate_Projectile_Pitch(Should_Use_High_Arc(0), weapon->MaxSpeed, fastmath::sqrt(coord.X * coord.X + coord.Y * coord.Y), coord.Z, gravity, dir)) {
+			if (Calculate_Projectile_Pitch(Should_Use_High_Arc(0), weapon->MaxSpeed, std::sqrt(coord.X * coord.X + coord.Y * coord.Y), coord.Z, gravity, dir)) {
 				BarrelPitch.Set_Desired(dir);
 			} else {
 				BarrelPitch.Set_Desired(DirType(DIR_E) - DirType(Dir256(TClass->FireAngle)));
@@ -3749,7 +3749,7 @@ DirType TechnoClass::Barrel_Pitch(AbstractClass * target) const
 		if (bullet != NULL && bullet->IsFloater) {
 			gravity = Get_Floater_Gravity();
 		}
-		if (!Calculate_Projectile_Pitch(Should_Use_High_Arc(0), weapon->MaxSpeed, fastmath::sqrt(pow(coord.X, 2) + pow(coord.Y, 2)), coord.Z, gravity, pitch)) {
+		if (!Calculate_Projectile_Pitch(Should_Use_High_Arc(0), weapon->MaxSpeed, std::sqrt(pow(coord.X, 2) + pow(coord.Y, 2)), coord.Z, gravity, pitch)) {
 			pitch = DIR_NW;
 		}
 	}
@@ -3895,7 +3895,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 				fire_coord = Center_Coord();
 			}
 		} else {
-			dir = fastmath::atan2((double)-displacement.Y, (double)displacement.X);
+			dir = std::atan2((double)-displacement.Y, (double)displacement.X);
 		}
 
 		if (max_speed > displacement.Length() / 2) {
@@ -3941,7 +3941,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 				if (planar < 0.05) {
 					planar = 0.05;
 				}
-				double angle = fastmath::atan2f((double)abs_z - y, planar);
+				double angle = std::atan2f((double)abs_z - y, planar);
 				if (displacement.Z < 0) {
 					angle = -angle;
 				}
@@ -7900,8 +7900,8 @@ void TechnoClass::Rock(Coord const & coord, float force)
 		Vector3 vec2 = vec1;
 
 		float theta = PrimaryFacing.Current().As_Radian();
-		float sangle = fastmath::sin(theta);
-		float cangle = fastmath::cos(theta);
+		float sangle = std::sin(theta);
+		float cangle = std::cos(theta);
 
 		float dist1 = vec1.Length();
 
@@ -8061,8 +8061,8 @@ Coord TechnoClass::Predict_Target_Coord(void) const
 				if (weapon != NULL) {
 					int travel = (distance / (weapon->MaxSpeed * 0.9) * speed);
 					double dir = unit->PrimaryFacing.Current().As_Radian();
-					coord.Y -= fastmath::sin(dir) * travel;
-					coord.X += fastmath::cos(dir) * travel;
+					coord.Y -= std::sin(dir) * travel;
+					coord.X += std::cos(dir) * travel;
 				}
 			}
 		}

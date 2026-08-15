@@ -91,7 +91,7 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 		speed = Rule->DropPodSpeed;
 	}
 
-	double horspeed = fastmath::cos(Rule->DropPodAngle) * speed;
+	double horspeed = std::cos(Rule->DropPodAngle) * speed;
 
 	switch (Direction) {
 		case DPOD_DIR_NE:
@@ -109,7 +109,7 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 			break;
 	}
 
-	coord.Z -= fastmath::sin(Rule->DropPodAngle) * speed;
+	coord.Z -= std::sin(Rule->DropPodAngle) * speed;
 
 	int height = LinkedTo->HeightAGL;
 	FootClass * linked = LinkedTo;
@@ -174,7 +174,7 @@ void STDMETHODCALLTYPE DropPodLocomotionClass::Move_To(CoordStruct to)
 
 		Coord dropcoord = DestinationCoord;
 		dropcoord.Z += Rule->DropPodHeight;
-		double dropradius = (double)Rule->DropPodHeight / fastmath::tan(Rule->DropPodAngle);
+		double dropradius = (double)Rule->DropPodHeight / std::tan(Rule->DropPodAngle);
 		dropcoord.X += dropradius;
 
 		CellClass * cptr = &Map[dropcoord];

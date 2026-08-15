@@ -16,6 +16,8 @@
 #include "noinit.h"
 #include "vector3.h"
 
+#include <cmath>
+
 class Matrix3D;
 
 class Quaternion
@@ -38,7 +40,7 @@ class Quaternion
 
 		Quaternion operator-() const { return(Quaternion(-X,-Y,-Z,-W)); }
 
-		float Length(void) const { return((float)fastmath::sqrt(Length2())); }
+		float Length(void) const { return((float)std::sqrt((double)Length2())); }
 		float Length2(void) const { return(X * X + Y * Y + Z * Z + W * W); }
 
 		// Every 3D rotation can be expressed by two different quaternions,  This
@@ -60,8 +62,8 @@ class Quaternion
 
 inline Quaternion::Quaternion(const Vector3 & axis,float angle)
 {
-	float s = fastmath::sin(angle/2);
-	float c = fastmath::cos(angle/2);
+	float s = std::sin((double)(angle/2));
+	float c = std::cos((double)(angle/2));
 	X = s * axis[0];
 	Y = s * axis[1];
 	Z = s * axis[2];

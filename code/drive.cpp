@@ -509,11 +509,11 @@ Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
 		float val = LinkedTo->TClass->VoxelCenterY;
 		float val2 = LinkedTo->TClass->VoxelCenterX;
 
-		float fcos = fastmath::cos(LinkedTo->AngleRotatedForwards);
-		float fsin = fastmath::sin(LinkedTo->AngleRotatedForwards);
+		float fcos = std::cos(LinkedTo->AngleRotatedForwards);
+		float fsin = std::sin(LinkedTo->AngleRotatedForwards);
 
-		float scos = fastmath::cos(LinkedTo->AngleRotatedSideways);
-		float ssin = fastmath::sin(LinkedTo->AngleRotatedSideways);
+		float scos = std::cos(LinkedTo->AngleRotatedSideways);
+		float ssin = std::sin(LinkedTo->AngleRotatedSideways);
 
 		int num = fabs(ssin) * val + fabs(fsin) * val2;
 
