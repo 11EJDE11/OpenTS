@@ -62,11 +62,11 @@
 #include "ipxmgr.h"
 #include "logic.h"
 #include "mission.h"
-#include "nullmgr.h"
 #include "partsys.h"
 #include "queue.h"
 #include "rndstraw.h"
 #include "rules.h"
+#include "session.h"
 #include "theme.h"
 #include "vector.h"
 #include "version.h"
@@ -133,7 +133,6 @@ bool Debug_Find_Path = false;
 bool Debug_Check_Map = false;			// true = validate the map each frame
 bool Debug_Playtest = false;
 bool Debug_Trap_Check_Heap = false; // true = check the Heap
-bool Debug_Modem_Dump = false;      // true = print the Modem Stuff
 bool Debug_Print_Events = false;    // true = print event & packet processing
 bool Debug_Console = false;
 
@@ -444,18 +443,6 @@ SessionClass Session;
 int NewMaxAheadFrame1;
 int NewMaxAheadFrame2;
 #endif
-
-
-/***************************************************************************
-**	This is the null modem manager class.  Declaring this class doesn't
-**	perform any allocations;
-*/
-NullModemClass NullModem(
-   16,											// number of send entries
-	16,											// number of receive entries
-	(MAX_SERIAL_PACKET_SIZE / sizeof(EventClass) ) * sizeof(EventClass) + sizeof( CommHeaderType ),
-	0x1234);										// Magic number must have each digit unique
-													// and different from the queue magic number
 
 
 /***************************************************************************

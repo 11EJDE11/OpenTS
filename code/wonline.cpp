@@ -9754,7 +9754,7 @@ void Sync_Scenario_With_Guests(void)
 					Session.ScenarioRequests[Session.RequestCount++] = (char)i;
 				}
 			}
-			Send_Remote_File (Scen->ScenarioName, GAME_IPX, false, true);
+			Send_Remote_File (Scen->ScenarioName, false, true);
 		}
 	/*
 	 * Guest: make sure we have the scenario the host is about to start, requesting it
@@ -9798,9 +9798,9 @@ void Sync_Scenario_With_Guests(void)
 			*/
 			if (Session.ScenarioIsOfficial && stricmp(Session.ScenarioFileName, RANDOM_MAP_FILE_NAME)) {
 
-				Get_File_From_Host(Session.ScenarioFileName, GAME_IPX, true);
+				Get_File_From_Host(Session.ScenarioFileName, true);
 			} else {
-				if (!Get_File_From_Host(Session.ScenarioFileName, GAME_IPX, true)) {
+				if (!Get_File_From_Host(Session.ScenarioFileName, true)) {
 					//break;
 				} else {
 					/*

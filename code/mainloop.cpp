@@ -46,12 +46,12 @@
 #include "msgloop.h"
 #include "mstimer.h"
 #include "netdlg.h"
-#include "nullmgr.h"
 #include "pcx.h"
 #include "queue.h"
 #include "rules.h"
 #include "scenario.h"
 #include "scheme.h"
+#include "session.h"
 #include "stats.h"
 #include "stimer.h"
 #include "surface.h"
@@ -505,7 +505,7 @@ void Keyboard_Process(KeyNumType & input)
 		return;
 	}
 	/*
-	**	For network & modem, process user input for inter-player messages.
+	**	For network, process user input for inter-player messages.
 	*/
 	Message_Input(input);
 
@@ -700,7 +700,6 @@ void Message_Input(KeyNumType &input)
 	int rc;
 	char txt[80+MAX_MESSAGE_LENGTH+32];
 	int id;
-	SerialPacketType * serial_packet;
 	int i;
 	KeyNumType copy_input;
 	//char *msg;
@@ -716,21 +715,7 @@ void Message_Input(KeyNumType &input)
 	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH && input >= KN_F1 && input < (KN_F1 + Session.MaxPlayers) && !Session.Messages.Is_Edit()) {
 		txt[0] = '\0'; //memset (txt, 0, 40);
 
-		/*
-		**	For a serial game, send a message on F1 or F4; set 'txt' to the
-		**	"Message:" string & add an editable message to the list.
-		*/
-		if (Session.Type==GAME_NULL_MODEM || Session.Type==GAME_MODEM) {
-			if (input==KN_F1 || input==(KN_F1 + Session.MaxPlayers - 1)) {
-
-				strcpy(txt, Fetch_String(TXT_MESSAGE));	// "Message:"
-
-				Session.Messages.Add_Edit (Session.ColorIdx,
-				TextPrintType(TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW), txt, 0, -1);
-
-				Map.Flag_To_Redraw();
-			}
-		} else if ((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && !Session.Messages.Is_Edit()) {
+		if ((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && !Session.Messages.Is_Edit()) {
 			/*
 			**	For a network game:
 			**	F1-F7 = "To <name> (house):" (only allowed if we're not in ObiWan mode)
@@ -791,34 +776,7 @@ void Message_Input(KeyNumType &input)
 	**	Send a message
 	*/
 	if ((rc==3 || rc==4) && Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-		/*
-		**	Serial game: fill in a SerialPacketType & send it.
-		**	(Note: The size of the SerialPacketType.Command must be the same as
-		**	the EventClass.Type!)
-		*/
-		if (Session.Type==GAME_NULL_MODEM || Session.Type==GAME_MODEM) {
-			serial_packet = (SerialPacketType *)NullModem.BuildBuf;
-
-			serial_packet->Command = SERIAL_MESSAGE;
-			strcpy (serial_packet->Name, Session.Players[0]->Name);
-			serial_packet->ID = Session.ColorIdx;
-
-			if (rc==3) {
-				strcpy (serial_packet->Message.Message, Session.Messages.Get_Edit_Buf());
-			} else {
-				strcpy (serial_packet->Message.Message, Session.Messages.Get_Overflow_Buf());
-				Session.Messages.Clear_Overflow_Buf();
-			}
-
-			/*
-			**	Send the message, and store this message in our LastMessage
-			**	buffer; the computer may send us a version of it later.
-			*/
-			NullModem.Send_Message(NullModem.BuildBuf,
-				sizeof(SerialPacketType), 1);
-
-			strcpy(Session.LastMessage, serial_packet->Message.Message);
-		} else if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 
 			/*
 			**	Network game: fill in a GlobalPacketType & send it.
@@ -881,7 +839,7 @@ void Message_Input(KeyNumType &input)
 /// This routine prints the frame counter, frame rate, latency and processing figures
 /// across the bottom of the screen, and then lets the connection manager add its own
 /// per-connection display. It is used while debugging a multiplayer game and does
-/// nothing at all in a single player, modem or null modem game.
+/// nothing at all in a single player game.
 /// </summary>
 /// <param name="noframecheck">Should the display be drawn regardless of the frame
 /// counter?</param>
@@ -891,7 +849,7 @@ void Multiplayer_Debug_Print(bool noframecheck)
 		return;
 	}
 
-	if (Session.Type == GAME_NORMAL || Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
+	if (Session.Type == GAME_NORMAL) {
 		return;
 	}
 

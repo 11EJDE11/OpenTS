@@ -19,7 +19,7 @@ enum {
 	NSEL_LOAD_MISSION,
 	NSEL_LAN,
 	NSEL_INTERNET,
-	NSEL_SERIAL_MODEM,
+	NSEL_SERIAL_MODEM,	// retired; slot kept to keep the button indices aligned
 	NSEL_SKIRMISH,
 	NSEL_WDT,
 	NSEL_OPTIONS,

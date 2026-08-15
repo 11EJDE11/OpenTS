@@ -22,13 +22,10 @@
 #include "lzopipe.h"
 #include "lzostraw.h"
 #include "mapgen.h"
-#include "modemhst.h"
 #include "msgbox.h"
 #include "netdlg.h"
 #include "netdlg2.h"
 #include "newmenu.h"
-#include "nulldlg.h"
-#include "nullmgr.h"
 #include "ownrdraw.h"
 #include "rules.h"
 #include "scenario.h"
@@ -1213,9 +1210,6 @@ bool Scenario_Select_Callback(void)
 	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 		return(Net2Callback());
 	}
-	if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-		return(ModemHostCallback());
-	}
 	Call_Back();
 	return(false);
 }
@@ -1430,24 +1424,6 @@ void Update_Network_Dialog_Preview(HWND win)
 			}
 			break;
 
-		case GAME_MODEM:
-		case GAME_NULL_MODEM:
-			if (!Find_Local_Scenario(Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial)) {
-				SerialPacketType packet;
-				memset ((void*)&packet, 0, sizeof (packet));
-				packet.Command = SERIAL_REQ_PREVIEW;
-
-				CDTimerClass<SystemTimerClass> response_timer = PACKET_SENDING_TIMEOUT;
-				while (response_timer) {
-					int sent = NullModem.Send_Message(&packet, sizeof(packet), 1);
-					while (NullModem.Num_Send() > 0 && response_timer) {
-						Call_Back();
-					}
-					if (sent) break;
-				}
-				return;
-			}
-			break;
 	}
 
 	bool unavailable = CCFileClass(Session.ScenarioFileName).Is_Available() == false;
@@ -1500,7 +1476,7 @@ void Receive_Random_Map_Preview(void)
 	Session.GAddress = Session.HostAddress;
 	DebugString("Calling Get_File_From_Host to receive the file download\n");
 	char preview_name[256];
-	bool got_file = Get_File_From_Host(preview_name, GAME_IPX, false);
+	bool got_file = Get_File_From_Host(preview_name, false);
 	if (!got_file) {
 		DebugString("got_file is false. Download failed\n");
 		Ipx.Set_Timing(TIMER_SECOND / 2, -1, 10 * TIMER_SECOND);
@@ -1669,7 +1645,7 @@ void Send_Preview_To_Guests(void)
 					delete [] buffer;
 
 					DebugString("Calling Send_Remote_File to send the preview\n");
-					Send_Remote_File("Preview.bin", GAME_IPX, true, false);
+					Send_Remote_File("Preview.bin", true, false);
 					Ipx.Set_Timing(TIMER_SECOND / 2, -1, 10 * TIMER_SECOND);
 				}
 			}
@@ -1748,8 +1724,6 @@ int CreateRandomMap(void)
 	int result;
 	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 		result = Do_Random_Map_Dialog(Net2Callback);
-	} else if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-		result = Do_Random_Map_Dialog(ModemHostCallback);
 	} else {
 		result = Do_Random_Map_Dialog(MapGen_Call_Back);
 	}

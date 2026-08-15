@@ -125,8 +125,6 @@
 #include "logic.h"
 #include "mainopt.h"
 #include "mixfile.h"
-#include "modemgst.h"
-#include "modemhst.h"
 #include "mono.h"
 #include "movie.h"
 #include "mplayer.h"
@@ -134,8 +132,6 @@
 #include "netdlg.h"
 #include "netdlg2.h"
 #include "newmenu.h"
-#include "nulldlg.h"
-#include "nullmgr.h"
 #include "obscure.h"
 #include "overlay.h"
 #include "overtype.h"
@@ -151,6 +147,7 @@
 #include "scenario.h"
 #include "scheme.h"
 #include "script.h"
+#include "session.h"
 #include "side.h"
 #include "skirmish.h"
 #include "smudtype.h"
@@ -1359,8 +1356,7 @@ restart:
 					break;
 
 				/*
-				**	SEL_MULTIPLAYER_GAME: set 'Session.Type' to NULL-modem, modem, or
-				**	network play.
+				**	SEL_MULTIPLAYER_GAME: set 'Session.Type' to network play.
 				*/
 				case SEL_INTERNET_RETURN:
 				case SEL_MULTIPLAYER_GAME: {
@@ -1404,48 +1400,6 @@ restart:
 							if (!Skirmish_Mode_Dialog()) {
 								Session.Type = GAME_NORMAL;
 								selection = SEL_NONE;
-							}
-							break;
-
-						case GAME_SERIAL_MODEM:
-							Session.Type = GAME_NORMAL;
-							Session.Type = Select_Serial_Dialog();
-							if (Session.Type == GAME_NORMAL) {
-								continue;
-							}
-							break;
-
-						case GAME_NULL_MODEM:
-						case GAME_MODEM:
-							Cheat_Disable();
-							Session.NetOpen = true;
-
-							if (NullModem.Num_Connections()) {
-								NullModem.Init_Send_Queue();
-
-								if ((Session.Type == GAME_NULL_MODEM && Session.ModemType == MODEM_NULL_HOST) || (Session.Type == GAME_MODEM && Session.ModemType == MODEM_DIALER)) {
-
-									if (!ModemHost().Dialog()) {
-										Session.Type = GAME_NORMAL;
-										selection = SEL_NONE;
-									}
-								} else {
-									if (ModemGuest().Dialog() == false) {
-										Session.Type = GAME_NORMAL;
-										selection = SEL_NONE;
-									}
-								}
-							} else {
-								Session.Type = Select_MPlayer_Game();
-								if (Session.Type == GAME_WDT) {
-									Session.IsWDT = true;
-									Session.Type = GAME_INTERNET;
-								} else {
-									Session.IsWDT = false;
-									if (Session.Type == GAME_NORMAL) {
-										selection = SEL_NONE;
-									}
-								}
 							}
 							break;
 
@@ -1596,10 +1550,8 @@ restart:
 					}
 					switch (Session.Type) {
 						/*
-						**	Modem, Null-Modem or internet
+						**	Internet
 						*/
-						case GAME_MODEM:
-						case GAME_NULL_MODEM:
 						case GAME_INTERNET:
 						case GAME_SKIRMISH:
 							Theme.Stop(true);
@@ -6158,10 +6110,6 @@ int New_Main_Menu(void)
 
 		case NSEL_INTERNET:
 			Session.Type = GAME_INTERNET;
-			break;
-
-		case NSEL_SERIAL_MODEM:
-			Session.Type = GAME_SERIAL_MODEM;
 			break;
 
 		case NSEL_SKIRMISH:

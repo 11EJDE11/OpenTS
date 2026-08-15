@@ -66,7 +66,6 @@
 #include "mixfile.h"
 #include "movie.h"
 #include "msgloop.h"
-#include "nullmgr.h"
 #include "scenario.h"
 #include "session.h"
 #include "shapeset.h"
@@ -551,46 +550,15 @@ void ScoreClass::Wait_For_Print(ScoreAnimClass * obj)
 /// <summary>
 /// Waits for the player to press a key before moving on.
 /// A minimum idle period is served first, so that a keystroke left over from the mission
-/// cannot skip the screen the instant it appears. Serial and modem games keep servicing
-/// the link while waiting and trade timing packets over it, so the other side does not
-/// decide the connection has died.
+/// cannot skip the screen the instant it appears.
 /// </summary>
 void ScoreClass::Cycle_Wait_Click(bool cycle)
 {
 	int counter = 0;
 	int minclicks = 20;
-	unsigned int timingtime = TickCount;
-	SerialPacketType sendpacket;
-	SerialPacketType receivepacket;
-	int packetlen;
-
 
 	Keyboard->Clear();
 	while (minclicks || (!Keyboard->Check()) ) {
-
-		if (Session.Type == GAME_NULL_MODEM ||
-			Session.Type == GAME_MODEM) {
-
-			//
-			// send a timing packet if enough time has gone by.
-			//
-			if ( (TickCount - timingtime) > PACKET_TIMING_TIMEOUT) {
-				memset (&sendpacket, 0, sizeof(SerialPacketType));
-				sendpacket.Command = SERIAL_SCORE_SCREEN;
-				sendpacket.ScenarioInfo.ResponseTime = NullModem.Response_Time();
-				sendpacket.ID = Session.ModemType;
-
-				NullModem.Send_Message (&sendpacket, sizeof(sendpacket), 0);
-				timingtime = TickCount;
-			}
-
-			if (NullModem.Get_Message (&receivepacket, &packetlen) > 0) {
-				// throw packet away
-				packetlen = packetlen;
-			}
-
-			NullModem.Service();
-		}
 
 		Call_Back_Delay(1);
 		if (minclicks) {

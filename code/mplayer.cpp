@@ -45,7 +45,6 @@
 #include "addon.h"
 #include "init.h"
 #include "msgbox.h"
-#include "nulldlg.h"
 #include "ownrdraw.h"
 #include "session.h"
 #include "worlddom.h"
@@ -54,21 +53,10 @@ class ListClass;
 
 BOOL CALLBACK Select_MPlayer_Game_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
-/***********************************************************************************************
- * Select_MPlayer_Game -- prompts user for NULL-Modem, Modem, or Network game                  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      GAME_NORMAL, GAME_MODEM, etc.                                                          *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/14/1995 BR : Created.                                                                  *
- *=============================================================================================*/
+/// <summary>
+/// Prompts the player for which kind of multiplayer game to start.
+/// </summary>
+/// <returns>Returns with the chosen game type, or GAME_NORMAL if the player backed out.</returns>
 GameType Select_MPlayer_Game (void)
 {
 	GameType retval = GAME_NORMAL;
@@ -106,9 +94,6 @@ GameType Select_MPlayer_Game (void)
 			ShowWindow(dialog, SW_HIDE);
 			UpdateWindow(MainWindow);
 			switch (rc) {
-				case IDC_MODEMSERIAL:
-					retval = Select_Serial_Dialog();
-					break;
 				case IDC_INTERNET:
 					retval = GAME_INTERNET;
 					break;

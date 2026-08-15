@@ -31,7 +31,6 @@
 #include "msanim.h"
 #include "msengine.h"
 #include "msfont.h"
-#include "nullmgr.h"
 #include "scheme.h"
 #include "session.h"
 #include "surface.h"
@@ -1073,33 +1072,9 @@ void MultiScore::Process_Idle(void)
 
 /// <summary>
 /// Services the network link while the score screen is up.
-/// This routine is called from the presentation's idle handler. In a serial or modem
-/// game it announces that this machine is sitting on the score screen and drains any
-/// message the other side sent, so the connection does not fall over while the player
-/// reads the results.
+/// This routine is called from the presentation's idle handler.
 /// </summary>
 void MultiScore::Callback(void)
 {
-	static CDTimerClass<SystemTimerClass> timer;
-	SerialPacketType outgoingPacket;
-	SerialPacketType incomingPacket;
-	int len;
-
-	if (timer > 40) {
-		timer = 0;
-	}
-
-	if (Session.Type == GAME_NULL_MODEM || Session.Type == GAME_MODEM) {
-		if (timer == 0) {
-			timer = 40;
-			memset(&outgoingPacket, 0, sizeof(outgoingPacket));
-			outgoingPacket.Command = SERIAL_SCORE_SCREEN;
-			outgoingPacket.ScenarioInfo.ResponseTime = NullModem.Response_Time();
-			outgoingPacket.ID = Session.ModemType;
-			NullModem.Send_Message(&outgoingPacket, sizeof(outgoingPacket), 0);
-		}
-		NullModem.Get_Message(&incomingPacket, &len);
-		NullModem.Service();
-	}
 	Call_Back();
 }

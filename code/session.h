@@ -56,7 +56,6 @@ class BuildingClass;
 class BulletClass;
 class InfantryClass;
 class UnitClass;
-class PhoneEntryClass;
 class CellClass;
 class INIClass;
 
@@ -76,6 +75,7 @@ class INIClass;
 //...........................................................................
 #define	MAX_IPX_PACKET_SIZE			(((546 - sizeof(CommHeaderType)) / \
 												sizeof(EventClass) ) * sizeof(EventClass))
+// Sizes the scenario transfer chunk below, so it is part of the network protocol.
 #define	MAX_SERIAL_PACKET_SIZE		256
 
 //...........................................................................
@@ -95,28 +95,14 @@ class INIClass;
 #define	MAX_MULTI_GAMES	4		// max # games (columns) on the score screen
 
 //...........................................................................
-// Min value for MaxAhead, for both net & modem; only applies for
-// COMM_PROTOCOL_MULTI_E_COMP.
+// Min value for MaxAhead; only applies for COMM_PROTOCOL_MULTI_E_COMP.
 //...........................................................................
-#define MODEM_MIN_MAX_AHEAD			5
 #define NETWORK_MIN_MAX_AHEAD		2
 
 //...........................................................................
 // Send period (in frames) for COMM_PROTOCOL_MULTI_E_COMP and above
 //...........................................................................
 #define DEFAULT_FRAME_SEND_RATE		3
-
-//...........................................................................
-// Modem-specific constants
-//...........................................................................
-#define	PORTBUF_MAX					64		// dialog field sizes
-#define	IRQBUF_MAX					3
-#define	BAUDBUF_MAX					7
-#define	INITSTRBUF_MAX				41
-#define	CWAITSTRBUF_MAX				16
-#define	CREDITSBUF_MAX				5
-#define	PACKET_TIMING_TIMEOUT		40              // ticks b/w sending a timing packet
-#define	MODEM_NAME_MAX				PORTBUF_MAX - 1 // Max length of modem name in list box
 
 #define SERIAL_MAX					23
 #define ENCRYPTION_STRING_LENGTH	128
@@ -129,79 +115,12 @@ class INIClass;
 //...........................................................................
 enum GameType {
 	GAME_NORMAL,									// not multiplayer
-	GAME_MODEM,										// modem game
-	GAME_NULL_MODEM,								// NULL-modem
+	GAME_MODEM,										// retired; slot kept, save headers store these values
+	GAME_NULL_MODEM,								// retired
 	GAME_IPX,										// IPX Network game
 	GAME_INTERNET,									// Internet H2H
 	GAME_SKIRMISH,									// 1 plr vs. AI's
 	GAME_WDT,										/// World Domination Tour game
-	GAME_SERIAL_MODEM,								/// Serial-modem
-};
-
-//...........................................................................
-// Various Modem-specific enums
-//...........................................................................
-enum DetectPortType {
-	PORT_VALID = 0,
-	PORT_INVALID,
-	PORT_IRQ_INUSE
-};
-
-enum DialStatusType {
-	DIAL_CONNECTED			= 0,
-	DIAL_NO_CARRIER,
-	DIAL_BUSY,
-	DIAL_ERROR,
-	DIAL_NO_DIAL_TONE,
-	DIAL_TIMEOUT,
-	DIAL_CANCELED
-};
-
-enum DialMethodType {
-	DIAL_TOUCH_TONE = 0,
-	DIAL_PULSE,
-	DIAL_METHODS
-};
-
-enum CallWaitStringType {
-	CALL_WAIT_TONE_1 = 0,
-	CALL_WAIT_TONE_2,
-	CALL_WAIT_PULSE,
-	CALL_WAIT_CUSTOM,
-	CALL_WAIT_STRINGS_NUM
-};
-
-enum ModemGameType {
-	MODEM_NULL_HOST = 0,
-	MODEM_NULL_JOIN,
-	MODEM_DIALER,
-	MODEM_ANSWERER
-};
-
-//...........................................................................
-// Commands sent over the serial Global Channel
-//...........................................................................
-enum SerialCommandType {
-	SERIAL_CONNECT			= 100,	// Are you there?  Hello?  McFly?
-	SERIAL_GAME_OPTIONS,			// Hey, dudes, here's some new game options
-	SERIAL_SIGN_OFF,				// Bogus, dudes, my boss is coming; I'm outta here!
-	SERIAL_GO,						// OK, dudes, jump into the game loop!
-	SERIAL_MESSAGE,					// Here's a message
-	SERIAL_TIMING,					// timimg packet
-	SERIAL_SCORE_SCREEN,			// player at score screen
-	SERIAL_LOADGAME,				// Start the game, loading a saved game first
-	SERIAL_PROGRESS_REPORT,			//
-	SERIAL_LAST_COMMAND,			// last command
-	SERIAL_REQ_SCENARIO,			// Reqest that host sends the scenario file to the other players.
-	SERIAL_FILE_INFO,				// Info about the file that is going to be transferred
-	SERIAL_FILE_CHUNK,				// A chunk of scenario
-	SERIAL_FILE_INFO_ACK,			//
-	SERIAL_READY_TO_GO,				// Sent in response to a 'GO' command
-	SERIAL_NO_SCENARIO,				// Scenario isnt available on remote machine so we cant play
-	SERIAL_ACCEPT_OPTIONS,			//
-	SERIAL_PREVIEW_MODE,			//
-	SERIAL_PREVIEW_ACK,				//
-	SERIAL_REQ_PREVIEW,				//
 };
 
 //...........................................................................
@@ -275,22 +194,6 @@ struct MPlayerScoreType {
 	int Score[MAX_MULTI_GAMES];
 };
 
-//...........................................................................
-// Settings for the serial port
-//...........................................................................
-struct SerialSettingsType {
-	int Port;
-	int IRQ;
-	int Baud;
-	DialMethodType DialMethod;
-	int InitStringIndex;
-	int CallWaitStringIndex;
-	int Compression;
-	int ErrorCorrection;
-	char CallWaitString[ CWAITSTRBUF_MAX ];
-	char ModemName [ MODEM_NAME_MAX ];
-};
-
 #pragma pack(1)
 //...........................................................................
 // This is a "node", used for the lists of available games & players.  The
@@ -324,78 +227,11 @@ struct NodeNameType {
 
 
 //...........................................................................
-// Packet sent over the serial Global Channel
-//...........................................................................
-struct SerialPacketType {
-	SerialCommandType Command;      // One of the enum's defined above
-	char Name[MPLAYER_NAME_MAX];    // Player or Game Name
-	unsigned char ID;               // unique ID of sender of message
-	union {
-		struct {
-			HousesType House;							// player's House
-			char Color;									// player's color or SIGNOFF ID
-			unsigned int MinVersion;					// min version this game supports
-			unsigned int MaxVersion;					// max version this game supports
-			char Scenario[DESCRIP_MAX];					// Scenario name
-			unsigned int Credits;						// player's credits
-			unsigned int IsBases		: 1;			// 1 = bases are allowed
-			unsigned int IsBridgeDestruction : 1;
-			unsigned int IsGoodies	: 1;				// 1 = goodies are allowed
-			unsigned int IsGhosties	: 1;				// 1 = ghosts are allowed
-			unsigned int OfficialScenario : 1;			// Is this scenario an official Westwood one?
-			int CheatCheck;								// Unique ID of "rules.ini" file.
-			unsigned char BuildLevel;					// buildable level
-			unsigned char UnitCount;					// max # units
-			unsigned char AIPlayers;					// # of AI players allowed
-			unsigned char AIDifficulty;					//
-			unsigned int IsUnknownFlag1 : 1;
-			unsigned int IsHarvTruce : 1;				//
-			unsigned int IsMCVRedeploy : 1;				//
-			unsigned int IsFogOfWar : 1;				//
-			unsigned int IsShortGame : 1;				//
-			unsigned int IsCrapEngineers : 1;			//
-			unsigned int IsFirestorm : 1;				//
-			int Seed;									// random number seed
-			SpecialClass Special;						// command-line options
-			unsigned int ResponseTime;					// packet response time
-			unsigned int FileLength;					// Length of scenario file to expect from host.
-			unsigned char GameSpeed;					//
-			char ShortFileName[13];						// Name of scenario file to expect from host
-			unsigned char FileDigest[32];				// Digest of scenario file to expect from host
-														// ajw - This is not necessarily null-terminated.
-			int AICheatCheck;							/// Unique ID of "ai.ini" file.
-			int ArtCheatCheck;							/// Unique ID of "art.ini" file.
-			int BuildNumber;							//
-		} ScenarioInfo;
-
-		/*
-		 * This carries a line one player has typed to the others, along with the color it is
-		 * to be displayed in. It accompanies the SERIAL_MESSAGE command.
-		 */
-		struct {
-			char Message[MAX_MESSAGE_LENGTH + 10];		// inter-player message
-			int Color;									// player's color or SIGNOFF ID
-		} Message;
-		struct {
-			int Color;									// player's color or SIGNOFF ID
-		} Chat;
-
-		/*
-		 * This reports how far along the sender is in loading the scenario, expressed as a
-		 * percentage. It accompanies the SERIAL_PROGRESS_REPORT command.
-		 */
-		struct {
-			int Percent;								//
-		} Progress;
-	};
-};
-
-//...........................................................................
-// Other packet sent over the serial global channel (for file transfers)
+// Packet sent over the global channel to carry a scenario file
 //...........................................................................
 #define MAX_SEND_FILE_PACKET_SIZE MAX_SERIAL_PACKET_SIZE - 64
 struct RemoteFileTransferType {
-	SerialCommandType	Command;                    // Enum defined above. Should be a file transfer enum.
+	NetCommandType	Command;                        // Enum defined above. Should be a file transfer enum.
 	unsigned short 	BlockNumber;                    // Index position of this file chunk in the file
 	unsigned short		BlockLength;                // Length of data in the RawData buffer
 
@@ -852,7 +688,6 @@ class SessionClass
 		static int CountMin[2];
 		static int CountMax[2];
 		static char const * GlobalPacketNames[];
-		static char const * SerialPacketNames[];
 
 		//.....................................................................
 		// For Recording & Playing back a file
@@ -881,25 +716,6 @@ class SessionClass
 		DynamicVectorClass <NodeNameType *> Players;    // list of players
 		DynamicVectorClass <NodeNameType *> Chat;       // list of chat nodes
 		int Suspended;
-
-		//.....................................................................
-		// Modem-specific variables
-		//.....................................................................
-		unsigned ModemService		: 1;    // 1 = service modem in Call_Back
-		int CurPhoneIdx;                    // phone listing index
-		SerialSettingsType SerialDefaults;  // default serial settings
-		ModemGameType ModemType;            // caller or answerer?
-
-		DynamicVectorClass<PhoneEntryClass *> PhoneBook;
-		DynamicVectorClass <char *> InitStrings;
-		DynamicVectorClass <char const *> CallWaitStrings;
-		static char const * DialMethodCheck[ DIAL_METHODS ];
-
-		/*
-		 * These are the text identifiers of the stock call waiting disable prefixes, used to
-		 * fill the CallWaitStrings list when the session is constructed.
-		 */
-		static const int CallWaitStringIDs[ CALL_WAIT_STRINGS_NUM ];
 
 		/*
 		 * These are the numbers of frames each remote player is running behind this machine.

@@ -1,3 +1,74 @@
 # Removed settings live here only after source history establishes their removal.
 # They remain searchable and directly addressable, but active indexes omit them.
-[]
+- type: command
+  id: fixed:cancel-modem-operation
+  route: /commands/fixed-cancel-modem-operation/
+  search_aliases:
+    - Cancel modem operation
+  summary: Cancelled a dial, answer, or modem-command wait. Removed with modem and null-modem play.
+- type: key
+  id: ModemName
+  route: /keys/modemname/
+  search_aliases:
+    - ModemName
+  summary: Named the modem the serial connection used. Removed with modem and null-modem play.
+- type: key
+  id: Port
+  route: /keys/port/
+  search_aliases:
+    - Port
+  summary: Set the serial port address the modem answered on. Removed with modem and null-modem play.
+- type: key
+  id: IRQ
+  route: /keys/irq/
+  search_aliases:
+    - IRQ
+  summary: Set the interrupt the serial port used. Removed with modem and null-modem play.
+- type: key
+  id: Baud
+  route: /keys/baud/
+  search_aliases:
+    - Baud
+  summary: Set the speed of the serial connection. Removed with modem and null-modem play.
+- type: key
+  id: Compression
+  route: /keys/compression/
+  search_aliases:
+    - Compression
+  summary: Switched modem data compression on. Removed with modem and null-modem play.
+- type: key
+  id: ErrorCorrection
+  route: /keys/errorcorrection/
+  search_aliases:
+    - ErrorCorrection
+  summary: Switched modem error correction on. Removed with modem and null-modem play.
+- type: key
+  id: DialMethod
+  route: /keys/dialmethod/
+  search_aliases:
+    - DialMethod
+  summary: Chose tone or pulse dialing. Removed with modem and null-modem play.
+- type: key
+  id: InitStringIndex
+  route: /keys/initstringindex/
+  search_aliases:
+    - InitStringIndex
+  summary: Picked which stored initialization string the modem was sent. Removed with modem and null-modem play.
+- type: key
+  id: CallWaitStringIndex
+  route: /keys/callwaitstringindex/
+  search_aliases:
+    - CallWaitStringIndex
+  summary: Picked which call-waiting prefix was dialed. Removed with modem and null-modem play.
+- type: key
+  id: CallWaitString
+  route: /keys/callwaitstring/
+  search_aliases:
+    - CallWaitString
+  summary: Held the custom call-waiting prefix. Removed with modem and null-modem play.
+- type: key
+  id: PhoneIndex
+  route: /keys/phoneindex/
+  search_aliases:
+    - PhoneIndex
+  summary: Remembered the last phone book entry dialed. Removed with modem and null-modem play.

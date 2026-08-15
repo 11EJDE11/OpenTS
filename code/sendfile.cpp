@@ -44,13 +44,12 @@
 #include "ini.h"
 #include "ipxmgr.h"
 #include "msgloop.h"
-#include "nullmgr.h"
 #include "progress.h"
 #include "session.h"
 #include "stimer.h"
 
-bool Receive_Remote_File ( char *file_name, unsigned int file_length, int gametype, bool show_progress);
-bool Send_Remote_File ( char const *file_name, int gametype );
+bool Receive_Remote_File ( char *file_name, unsigned int file_length, bool show_progress);
+bool Send_Remote_File ( char const *file_name );
 
 #define RESPONSE_TIMEOUT	TIMER_MINUTE
 
@@ -61,7 +60,6 @@ bool Send_Remote_File ( char const *file_name, int gametype );
  *                                                                                             *
  *                                                                                             *
  * INPUT:    ptr to buffer to copy file name into                                              *
- *           game type - 0 for modem/null modem, 1 otherwise                                   *
  *                                                                                             *
  * OUTPUT:   true if file sucessfully downloaded                                               *
  *                                                                                             *
@@ -70,17 +68,14 @@ bool Send_Remote_File ( char const *file_name, int gametype );
  * HISTORY:                                                                                    *
  *    8/22/96 3:06PM ST : Created                                                              *
  *=============================================================================================*/
-bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
+bool Get_File_From_Host(char *return_name, bool show_progress)
 {
 	//DebugString ("RA95 - In Get_Scenario_From_Host\n");
 
 	unsigned int file_length = 0;
 
-	SerialPacketType 	send_packet;
-	SerialPacketType 	receive_packet;
 	GlobalPacketType	net_send_packet;
 	GlobalPacketType	net_receive_packet;
-	unsigned int		packet_len;
 	unsigned short		product_id;
 
 	IPXAddressClass	sender_address;
@@ -96,21 +91,12 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
 	/*
 	**	Send the scenario request using guaranteed delivery.
 	*/
-	if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM) {
-		memset ((void*)&send_packet, 0, sizeof (send_packet));
-		send_packet.Command = SERIAL_REQ_SCENARIO;
-		NullModem.Send_Message (&send_packet, sizeof(send_packet), 1);
-		while (NullModem.Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
-	} else {
-		memset ((void*)&net_send_packet, 0, sizeof (net_send_packet));
-		net_send_packet.Command = NET_REQ_SCENARIO;
-		Ipx.Send_Global_Message (&net_send_packet, sizeof (net_send_packet),
-			1, &(Session.HostAddress) );
-		while (Ipx.Global_Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
+	memset ((void*)&net_send_packet, 0, sizeof (net_send_packet));
+	net_send_packet.Command = NET_REQ_SCENARIO;
+	Ipx.Send_Global_Message (&net_send_packet, sizeof (net_send_packet),
+		1, &(Session.HostAddress) );
+	while (Ipx.Global_Num_Send() > 0 && response_timer) {
+		Call_Back();
 	}
 
 	//DebugString ("RA95 - Waiting for response from host\n");
@@ -124,39 +110,22 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
 	**	Wait for host to respond with a file info packet
 	*/
 	response_timer = RESPONSE_TIMEOUT;
-	if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM){
-		do {
-			Call_Back();
+	do {
+		Call_Back();
+		int receive_packet_length = sizeof (net_receive_packet);
+		if (Ipx.Get_Global_Message (&net_receive_packet, &receive_packet_length,
+			&sender_address, &product_id)){
 
-			if (NullModem.Get_Message ((void*)&receive_packet, (int*)&packet_len) > 0) {
-
-				if (receive_packet.Command == SERIAL_FILE_INFO){
-					strcpy (return_name, receive_packet.ScenarioInfo.ShortFileName);
-					file_length = receive_packet.ScenarioInfo.FileLength;
-					DebugString("Host responded with file info\n");
-					DebugString("File name is %s\n", return_name);
-					break;
-				}
+			//DebugString ("RA95 - Got packet from host\n");
+			if (net_receive_packet.Command == NET_FILE_INFO && sender_address == Session.HostAddress) {
+				strcpy (return_name, net_receive_packet.ScenarioInfo.ShortFileName);
+				file_length = net_receive_packet.ScenarioInfo.FileLength;
+				DebugString("Host responded with file info\n");
+				DebugString("File name is %s\n", return_name);
+				break;
 			}
-		} while ( response_timer );
-	}else{
-		do {
-			Call_Back();
-			int receive_packet_length = sizeof (net_receive_packet);
-			if (Ipx.Get_Global_Message (&net_receive_packet, &receive_packet_length,
-				&sender_address, &product_id)){
-
-				//DebugString ("RA95 - Got packet from host\n");
-				if (net_receive_packet.Command == NET_FILE_INFO && sender_address == Session.HostAddress) {
-					strcpy (return_name, net_receive_packet.ScenarioInfo.ShortFileName);
-					file_length = net_receive_packet.ScenarioInfo.FileLength;
-					DebugString("Host responded with file info\n");
-					DebugString("File name is %s\n", return_name);
-					break;
-				}
-			}
-		} while ( response_timer );
-	}
+		}
+	} while ( response_timer );
 
 
 	/*
@@ -171,21 +140,12 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
 	DebugString("Sending file info received ack\n");
 
 	response_timer = RESPONSE_TIMEOUT;
-	if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM){
-		memset ((void*)&send_packet, 0, sizeof (send_packet));
-		send_packet.Command = SERIAL_FILE_INFO_ACK;
-		NullModem.Send_Message (&send_packet, sizeof(send_packet), 1);
-		while (NullModem.Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
-	} else {
-		memset ((void*)&net_send_packet, 0, sizeof (net_send_packet));
-		net_send_packet.Command = NET_FILE_INFO_ACK;
-		Ipx.Send_Global_Message (&net_send_packet, sizeof (net_send_packet),
-			1, &(Session.HostAddress) );
-		while (Ipx.Global_Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
+	memset ((void*)&net_send_packet, 0, sizeof (net_send_packet));
+	net_send_packet.Command = NET_FILE_INFO_ACK;
+	Ipx.Send_Global_Message (&net_send_packet, sizeof (net_send_packet),
+		1, &(Session.HostAddress) );
+	while (Ipx.Global_Num_Send() > 0 && response_timer) {
+		Call_Back();
 	}
 
 	if (!response_timer) {
@@ -198,7 +158,7 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
 	/*
 	**	Receive the file from the host
 	*/
-	bool res = Receive_Remote_File ( return_name, file_length, gametype, show_progress);
+	bool res = Receive_Remote_File ( return_name, file_length, show_progress);
 	DebugString("Receive_Remote_File returned %s\n", res != 0 ? "true" : "false");
 	return(res);
 }
@@ -211,7 +171,6 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
  *                                                                                             *
  * INPUT:    file name to save as                                                              *
  *           length of file to expect                                                          *
- *           game type - 0 for modem/null modem, 1 otherwise                                   *
  *                                                                                             *
  * OUTPUT:   true if file downloaded was completed                                             *
  *                                                                                             *
@@ -220,7 +179,7 @@ bool Get_File_From_Host(char *return_name, int gametype, bool show_progress)
  * HISTORY:                                                                                    *
  *   8/22/96 3:07PM ST : Created                                                               *
  *=============================================================================================*/
-bool Receive_Remote_File ( char *file_name, unsigned int file_length, int gametype, bool show_progress)
+bool Receive_Remote_File ( char *file_name, unsigned int file_length, bool show_progress)
 {
 	CDTimerClass<SystemTimerClass> response_timer;		// timeout timer for waiting for responses
 	unsigned short		product_id;
@@ -228,7 +187,6 @@ bool Receive_Remote_File ( char *file_name, unsigned int file_length, int gamety
 	bool			return_code = 0;
 	int 				received_count; /// number of blocks received so far
 	int 				progress;      /// running progress accumulator (100 per block)
-	int				packet_len;
 
 	RemoteFileTransferType * receive_packet = new RemoteFileTransferType;
 
@@ -279,69 +237,35 @@ bool Receive_Remote_File ( char *file_name, unsigned int file_length, int gamety
 	progress = 0;
 	while ( true ) {
 
-		if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM) {
-			Windows_Message_Handler();
-			Call_Back();
+		Windows_Message_Handler();
+		Call_Back();
 
-			if (NullModem.Get_Message ((void*)receive_packet, &packet_len) > 0) {
+		int receive_packet_length = sizeof (RemoteFileTransferType);
+		if (Ipx.Get_Global_Message (receive_packet, &receive_packet_length,
+			&sender_address, &product_id)) {
 
-				if (receive_packet->Command == SERIAL_FILE_CHUNK){
+			if (receive_packet->Command == NET_FILE_CHUNK && sender_address == Session.HostAddress){
 
-					char *flag = &block_received[receive_packet->BlockNumber];
-					if (!block_received[receive_packet->BlockNumber]) {
-						*flag = true;
-						received_count++;
-						progress += 100;
-						response_timer = RESPONSE_TIMEOUT/2;
-						DebugString("Received file chunk %d\n", receive_packet->BlockNumber);
-						memcpy (file_buffer + (MAX_SEND_FILE_PACKET_SIZE) * receive_packet->BlockNumber,
-							receive_packet->RawData, receive_packet->BlockLength);
+				char *flag = &block_received[receive_packet->BlockNumber];
+				if (!block_received[receive_packet->BlockNumber]) {
+					*flag = true;
+					received_count++;
+					progress += 100;
+					response_timer = RESPONSE_TIMEOUT/2;
+					DebugString("Received file chunk %d\n", receive_packet->BlockNumber);
+					memcpy (file_buffer + (MAX_SEND_FILE_PACKET_SIZE) * receive_packet->BlockNumber,
+						receive_packet->RawData, receive_packet->BlockLength);
 
-						if (show_progress){
-							Progress.Set_Progress_Percent(0, progress / total_blocks);
-						}
-
-						if (received_count == total_blocks) {
-							if (show_progress){
-								Progress.Set_Progress_Percent(0, 100);
-							}
-							return_code = true;
-							break;
-						}
+					if (show_progress){
+						Progress.Set_Progress_Percent(0, progress / total_blocks);
 					}
-				}
-			}
-		} else {
-			Windows_Message_Handler();
-			Call_Back();
 
-			int receive_packet_length = sizeof (RemoteFileTransferType);
-			if (Ipx.Get_Global_Message (receive_packet, &receive_packet_length,
-				&sender_address, &product_id)) {
-
-				if (receive_packet->Command == (SerialCommandType)NET_FILE_CHUNK && sender_address == Session.HostAddress){
-
-					char *flag = &block_received[receive_packet->BlockNumber];
-					if (!block_received[receive_packet->BlockNumber]) {
-						*flag = true;
-						received_count++;
-						progress += 100;
-						response_timer = RESPONSE_TIMEOUT/2;
-						DebugString("Received file chunk %d\n", receive_packet->BlockNumber);
-						memcpy (file_buffer + (MAX_SEND_FILE_PACKET_SIZE) * receive_packet->BlockNumber,
-							receive_packet->RawData, receive_packet->BlockLength);
-
+					if (received_count == total_blocks) {
+						return_code = true;
 						if (show_progress){
-							Progress.Set_Progress_Percent(0, progress / total_blocks);
+							Progress.Set_Progress_Percent(0, 100);
 						}
-
-						if (received_count == total_blocks) {
-							return_code = true;
-							if (show_progress){
-								Progress.Set_Progress_Percent(0, 100);
-							}
-							break;
-						}
+						break;
 					}
 				}
 			}
@@ -382,14 +306,13 @@ bool Receive_Remote_File ( char *file_name, unsigned int file_length, int gamety
  * INPUT:    File name                                                                         *
  *                                                                                             *
  * OUTPUT:   true if file transfer was successfully completed                                  *
- *           game type - 0 for modem/null modem, 1 otherwise                                   *
  *                                                                                             *
  * WARNINGS: None                                                                              *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *    8/22/96 3:09PM ST : Created                                                              *
  *=============================================================================================*/
-bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, bool show_progress )
+bool Send_Remote_File ( char const *file_name, bool send_to_all, bool show_progress )
 {
 	CDTimerClass<SystemTimerClass> response_timer;		// timeout timer for waiting for responses
 	bool			return_code = 0;
@@ -405,20 +328,17 @@ bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, b
 	int total_blocks;
 	int bytes_left;
 
-	int packetlen;
 	unsigned short product_id;
 
 	void *read_ptr;
 
 	/// Sized to one header plus one MAX_SEND_FILE_PACKET_SIZE chunk. The full
-	/// RemoteFileTransferType would overrun a serial packet, so the buffer stays raw
+	/// RemoteFileTransferType would overrun a packet, so the buffer stays raw
 	/// and is written through a reference.
 	char						send_packet[200];
-	SerialPacketType			file_info;
 	GlobalPacketType			net_file_info;
 
 	GlobalPacketType			net_receive_packet;
-	SerialPacketType			serial_receive_packet;
 
 	CCFileClass send_file (file_name);
 
@@ -436,42 +356,31 @@ bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, b
 	/*
 	**	Send the file info to the remote machine(s)
 	*/
-	if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM) {
-		file_info.Command = SERIAL_FILE_INFO;
-		strcpy (&file_info.ScenarioInfo.ShortFileName[0], file_name);
-		file_info.ScenarioInfo.FileLength = file_length;
-
-		NullModem.Send_Message (&file_info, sizeof (file_info), 1);
-		while (NullModem.Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
-	} else {
-		net_file_info.Command = NET_FILE_INFO;
-		strcpy (net_file_info.ScenarioInfo.ShortFileName, file_name);
+	net_file_info.Command = NET_FILE_INFO;
+	strcpy (net_file_info.ScenarioInfo.ShortFileName, file_name);
 //		DebugString( "Uploading '%s'\n", file_name );
 //		DebugString( "ShortFileName is '%s'\n", net_file_info.ScenarioInfo.ShortFileName );
-		net_file_info.ScenarioInfo.FileLength = file_length;
+	net_file_info.ScenarioInfo.FileLength = file_length;
 
-		if (send_to_all) {
-			for (int i = 1; i < Session.Players.Count(); i++) {
-				do {
-					Call_Back();
-				} while (Ipx.Send_Global_Message (&net_file_info, sizeof (GlobalPacketType),
-					1, &(Session.Players[i]->Address)) == 0 && response_timer);
-			}
-		} else {
-			for (int i = 0; i < Session.RequestCount; i++) {
-				do {
-					Call_Back();
-					DebugString("Sending file info packet to player %d\n", Session.Players[Session.ScenarioRequests[i]]->Name);
-				} while (Ipx.Send_Global_Message (&net_file_info, sizeof (GlobalPacketType),
-					1, &(Session.Players[Session.ScenarioRequests[i]]->Address)) == 0 && response_timer);
-			}
+	if (send_to_all) {
+		for (int i = 1; i < Session.Players.Count(); i++) {
+			do {
+				Call_Back();
+			} while (Ipx.Send_Global_Message (&net_file_info, sizeof (GlobalPacketType),
+				1, &(Session.Players[i]->Address)) == 0 && response_timer);
 		}
+	} else {
+		for (int i = 0; i < Session.RequestCount; i++) {
+			do {
+				Call_Back();
+				DebugString("Sending file info packet to player %d\n", Session.Players[Session.ScenarioRequests[i]]->Name);
+			} while (Ipx.Send_Global_Message (&net_file_info, sizeof (GlobalPacketType),
+				1, &(Session.Players[Session.ScenarioRequests[i]]->Address)) == 0 && response_timer);
+		}
+	}
 
-		while (Ipx.Global_Num_Send() > 0 && response_timer) {
-			Call_Back();
-		}
+	while (Ipx.Global_Num_Send() > 0 && response_timer) {
+		Call_Back();
 	}
 
 	if (response_timer == 0) {
@@ -491,28 +400,16 @@ bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, b
 
 	response_timer = RESPONSE_TIMEOUT;
 
-	if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM) {
-		do {
-			Call_Back();
-			if (NullModem.Get_Message( &serial_receive_packet, &packetlen) > 0) {
-				if (serial_receive_packet.Command == SERIAL_FILE_INFO_ACK) {
-					DebugString("Client responded with file info ack\n");
-					break;
-				}
+	int net_packetlen;
+	do {
+		Call_Back();
+		net_packetlen = sizeof (net_receive_packet);
+		if (Ipx.Get_Global_Message (&net_receive_packet, &net_packetlen, &sender_address, &product_id)) {
+			if (net_receive_packet.Command == NET_FILE_INFO_ACK) {
+				acks++;
 			}
-		} while (response_timer != 0 && !(count <= 0));
-	} else {
-		int net_packetlen;
-		do {
-			Call_Back();
-			net_packetlen = sizeof (net_receive_packet);
-			if (Ipx.Get_Global_Message (&net_receive_packet, &net_packetlen, &sender_address, &product_id)) {
-				if (net_receive_packet.Command == NET_FILE_INFO_ACK) {
-					acks++;
-				}
-			}
-		} while (response_timer != 0 && acks < count);
-	}
+		}
+	} while (response_timer != 0 && acks < count);
 
 	max_chunk_size = MAX_SEND_FILE_PACKET_SIZE;
 	total_blocks = (file_length + max_chunk_size-1) / max_chunk_size;
@@ -532,113 +429,70 @@ bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, b
 	response_timer = RESPONSE_TIMEOUT;
 	while ( response_timer ){
 
-		if (gametype == GAME_MODEM || gametype == GAME_NULL_MODEM){
-			Windows_Message_Handler();
-			Call_Back();
+		Windows_Message_Handler();
+		Call_Back();
+		if (block_number < total_blocks){
 
-			if (block_number < total_blocks){
+			if ( Ipx.Global_Num_Send() < 10 ){
 
-				if ( NullModem.Num_Send() <2 ){
+				((RemoteFileTransferType &)send_packet).Command = NET_FILE_CHUNK;
+				((RemoteFileTransferType &)send_packet).BlockNumber = block_number;
+				((RemoteFileTransferType &)send_packet).BlockLength = MIN (file_length, max_chunk_size);
 
-					((RemoteFileTransferType &)send_packet).Command = SERIAL_FILE_CHUNK;
-					((RemoteFileTransferType &)send_packet).BlockNumber = block_number;
-					((RemoteFileTransferType &)send_packet).BlockLength = MIN (file_length, max_chunk_size);
+				file_length -= ((RemoteFileTransferType &)send_packet).BlockLength;
 
-					file_length -= ((RemoteFileTransferType &)send_packet).BlockLength;
+				read_ptr = &((RemoteFileTransferType &)send_packet).RawData[0];
 
-					read_ptr = &((RemoteFileTransferType &)send_packet).RawData[0];
+				if (send_file.Read (read_ptr , ((RemoteFileTransferType &)send_packet).BlockLength) == ((RemoteFileTransferType &)send_packet).BlockLength){
+					DebugString("Sending file chunk %d\n", block_number);
 
-					if (send_file.Read (read_ptr , ((RemoteFileTransferType &)send_packet).BlockLength) == ((RemoteFileTransferType &)send_packet).BlockLength){
-						DebugString("Sending file chunk %d\n", block_number);
-						NullModem.Send_Message ((void*)&send_packet, sizeof(send_packet), 1);
-					}
-
-					block_number++;
-
-					if (show_progress){
-						Progress.Set_Progress_Percent(0, (block_number*100) / total_blocks);
-					}
-
-				}
-			}else{
-				if (NullModem.Num_Send() == 0){
-					return_code = true;
-					if (show_progress){
-						Progress.Set_Progress_Percent(0, 100);
-					}
-					break;
-
-				}
-			}
-
-
-		}else{
-			Windows_Message_Handler();
-			Call_Back();
-			if (block_number < total_blocks){
-
-				if ( Ipx.Global_Num_Send() < 10 ){
-
-					((RemoteFileTransferType &)send_packet).Command = (SerialCommandType)NET_FILE_CHUNK;
-					((RemoteFileTransferType &)send_packet).BlockNumber = block_number;
-					((RemoteFileTransferType &)send_packet).BlockLength = MIN (file_length, max_chunk_size);
-
-					file_length -= ((RemoteFileTransferType &)send_packet).BlockLength;
-
-					read_ptr = &((RemoteFileTransferType &)send_packet).RawData[0];
-
-					if (send_file.Read (read_ptr , ((RemoteFileTransferType &)send_packet).BlockLength) == ((RemoteFileTransferType &)send_packet).BlockLength){
-						DebugString("Sending file chunk %d\n", block_number);
-
-						if (send_to_all) {
-							for (int i=1 ; i<Session.Players.Count() ; i++){
-								int ret;
-								do {
-									ret = Ipx.Send_Global_Message (&send_packet, sizeof (send_packet),
-									1, &(Session.Players[i]->Address) );
-									Call_Back();
-								} while (ret == 0);
-							}
-						} else {
-							for (int i=0 ; i<Session.RequestCount ; i++){
-								int ret;
-								do {
-									ret = Ipx.Send_Global_Message (&send_packet, sizeof (send_packet),
-									1, &(Session.Players[Session.ScenarioRequests[i]]->Address) );
-									Call_Back();
-								} while (ret == 0);
-							}
+					if (send_to_all) {
+						for (int i=1 ; i<Session.Players.Count() ; i++){
+							int ret;
+							do {
+								ret = Ipx.Send_Global_Message (&send_packet, sizeof (send_packet),
+								1, &(Session.Players[i]->Address) );
+								Call_Back();
+							} while (ret == 0);
+						}
+					} else {
+						for (int i=0 ; i<Session.RequestCount ; i++){
+							int ret;
+							do {
+								ret = Ipx.Send_Global_Message (&send_packet, sizeof (send_packet),
+								1, &(Session.Players[Session.ScenarioRequests[i]]->Address) );
+								Call_Back();
+							} while (ret == 0);
 						}
 					}
-
-					block_number++;
-
-					if (show_progress){
-						Progress.Set_Progress_Percent(0, (block_number*100) / total_blocks);
-					}
-
-				}
-			}else{
-				if (Ipx.Global_Num_Send() == 0) {
-					response_timer = TIMER_SECOND;
-					while (response_timer != 0) {
-						Windows_Message_Handler();
-						Call_Back();
-					}
-				} else {
-					continue;
 				}
 
-				if (Ipx.Global_Num_Send() == 0){
-					return_code = true;
-					if (show_progress){
-						Progress.Set_Progress_Percent(0, 100);
-					}
-					break;
+				block_number++;
+
+				if (show_progress){
+					Progress.Set_Progress_Percent(0, (block_number*100) / total_blocks);
 				}
+
+			}
+		}else{
+			if (Ipx.Global_Num_Send() == 0) {
+				response_timer = TIMER_SECOND;
+				while (response_timer != 0) {
+					Windows_Message_Handler();
+					Call_Back();
+				}
+			} else {
+				continue;
+			}
+
+			if (Ipx.Global_Num_Send() == 0){
+				return_code = true;
+				if (show_progress){
+					Progress.Set_Progress_Percent(0, 100);
+				}
+				break;
 			}
 		}
-
 	}
 
 	DebugString("File upload completed\n");

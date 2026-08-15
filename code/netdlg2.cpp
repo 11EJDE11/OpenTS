@@ -1147,7 +1147,7 @@ bool Net2Remote_Connect(void)
 							Session.ScenarioRequests[Session.RequestCount++] = i;
 						}
 					}
-					Send_Remote_File(Scen->ScenarioName, GAME_IPX, false, true);
+					Send_Remote_File(Scen->ScenarioName, false, true);
 				}
 
 				//------------------------------------------------------------------------
@@ -3347,7 +3347,7 @@ bool Net2ReadyToGo(int load_game)
 		//.....................................................................
 		DebugString("Failed to find local scenario, file name is %d\n", Session.ScenarioFileName);
 
-		if ((Session.ScenarioIsOfficial && strcmpi(Session.ScenarioFileName, RANDOM_MAP_FILE_NAME) != 0) || !Get_File_From_Host(Session.ScenarioFileName, 3, true)) {
+		if ((Session.ScenarioIsOfficial && strcmpi(Session.ScenarioFileName, RANDOM_MAP_FILE_NAME) != 0) || !Get_File_From_Host(Session.ScenarioFileName, true)) {
 			Session.Options.ScenarioIndex = -1;
 			WWMessageBox().Process(TXT_UNABLE_PLAY_WAAUGH, TXT_OK);
 			memset (&packet, 0, sizeof(packet));

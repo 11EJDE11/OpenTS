@@ -127,8 +127,6 @@
 #include "msgloop.h"
 #include "netdlg.h"
 #include "netshare.h"
-#include "nulldlg.h"
-#include "nullmgr.h"
 #include "overlay.h"
 #include "overtype.h"
 #include "ownrdraw.h"
@@ -235,9 +233,6 @@ enum RetcodeType {
 	RC_PLAYER_READY,        // a new player has been heard from
 	RC_SCENARIO_MISMATCH,   // scenario mismatch
 	RC_DOLIST_FULL,         // DoList is full
-	RC_SERIAL_PROCESSED,    // modem: SERIAL packet was processed
-	RC_PLAYER_LEFT,         // modem: other player left the game
-	RC_HUNG_UP,             // modem has hung up
 	RC_NOT_RESPONDING,      // other player not responding (timeout/hung up)
 	RC_CANCEL,              // user cancelled
 };
@@ -295,8 +290,6 @@ static int Send_Packets(ConnManClass *net, char *multi_packet_buf,
 static void Send_FrameSync(ConnManClass *net, int cmd_count);
 static RetcodeType Process_Receive_Packet(ConnManClass *net,
 	char *multi_packet_buf, int id, int packetlen, FrameSyncStruct *their, BasicTimerClass<SystemTimerClass> *timer);
-static RetcodeType Process_Serial_Packet(char *multi_packet_buf,
-	int first_time);
 static int Can_Advance(ConnManClass *net, int max_ahead, FrameSyncStruct *their, int *frame_stall, int *count_stall);
 static int Process_Reconnect_Dialog(CDTimerClass<SystemTimerClass> *timeout_timer,
 	FrameSyncStruct *their, int num_conn, int reconn, int fresh,
@@ -525,8 +518,6 @@ void Queue_AI(void)
 				Queue_AI_Normal();
 				break;
 
-			case GAME_MODEM:
-			case GAME_NULL_MODEM:
 			case GAME_IPX:
 			case GAME_INTERNET:
 				Queue_AI_Multiplayer();
@@ -677,20 +668,6 @@ static void Queue_AI_Normal(void)
  * Session.NumPlayers.  This ensures all commands get executed, even if    *
  * there isn't a human generating those commands.                          *
  *                                                                         *
- * The modem works a little differently from the network in this respect:  *
- * - The connection has to stay "alive" even if the other player exits to  *
- *   the join dialog.  This prevents each system from timing out & hanging *
- *   the modem up.  Thus, packets are sent back & forth & just thrown away,*
- *   but each system knows the other is still there.  Messages may be sent *
- *   between systems, though.                                              *
- * - Destroy_Null_Connection doesn't hang up the modem, so                 *
- *   Num_Connections() still reports a value of 1 even though the other    *
- *   player has left.                                                      *
- * - Any waits on Num_Connections() must also check for                    *
- *   Session.NumPlayers > 1, to keep from waiting forever if the other     *
- *   guy has left                                                          *
- * - Packets sent to a player who's left require no ACK                    *
- *                                                                         *
  * INPUT:                                                                  *
  *      none.                                                              *
  *                                                                         *
@@ -752,15 +729,9 @@ static void Queue_AI_Multiplayer(void)
 	//------------------------------------------------------------------------
 	// Initialize the packet buffer pointer & its max size
 	//------------------------------------------------------------------------
-	if (Session.Type >= GAME_IPX && Session.Type <= GAME_INTERNET) {
 		multi_packet_buf = Session.MetaPacket;
 		multi_packet_max = Session.MetaSize;
 		net = &Ipx;
-	} else {
-		multi_packet_buf = NullModem.BuildBuf;
-		multi_packet_max = NullModem.MaxLen - sizeof (CommHeaderType);
-		net = &NullModem;
-	}
 
 	//------------------------------------------------------------------------
 	// Debug stuff
@@ -1054,15 +1025,9 @@ void Wait_For_End_Of_Queue(void)
 	//------------------------------------------------------------------------
 	// Initialize the packet buffer pointer & its max size
 	//------------------------------------------------------------------------
-	if (Session.Type >= GAME_IPX && Session.Type <= GAME_INTERNET) {
 		multi_packet_buf = Session.MetaPacket;
 		multi_packet_max = Session.MetaSize;
 		net = &Ipx;
-	} else {
-		multi_packet_buf = NullModem.BuildBuf;
-		multi_packet_max = NullModem.MaxLen - sizeof (CommHeaderType);
-		net = &NullModem;
-	}
 
 	//------------------------------------------------------------------------
 	// Send our data packet(s); update my command-sent counter
@@ -1133,38 +1098,6 @@ void Wait_For_End_Of_Queue(void)
 			event = (EventClass *)multi_packet_buf;
 
 			//------------------------------------------------------------------
-			// Special processing for a modem game: process SERIAL packets
-			//------------------------------------------------------------------
-			if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-				rc = Process_Serial_Packet(multi_packet_buf, false);
-				switch (rc) {
-					case RC_NORMAL:
-						break;
-					//...............................................................
-					// SERIAL packet received & processed
-					//...............................................................
-					case RC_SERIAL_PROCESSED:
-						net->Service();
-						timer1 = TIMER_SECOND / 4;
-						timer2 = 10 * TIMER_SECOND;
-						break;
-
-					case RC_PLAYER_READY:
-					case RC_SCENARIO_MISMATCH:
-					case RC_DOLIST_FULL:
-					case RC_PLAYER_LEFT:
-					case RC_HUNG_UP:
-						return;
-
-					//...............................................................
-					// If it was any other type of serial packet, break
-					//...............................................................
-					default:
-						return;
-				}
-			} else {
-
-				//------------------------------------------------------------------
 				// Process the incoming packet
 				//------------------------------------------------------------------
 				rc = Process_Receive_Packet(net, multi_packet_buf, id, packetlen, TheirFrameSync, &timer3);
@@ -1175,7 +1108,6 @@ void Wait_For_End_Of_Queue(void)
 					DebugString("Dolist is full!\n");
 					return;
 				}
-			}
 
 			//..................................................................
 			// Service the connection, to clean out the receive queues
@@ -1289,7 +1221,6 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 	CDTimerClass<SystemTimerClass> dialog_timer;	// time to pop up a dialog
 	CDTimerClass<SystemTimerClass> timeout_timer;	// general-purpose timeout
 	BasicTimerClass<SystemTimerClass> timer;
-	CDTimerClass<SystemTimerClass> progress_timer;	/// time between load progress updates
 
 	//........................................................................
 	// Dialog variables
@@ -1311,7 +1242,6 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 	dialog_timer = dialog_time; // time to show dlg
 	timeout_timer = timeout;    // time to bail out
 	timer = 0;
-	progress_timer = TIMER_SECOND;
 	loop_count = 0;
 
 	while (1) {
@@ -1330,21 +1260,6 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 			retry_timer = resend_delta;		// time to retry
 			Update_Queue_Mono (net, 3);
 			Send_FrameSync(net, my_sent);
-		}
-
-		//---------------------------------------------------------------------
-		/*
-		 * For a modem game, pulse the loading progress bar periodically while
-		 * we wait for the other system to finish loading the scenario.
-		 */
-		//---------------------------------------------------------------------
-		if (first_time) {
-			if (progress_timer <= 0) {
-				if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-					progress_timer = TIMER_SECOND;
-					Session.Update_Progress(Scen->IsRandom ? 200 : 100);
-				}
-			}
 		}
 
 		//---------------------------------------------------------------------
@@ -1459,56 +1374,6 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 			Get an event ptr to the incoming message
 			..................................................................*/
 			event = (EventClass *)multi_packet_buf;
-
-			//------------------------------------------------------------------
-			// Special processing for a modem game: process SERIAL packets
-			//------------------------------------------------------------------
-			if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-				rc = Process_Serial_Packet(multi_packet_buf, first_time);
-				//...............................................................
-				// SERIAL packet received & processed
-				//...............................................................
-				if (rc == RC_SERIAL_PROCESSED) {
-					net->Service();
-					retry_timer = resend_delta;
-					dialog_timer = dialog_time;
-					timeout_timer = timeout;
-					continue;
-				}
-				//...............................................................
-				// other player has left the game
-				//...............................................................
-				else if (rc == RC_PLAYER_LEFT) {
-					if (first_time) {
-						num_ready++;
-					}
-					break;
-				}
-				//...............................................................
-				// Connection was lost
-				//...............................................................
-				/// Try to reconnect before giving up.
-				else if (rc == RC_HUNG_UP) {
-					if (Handle_Timeout(net, their)) {
-						Map.Flag_To_Redraw(GS_REDRAW_ALL);
-						Map.Render();
-						retry_timer = resend_delta;
-						dialog_timer = dialog_time;
-						timeout_timer = timeout;
-					} else {
-						if (reconnect_dlg) {
-							Close_Reconnect_Dialog();
-						}
-						return(RC_NOT_RESPONDING);
-					}
-				}
-				//...............................................................
-				// If it was any other type of serial packet, break
-				//...............................................................
-				else if (rc != RC_NORMAL) {
-					break;
-				}
-			}
 
 			//------------------------------------------------------------------
 			// Process the incoming packet
@@ -1705,10 +1570,7 @@ static void Generate_Timing_Event(ConnManClass *net, int my_sent)
 			// response time.
 			//..................................................................
 			else {
-				if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-					ev.Data.FrameInfo.Delay = MAX( (resp_time / 8),
-						 MODEM_MIN_MAX_AHEAD );
-				} else if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+				if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 					ev.Data.FrameInfo.Delay = MAX( (resp_time / 8),
 						 NETWORK_MIN_MAX_AHEAD );
 				}
@@ -2315,131 +2177,6 @@ static RetcodeType Process_Receive_Packet(ConnManClass *net,
 
 
 /***************************************************************************
- * Process_Serial_Packet -- Handles an incoming serial packet              *
- *                                                                         *
- * This routine is needed because the modem classes don't support a        *
- * "global channel" like the network classes do, but that functionality is *
- * still needed for modem communications.  Specifically, the modem dialogs *
- * transmit their own special packets back & forth, and messages are sent  *
- * using a special packet type.  Thus, we have to call this routine when   *
- * we receive a modem packet, to allow it to process messages & dialog     *
- * packets.                                                                *
- *                                                                         *
- * INPUT:                                                                  *
- *      multi_packet_buf      packet buffer to process                     *
- *      first_time            1 = this is the 1st game frame               *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      RC_NORMAL:            this wasn't a SERIAL-type packet             *
- *      RC_SERIAL_PROCESSED:   this was a SERIAL-type packet, and was      *
- *                         processed; the other player is still connected, *
- *                         even if he's not in the game.                   *
- *      RC_PLAYER_LEFT:      other player has left the game                *
- *      RC_HUNG_UP:            we're getting our own packets back; thus, the*
- *                         modem is mirroring our packets, which means the *
- *                         modem hung up!                                  *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   11/21/1995 BRR : Created.                                             *
- *=========================================================================*/
-static RetcodeType Process_Serial_Packet(char *multi_packet_buf,
-	int first_time)
-{
-	SerialPacketType *serial_packet;		// for parsing serial packets
-	int player_gone;
-	EventClass *event;
-
-	//------------------------------------------------------------------------
-	// Determine if this packet means that the other player has left the game
-	//------------------------------------------------------------------------
-	serial_packet = (SerialPacketType *)multi_packet_buf;
-	player_gone = 0;
-	//........................................................................
-	// On Frame 0, only a SIGN_OFF means the other player left; the other
-	// packet types may be left over from a previous session.
-	//........................................................................
-	if (first_time) {
-		if (serial_packet->Command == SERIAL_SIGN_OFF) {
-			player_gone = 1;
-		}
-	}
-	//........................................................................
-	// On subsequent frames, any of SIGN_OFF, TIMING, or SCORE_SCREEN means
-	// the other player is gone.
-	//........................................................................
-	else {
-		if (serial_packet->Command == SERIAL_SIGN_OFF ||
-			serial_packet->Command == SERIAL_TIMING ||
-			serial_packet->Command == SERIAL_SCORE_SCREEN ) {
-			player_gone = 1;
-		}
-	}
-	if (player_gone) {
-		Destroy_Null_Connection(serial_packet->ScenarioInfo.Color, 0);
-		return(RC_PLAYER_LEFT);
-	}
-
-	//------------------------------------------------------------------------
-	// Process an incoming message
-	//------------------------------------------------------------------------
-	if (serial_packet->Command == SERIAL_MESSAGE) {
-		if (!Session.Messages.Concat_Message(serial_packet->Name,
-			serial_packet->ID, serial_packet->Message.Message, Rule->MessageDelay * TICKS_PER_MINUTE)) {
-			Session.Messages.Add_Message (serial_packet->Name,
-				serial_packet->ID, serial_packet->Message.Message,
-				serial_packet->ID,
-				TextPrintType(TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-
-			Sound_Effect(Rule->IncomingMessage);
-		}
-
-		//.....................................................................
-		// Save this message in our last-message buffer
-		//.....................................................................
-		if (strlen (serial_packet->Message.Message)) {
-			strcpy (Session.LastMessage, serial_packet->Message.Message);
-		}
-
-		//.....................................................................
-		// Tell the map to do a partial update (just to force the
-		// messages to redraw).
-		//.....................................................................
-		//Map.Flag_To_Redraw(false);
-		Map.Flag_To_Redraw(GS_REDRAW_ALL);
-		return(RC_SERIAL_PROCESSED);
-	}
-
-	//------------------------------------------------------------------------
-	// Any other SERIAL-type packet means the other player is still there;
-	// throw them away, but let the caller know the connection is OK.
-	//------------------------------------------------------------------------
-	if ( (serial_packet->Command >= SERIAL_CONNECT &&
-		serial_packet->Command < SERIAL_LAST_COMMAND) ||
-		(serial_packet->Command >= SERIAL_REQ_SCENARIO &&
-		 serial_packet->Command <= SERIAL_ACCEPT_OPTIONS) ||
-		Session.NumPlayers == 1) {
-		return(RC_SERIAL_PROCESSED);
-	}
-
-	//........................................................................
-	// are we getting our own packets back??
-	//........................................................................
-	event = (EventClass *)multi_packet_buf;
-
-	if (event->Type <= EventClass::EMPTY || event->Type >= EventClass::LAST_EVENT) return(RC_SERIAL_PROCESSED);
-
-	if (event->ID == PlayerPtr->HeapID) {
-		return(RC_HUNG_UP);
-	}
-
-	return(RC_NORMAL);
-}	// end of Process_Serial_Packet
-
-
-/***************************************************************************
  * Can_Advance -- determines if it's OK to advance to the next frame       *
  *                                                                         *
  * This routine uses the current values stored in their_frame[],           *
@@ -2664,9 +2401,7 @@ static int Process_Reconnect_Dialog(CDTimerClass<SystemTimerClass> *timeout_time
 						ListBox_AddString(listbox, Fetch_String(TXT_RECONNECT_HELP3B));
 						ListBox_AddString(listbox, Fetch_String(TXT_RECONNECT_HELP3C));
 					}
-					if (Session.Type != GAME_MODEM && Session.Type != GAME_NULL_MODEM) {
-						ListBox_AddString(listbox, Fetch_String(TXT_RECONNECT_HELP2));
-					}
+					ListBox_AddString(listbox, Fetch_String(TXT_RECONNECT_HELP2));
 					if (Session.Type == GAME_INTERNET) {
 						ListBox_AddString(listbox, Fetch_String(TXT_RECONNECT_HELP2B));
 					} else if (Session.Type == GAME_IPX) {
@@ -2712,16 +2447,11 @@ static int SyncBarControlIDs[MAX_PLAYERS] = {
 
 /// <summary>
 /// Fetches the connection index for a player.
-/// Serial and modem games only ever have the one connection, so they answer with zero
-/// rather than troubling the network manager about it.
 /// </summary>
 /// <param name="player">The player ID to look up.</param>
 /// <returns>Returns with the connection index that belongs to the player.</returns>
 static int Connection_Index(int player)
 {
-	if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-		return(0);
-	}
 	return(Ipx.Connection_Index(player));
 }
 
@@ -3103,13 +2833,6 @@ void Kick_Player_Now(ConnManClass *net, int kickee, FrameSyncStruct * their, boo
  * Handle_Timeout -- handles a timeout in the wait-for-players loop        *
  *                                                                         *
  * This routine "gracefully" handles a timeout in the frame-sync loop.     *
- * The timeout must be handled differently by a modem game or network      *
- * game.                                                                   *
- *                                                                         *
- * The modem game must detect if the other player is still connected       *
- * physically, even if he's not playing the game any more; if so, this     *
- * routine returns an OK status.  If the other player isn't even           *
- * physically connected, an error is returned.                             *
  *                                                                         *
  * The network game must find the connection that's causing the timeout,   *
  * and destroy it.  The game continues, even if there are no more human    *
@@ -3137,25 +2860,9 @@ static int Handle_Timeout(ConnManClass *net, FrameSyncStruct *their)
 	//int id;
 
 	//------------------------------------------------------------------------
-	// For modem, attempt to reconnect; if that fails, save the game & bail.
-	//------------------------------------------------------------------------
-	if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-		if ( net->Num_Connections() ) {
-			Session.Suspended++;
-			if (!Reconnect_Modem()) {
-				Session.Suspended--;
-				return(0);
-			} else {
-				Session.Suspended--;
-				return(1);
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------
 	// For network, destroy the oldest connection
 	//------------------------------------------------------------------------
-	else if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 		j = 0x7fffffff;
 		oldest_index = 0;
 		for (i = 0; i < net->Num_Connections(); i++) {
@@ -4260,10 +3967,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 					//	for that player.  The HousesType for this event is the
 					// connection ID.
 					//............................................................
-						if (Session.Type == GAME_MODEM ||
-							Session.Type == GAME_NULL_MODEM) {
-							Destroy_Null_Connection( house, 0 );
-						} else if ((Session.Type == GAME_IPX ||
+						if ((Session.Type == GAME_IPX ||
 							Session.Type == GAME_INTERNET) && net) {
 							index = net->Connection_Index (house);
 							if (index != -1) {
@@ -4294,7 +3998,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 				else if (DoList[j].Type == EventClass::FRAMEINFO) {
 					//............................................................
 					// Skip the CRC check if we're less than 32 frames into the game;
-					// this will prevent a newly-loaded modem game from instantly
+					// this will prevent a newly-loaded game from instantly
 					// going out of sync, if the games were saved at different
 					// frame numbers.
 					//............................................................
@@ -4315,13 +4019,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 							if (WWMessageBox().Process (TXT_OUT_OF_SYNC,
 								TXT_CONTINUE, TXT_STOP) == 0) {
 								Session.Suspended--;
-								if (Session.Type == GAME_MODEM ||
-									Session.Type == GAME_NULL_MODEM) {
-									Destroy_Null_Connection( house, -1 );
-									Shutdown_Modem();
-									Session.Type = GAME_NORMAL;
-								}
-								else if ((Session.Type == GAME_IPX ||
+								if ((Session.Type == GAME_IPX ||
 									Session.Type == GAME_INTERNET) && net) {
 									while (net->Num_Connections()) {
 										Destroy_Connection (net->Connection_ID(0), -1);

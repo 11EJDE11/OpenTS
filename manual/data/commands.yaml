@@ -1672,19 +1672,6 @@ fixed_controls:
   _provenance:
     source: code/restate.cpp
     guard: null
-- id: fixed:cancel-modem-operation
-  route_id: fixed-cancel-modem-operation
-  kind: fixed
-  title: Cancel modem operation
-  description: Cancels the active dial, answer, or modem-command wait.
-  audience: player
-  availability: *id001
-  bindings:
-  - Escape
-  context: Serial or modem connection dialog
-  _provenance:
-    source: code/nullmgr.cpp
-    guard: null
 - id: fixed:skip-vqa
   route_id: fixed-skip-vqa
   kind: fixed

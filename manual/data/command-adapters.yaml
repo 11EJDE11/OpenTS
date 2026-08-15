@@ -262,15 +262,6 @@ fixed_controls:
     sites:
       - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_SPACE }
       - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_ESC }
-  - id: fixed:cancel-modem-operation
-    title: Cancel modem operation
-    description: Cancels the active dial, answer, or modem-command wait.
-    audience: player
-    bindings: [Escape]
-    context: Serial or modem connection dialog
-    availability: *all
-    sites:
-      - { file: code/nullmgr.cpp, function: NullModemClass::Abort_Modem, expression: KN_ESC }
   - id: fixed:skip-vqa
     title: Skip video
     description: Stops a VQA when the caller permits user breakout.
@@ -398,8 +389,6 @@ fixed_exclusions:
       - { file: code/msglist.cpp, function: MessageListClass::Input, expression: KN_BACKSPACE }
       - { file: code/msglist.cpp, function: MessageListClass::Input, expression: KN_ESC }
     reason: Message editor polling, cursor placement, and text-edit termination.
-  - site: { file: code/nullmgr.cpp, function: NullModemClass::Abort_Modem, expression: KN_NONE }
-    reason: Sentinel checked before the public modem-cancel Escape case.
   - site: { file: code/ownrdraw.cpp, function: CtrlProc, expression: VK_TAB }
     reason: Windows dialog focus traversal handled by the shared control procedure.
   - sites:

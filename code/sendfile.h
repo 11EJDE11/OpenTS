@@ -13,8 +13,8 @@
 
 #pragma once
 
-bool Receive_Remote_File ( char *file_name, unsigned int file_length, unsigned int crc, int gametype);
-bool Send_Remote_File ( char const *file_name, int gametype, bool send_to_all, bool show_progress );
-bool Get_Scenario_File_From_Host(char *return_name, int gametype);
+bool Receive_Remote_File ( char *file_name, unsigned int file_length, unsigned int crc);
+bool Send_Remote_File ( char const *file_name, bool send_to_all, bool show_progress );
+bool Get_Scenario_File_From_Host(char *return_name);
 bool Find_Local_Scenario (char *filename, unsigned int length, char *digest, bool official);
-bool Get_File_From_Host(char *return_name, int gametype, bool show_progress);
+bool Get_File_From_Host(char *return_name, bool show_progress);

@@ -2751,24 +2751,6 @@ Bases:
       source: code/rules.cpp
       guard: null
     level: RulesClass
-Baud:
-  key: Baud
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '-1'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 BehavesLike:
   key: BehavesLike
   scopes:
@@ -4013,42 +3995,6 @@ CD:
       source: code/campaign.cpp
       guard: null
     level: CampaignClass
-CallWaitString:
-  key: CallWaitString
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: string
-    status: generated
-    _provenance:
-      default_candidate: ''
-      declared_in: SessionClass
-      member: null
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
-CallWaitStringIndex:
-  key: CallWaitStringIndex
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '3'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 Cameo:
   key: Cameo
   scopes:
@@ -4971,24 +4917,6 @@ CompEasyBonus:
       source: code/rules.cpp
       guard: null
     level: RulesClass
-Compression:
-  key: Compression
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '0'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 ComputerBaseDefenseResponse:
   key: ComputerBaseDefenseResponse
   scopes:
@@ -6776,24 +6704,6 @@ DetailLevel:
       source: code/options.cpp
       guard: null
     level: OptionsClass
-DialMethod:
-  key: DialMethod
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: string
-    status: generated
-    _provenance:
-      default_candidate: T
-      declared_in: SessionClass
-      member: null
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 Difficulty:
   key: Difficulty
   scopes:
@@ -7832,24 +7742,6 @@ EngineerCaptureLevel:
     note: this one key sets BOTH the engineer capture threshold AND the engineer damage fraction (a shipped
       copy-paste slip -- a separate EngineerDamage= key is never read)
     level: RulesClass
-ErrorCorrection:
-  key: ErrorCorrection
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '0'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 ExitCoord:
   key: ExitCoord
   scopes:
@@ -10375,24 +10267,6 @@ IQ:
       source: code/house.cpp
       guard: null
     level: HouseClass
-IRQ:
-  key: IRQ
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '-1'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 IRepairRate:
   key: IRepairRate
   scopes:
@@ -10961,24 +10835,6 @@ Infiltrate:
       source: code/infatype.cpp
       guard: null
     level: InfantryTypeClass
-InitStringIndex:
-  key: InitStringIndex
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '-1'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 InitTime:
   key: InitTime
   scopes:
@@ -13772,24 +13628,6 @@ MissileSpeedVar:
       source: code/rules.cpp
       guard: null
     level: RulesClass
-ModemName:
-  key: ModemName
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: string
-    status: generated
-    _provenance:
-      default_candidate: null
-      declared_in: SessionClass
-      member: null
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 Money:
   key: Money
   scopes:
@@ -15415,24 +15253,6 @@ PercentBuilt:
       source: code/base.cpp
       guard: null
     level: BaseClass
-PhoneIndex:
-  key: PhoneIndex
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: MultiPlayer
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '-1'
-      declared_in: SessionClass
-      member: CurPhoneIdx
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 PhysicalSize:
   key: PhysicalSize
   scopes:
@@ -15782,24 +15602,6 @@ Points:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
-Port:
-  key: Port
-  scopes:
-  - applies_to:
-    - multiplayer settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: SerialDefaults
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '0'
-      declared_in: SessionClass
-      member: SerialDefaults
-      source: code/session.cpp
-      guard: null
-    level: SessionClass
 PoseDir:
   key: PoseDir
   scopes:

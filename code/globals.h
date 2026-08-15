@@ -92,7 +92,6 @@ class VersionClass;
 class GameOptionsClass;
 class ThemeClass;
 class SessionClass;
-class NullModemClass;
 class IPXManagerClass;
 class Buffer;
 class TiberianSunClassFactory;
@@ -122,7 +121,6 @@ extern bool Debug_Find_Path;
 extern bool Debug_Check_Map;
 extern bool Debug_Playtest;
 extern bool Debug_Trap_Check_Heap;
-extern bool Debug_Modem_Dump;
 extern bool Debug_Print_Events;
 extern bool Debug_Console;
 
@@ -243,7 +241,6 @@ extern Cell 						CurrentCell;
 #endif
 
 extern SessionClass				Session;
-extern NullModemClass			NullModem;
 extern IPXManagerClass			Ipx;
 
 #if (TIMING_FIX)

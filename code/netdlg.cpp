@@ -114,9 +114,9 @@
 #include "ipxmgr.h"
 #include "language\language.h"
 #include "list.h"
-#include "nulldlg.h"
 #include "queue.h"
 #include "rules.h"
+#include "session.h"
 #include "wonline.h"
 #include "wsproto.h"
 

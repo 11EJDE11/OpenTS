@@ -98,12 +98,11 @@
 #include "netdlg.h"
 #include "netdlg2.h"
 #include "netshare.h"
-#include "nulldlg.h"
-#include "nullmgr.h"
 #include "progress.h"
 #include "queue.h"
 #include "rules.h"
 #include "scenario.h"
+#include "session.h"
 #include "setpal.h"
 #include "sidebar.h"
 #include "sounddlg.h"
@@ -465,29 +464,16 @@ ret_addr:
 		//VisiblePage.Clear();
 		Title_Screen_Restore(true);
 
-		/*
-		**	Un-initialize whatever needs it, for each game played.
-		**
-		**	Shut down either the modem or network; they'll get re-initialized if
-		**	the user selections those options again in Select_Game().  This
-		**	"re-boots" the modem & network code, which I currently feel is safer
-		**	than just letting it hang around.
-		** (Skip this step if we're in playback mode; the modem or net won't have
-		**	been initialized in that case.)
-		*/
+		// Un-initialize whatever needs it, for each game played. The network is shut
+		// down rather than left running, so that the next game starts from a fresh
+		// one. Playback never opened it, so that case is skipped.
 		if (Session.Record || Session.Play) {
 			Session.RecordFile.Close();
 		}
 
-		if (Session.Type == GAME_NULL_MODEM || Session.Type == GAME_MODEM) {
+		if (Session.Type == GAME_IPX) {
 			if (!Session.Play) {
-				Modem_Signoff();
-			}
-		} else {
-			if (Session.Type == GAME_IPX) {
-				if (!Session.Play) {
-					Shutdown_Network();
-				}
+				Shutdown_Network();
 			}
 		}
 
@@ -510,33 +496,6 @@ ret_addr:
 	**	Free the scenario description buffers
 	*/
 	//Session.Free_Scenario_Descriptions();
-}
-
-
-/// <summary>
-/// Handles the modem maintenance for a serial game.
-/// This routine services the null modem connection and, while a scenario is being read in,
-/// picks up the loading progress the other player reports so that the progress bar can
-/// follow along.
-/// </summary>
-static void Serial_Call_Back(void)
-{
-	int packetlen;
-	SerialPacketType packet;
-
-	/*
-	**	Serial game maintenance.
-	*/
-	if (Session.Type == GAME_NULL_MODEM || Session.ModemService) {
-		NullModem.Service();
-		if (Scen->IsReadingScenario) {
-			while (NullModem.Get_Message(&packet, &packetlen) > 0) {
-				if (packet.Command == SERIAL_PROGRESS_REPORT && packet.ID != Session.ModemType) {
-					Progress.Set_Progress_Percent(1, packet.Progress.Percent);
-				}
-			}
-		}
-	}
 }
 
 
@@ -572,13 +531,6 @@ void Call_Back(void)
 	 */
 	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 		IPX_Call_Back();
-	}
-
-	/*
-	**	Serial game maintenance.
-	*/
-	if (Session.Type == GAME_MODEM || Session.Type == GAME_NULL_MODEM) {
-		Serial_Call_Back();
 	}
 
 	/*

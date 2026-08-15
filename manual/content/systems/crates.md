@@ -46,7 +46,7 @@ A crate is an overlay, not an object. Any OverlayType carrying [`Crate=yes`](/ke
 
 ### At scenario start
 
-Random placement runs once, at the end of scenario setup, and only outside a campaign. Its count is the larger of [`CrateMinimum`](/keys/crateminimum/) and the number of human players the match was set up with, clamped down to [`CrateMaximum`](/keys/cratemaximum/). Network and modem game setup are the only paths that record that player count.
+Random placement runs once, at the end of scenario setup, and only outside a campaign. Its count is the larger of [`CrateMinimum`](/keys/crateminimum/) and the number of human players the match was set up with, clamped down to [`CrateMaximum`](/keys/cratemaximum/). Network game setup is the only path that records that player count.
 
 Each of those crates goes through the placement search below, and each one that succeeds takes a tracking slot. There are 256 slots. A placement request that finds every slot occupied places nothing, so 256 is the ceiling on tracked crates regardless of `CrateMaximum`.
 

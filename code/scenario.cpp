@@ -152,7 +152,6 @@
 #include "vox.h"
 #include "wave.h"
 #include "waypoint.h"
-#include "wincomm.h"
 #include "wonline.h"
 #include "wsproto.h"
 
@@ -551,14 +550,6 @@ bool Wait_For_Players_To_Load(void)
 	for (;;) {
 		Keyboard->Check();
 		Call_Back();
-
-		if (Session.Type == GAME_MODEM && SerialPort) {
-			int modemstatus = SerialPort->Get_Modem_Status();
-			if ((modemstatus & WinModemClass::CD_SET) == 0) {
-				DebugString("Carrier Detect is false. Aborting load wait\n");
-				return(false);
-			}
-		}
 
 		if (wait_timeout <= 0) {
 			for (int i = 1; i < Session.Players.Count(); i++) {

@@ -71,6 +71,7 @@ const cases = [
 	['changes/opents-manual/index.html', ['OpenTS manual', 'Planned for', '0.1.0', 'reference pages for every']],
 	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'numerical results may differ', 'matching OpenTS versions']],
 	['changes/cd-search-path/index.html', ['Remove CD-ROM-dependent startup behavior', 'local data search path', 'PlayIntro']],
+	['changes/modem-play/index.html', ['Remove modem and null-modem play', 'SerialDefaults', 'keep their stored values']],
 ];
 
 const renderedMain = (relative) => {
