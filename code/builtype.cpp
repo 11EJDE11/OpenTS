@@ -1057,15 +1057,16 @@ void BuildingTypeClass::Fetch_Building_Normal_Image(TheaterType theater)
 
 /// <summary>
 /// Searches for a substring, ignoring case.
-/// Both strings are uppercased in place, so neither survives the call unchanged.
+/// The string being searched is uppercased in place, so it does not survive the call
+/// unchanged. The substring is matched as supplied and must already be uppercase.
 /// </summary>
 /// <param name="string">String to search; uppercased in place.</param>
-/// <param name="substring">Substring to search for; uppercased in place.</param>
+/// <param name="substring">Uppercase substring to search for.</param>
 /// <returns>Returns with a pointer to the substring within the string. Otherwise, NULL is
 /// returned.</returns>
 static char * Upr_Strstr(char * string, char const * substring)
 {
-	return(strstr(_strupr(string), _strupr((char *)substring)));
+	return(strstr(_strupr(string), substring));
 }
 
 
