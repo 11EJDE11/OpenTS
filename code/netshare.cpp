@@ -1146,10 +1146,8 @@ void LBRestoreSelections(HWND listbox, Dictionary<Wstring,bool> & lbdict)
 int RandomMapWaypointCount(int index)
 {
 	char wp[32];
-	char buf[132];
 	if (index >= 0 && index < Session.Scenarios.Count()) {
-		strcpy(buf, Session.Scenarios[index]->Get_Filename());
-		CCFileClass file(buf);
+		CCFileClass file(Session.Scenarios[index]->Get_Filename());
 
 		INIClass ini;
 		if (!ini.Load(file)) {

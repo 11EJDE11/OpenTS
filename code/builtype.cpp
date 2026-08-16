@@ -949,7 +949,6 @@ void const * BuildingTypeClass::Get_Image_Data(void) const
 	if (ImageData == NULL && IsDemandLoad) {
 		if (TheaterImageFile[0] != '\0') {
 			CCFileClass file(TheaterImageFile);
-			file.Is_Available();
 			(void *&)ImageData = Load_Alloc_Data(file);
 		}
 		return(ImageData);
