@@ -49,9 +49,7 @@
 #include "assert.h"
 #include "bsearch.h"
 
-#ifndef _USERENTRY
-#define _USERENTRY __cdecl
-#endif
+#include <algorithm>
 
 /*
 **	This class is used to create and maintain an index. It does this by assigning a unique
@@ -80,6 +78,12 @@ class IndexClass
 		~IndexClass(void);
 
 		/*
+		**	Copying would leave the archive pointer referring into another index's table.
+		*/
+		IndexClass(IndexClass const &) = delete;
+		IndexClass & operator = (IndexClass const &) = delete;
+
+		/*
 		**	Add element to index table.
 		*/
 		bool Add_Index(INDEX const & id, T const & data);
@@ -102,13 +106,13 @@ class IndexClass
 		/*
 		**	Actually a fetch an index data element from the table.
 		*/
-		T const & operator [] (INDEX const & id) const;
+		T operator [] (INDEX const & id) const;
 
 		/*
 		**	Fetch a data element by position reference.
 		*/
 		T const & Fetch_By_Position(int id) const;
-		INDEX const Fetch_ID_By_Position(int pos) const {return(IndexTable[pos].ID);}
+		INDEX Fetch_ID_By_Position(int pos) const;
 
 		/*
 		**	Clear out the index table to null (empty) state.
@@ -122,9 +126,8 @@ class IndexClass
 		*/
 		struct NodeElement {
 			NodeElement(void) {}		// Default constructor does nothing (by design).
-			NodeElement(INDEX const & id, T & data) : ID(id), Data(data) {}
 
-			INDEX ID;		// ID number (must be first element in this structure).
+			INDEX ID;		// ID number.
 			T Data;			// Data element assigned to this ID number.
 
 			bool operator == (NodeElement const & rvalue) const {return(ID == rvalue.ID);}
@@ -186,7 +189,10 @@ class IndexClass
 		*/
 		NodeElement const * Search_For_Node(INDEX const & id) const;
 
-		static int _USERENTRY search_compfunc(void const * ptr, void const * ptr2);
+		/*
+		**	Put the table in ID order, which searching and position fetching both rely on.
+		*/
+		void Sort_Table(void) const;
 };
 
 
@@ -289,34 +295,23 @@ bool IndexClass<INDEX, T>::Increase_Table_Size(int amount)
 	if (amount < 0) return(false);
 
 	NodeElement * table = new NodeElement[IndexSize + amount];
-	if (table != NULL) {
 
-		/*
-		**	Copy all valid nodes into the new table.
-		*/
-		for (int index = 0; index < IndexCount; index++) {
-			table[index] = IndexTable[index];
-		}
-
-		/*
-		**	Make the new table the current one (and delete the old one).
-		*/
-		delete [] IndexTable;
-		IndexTable = table;
-		IndexSize += amount;
-		Invalidate_Archive();
-
-		/*
-		**	Return with success flag.
-		*/
-		return(true);
+	/*
+	**	Copy all valid nodes into the new table.
+	*/
+	for (int index = 0; index < IndexCount; index++) {
+		table[index] = IndexTable[index];
 	}
 
 	/*
-	**	Failure to allocate the memory results in a failure to increase
-	**	the size of the index table.
+	**	Make the new table the current one (and delete the old one).
 	*/
-	return(false);
+	delete [] IndexTable;
+	IndexTable = table;
+	IndexSize += amount;
+	Invalidate_Archive();
+
+	return(true);
 }
 
 
@@ -416,7 +411,7 @@ bool IndexClass<INDEX, T>::Is_Present(INDEX const & id) const
  *   11/02/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class INDEX, class T>
-T const & IndexClass<INDEX, T>::operator [] (INDEX const & id) const
+T IndexClass<INDEX, T>::operator [] (INDEX const & id) const
 {
 	if (Is_Present(id)) {
 
@@ -426,8 +421,7 @@ T const & IndexClass<INDEX, T>::operator [] (INDEX const & id) const
 		*/
 		return(Archive->Data);
 	}
-	static T x;
-	return(x);
+	return(T());
 }
 
 
@@ -437,17 +431,25 @@ T const & IndexClass<INDEX, T>::Fetch_By_Position(int pos) const
 {
 	assert(pos < IndexCount);
 
-	/*
-	**	If the list has not yet been sorted, then do so now. Binary searching requires
-	**	the list to be sorted.
-	*/
-	if (!IsSorted) {
-		qsort(&IndexTable[0], IndexCount, sizeof(IndexTable[0]), search_compfunc);
-		Invalidate_Archive();
-		IsSorted = true;
-	}
+	Sort_Table();
 
 	return(IndexTable[pos].Data);
+}
+
+
+/// <summary>
+/// Fetches the identifier of the entry at the position specified.
+/// </summary>
+/// <remarks>Positions run in ID order, matching Fetch_By_Position, so the two may be
+/// paired to walk the index.</remarks>
+template<class INDEX, class T>
+INDEX IndexClass<INDEX, T>::Fetch_ID_By_Position(int pos) const
+{
+	assert(pos < IndexCount);
+
+	Sort_Table();
+
+	return(IndexTable[pos].ID);
 }
 
 
@@ -657,33 +659,19 @@ bool IndexClass<INDEX, T>::Remove_Index(INDEX const & id)
 }
 
 
-/***********************************************************************************************
- * compfunc -- Support function for bsearch and bsort.                                         *
- *                                                                                             *
- *    This compare function presumes that its parameters are pointing to NodeElements and that *
- *    the first "int" in the node is the index ID number to be used for comparison.            *
- *                                                                                             *
- * INPUT:   ptr1  -- Pointer to first node.                                                    *
- *                                                                                             *
- *          ptr2  -- Pointer to second node.                                                   *
- *                                                                                             *
- * OUTPUT:  Returns with the comparision value between the two nodes.                          *
- *                                                                                             *
- * WARNINGS:   This is highly dependant upon the layout of the NodeElement structure.          *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   11/02/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Puts the index table into ID order, if it is not in that order already.
+/// </summary>
+/// <remarks>Sorting only happens when a search or a position fetch needs it, so an index
+/// that is only being added to never pays for it.</remarks>
 template<class INDEX, class T>
-int _USERENTRY IndexClass<INDEX, T>::search_compfunc(void const * ptr1, void const * ptr2)
+void IndexClass<INDEX, T>::Sort_Table(void) const
 {
-	if (*(int const *)ptr1 == *(int const *)ptr2) {
-		return(0);
+	if (!IsSorted) {
+		std::sort(IndexTable, IndexTable + IndexCount);
+		Invalidate_Archive();
+		IsSorted = true;
 	}
-	if (*(int const *)ptr1 < *(int const *)ptr2) {
-		return(-1);
-	}
-	return(1);
 }
 
 
@@ -713,15 +701,7 @@ typename IndexClass<INDEX, T>::NodeElement const * IndexClass<INDEX, T>::Search_
 		return(0);
 	}
 
-	/*
-	**	If the list has not yet been sorted, then do so now. Binary searching requires
-	**	the list to be sorted.
-	*/
-	if (!IsSorted) {
-		qsort(&IndexTable[0], IndexCount, sizeof(IndexTable[0]), search_compfunc);
-		Invalidate_Archive();
-		IsSorted = true;
-	}
+	Sort_Table();
 
 	/*
 	**	This list is sorted and ready to perform a binary search upon it.
@@ -729,5 +709,4 @@ typename IndexClass<INDEX, T>::NodeElement const * IndexClass<INDEX, T>::Search_
 	NodeElement node;
 	node.ID = id;
 	return(Binary_Search(IndexTable, IndexCount, node));
-//	return((NodeElement const *)bsearch(&node, &IndexTable[0], IndexCount, sizeof(IndexTable[0]), search_compfunc));
 }
