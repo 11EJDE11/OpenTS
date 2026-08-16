@@ -119,24 +119,8 @@ void LayerClass::Sort(void)
  *=============================================================================================*/
 int LayerClass::Sorted_Add(ObjectClass const * const object)
 {
-	if (ActiveCount >= Length()) {
-		if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
-			if (!Resize(Length() + GrowthStep)) {
-
-				/*
-				**	Failure to increase the size of the vector is an error condition.
-				**	Return with the error flag.
-				*/
-				return(false);
-			}
-		} else {
-
-			/*
-			**	Increasing the size of this vector is not allowed! Bail this
-			**	routine with the error code.
-			*/
-			return(false);
-		}
+	if (!Grow()) {
+		return(false);
 	}
 
 	/*

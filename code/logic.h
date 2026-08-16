@@ -48,9 +48,9 @@ class LogicClass : public LayerClass
 
 	public:
 		void AI(void);
-		virtual bool Submit(ObjectClass const * object, bool sort=false) override;
+		bool Submit(ObjectClass const * object, bool sort=false);
 		void Remove(ObjectClass * object);
-		virtual void Detach(AbstractClass const * target, bool all=true);
+		void Detach(AbstractClass const * target, bool all=true);
 #ifdef _DEBUG
 		void Debug_Dump(MonoClass *mono) const;
 #endif
