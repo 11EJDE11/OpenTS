@@ -3530,12 +3530,14 @@ void TeamClass::TMission_SCOUT(TeamMissionClass * mission, bool)
 				BuildingClass * target = targets[picked];
 
 				FootClass * leader = Fetch_A_Leader();
+				if (leader != NULL) {
 					Cell cell = Map.Nearby_Location(target->PositionCoord.As_Cell(), leader->TClass->Speed);
 					if (cell != CELL_NONE) {
 						Assign_Mission_Target(&Map[cell]);
 					} else {
 						Assign_Mission_Target(NULL);
 					}
+				}
 			} else {
 				House->Mark_Scouted(HouseToScout);
 				HouseToScout = NULL;

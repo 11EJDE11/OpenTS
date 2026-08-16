@@ -3636,7 +3636,7 @@ void InfantryClass::Doing_AI(void)
 		switch (Doing) {
 			default:
 				if (ProneStruggleTimer == 0) {
-					if (Class->DoControls[Doing].Facing != FACING_NONE) {
+					if (Doing != DO_NOTHING && Class->DoControls[Doing].Facing != FACING_NONE) {
 						PrimaryFacing.Set(Class->DoControls[Doing].Facing);
 					}
 

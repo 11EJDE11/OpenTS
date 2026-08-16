@@ -478,9 +478,6 @@ bool Do_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
 
 	FootClass * object = _Create_Group(teamtype);
 
-	/// this dereferences the object before the NULL check below
-	object->Team->IsDeleteTypeWhenDone = delete_when_done;
-
 	/*
 	**	Bail on this reinforcement if no reinforcements could be created.
 	**	This is probably because the object maximum was reached.
@@ -488,6 +485,8 @@ bool Do_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
 	if (!object) {
 		return(false);
 	}
+
+	object->Team->IsDeleteTypeWhenDone = delete_when_done;
 
 	Cell origin = teamtype->Get_Origin();
 	if (wp != -1) {

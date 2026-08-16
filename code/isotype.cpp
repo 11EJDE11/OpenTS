@@ -1821,6 +1821,10 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 				int spanw = ISO_DRAW_WIDTH;
 				int spanh = ISO_DRAW_HEIGHT;
 				const IsoTileRecord * record = set->Fetch_Record_Pointer(subtile);
+				if (record == NULL) {
+					AlphaLightingRemapInit.Deinit(aremap);
+					return;
+				}
 
 				IsoDrawData.SpanWidth = spanw;
 				IsoDrawData.SpanHeight = spanh;
