@@ -205,12 +205,7 @@ MaxXYVel:
   "VoxelAnimTypeClass::MaxXYVel": {verdict: distinct}
 
 MinPlayers:
-  "MultiMission::MinPlayers":
-    verdict: distinct
-    absorbs: ["MultiMission::MaxPlayers"]
-    note: >-
-      read twice in each constructor, into the minimum and then into the
-      maximum player count; no MaxPlayers entry is ever looked up
+  "MultiMission::MinPlayers": {verdict: distinct}
 
 MinZVel:
   "AnimTypeClass::MinZVel": {verdict: distinct}

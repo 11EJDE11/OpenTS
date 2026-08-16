@@ -13090,6 +13090,39 @@ MaxMoney:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+MaxPlayers:
+  key: MaxPlayers
+  scopes:
+  - applies_to:
+    - map packets
+    file: scenario packet (.pkt)
+    section:
+      kind: identifier
+      source: multiplayer-map
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: MultiMission
+      member: MaxPlayers
+      source: code/session.cpp
+      guard: null
+    level: MultiMission
+  - applies_to:
+    - multiplayer maps
+    file: map file (.mpr)
+    section:
+      kind: literal
+      name: Multiplay
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: MultiMission
+      member: MaxPlayers
+      source: code/session.cpp
+      guard: null
+    level: MultiMission
 MaxVeinholeGrowth:
   key: MaxVeinholeGrowth
   scopes:
@@ -13416,15 +13449,13 @@ MinPlayers:
       kind: identifier
       source: multiplayer-map
     value_type: integer
-    status: reviewed
+    status: generated
     _provenance:
       default_candidate: null
       declared_in: MultiMission
       member: MinPlayers
       source: code/session.cpp
       guard: null
-    note: read twice in each constructor, into the minimum and then into the maximum player count; no
-      MaxPlayers entry is ever looked up
     level: MultiMission
   - applies_to:
     - multiplayer maps
@@ -13433,15 +13464,13 @@ MinPlayers:
       kind: literal
       name: Multiplay
     value_type: integer
-    status: reviewed
+    status: generated
     _provenance:
       default_candidate: null
       declared_in: MultiMission
       member: MinPlayers
       source: code/session.cpp
       guard: null
-    note: read twice in each constructor, into the minimum and then into the maximum player count; no
-      MaxPlayers entry is ever looked up
     level: MultiMission
 MinProductionSpeed:
   key: MinProductionSpeed

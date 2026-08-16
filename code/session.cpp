@@ -1060,7 +1060,7 @@ MultiMission::MultiMission(INIClass const & ini, char const * name)
 
 		ini.Get_String(name, "Description", "", ScenarioDescription, sizeof(ScenarioDescription));
 		MinPlayers = ini.Get_Int(name, "MinPlayers", MinPlayers);
-		MaxPlayers = ini.Get_Int(name, "MinPlayers", MaxPlayers);
+		MaxPlayers = ini.Get_Int(name, "MaxPlayers", MaxPlayers);
 
 		CCFileClass file(Filename);
 
@@ -1122,7 +1122,7 @@ MultiMission::MultiMission(char const * filename, char const * description, char
 		}
 
 		MinPlayers = ccini.Get_Int("Multiplay", "MinPlayers", MinPlayers);
-		MaxPlayers = ccini.Get_Int("Multiplay", "MinPlayers", MaxPlayers);
+		MaxPlayers = ccini.Get_Int("Multiplay", "MaxPlayers", MaxPlayers);
 	}
 }
 
