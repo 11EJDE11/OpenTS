@@ -1263,7 +1263,7 @@ bool RulesClass::General(CCINIClass const & ini)
 		DropPodInfantryMaximum = ini.Get_Int(GENERAL, "DropPodInfantryMaximum", DropPodInfantryMaximum);
 		LevitateLocomotionClass::Read_INI(ini);
 		EngineerCaptureLevel = (float)ini.Get_Float(GENERAL, "EngineerCaptureLevel", EngineerCaptureLevel);
-		EngineerDamage = (float)ini.Get_Float(GENERAL, "EngineerCaptureLevel", EngineerDamage);
+		EngineerDamage = (float)ini.Get_Float(GENERAL, "EngineerDamage", EngineerDamage);
 		TalkBubbleTime = int(TIMER_SECOND * ini.Get_Float(GENERAL, "TalkBubbleTime", TalkBubbleTime * (1.0f/TIMER_SECOND)));
 		return(true);
 	}

@@ -7666,15 +7666,31 @@ EngineerCaptureLevel:
       kind: literal
       name: General
     value_type: floating point
-    status: reviewed
+    status: generated
     _provenance:
       default_candidate: '1'
       declared_in: RulesClass
       member: EngineerCaptureLevel
       source: code/rules.cpp
       guard: null
-    note: this one key sets BOTH the engineer capture threshold AND the engineer damage fraction (a shipped
-      copy-paste slip -- a separate EngineerDamage= key is never read)
+    level: RulesClass
+EngineerDamage:
+  key: EngineerDamage
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: General
+    value_type: floating point
+    status: generated
+    _provenance:
+      default_candidate: '0'
+      declared_in: RulesClass
+      member: EngineerDamage
+      source: code/rules.cpp
+      guard: null
     level: RulesClass
 ExitCoord:
   key: ExitCoord

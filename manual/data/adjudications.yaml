@@ -112,13 +112,10 @@ Engineer:
   "RulesClass::Engineer": {verdict: distinct}
 
 EngineerCaptureLevel:
-  "RulesClass::EngineerCaptureLevel":
-    verdict: distinct
-    absorbs: ["RulesClass::EngineerDamage"]
-    note: >-
-      this one key sets BOTH the engineer capture threshold AND the engineer
-      damage fraction (a shipped copy-paste slip -- a separate EngineerDamage=
-      key is never read)
+  "RulesClass::EngineerCaptureLevel": {verdict: distinct}
+
+EngineerDamage:
+  "RulesClass::EngineerDamage": {verdict: distinct}
 
 ExpireAnim:
   "AnimTypeClass::ExpireAnim": {verdict: distinct}

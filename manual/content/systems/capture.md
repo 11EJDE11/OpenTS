@@ -263,6 +263,6 @@ An engineer skips target scanning altogether on plain guard, and being shot at w
 
 ## Settings without effect
 
-`EngineerDamage` is not a settable key. The read that fills it asks the rules for `EngineerCaptureLevel` instead of its own name, so `[General] EngineerDamage=` is never looked for and writing it changes nothing; writing `EngineerCaptureLevel=` fills both figures, and nothing reads the `EngineerDamage` one.
+[`EngineerDamage`](/keys/engineerdamage/) is read from `[General]` under its own name, but no gameplay path consults the figure it fills, so writing it changes nothing.
 
 The sabotage handling has a second branch, for a saboteur whose destination is a bare cell rather than a structure, that fires three area explosions of [`BridgeStrength`](/keys/bridgestrength/) with `C4Warhead` at the soldier's own position. No cursor produces that combination, because the cell branch of the click handler is never reached. The computer's guard and area-guard conversions do not clear an existing destination, so a computer-owned saboteur can carry the mission with a cell destination and reach it that way.
