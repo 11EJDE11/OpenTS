@@ -130,8 +130,8 @@ GraphicMenu::~GraphicMenu(void)
 	BackgroundName.Release();
 	ThemeName.Release();
 
-	for (ITEM_ITER iter = Items; iter; iter++) {
-		delete *iter;
+	for (GraphicMenuItem * item : Items) {
+		delete item;
 	}
 }
 
@@ -145,10 +145,9 @@ GraphicMenu::~GraphicMenu(void)
 /// <param name="enabled">Should the items be enabled?</param>
 void GraphicMenu::Set_Item_Enabled(int id, bool enabled)
 {
-	ITEM_ITER it = Items;
-	for (; it; it++) {
-		if (it->Get_ID() == id) {
-			it->Set_Enabled(enabled);
+	for (GraphicMenuItem * item : Items) {
+		if (item->Get_ID() == id) {
+			item->Set_Enabled(enabled);
 		}
 	}
 }
@@ -281,14 +280,10 @@ void GraphicMenu::Add_Item(GraphicMenuItem * item)
 /// is over none of them.</returns>
 GraphicMenuItem * GraphicMenu::Get_Item_Under_Mouse(Point2D const & mouse)
 {
-	ITEM_ITER it = Items;
-	for (; it; it++) {
-		if (it->Is_Mouse_Over(mouse)) {
-			break;
+	for (GraphicMenuItem * item : Items) {
+		if (item->Is_Mouse_Over(mouse)) {
+			return(item);
 		}
-	}
-	if (it) {
-		return(*it);
 	}
 	return(NULL);
 }
@@ -301,14 +296,10 @@ GraphicMenuItem * GraphicMenu::Get_Item_Under_Mouse(Point2D const & mouse)
 /// item claims it.</returns>
 GraphicMenuItem * GraphicMenu::Get_Item_For_Key(KeyNumType key)
 {
-	ITEM_ITER it = Items;
-	for (; it; it++) {
-		if (it->Is_Input_Key(key)) {
-			break;
+	for (GraphicMenuItem * item : Items) {
+		if (item->Is_Input_Key(key)) {
+			return(item);
 		}
-	}
-	if (it) {
-		return(*it);
 	}
 	return(NULL);
 }

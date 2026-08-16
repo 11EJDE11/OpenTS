@@ -165,12 +165,11 @@ bool GraphicMenuShortcutItem::Is_Input_Key(KeyNumType key)
 		return(false);
 	}
 
-	SHORTCUT_ITER it = Shortcuts;
-	for (; it; it++) {
-		if (*it == (unsigned int)key) {
-			break;
+	for (unsigned int shortcut : Shortcuts) {
+		if (shortcut == (unsigned int)key) {
+			return(true);
 		}
 	}
 
-	return(it);
+	return(false);
 }

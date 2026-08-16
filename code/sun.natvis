@@ -33,18 +33,6 @@
         </Expand>
     </Type>
 
-    <Type Name="VectorCursor&lt;*,*&gt;">
-        <!-- $T1 = T (element), $T2 = V (container). Vector is V*; V::Vector is the data pointer. -->
-        <DisplayString Condition="Vector == 0">{{ null }}</DisplayString>
-        <DisplayString Condition="Cursor >= (unsigned)Vector->VectorMax">{{ cursor={Cursor} (end) }}</DisplayString>
-        <DisplayString>{{ cursor={Cursor} value={Vector->Vector[Cursor]} }}</DisplayString>
-        <Expand>
-            <Item Name="[cursor]">Cursor</Item>
-            <Item Name="[current]" Condition="Vector != 0 &amp;&amp; Cursor &lt; (unsigned)Vector->VectorMax">Vector->Vector[Cursor]</Item>
-            <Item Name="[vector]" Condition="Vector != 0">*Vector</Item>
-        </Expand>
-    </Type>
-
     <Type Name="TPoint2D&lt;*&gt;">
         <DisplayString>{{ X={X}, Y={Y} }}</DisplayString>
         <Expand>

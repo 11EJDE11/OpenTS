@@ -163,22 +163,21 @@ void Campaign::Reset_INI(void)
 
 
 /// <summary>
-/// Fetches an iterator to the conflict over a territory.
+/// Fetches the conflict fought over a territory.
 /// The tour screen uses this routine when the player picks a territory, to reach the
 /// conflict that will be fought over it.
 /// </summary>
 /// <param name="index">The territory to find the conflict for.</param>
-/// <returns>Returns with an iterator positioned on the conflict. An exhausted iterator is
-/// returned if that territory is not in dispute.</returns>
-CONFLICT_ITER Campaign::Get_Conflict_Iterator(int index)
+/// <returns>Returns with a pointer to the conflict. Otherwise, NULL is returned if that
+/// territory is not in dispute.</returns>
+Conflict * Campaign::FindConflict(int index)
 {
-	CONFLICT_ITER it = Conflicts;
-	for (; it; it++) {
-		if (it.Cur_Ref().Get_Territory_Index() == index) {
-			break;
+	for (Conflict & conflict : Conflicts) {
+		if (conflict.Get_Territory_Index() == index) {
+			return(&conflict);
 		}
 	}
-	return(it);
+	return(NULL);
 }
 
 

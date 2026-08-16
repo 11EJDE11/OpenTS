@@ -26,7 +26,6 @@ class SurfaceCacheClass;
 struct VQHandle;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
-typedef VectorCursor<MSAnim *, MS_ANIM_LIST> MS_ANIM_ITER;
 
 class MSAnim
 {

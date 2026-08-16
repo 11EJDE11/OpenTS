@@ -484,7 +484,6 @@ namespace WorldDominationTour
 	};
 
 	typedef DynamicVectorClass<Conflict> CONFLICT_LIST;
-	typedef VectorCursor<Conflict, CONFLICT_LIST> CONFLICT_ITER;
 
 	class CampaignProperties {
 		public:
@@ -520,7 +519,7 @@ namespace WorldDominationTour
 			void Write_INI(void);
 			void Reset_INI(void);
 			void Load_INI(INIClass & ini);
-			CONFLICT_ITER Get_Conflict_Iterator(int index);
+			Conflict * FindConflict(int index);
 			void Set_Faction(int faction);
 			CampaignProperties & Get_Campaign_Properties(void) { return(Properties); }
 
@@ -628,7 +627,6 @@ namespace WorldDominationTour
 	};
 
 	typedef DynamicVectorClass<Territory *> TERR_LIST;
-	typedef VectorCursor<Territory *, TERR_LIST> TERR_ITER;
 
 	class Map {
 		public:
@@ -672,7 +670,6 @@ namespace WorldDominationTour
 	};
 
 	typedef VectorClass<Centroid> CENTROID_LIST;
-	typedef VectorCursor<Centroid, CENTROID_LIST> CENTROID_ITER;
 
 	/// Game Options
 
@@ -1035,7 +1032,6 @@ namespace WorldDominationTour
 
 	class Selection : public MSEngine {
 		typedef DynamicVectorClass<MSSfxEntry *> SFX_LIST;
-		typedef VectorCursor<MSSfxEntry *, SFX_LIST> SFX_ITER;
 
 		public:
 			Selection(Campaign *campaign, bool vq_anim);

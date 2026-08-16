@@ -34,8 +34,8 @@ Map::Map(int id) :
 /// </summary>
 Map::~Map(void)
 {
-	for (TERR_ITER it = Territories; it; it++) {
-		delete *it;
+	for (Territory * territory : Territories) {
+		delete territory;
 	}
 }
 

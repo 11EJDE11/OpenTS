@@ -100,7 +100,6 @@ int Conflict::Get_Territory_Index(void) const
 
 
 typedef DynamicVectorClass<WorldDominationTour::GameOption *> WDT_GAME_OPTION_LIST;
-typedef VectorCursor<WorldDominationTour::GameOption *, WDT_GAME_OPTION_LIST> WDT_GAME_OPTION_ITER;
 WDT_GAME_OPTION_LIST WDTGameOptionList;
 
 
@@ -306,26 +305,25 @@ void Conflict::Process_Game_Options(char * str, int len)
 	WDTTerritory *territory = Territory;
 	int left = 6;
 	int value = 0;
-	WDT_GAME_OPTION_ITER it = WDTGameOptionList;
-
-	while (left && it) {
-		GameOption * opt = *it;
+	for (GameOption * opt : WDTGameOptionList) {
+		if (!left) {
+			break;
+		}
 		if ((value & opt->Bitmask) == 0 && opt->Get_Display_Priority(territory) == WDT_GAME_OPT_PRIORITY) {
 			opt->Get_String(territory, str, len);
 			left--;
 			value |= opt->Bitmask;
 		}
-		it++;
 	}
 
-	it = WDTGameOptionList;
-	while (left && it) {
-		GameOption * opt = *it;
+	for (GameOption * opt : WDTGameOptionList) {
+		if (!left) {
+			break;
+		}
 		if ((value & opt->Bitmask) == 0 && opt->Get_Display_Priority(territory) != WDT_GAME_OPT_USER_MOD) {
 			opt->Get_String(territory, str, len);
 			left--;
 			value |= opt->Bitmask;
 		}
-		it++;
 	}
 }

@@ -92,7 +92,6 @@ class GraphicMenu
 	friend GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name);
 
 	typedef DynamicVectorClass<GraphicMenuItem *> ITEM_LIST;
-	typedef VectorCursor<GraphicMenuItem *, ITEM_LIST> ITEM_ITER;
 
 	public:
 		GraphicMenu(void);

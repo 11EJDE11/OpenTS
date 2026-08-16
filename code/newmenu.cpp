@@ -212,10 +212,8 @@ int NewMenuClass::Display_Menu(char const * section, DynamicVectorClass<int> & o
 	Background = new char[strlen(bgname) + 1];
 	strcpy(Background, bgname);
 
-	VectorCursor<int, DynamicVectorClass<int> > it = options;
-	while (it) {
-		menu->Set_Item_Enabled(*it, false);
-		it++;
+	for (int option : options) {
+		menu->Set_Item_Enabled(option, false);
 	}
 
 	int result = menu->Presentation();

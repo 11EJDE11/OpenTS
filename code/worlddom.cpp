@@ -317,9 +317,9 @@ void * WDT_Get_Resumed_Campaign(void)
 /// </returns>
 WDTTerritory *WDT_Get_Territory(int index)
 {
-	CONFLICT_ITER it = (*g_WDTNewCampaign)->Get_Conflict_Iterator(index);
-	if (it) {
-		return((*it).Territory);
+	Conflict * conflict = (*g_WDTNewCampaign)->FindConflict(index);
+	if (conflict != NULL) {
+		return(conflict->Territory);
 	}
 	return(NULL);
 }

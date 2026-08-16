@@ -34,10 +34,8 @@
 #include "wolapi\wolapi.h"
 
 typedef VectorClass<Point2D> POINT2D_LIST;
-typedef VectorCursor<Point2D, POINT2D_LIST> POINT2D_ITER;
 
 typedef VectorClass<Rect> RECT_LIST;
-typedef VectorCursor<Rect, RECT_LIST> RECT_ITER;
 
 
 using namespace WorldDominationTour;
@@ -125,8 +123,8 @@ Selection::~Selection(void)
 	Remove_Target_Anims();
 	Remove_Target_Anims2();
 
-	for (SFX_ITER it = SfxEntries; it; it++) {
-		delete *it;
+	for (MSSfxEntry * entry : SfxEntries) {
+		delete entry;
 	}
 
 	delete RegionDrawer;
@@ -517,7 +515,7 @@ void Selection::Do_Target_Anim(State const & state, bool show_targets, bool sile
 	/*
 	 * Tear down any animations left over from the previous cycle transition.
 	 */
-	for (TERR_ITER teardown = WorldMap.Territories; teardown; teardown++) {
+	for (Territory * teardown : WorldMap.Territories) {
 		MSAnim * anim = teardown->Remove_Target_Anim();
 		if (anim != NULL) {
 			Remove_Anim(anim);
@@ -532,15 +530,15 @@ void Selection::Do_Target_Anim(State const & state, bool show_targets, bool sile
 	 * matching occupation sound effect. When requested, queue the zoom/throb
 	 * target animations for newly disputed territories.
 	 */
-	for (TERR_ITER it(WorldMap.Territories, 0); it; it++) {
-		unsigned id = it.Cur()->ID;
+	for (Territory * territory : WorldMap.Territories) {
+		unsigned id = territory->ID;
 		int old_state = CurrentState.Get_Territory_State(id);
 		int new_state = ((State &)state).Get_Territory_State(id);
 
 		if (new_state != old_state) {
 			Check_For_Breakout();
 
-			it.Cur()->Set_Owner_State(new_state, *this, !Brokeout || silent);
+			territory->Set_Owner_State(new_state, *this, !Brokeout || silent);
 
 			if (!silent && !Brokeout) {
 				switch (new_state) {
@@ -562,7 +560,7 @@ void Selection::Do_Target_Anim(State const & state, bool show_targets, bool sile
 
 		if (show_targets) {
 			if (new_state == 1) {
-				Point2D target = Position + MapOrigin + it.Cur()->Target;
+				Point2D target = Position + MapOrigin + territory->Target;
 
 				if (ZoomingTarget != NULL) {
 					MSFadeAnim * fade = new MSFadeAnim(ZoomingTarget->Get_Filename(), target.X, target.Y, TargetDrawer, 3, SHAPE_CENTER, &Anims);
@@ -573,7 +571,7 @@ void Selection::Do_Target_Anim(State const & state, bool show_targets, bool sile
 				shape->Set_Stop_Frame(ThrobbingTargetDividingFrame - 1);
 				shape->Set_Start_Frame(0);
 				shape->Set_Frame(0);
-				it.Cur()->Set_Target_Anim(shape);
+				territory->Set_Target_Anim(shape);
 				throb_anims.Add(shape);
 			}
 		}
@@ -583,25 +581,25 @@ void Selection::Do_Target_Anim(State const & state, bool show_targets, bool sile
 	 * Play the queued target animations. On abort, discard the zoom animations;
 	 * otherwise play the zoom SFX and wait for each to complete.
 	 */
-	MS_ANIM_ITER zoom_iter = zoom_anims;
-	for (MS_ANIM_ITER throb_iter = throb_anims; throb_iter; throb_iter++) {
+	MSAnim ** zoom_iter = zoom_anims.begin();
+	for (MSAnim * throb : throb_anims) {
 		Check_For_Breakout();
 
-		if (zoom_iter) {
+		if (zoom_iter != zoom_anims.end()) {
 			if (Brokeout) {
-				MSAnim * anim = zoom_iter.Cur();
+				MSAnim * anim = *zoom_iter;
 				if (anim != NULL) {
 					delete anim;
 				}
 			} else {
 				Play_SFX("TargetZoom");
-				Add_Animation(zoom_iter.Cur());
-				Wait_For_Anim(zoom_iter.Cur(), 300000);
+				Add_Animation(*zoom_iter);
+				Wait_For_Anim(*zoom_iter, 300000);
 			}
 			zoom_iter++;
 		}
 
-		Add_Animation(throb_iter.Cur());
+		Add_Animation(throb);
 	}
 
 	CurrentState = state;
@@ -661,19 +659,13 @@ bool Selection::Select_Territory(Territory * territory)
 	char buffer[512];
 
 	if (TourCampaign->Properties.Get_Current_Tick() == StartTick) {
-		CONFLICT_ITER it = TourCampaign->Conflicts;
-		for (; it; it++) {
-			int id = MousedTerritory->ID;
-			if (it.Cur_Ref().Get_Territory_Index() == id) {
-				break;
-			}
-		}
+		Conflict * conflict = TourCampaign->FindConflict(MousedTerritory->ID);
 
-		if (it) {
+		if (conflict != NULL) {
 			found = true;
-			SelectedConflict = it.Cur_Ref();
+			SelectedConflict = *conflict;
 			strcpy(buffer, "\n");
-			it.Cur_Ref().Process_Game_Options(&buffer[1], 511);
+			conflict->Process_Game_Options(&buffer[1], 511);
 			description = buffer;
 			MSShapeAnim * anim = (MSShapeAnim *)territory->TargetAnim;
 			if (anim != NULL) {
@@ -702,8 +694,8 @@ bool Selection::Select_Territory(Territory * territory)
 /// </summary>
 void Selection::Remove_Target_Anims(void)
 {
-	for (TERR_ITER it = WorldMap.Territories; it; it++) {
-		MSAnim * anim = it->Remove_Target_Anim();
+	for (Territory * territory : WorldMap.Territories) {
+		MSAnim * anim = territory->Remove_Target_Anim();
 		if (anim != NULL) {
 			Remove_Anim(anim);
 		}
@@ -718,8 +710,8 @@ void Selection::Remove_Target_Anims(void)
 /// </summary>
 void Selection::Remove_Target_Anims2(void)
 {
-	for (TERR_ITER it = WorldMap.Territories; it; it++) {
-		MSAnim * anim = it->Remove_Target_Anim();
+	for (Territory * territory : WorldMap.Territories) {
+		MSAnim * anim = territory->Remove_Target_Anim();
 		if (anim != NULL) {
 			Remove_Anim(anim);
 		}
@@ -1042,14 +1034,11 @@ void Selection::Set_Text(char const * text, int start_delay)
 void Selection::Play_SFX(char const * name)
 {
 	if (name != NULL) {
-		SFX_ITER it(SfxEntries, 0);
-		for (; it; it++) {
-			if (stricmp(it->Get_Name(), name) == 0) {
+		for (MSSfxEntry * entry : SfxEntries) {
+			if (stricmp(entry->Get_Name(), name) == 0) {
+				entry->Play();
 				break;
 			}
-		}
-		if (it) {
-			it->Play();
 		}
 	}
 }
@@ -1258,18 +1247,15 @@ void WorldDominationTour::Write_Map_INI(char const * map_name, char const * pcx1
 	POINT2D_LIST points(30);
 	CENTROID_LIST centroids(30);
 
-	RECT_ITER riter = rects;
-	for (; riter; riter++) {
-		Rect & rect = *riter;
+	for (Rect & rect : rects) {
 		rect.X = 0;
 		rect.Y = 0;
 		rect.Width = 0;
 		rect.Height = 0;
 	}
 
-	POINT2D_ITER piter = points;
-	for (; piter; piter++) {
-		*piter = Point2D(0,0);
+	for (Point2D & pt : points) {
+		pt = Point2D(0,0);
 	}
 
 	/*
@@ -1292,13 +1278,11 @@ void WorldDominationTour::Write_Map_INI(char const * map_name, char const * pcx1
 			if ((unsigned)rects.Length() < n + 1) {
 				int length = rects.Length();
 				rects.Resize(n + 1);
-				RECT_ITER iter(rects, length);
-				for (; iter; iter++) {
-					Rect & blank = *iter;
-					blank.X = 0;
-					blank.Y = 0;
-					blank.Width = 0;
-					blank.Height = 0;
+				for (Rect * blank = rects.begin() + length; blank != rects.end(); blank++) {
+					blank->X = 0;
+					blank->Y = 0;
+					blank->Width = 0;
+					blank->Height = 0;
 				}
 			}
 			Rect & rect = rects[n];
@@ -1325,17 +1309,16 @@ void WorldDominationTour::Write_Map_INI(char const * map_name, char const * pcx1
 			if ((unsigned)points.Length() < n + 1) {
 				int length = points.Length();
 				points.Resize(n + 1);
-				POINT2D_ITER iter(points, length);
-				for (; iter; iter++) {
-					*iter = Point2D(0,0);
+				for (Point2D * blank = points.begin() + length; blank != points.end(); blank++) {
+					*blank = Point2D(0,0);
 				}
 			}
 			points[n] = point;
 		}
 	}
 
-	riter = RECT_ITER(rects);
-	piter = POINT2D_ITER(points);
+	Rect * riter = rects.begin();
+	Point2D * piter = points.begin();
 
 	char section[256];
 	char string[256];
@@ -1343,8 +1326,8 @@ void WorldDominationTour::Write_Map_INI(char const * map_name, char const * pcx1
 	char idx2[8];
 	int ti = 0;
 	int ci = 0;
-	while (riter) {
-		if (!piter) {
+	while (riter != rects.end()) {
+		if (piter == points.end()) {
 			break;
 		}
 		sprintf(string, "Territory%02d", ti);

@@ -15,7 +15,6 @@
 class GraphicMenuShortcutItem : public GraphicMenuItem
 {
 	typedef DynamicVectorClass<unsigned int> SHORTCUT_LIST;
-	typedef VectorCursor<unsigned int, SHORTCUT_LIST> SHORTCUT_ITER;
 
 	public:
 		GraphicMenuShortcutItem(int id, const char * keys);

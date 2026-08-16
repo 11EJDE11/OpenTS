@@ -169,12 +169,11 @@ MSAnim * Territory::Remove_Target_Anim(void)
 /// <returns>Returns with a pointer to the territory found. Otherwise, NULL is returned.</returns>
 Territory * WorldDominationTour::Find_Territory_By_ID(TERR_LIST & terr, int id)
 {
-	TERR_ITER it = terr;
-	for (; it; it++) {
-		if (it->ID == id) {
-			break;
+	for (Territory * territory : terr) {
+		if (territory->ID == id) {
+			return(territory);
 		}
 	}
 
-	return(it ? *it : NULL);
+	return(NULL);
 }
