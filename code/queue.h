@@ -41,6 +41,8 @@
 #include "mission.h"
 #include "target.h"
 
+#include <bit>
+
 /*
 **	This class implements a classic FIFO queue (also known as - standing in line). Objects
 **	are added to the end (tail) of the line. Objects are removed from the start (first) of
@@ -59,13 +61,15 @@
 template<class T, int size>
 class QueueClass
 {
+		static_assert(size > 0 && std::has_single_bit((unsigned)size), "size must be a power of two");
+
 	public:
 		/*
 		**	This is the count of the number of objects in the queue. If this count is zero,
 		**	then the operator[], First(), and Next() functions are undefined. Check this
 		**	value BEFORE calling these functions.
 		*/
-		const int Count;
+		int Count;
 
 		//-------------- Functions --------------------
 		QueueClass(void);						// Default constructor.
@@ -152,7 +156,7 @@ inline QueueClass<T,size>::QueueClass(void) : Count(0)
 template<class T, int size>
 inline void QueueClass<T,size>::Init(void)
 {
-	((int &)Count) = 0;
+	Count = 0;
 	Head = 0;
 	Tail = 0;
 }
@@ -179,7 +183,7 @@ inline int QueueClass<T,size>::Add(T const &q)
 	if (Count < size) {
 		Array[Tail] = q;
 		Tail = (Tail + 1) & (size-1);
-		((int &)Count) = Count + 1;
+		Count++;
 		return(true);
 	}
 	return(false);
@@ -208,7 +212,7 @@ inline int QueueClass<T,size>::Next(void)
 {
 	if (Count) {
 		Head = (Head + 1) & (size-1);
-		((int &)Count) = Count - 1;
+		Count--;
 	}
 	return(Count);
 }
