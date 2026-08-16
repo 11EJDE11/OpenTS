@@ -39,11 +39,15 @@
 
 #include "blowfish.h"
 
-#include "assert.h"
-
 #ifndef NO_BLOWFISH_DLL
 #include "iblowfish.h"
+#endif
 
+#include <cassert>
+
+
+
+#ifdef NO_BLOWFISH_DLL
 /*
 **	Byte order controlled long integer. This integer is constructed
 **	so that character 0 (C0) is the most significant byte of the

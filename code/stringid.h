@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "assert.h"
+#include <cassert>
 
 
 template<int SIZE>

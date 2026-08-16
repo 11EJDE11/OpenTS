@@ -11,10 +11,11 @@
 
 #include "animfile.h"
 
-#include "assert.h"
 #include "bsurface.h"
 #include "palette.h"
 #include "wwfile.h"
+
+#include <cassert>
 
 /// Size of a large page header: the page descriptor, a reserved word, and one size entry
 /// per record.

@@ -33,7 +33,6 @@
 #pragma once
 
 #include "abstract.h"
-#include "assert.h"
 #include "coord.h"
 #include "face.h"
 #include "globals.h"
@@ -52,6 +51,8 @@
 #include "result.hh"
 #include "tevent.hh"
 #include "visual.hh"
+
+#include <cassert>
 
 class ObjectClass;
 class TechnoClass;

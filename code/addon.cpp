@@ -11,7 +11,6 @@
 
 #include "addon.h"
 
-#include "assert.h"
 #include "ccfile.h"
 #include "data.h"
 #include "init.h"

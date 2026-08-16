@@ -35,8 +35,7 @@
 
 #include "blwstraw.h"
 
-#include "assert.h"
-
+#include <cassert>
 #include <cstring>
 
 

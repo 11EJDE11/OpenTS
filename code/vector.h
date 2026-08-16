@@ -50,9 +50,9 @@
 #pragma once
 
 #include "always.h"
-#include "assert.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>

@@ -142,7 +142,6 @@
 #include "aircraft.h"
 #include "airctype.h"
 #include "app.h"
-#include "assert.h"
 #include "building.h"
 #include "builtype.h"
 #include "ccrand.h"
@@ -199,6 +198,8 @@
 
 #include "color.hh"
 #include "strategy.hh"
+
+#include <cassert>
 
 
 DynamicVectorClass<HouseClass::BuildChoiceClass *> HouseClass::BuildChoice;

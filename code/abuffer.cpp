@@ -11,7 +11,6 @@
 
 #include "abuffer.h"
 
-#include "assert.h"
 #include "bsurface.h"
 
 #include <cstdlib>

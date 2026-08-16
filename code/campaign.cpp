@@ -12,7 +12,6 @@
 
 #include "campaign.h"
 
-#include "assert.h"
 #include "ccini.h"
 #include "crc.h"
 #include "globals.h"
@@ -21,6 +20,8 @@
 #include "sun.h"
 #include "tracker.h"
 #include "vector.h"
+
+#include <cassert>
 
 
 /// <summary>

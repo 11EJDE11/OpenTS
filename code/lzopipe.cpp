@@ -37,9 +37,9 @@
 
 #include "lzopipe.h"
 
-#include "assert.h"
 #include "lzo.h"
 
+#include <cassert>
 #include <cstring>
 
 

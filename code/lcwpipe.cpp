@@ -37,9 +37,9 @@
 
 #include "lcwpipe.h"
 
-#include "assert.h"
 #include "lcw.h"
 
+#include <cassert>
 #include <cstring>
 
 

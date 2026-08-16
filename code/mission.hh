@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "assert.h"
+#include <cassert>
 
 /**********************************************************************
 **	These missions enumerate the various state machines that can apply to

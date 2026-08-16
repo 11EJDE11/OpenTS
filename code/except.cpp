@@ -45,7 +45,6 @@
 #include "always.h"
 
 #include "_surface.h"
-#include "assert.h"
 #include "data.h"
 #include "dbgprint.h"
 #include "getcpu.h"
@@ -59,6 +58,7 @@
 #include "winfix.h"
 #include "winstub.h"
 
+#include <cassert>
 #include <conio.h>
 #include <imagehlp.h>
 

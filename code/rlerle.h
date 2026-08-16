@@ -37,9 +37,9 @@
 **	templates to support the different destination pixel formats.
 */
 
-#include "assert.h"
 #include "blitter.h"
 
+#include <cassert>
 #include <cstring>
 
 

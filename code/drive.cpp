@@ -60,7 +60,6 @@
 #include "_map.h"
 #include "_rules.h"
 #include "anim.h"
-#include "assert.h"
 #include "cell.h"
 #include "foot.h"
 #include "globals.h"
@@ -78,6 +77,8 @@
 
 #include "layer.hh"
 #include "tube.hh"
+
+#include <cassert>
 
 static const double _deaccel = 0.3f;
 static const double _sinking = 0.1f;

@@ -13,12 +13,12 @@
 
 #pragma once
 
-#include "assert.h"
 #include "comtypes.h"
 #include "vector3.h"
 #include "vector4.h"
 #include "visualc.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstring>
 

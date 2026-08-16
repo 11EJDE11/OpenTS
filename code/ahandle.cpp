@@ -16,10 +16,11 @@
 #include "ahandle.h"
 
 #include "dsaudio.h"
-#include "assert.h"
 #include "dbgprint.h"
 #include "gametime.h"
 #include "vqaplayp.h"
+
+#include <cassert>
 
 /// use of this is a bug..
 #ifndef DSBCAPS_GETCURRENTPOSITION2

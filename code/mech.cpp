@@ -13,7 +13,6 @@
 
 #include "_map.h"
 #include "_rules.h"
-#include "assert.h"
 #include "cell.h"
 #include "foot.h"
 #include "globals.h"
@@ -27,6 +26,8 @@
 #include "tube.h"
 
 #include "layer.hh"
+
+#include <cassert>
 
 
 /// <summary>

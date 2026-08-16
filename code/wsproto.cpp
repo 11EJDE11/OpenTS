@@ -55,12 +55,12 @@
 #include "wsproto.h"
 
 #include "_keyboar.h"
-#include "assert.h"
 #include "dbgprint.h"
 #include "globals.h"
 #include "keyboard.h"
 #include "vector.h"
 
+#include <cassert>
 #include <cstdio>
 
 extern void Add_CRC(unsigned int *crc, unsigned int val);

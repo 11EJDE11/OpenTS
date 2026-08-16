@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include "assert.h"
 #include "dbgprint.h"
 
+#include <cassert>
 #include <climits>
 #include <objidl.h>
 

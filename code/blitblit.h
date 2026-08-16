@@ -56,12 +56,12 @@
 
 #include "_alpha.h"
 #include "_zbuffer.h"
-#include "assert.h"
 #include "blitter.h"
 #include "abuffer.h"
 #include "dsurface.h"
 #include "zbuffer.h"
 
+#include <cassert>
 #include <cstring>
 
 

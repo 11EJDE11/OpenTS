@@ -46,9 +46,9 @@
 #include "ccfile.h"
 
 #include "_mixfile.h"
-#include "assert.h"
 #include "mixfile.h"
 
+#include <cassert>
 #include <new>
 
 /***********************************************************************************************

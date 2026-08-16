@@ -46,10 +46,10 @@
 
 #pragma once
 
-#include "assert.h"
 #include "bsearch.h"
 
 #include <algorithm>
+#include <cassert>
 
 /*
 **	This class is used to create and maintain an index. It does this by assigning a unique

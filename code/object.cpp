@@ -107,7 +107,6 @@
 #include "alphashp.h"
 #include "anim.h"
 #include "animtype.h"
-#include "assert.h"
 #include "building.h"
 #include "builtype.h"
 #include "cell.h"
@@ -130,6 +129,8 @@
 #include "tag.h"
 #include "tagtype.h"
 #include "tracker.h"
+
+#include <cassert>
 
 
 #define	GRAVITY	1.4

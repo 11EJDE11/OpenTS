@@ -13,9 +13,9 @@
 
 #pragma once
 
-#include "assert.h"
 #include "win.h"
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

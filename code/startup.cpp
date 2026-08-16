@@ -54,7 +54,6 @@
 #include "anim.h"
 #include "animtype.h"
 #include "app.h"
-#include "assert.h"
 #include "blight.h"
 #include "brain.h"
 #include "building.h"

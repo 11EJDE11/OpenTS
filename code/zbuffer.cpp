@@ -11,7 +11,6 @@
 
 #include "zbuffer.h"
 
-#include "assert.h"
 #include "bsurface.h"
 
 #include <cstdlib>

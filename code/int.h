@@ -31,10 +31,10 @@
 
 #pragma once
 
-#include "assert.h"
 #include "mpmath.h"
 #include "straw.h"
 
+#include <cassert>
 #include <climits>
 #include <memory.h>
 

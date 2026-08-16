@@ -43,7 +43,6 @@
 
 #include "wspudp.h"
 
-#include "assert.h"
 #include "dbgprint.h"
 #include "misc.h"
 #include "msgloop.h"

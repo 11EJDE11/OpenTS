@@ -33,10 +33,6 @@
 
 
 #ifdef _DEBUG
-#define _DEBUG_ASSERT
-#endif
-
-#ifdef _DEBUG
 #define _DEBUG_PRINT	/// Not to be confused with DebugString being omitted from builds -- the release binary still contains those strings.
 #endif
 

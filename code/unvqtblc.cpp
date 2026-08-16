@@ -12,8 +12,9 @@
 #include "unvqtblc.h"
 
 #include "_vqa.h"
-#include "assert.h"
 #include "dsurface.h"
+
+#include <cassert>
 
 unsigned short * HicolorTable;
 

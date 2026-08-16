@@ -37,8 +37,7 @@
 
 #include "rle.h"
 
-#include "assert.h"
-
+#include <cassert>
 #include <cstdlib>
 
 

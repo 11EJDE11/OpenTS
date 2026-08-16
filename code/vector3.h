@@ -60,9 +60,9 @@
 
 #pragma once
 
-#include "assert.h"
 #include "visualc.h"
 
+#include <cassert>
 #include <cmath>
 
 /*

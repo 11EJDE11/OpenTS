@@ -49,10 +49,10 @@
 
 #include "xsurface.h"
 
-#include "assert.h"
 #include "blit.h"
 #include "blitblit.h"
 
+#include <cassert>
 #include <utility>
 
 /***********************************************************************************************

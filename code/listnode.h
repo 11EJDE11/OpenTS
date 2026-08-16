@@ -35,7 +35,7 @@
 /*
 **	Includes
 */
-#include "assert.h"
+#include <cassert>
 
 
 /*

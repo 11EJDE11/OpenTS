@@ -13,7 +13,6 @@
 
 #include "_map.h"
 #include "_tactica.h"
-#include "assert.h"
 #include "cell.h"
 #include "coord.h"
 #include "foot.h"
@@ -27,6 +26,8 @@
 #include "move.hh"
 #include "visual.hh"
 #include "zgrad.hh"
+
+#include <cassert>
 
 extern ULONG COMRefCount;
 

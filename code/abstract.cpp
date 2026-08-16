@@ -41,7 +41,6 @@
 #include "abstract.h"
 
 #include "_rtti.h"
-#include "assert.h"
 #include "coord.h"
 #include "crc.h"
 #include "globals.h"
@@ -50,6 +49,8 @@
 #include "scenario.h"
 #include "swizzle.h"
 #include "vector.h"
+
+#include <cassert>
 
 /// <summary>
 /// Default constructor for abstract objects.

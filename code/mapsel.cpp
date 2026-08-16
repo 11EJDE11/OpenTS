@@ -59,6 +59,8 @@
 #include "theme.h"
 #include "timer.h"
 
+#include <cassert>
+
 
 /// The binary confirms this was in the cpp as the vtable is inside this module
 /// Moving it into a header would make the first thing that includes the header construct the vtable in that module

@@ -15,13 +15,8 @@
 
 #include "dbgprint.h"
 
-#include "_mono.h"
-#include "misc.h"
-#include "mono.h"
-#include "msgbox.h"
-#include "win.h"
 #include "globals.h"
-#include "data.h"
+#include "win.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -161,67 +156,5 @@ char const * Last_Error_Text(void)
 	static char message_buffer[256];
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), &message_buffer[0], 256, NULL);
 	return(message_buffer);
-}
-#endif
-
-
-#ifdef _DEBUG_ASSERT
-/***********************************************************************************************
- * Assert_Failure -- display the line and source file where a failed assert occurred           *
- *                                                                                             *
- *                                                                                             *
- * INPUT:    line number in source file                                                        *
- *           name of source file                                                               *
- *                                                                                             *
- * OUTPUT:   Nothing                                                                           *
- *                                                                                             *
- * WARNINGS: None                                                                              *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *    4/17/96 9:58AM ST : Created                                                              *
- *=============================================================================================*/
-void Assert_Failure (char const *expression, int line, char const *file)
-{
-	char	assertbuf[256];
-	char   timebuff[512];
-	SYSTEMTIME	time;
-
-	sprintf (assertbuf, "assert '%s' failed at line %d in module %s.\n", expression, line, file);
-
-	if (!MonoClass::Is_Enabled()) MonoClass::Enable();
-
-	Mono_Clear_Screen();
-	Mono_Printf("%s", assertbuf);
-
-	DebugString(assertbuf);
-
-	GetLocalTime(&time);
-
-	sprintf (timebuff, "%02d/%02d/%04d %02d:%02d:%02d - %s", time.wMonth, time.wDay, time.wYear,
-																		time.wHour, time.wMinute, time.wSecond,
-																		assertbuf);
-
-
-	HMMIO handle = mmioOpen((char *)"ASSERT.TXT", NULL, MMIO_WRITE);
-	if (!handle) {
-		handle = mmioOpen((char *)"ASSERT.TXT", NULL, MMIO_CREATE | MMIO_WRITE);
-		//mmioClose(handle, 0);
-		//handle = mmioOpen("ASSERT.TXT", NULL, MMIO_WRITE);
-	}
-
-	if (handle) {
-
-		mmioWrite(handle, timebuff, strlen(timebuff));
-		mmioClose(handle, 0);
-	}
-
-	WWMessageBox().Process(assertbuf, TXT_OK);
-//	WWMessageBox().Process("Red Alert demo timed out - Aborting");
-	//Get_Key();
-
-	Prog_End(/*assertbuf, false*/);
-//	Invalidate_Cached_Icons();
-	//PostQuitMessage( 0 );
-	//ExitProcess(0);
 }
 #endif

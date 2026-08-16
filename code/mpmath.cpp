@@ -81,9 +81,9 @@
 
 #include "mpmath.h"
 
-#include "assert.h"
 #include "bsearch.h"
 
+#include <cassert>
 #include <cctype>
 #include <climits>
 #include <cstdlib>
