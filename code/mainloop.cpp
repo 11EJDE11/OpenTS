@@ -101,26 +101,7 @@ void Motion_Capture(void)
 			Debug_MotionCapture = false;
 		}
 
-		RECT client_rect;
-
-		GetClientRect(MainWindow, &client_rect);
-
-		POINT screen_pt;
-
-		screen_pt.x = client_rect.left;
-		screen_pt.y = client_rect.top;
-		if (!ClientToScreen(MainWindow, &screen_pt)) {
-			return;
-		}
-
-		POINT screen_pt2;
-		screen_pt2.x = client_rect.right;
-		screen_pt2.y = client_rect.bottom;
-		if (!ClientToScreen(MainWindow, &screen_pt2)) {
-			return;
-		}
-
-		Rect rect(screen_pt.x, screen_pt.y, client_rect.right, client_rect.bottom);
+		Rect rect = VisibleSurface->Get_Rect();
 
 		/// Compensate for screen shake
 		if (Map.ScreenX != 0 || Map.ScreenY != 0) {
@@ -609,19 +590,6 @@ void Sync_Delay(void)
 	SpareTicks += FrameTimer;
 
 	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-		if (NetFrameTimer) {
-			goto wait;
-		}
-		goto wait;
-	} else {
-		if (FrameTimer) {
-			Wait_Blit();
-		}
-		wait:
-		;
-	}
-
-	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
 		while (NetFrameTimer) {
 			Call_Back();
 			if (SpecialDialog == SDLG_NONE && GameInFocus == true) {
@@ -651,7 +619,6 @@ void Sync_Delay(void)
 				Keyboard_Process(input);
 				TacticalMap->AI();
 				Map.Render();
-				Wait_Blit();
 				if (!FrameTimer) {
 					break;
 				}

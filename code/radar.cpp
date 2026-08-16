@@ -945,7 +945,7 @@ void RadarClass::Compute_Radar_Image(void)
 		RadarSurface = NULL;
 	}
 
-	RadarSurface = new DSurface(BackgroundSurface->Get_Width(), BackgroundSurface->Get_Height(), true);
+	RadarSurface = new DSurface(BackgroundSurface->Get_Width(), BackgroundSurface->Get_Height());
 	RadarSurface->Fill(TBLACK);
 
 	Compute_Foundations();

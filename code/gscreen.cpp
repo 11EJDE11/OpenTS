@@ -62,6 +62,7 @@
 #include "session.h"
 #include "surface.h"
 #include "tactical.h"
+#include "video.h"
 
 #include "bench.hh"
 
@@ -397,8 +398,6 @@ void GScreenClass::Render(void)
 	Surface * oldpage = LogicalSurface;
 	LogicalSurface = CompositeSurface;
 
-	MouseCursor->Erase_Mouse(CompositeSurface);
-
 	bool redraw = DrawFlags != GS_REDRAW_DIRTY;
 	bool complete = DrawFlags == GS_REDRAW_ALL;
 
@@ -406,11 +405,6 @@ void GScreenClass::Render(void)
 	TacticalMap->Render(*CompositeSurface, redraw, DRAW_PASS_BACKGROUND);
 	Draw_It(complete);
 	TacticalMap->Render(*CompositeSurface, redraw, DRAW_PASS_FOREGROUND);
-
-	if (SidebarClass::IsToEraseSidebarMouse && !Debug_Map) {
-		MouseCursor->Erase_Mouse(SidebarSurface, true);
-		SidebarClass::IsToEraseSidebarMouse = false;
-	}
 
 	if (Buttons) Buttons->Draw_All(false);
 
@@ -434,7 +428,6 @@ void GScreenClass::Render(void)
 		ToolTips->Draw_Current();
 	}
 
-	MouseCursor->Draw_Mouse(CompositeSurface);
 	Blit_Display();
 	DrawFlags = GS_REDRAW_DIRTY;
 
@@ -462,22 +455,42 @@ void GScreenClass::Render(void)
 void GScreenClass::Blit_Display(void)
 {
 	BStart(BENCH_BLIT_DISPLAY);
-	Update_Visible_Surface(false, CompositeSurface, NULL);
+	Update_Visible_Surface(CompositeSurface, NULL);
 	BEnd(BENCH_BLIT_DISPLAY);
+}
+
+
+/// <summary>
+/// Repaints the dialog controls that the last frame drew over.
+/// The dialogs are ordinary child windows that paint themselves onto the game's own
+/// surfaces, so a frame put on top of them takes their pixels with it. Windows is asked
+/// to repaint them straight away, and the controls are grandchildren of the main window
+/// rather than children, so the whole subtree has to be included.
+/// </summary>
+void Heal_Dialog_Controls(void)
+{
+	if (_dialog_count <= 0 || MainWindow == NULL) {
+		return;
+	}
+
+	for (HWND child = GetWindow(MainWindow, GW_CHILD); child != NULL; child = GetWindow(child, GW_HWNDNEXT)) {
+		if (IsWindowVisible(child)) {
+			RedrawWindow(child, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ERASE|RDW_ALLCHILDREN);
+		}
+	}
 }
 
 
 /// <summary>
 /// Presents a rendered surface onto the visible surface.
 /// This is the low level routine that gets a finished frame in front of the player. The
-/// destination is the client area of the main window, adjusted for the screen shake and for
-/// a sidebar sitting on the left, and the source is narrowed when the tactical map is
-/// zoomed. Any strip of the window that the shake has left uncovered is filled with black.
+/// destination is the visible surface, adjusted for the screen shake and for a sidebar
+/// sitting on the left, and the source is narrowed when the tactical map is zoomed. Any
+/// strip that the shake has left uncovered is filled with black.
 /// </summary>
-/// <param name="flip_mouse">Should the mouse cursor be drawn over the surface first?</param>
 /// <param name="surface">The surface holding the frame to present.</param>
 /// <param name="rect">The portion of the surface to present, or NULL for all of it.</param>
-void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
+void Update_Visible_Surface(Surface *surface, Rect *rect)
 {
 	Rect fill_rect;
 
@@ -486,21 +499,7 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 		rect = &fill_rect;
 	}
 
-	RECT client_rect;
-
-	if (!GetClientRect(MainWindow, &client_rect)) {
-		return;
-	}
-
-	POINT screen_pt;
-
-	screen_pt.x = client_rect.left;
-	screen_pt.y = client_rect.top;
-	if (!ClientToScreen(MainWindow, &screen_pt)) {
-		return;
-	}
-
-	Rect dest_rect(screen_pt.x, screen_pt.y, surface->Get_Width(), surface->Get_Height());
+	Rect dest_rect(0, 0, surface->Get_Width(), surface->Get_Height());
 
 	/// Screen shake handling
 	if (Map.ScreenX == 0 && Map.ScreenY == 0) {
@@ -570,7 +569,7 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 
 	/// Draw filler for X offset
 	if (Map.ScreenX != 0) {
-		fill_rect.Set(fill_rect.X, screen_pt.y, abs(Map.ScreenX), surface->Get_Height());
+		fill_rect.Set(fill_rect.X, 0, abs(Map.ScreenX), surface->Get_Height());
 		fill_rect.X = Map.ScreenX < 0 ? dest_rect.X + dest_rect.Width : dest_rect.X - Map.ScreenX;
 
 		VisibleSurface->Fill_Rect(VisibleSurface->Get_Rect(), fill_rect, 0);
@@ -578,25 +577,19 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 
 	/// Draw filler for Y offset
 	if (Map.ScreenY != 0) {
-		fill_rect.Set(screen_pt.x, fill_rect.Y, surface->Get_Width(), abs(Map.ScreenY));
+		fill_rect.Set(0, fill_rect.Y, surface->Get_Width(), abs(Map.ScreenY));
 		fill_rect.Y = Map.ScreenY < 0 ? dest_rect.Y + dest_rect.Height : dest_rect.Y - Map.ScreenY;
 
 		VisibleSurface->Fill_Rect(VisibleSurface->Get_Rect(), fill_rect, 0);
 	}
 
-	if (flip_mouse && MouseCursor != NULL) {
-		MouseCursor->Draw_Mouse(surface, false);
-	}
-
 	/*
 	 * Now blit the source surface to the visible surface
 	 */
-	VisibleSurface->Blit_From(dest_rect, *surface, src_rect, false, _dialog_count == 0);
+	VisibleSurface->Blit_From(dest_rect, *surface, src_rect, false, true);
 
-	if (flip_mouse && MouseCursor != NULL) {
-		Sleep(50);
-		MouseCursor->Erase_Mouse(surface, false);
-	}
+	Heal_Dialog_Controls();
+	Video_Present_If_Dirty();
 }
 
 

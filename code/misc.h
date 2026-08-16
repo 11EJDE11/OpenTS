@@ -33,39 +33,9 @@
 
 #include "win.h"
 
-#ifndef DIRECTDRAW_VERSION
-#define DIRECTDRAW_VERSION 0x0300
-#endif
-
-#include <ddraw.h>
-
-extern unsigned char CurrentPalette[768];
 extern bool WindowedMode;
 
-extern	LPDIRECTDRAWSURFACE	PaletteSurface;
-
 /*========================= C++ Routines ==================================*/
-
-/*=========================================================================*/
-/* The following prototypes are for the file: DDRAW.CPP							*/
-/*=========================================================================*/
-void		Prep_Direct_Draw(void);
-void		Destroy_Direct_Draw(void);
-void		Process_DD_Result(HRESULT result, int display_ok_msg);
-bool		Set_Video_Mode(HWND hwnd, int w, int h, int bits_per_pixel);
-void		Reset_Video_Mode(void);
-unsigned	Get_Free_Video_Memory(void);
-void		Wait_Blit(void);
-unsigned	Get_Video_Hardware_Capabilities(void);
-DWORD		GetVideoMemory(void);
-int *		EnumDisplayModes(DWORD minw, DWORD minh, DWORD maxw, DWORD maxh, DWORD bitdepth);
-
-extern "C" void Wait_Vert_Blank(void);
-
-#include "palette.h"
-
-void Set_Palette(PaletteClass const & pal, int time = 0, void (*callback)() = NULL);
-void Set_Palette(void const * palette);
 
 /*
 **	Pointer to function to call if we detect a focus loss
@@ -83,43 +53,10 @@ extern	void (*Audio_Focus_Loss_Function)(void);
 
 
 /*
- *  Flags returned by Get_Video_Hardware_Capabilities
+ * The size of the frame the game renders into, which video.cpp owns.
  */
-/* Hardware blits supported? */
-#define	VIDEO_BLITTER					1
-
-/* Hardware blits asyncronous? */
-#define	VIDEO_BLITTER_ASYNC  		2
-
-/* Can palette changes be synced to vertical refresh? */
-#define	VIDEO_SYNC_PALETTE			4
-
-/* Is the video cards memory bank switched? */
-#define	VIDEO_BANK_SWITCHED			8
-
-/* Can the blitter do filled rectangles? */
-#define	VIDEO_COLOR_FILL				16
-
-/* Is there no hardware assistance avaailable at all? */
-#define	VIDEO_NO_HARDWARE_ASSIST	32
-
-#define VIDEO_BLIT_STRETCH			64
-
-extern bool SurfacesRestored;
-
-/*=========================================================================*/
-/* The following variables are declared in: DDRAW.CPP								*/
-/*=========================================================================*/
-extern	LPDIRECTDRAW	DirectDrawObject;
-extern	LPDIRECTDRAW2	DirectDraw2Interface;
-//extern	HWND				MainWindow;
-extern bool 				SystemToVideoBlits;
-extern bool					VideoToSystemBlits;
-extern bool					SystemToSystemBlits;
-//extern bool				OverlappedVideoBlits;	// Can video driver blit overlapped regions?
-extern int					VideoModeWidth;
-extern int					VideoModeHeight;
-extern int					VideoModeBitsPerPixel;
+extern int VideoModeWidth;
+extern int VideoModeHeight;
 
 /*=========================================================================*/
 /* The following prototypes are for the file: EXIT.CPP							*/

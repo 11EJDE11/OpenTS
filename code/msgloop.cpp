@@ -41,6 +41,7 @@
 #include "_tooltip.h"
 #include "cctooltip.h"
 #include "vector.h"
+#include "video.h"
 
 
 /*
@@ -157,6 +158,13 @@ void Windows_Message_Handler(void)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	/*
+	 * The menus, the loading screens and the score screens all draw and then come back
+	 * here rather than through the game's own present, so this is where their frames
+	 * reach the screen.
+	 */
+	Video_Present_If_Dirty();
 }
 
 

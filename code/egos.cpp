@@ -481,13 +481,6 @@ void Show_Who_Was_Responsible (void)
 	Theme.Stop();
 
 	/*
-	**	Fade to black.
-	*/
-	if (!HicolorFlag) {
-		Set_Palette(BlackPalette, TIMER_SECOND*2, Call_Back);
-	}
-
-	/*
 	**	Clear the Seen Page since we will not be blitting to all of it.
 	*/
 	HiddenSurface->Fill(TBLACK);
@@ -534,17 +527,6 @@ void Show_Who_Was_Responsible (void)
 	while ( EgoList.Count() ){
 
 		frame++;
-
-		if (SurfacesRestored) {
-			SurfacesRestored = false;
-			fresh = true;
-			if (!WindowedMode) {
-				VisibleSurface->Fill(TBLACK);
-				BackgroundSurface->Fill(TBLACK);
-			}
-			Show_Mouse();
-			Hide_Mouse();
-		}
 
 		/*
 		**	Update the slideshow frame and switch to the next picture if its time.
@@ -667,9 +649,6 @@ void Show_Who_Was_Responsible (void)
 
 	if (key == KN_ESC){
 		Theme.Fade_Out();
-		if (!HicolorFlag) {
-			Set_Palette(BlackPalette, TIMER_SECOND*2, Call_Back);
-		}
 	}else{
 		/*
 		**	Wait for the picture to fade down

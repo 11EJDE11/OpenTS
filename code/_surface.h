@@ -26,5 +26,3 @@ extern Surface * Unk2Surface; /// unused
 extern Surface * CompositeSurface;
 
 extern Surface * PreviewSurface; /// unused
-
-extern bool HicolorFlag;

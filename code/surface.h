@@ -116,7 +116,7 @@ class Surface
 		**	the Watcom compiler doesn't support RTTI, we must resort to using this
 		**	alternative.
 		*/
-		virtual bool Is_Direct_Draw(void) const {return(false);}
+		virtual bool Is_GDI_Backed(void) const {return(false);}
 
 	protected:
 

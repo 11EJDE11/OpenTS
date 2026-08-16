@@ -117,7 +117,6 @@ bool Debug_Create_Maps = false;
 bool Debug_SpeedBuild = false;
 bool Debug_Inert = false;
 bool Debug_MotionCapture = false;
-bool Debug_IngameModeChange = false;
 bool Debug_Quiet = false;
 bool Debug_Cheat = false;
 bool Debug_Remap = false;

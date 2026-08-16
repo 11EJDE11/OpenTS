@@ -105,7 +105,6 @@ extern bool Debug_Create_Maps;
 extern bool Debug_SpeedBuild;
 extern bool Debug_Inert;
 extern bool Debug_MotionCapture;
-extern bool Debug_IngameModeChange;
 extern bool Debug_Quiet;
 extern bool Debug_Cheat;
 extern bool Debug_Remap;

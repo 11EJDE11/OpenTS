@@ -1837,18 +1837,6 @@ launch_options:
   _provenance:
     source: code/init.cpp
     guard: null
-- id: launch:high-color
-  route_id: high-color
-  kind: launch
-  title: 16-pixel width
-  description: Sets the initial screen width to 16 pixels and selects no color depth; the resolution branch
-    claims the argument before the case named after it is reached.
-  audience: developer
-  availability: *id001
-  syntax: '-16'
-  _provenance:
-    source: code/init.cpp
-    guard: null
 - id: launch:windowed
   route_id: windowed
   kind: launch

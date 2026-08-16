@@ -129,15 +129,55 @@ class OptionsClass {
 
 		/*
 		 * If the movies are to be stretched to fill the screen, then this flag will be true.
-		 * It is forced off when the display cannot stretch blit.
 		 */
 		bool StretchMovies;
 
 		/*
-		 * If display modes beyond the two the game normally offers are to be selectable, then
-		 * this flag will be true. There is no options screen control for it.
+		 * If the game is to cover the whole screen rather than sit in a window, then this
+		 * flag will be true. Either way the window is borderless and the desktop keeps its
+		 * own resolution; the frame is scaled to fit.
 		 */
-		bool AllowHiResModes;
+		bool Fullscreen;
+
+		/*
+		 * These are the dimensions of the window the game runs in, expressed in pixels. A
+		 * negative value tracks the size of the frame instead. They have no effect while
+		 * the game covers the screen.
+		 */
+		int WindowWidth;
+		int WindowHeight;
+
+		/*
+		 * This is how the frame is filtered when the window is larger than it, as one of
+		 * the VideoScaleMode values.
+		 */
+		int ScaleMode;
+
+		/*
+		 * If the frame may only be enlarged by whole multiples, then this flag will be
+		 * true. It keeps every game pixel the same size at the cost of a wider border.
+		 */
+		bool IntegerScaling;
+
+		/*
+		 * If presents are to wait for the display's refresh, then this flag will be true.
+		 * Presents are already limited to the refresh rate without it.
+		 */
+		bool VSync;
+
+		/*
+		 * This is the graphics interface the renderer is asked for, as one of the
+		 * BackendRenderer values. It exists to work around a driver, and is best left
+		 * choosing for itself.
+		 */
+		int Renderer;
+
+		/*
+		 * This is how many times larger than its artwork the mouse pointer is drawn.
+		 * Zero follows the size of the frame on screen, and a negative value leaves the
+		 * pointer at the size the artwork was drawn at.
+		 */
+		int CursorScale;
 
 		float SoundVolume;				// Volume for sound effects.
 		float VoiceVolume;				/// Volume for voices.

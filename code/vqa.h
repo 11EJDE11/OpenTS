@@ -98,7 +98,6 @@ class VQAClass
 		char Filename[MAX_PATH];
 		VQAConfig Config;
 		VQAHandle * Handle;
-		char Palette[SIZE_OF_PALETTE * 3];
 		int CurrentFrame;
 		int TotalFrames;
 		int DesiredColorMode;
@@ -108,7 +107,6 @@ class VQAClass
 		int Height;
 		int DrawBufferWidth;
 		int DrawBufferHeight;
-		bool HasPaletteChanged;
 		int Flags;
 		VQACacheHeader Cache;
 		VQA_SURF_LOCK_CALLBACK SurfaceLockCallback;
@@ -147,12 +145,9 @@ class VQAClass
 
 		bool Seek_To_Stored_Frame(void);
 
-		void Handle_Palette_Event(void *buffer);
 		void Handle_Codebook_Event(void *buf, unsigned int num);
 		void *Handle_Lock_Event(void);
 		bool Handle_Unlock_Event(void);
-
-		void Set_DirectDraw_Palette(void);
 
 		bool Is_Paused(void) const { return(IsPaused); }
 

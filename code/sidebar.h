@@ -394,12 +394,6 @@ class SidebarClass : public PowerClass
 		 */
 		static bool IsToBlitSidebar;
 
-		/*
-		 * Set after Blit_Sidebar draws the mouse onto the sidebar surface;
-		 * GScreenClass::Render erases it from the surface next frame.
-		 */
-		static bool IsToEraseSidebarMouse;
-
 		bool Scroll(bool up, int column);
 		bool Page(bool up, int column);
 

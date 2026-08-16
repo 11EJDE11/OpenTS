@@ -25,6 +25,7 @@
 #include "init.h"
 #include "language\language.h"
 #include "misc.h"
+#include "video.h"
 #include "mixfile.h"
 #include "msgbox.h"
 #include "newmenu.h"
@@ -115,10 +116,6 @@ void Main_Options_Dialog(void)
 						break;
 					}
 
-					if (Debug_IngameModeChange) {
-						Options.ScreenWidth = TempOptions.ScreenWidth;
-						Options.ScreenHeight = TempOptions.ScreenHeight;
-					} else {
 						if (WWMessageBox().Process(TXT_ABOUT_TO_TRY_MODE, TXT_OK, TXT_CANCEL) == 0) {
 							if (!Test_Display_Mode_Dialog(TempOptions.ScreenWidth, TempOptions.ScreenHeight)) {
 								continue;
@@ -126,7 +123,6 @@ void Main_Options_Dialog(void)
 							Options.ScreenWidth = TempOptions.ScreenWidth;
 							Options.ScreenHeight = TempOptions.ScreenHeight;
 						}
-					}
 
 					break;
 				}
@@ -185,118 +181,101 @@ BOOL CALLBACK Main_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 
 
 /// <summary>
-/// Switches the game over to a new screen resolution.
-/// This routine tears down every drawing surface and the mouse handler, sets the new video
-/// mode, then builds all of them back up and hands the tactical map its new dimensions. The
-/// hicolor remap tables are rebuilt as well, since the new mode may pack its pixels
-/// differently.
+/// Switches the game over to a new render resolution.
+/// The presenter is moved first, since it leaves the previous mode in place when it
+/// cannot make the change. Every drawing surface is then rebuilt at the new size and the
+/// tactical map is given its new dimensions.
 /// </summary>
-/// <param name="width">The width of the display mode to change to.</param>
-/// <param name="height">The height of the display mode to change to.</param>
-/// <returns>bool; Was the mode changed? If not, the previous mode has been restored.</returns>
+/// <param name="width">The width to render at.</param>
+/// <param name="height">The height to render at.</param>
+/// <returns>bool; Was the mode changed? If not, nothing has been disturbed.</returns>
 bool Change_Display_Mode(int width, int height)
 {
 	DebugString("About to set video mode\n");
 
-	int redleft = DSurface::Get_Red_Left();
-	int redright = DSurface::Get_Red_Right();
-	int greenleft = DSurface::Get_Green_Left();
-	int greenright = DSurface::Get_Green_Right();
-	int blueleft = DSurface::Get_Blue_Left();
-	int blueright = DSurface::Get_Blue_Right();
-
 	Hide_Mouse();
 
-	Wait_Blit();
-
-	if (WindowedMode == true) {
-		VisibleRect = Rect(0, 0, width, height);
-		VideoModeWidth = width;
-		VideoModeHeight = height;
-		DebugString("VisibleRect: %dx%d\n", width, height);
-	} else {
-		if (MouseCursor != NULL) {
-			DebugString("Removing mouse handler\n");
-			delete MouseCursor;
-			MouseCursor = NULL;
+	if (!Video_Set_Mode(width, height)) {
+		DebugString("Video_Set_Mode failed.\n");
+		Show_Mouse();
+		return(false);
 		}
 
-		if (VisibleSurface != NULL) {
-			DebugString("Deleting primary surface\n");
-			delete VisibleSurface;
-			VisibleSurface = NULL;
-		}
+	VisibleRect = Rect(0, 0, width, height);
+	DebugString("VisibleRect: %dx%d\n", width, height);
 
-		if (!Set_Video_Mode(MainWindow, width, height, 16)) {
-			DebugString("Set_Video_Mode failed.\n");
-
-			DebugString("Restoring primary surface\n");
-			VisibleSurface = DSurface::Create_Primary();
-
-			DebugString("Restoring mouse handler\n");
-			MouseCursor = new WWMouseClass(VisibleSurface, MainWindow);
-			MouseCursor->Capture_Mouse();
-
-			void const * mouseshp = MFCD::Retrieve("MOUSE.SHP");
-			if (mouseshp != NULL) {
-				Point2D hotspot = Point2D(0, 0);
-				Set_Mouse_Cursor(hotspot, (ShapeSet const *)mouseshp, 0);
-			}
-
-			Map.Set_Default_Mouse(MOUSE_NORMAL);
-			Map.Override_Mouse_Shape(MOUSE_NORMAL);
-
-			Show_Mouse();
-
-			return(false);
-		}
-
-		DebugString("Mode apparently set OK\n");
-		VisibleRect = Rect(0, 0, width, height);
-		DebugString("VisibleRect: %dx%d\n", width, height);
+	if (VisibleSurface != NULL) {
+		delete VisibleSurface;
+		VisibleSurface = NULL;
 	}
 
 	if (AlternateSurface != NULL) {
-		DebugString("Deleting AlternateSurface\n");
 		delete AlternateSurface;
 		AlternateSurface = NULL;
 	}
 
 	if (HiddenSurface != NULL) {
-		DebugString("Deleting HiddenSurface\n");
 		delete HiddenSurface;
 		HiddenSurface = NULL;
 	}
 
 	if (TileSurface != NULL) {
-		DebugString("Deleting TileSurface\n");
 		delete TileSurface;
 		TileSurface = NULL;
 	}
 
 	if (SidebarSurface != NULL) {
-		DebugString("Deleting SidebarSurface\n");
 		delete SidebarSurface;
 		SidebarSurface = NULL;
 	}
 
 	if (CompositeSurface != NULL) {
-		DebugString("Deleting CompositeSurface\n");
 		delete CompositeSurface;
 		CompositeSurface = NULL;
 	}
 
-	if (WindowedMode == false) {
-		DebugString("Setting new window size to %dx%d\n", width, height);
-		SetWindowPos(MainWindow, HWND_TOP, 0, 0, width, height, SWP_NOMOVE);
-		DebugString("Creating primary surface\n");
-		VisibleSurface = DSurface::Create_Primary();
-	} else {
-		DebugString("Setting new window size to %dx%d\n", width, height);
+	VisibleSurface = DSurface::Create_Primary();
+	if (VisibleSurface == NULL) {
+		Show_Mouse();
+		return(false);
+	}
+
+	/*
+	 * A window that is tracking the frame follows it to the new size. One the player
+	 * sized themselves, and a window covering the screen, both stay as they are and the
+	 * frame is scaled into them instead.
+	 */
+	if (WindowedMode && Options.WindowWidth <= 0 && Options.WindowHeight <= 0) {
 		RECT windowrect;
 		SetRect(&windowrect, 0, 0, width, height);
-		AdjustWindowRectEx(&windowrect, GetWindowLong(MainWindow, GWL_STYLE), GetMenu(MainWindow) != 0, GetWindowLong(MainWindow, GWL_EXSTYLE));
-		MoveWindow(MainWindow, 0, 0, windowrect.right - windowrect.left, windowrect.bottom - windowrect.top, TRUE);
+		AdjustWindowRectEx(&windowrect, GetWindowLong(MainWindow, GWL_STYLE), FALSE, GetWindowLong(MainWindow, GWL_EXSTYLE));
+
+		int newwidth = windowrect.right - windowrect.left;
+		int newheight = windowrect.bottom - windowrect.top;
+
+		/*
+		 * The window grows about its middle rather than its corner, so the picture stays
+		 * where the player was looking.
+		 */
+		RECT current;
+		GetWindowRect(MainWindow, &current);
+		int x = current.left + (((current.right - current.left) - newwidth) / 2);
+		int y = current.top + (((current.bottom - current.top) - newheight) / 2);
+
+		/*
+		 * Growing about the middle can push the window past the edges of the screen, and a
+		 * title bar above the top of it cannot be grabbed to bring the window back.
+		 */
+		MONITORINFO monitor;
+		monitor.cbSize = sizeof(monitor);
+		if (GetMonitorInfo(MonitorFromWindow(MainWindow, MONITOR_DEFAULTTONEAREST), &monitor)) {
+			if (x + newwidth > monitor.rcWork.right) x = monitor.rcWork.right - newwidth;
+			if (y + newheight > monitor.rcWork.bottom) y = monitor.rcWork.bottom - newheight;
+			if (x < monitor.rcWork.left) x = monitor.rcWork.left;
+			if (y < monitor.rcWork.top) y = monitor.rcWork.top;
+		}
+
+		SetWindowPos(MainWindow, NULL, x, y, newwidth, newheight, SWP_NOZORDER);
 	}
 
 	Rect temp = VisibleRect;
@@ -308,26 +287,7 @@ bool Change_Display_Mode(int width, int height)
 	Allocate_Surfaces(VisibleRect, Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, SidebarClass::SIDE_WIDTH, VisibleRect.Height));
 	LogicalSurface = HiddenSurface;
 
-	DebugString("Recalc color remap tables\n");
-	ConvertClass::Reinitialize_Hicolor_Tables(redleft, redright, greenleft, greenright, blueleft, blueright);
-
-	if (MouseCursor == NULL) {
-		MouseCursor = new WWMouseClass(VisibleSurface, MainWindow);
-
-		MouseCursor->Capture_Mouse();
-
-		void const * mouseshp = MFCD::Retrieve("MOUSE.SHP");
-		if (mouseshp != NULL) {
-			Point2D hotspot = Point2D(0, 0);
-			Set_Mouse_Cursor(hotspot, (ShapeSet const *)mouseshp, 0);
-		}
-
-		Map.Set_Default_Mouse(MOUSE_NORMAL);
-		Map.Override_Mouse_Shape(MOUSE_NORMAL);
-
-		Show_Mouse();
-
-	} else {
+	if (MouseCursor != NULL) {
 		((WWMouseClass*)MouseCursor)->Calc_Confining_Rect();
 	}
 
@@ -449,10 +409,8 @@ static __forceinline BOOL Display_Options_Dialog_Body(HWND window, UINT message,
 	enum {
 		MIN_WIDTH = 640,
 		MIN_HEIGHT = 400,
-		MAX_WIDTH = 800,
-		MAX_HEIGHT = 600,
-		MAX_HI_WIDTH = 4096,
-		MAX_HI_HEIGHT = 4096,
+		MAX_WIDTH = 4096,
+		MAX_HEIGHT = 4096,
 	};
 
 	static int * _modes = NULL;
@@ -500,11 +458,7 @@ static __forceinline BOOL Display_Options_Dialog_Body(HWND window, UINT message,
 
 		case WM_INITDIALOG: {
 			HWND list = GetDlgItem(window, IDC_DISPLAY_RESLIST);
-			if (Options.AllowHiResModes) {
-				_modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_HI_WIDTH, MAX_HI_HEIGHT, 16);
-			} else {
-				_modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT, 16);
-			}
+			_modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
 			int * modes = _modes;
 			int item_index = 0;
 			int initial_mode = -1;
@@ -513,16 +467,14 @@ static __forceinline BOOL Display_Options_Dialog_Body(HWND window, UINT message,
 				while (*modes != 0) {
 					int width = *modes++;
 					int height = *modes++;
-					if (Options.AllowHiResModes || width == MIN_WIDTH || width == MAX_WIDTH) {
-						if (width == TempOptions.ScreenWidth && height == TempOptions.ScreenHeight) {
-							initial_mode = mode_index;
-						}
-						char buffer[64];
-						sprintf(buffer, "%d x %d x 16", width, height);
-						int index = ListBox_AddString(list, buffer);
-						ListBox_SetItemData(list, index, item_index);
-						mode_index++;
+					if (width == TempOptions.ScreenWidth && height == TempOptions.ScreenHeight) {
+						initial_mode = mode_index;
 					}
+					char buffer[64];
+					sprintf(buffer, "%d x %d", width, height);
+					int index = ListBox_AddString(list, buffer);
+					ListBox_SetItemData(list, index, item_index);
+					mode_index++;
 					item_index++;
 				}
 			}
@@ -533,9 +485,7 @@ static __forceinline BOOL Display_Options_Dialog_Body(HWND window, UINT message,
 
 			HWND button = GetDlgItem(window, IDC_STRETCH_MOVIES);
 			if (button) {
-				bool stretch = Options.StretchMovies == true && DSurface::AllowStretchBlits == true;
-				Button_SetCheck(button, stretch != false);
-				EnableWindow(button, (BOOL)DSurface::AllowStretchBlits);
+				Button_SetCheck(button, Options.StretchMovies != false);
 			}
 		}
 		break;

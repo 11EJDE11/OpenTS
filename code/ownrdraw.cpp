@@ -31,6 +31,9 @@
 #include "language\language.h"
 #include "mainloop.h"
 #include "misc.h"
+#include "msgroute.h"
+#include "vidscale.h"
+#include "video.h"
 #include "mixfile.h"
 #include "msgloop.h"
 #include "rgb.h"
@@ -256,7 +259,30 @@ static HWND _dropdown_owner = NULL;
 /// </summary>
 /// <returns>Returns with zero for the messages handled here; otherwise with the result of
 /// the default window procedure.</returns>
+static LRESULT CALLBACK ComboDropWinCtrlProc_Internal(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+
+/// <summary>
+/// Hands the drop-down its messages, in frame coordinates, and presents what it paints.
+/// </summary>
 LRESULT CALLBACK ComboDropWinCtrlProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	LPARAM translated_lparam;
+	if (Route_Mouse_Message(hWnd, Msg, wParam, lParam, &translated_lparam)) {
+		return(0);
+	}
+
+	LRESULT result = ComboDropWinCtrlProc_Internal(hWnd, Msg, wParam, translated_lparam);
+
+	if (Msg == WM_PAINT) {
+		Video_Present_If_Dirty();
+	}
+
+	return(result);
+}
+
+
+static LRESULT CALLBACK ComboDropWinCtrlProc_Internal(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	static HBRUSH SolidBrush = CreateSolidBrush(RGB(48,96,48));
 	static HWND OwnerComboHandle;
@@ -465,8 +491,6 @@ LRESULT CALLBACK ComboDropWinCtrlProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM
 			GetWindowRect(hWnd, &window_rect);
 
 			RECT dst_rect = src_rect;
-			dst_rect.left += window_rect.left - rect.left;
-			dst_rect.top += window_rect.top - rect.top;
 
 			VisibleSurface->Blit_From(*(Rect *)&dst_rect, *AlternateSurface, *(Rect *)&src_rect, false, true);
 
@@ -1056,7 +1080,32 @@ bool OwnerDraw::End_Tooltip(void)
 /// </summary>
 /// <returns>Returns with the result of the control's custom procedure, or zero when the
 /// message was swallowed here.</returns>
+static LRESULT CALLBACK CtrlProc_Internal(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+
+
+/// <summary>
+/// Hands a control its messages, in frame coordinates, and puts what it paints on screen.
+/// The controls draw into the game's own surfaces rather than into their windows, so
+/// every repaint has to be followed by a present to be seen.
+/// </summary>
 LRESULT CALLBACK CtrlProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+{
+	LPARAM translated_lparam;
+	if (Route_Mouse_Message(window, message, wparam, lparam, &translated_lparam)) {
+		return(0);
+	}
+
+	LRESULT result = CtrlProc_Internal(window, message, wparam, translated_lparam);
+
+	if (message == WM_PAINT) {
+		Video_Present_If_Dirty();
+	}
+
+	return(result);
+}
+
+
+static LRESULT CALLBACK CtrlProc_Internal(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	static POINT min_update_rect = {0xFFFFFF, 0xFFFFFF};
 	static POINT max_update_rect;
@@ -1103,8 +1152,8 @@ LRESULT CALLBACK CtrlProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
 	Get_Display_Rect(window, &display_rect);
 	RECT window_rect;
 	GetWindowRect(window, &window_rect);
-	int offset_x = window_rect.left - display_rect.left;
-	int offset_y = window_rect.top - display_rect.top;
+	int offset_x = 0;
+	int offset_y = 0;
 
 	bool mouse_over = false;
 
@@ -1441,8 +1490,7 @@ LRESULT CALLBACK CtrlProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
 
 				if (message == WM_TIMER) {
 					POINT pt;
-					GetCursorPos(&pt);
-					ScreenToClient(window, &pt);
+					Get_Logical_Cursor_Pos(window, pt);
 					int mx = pt.x;
 					int my = pt.y;
 
@@ -1481,15 +1529,14 @@ LRESULT CALLBACK CtrlProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
 								ReleaseDC(window, hdc);
 
 								POINT cursor;
-								GetCursorPos(&cursor);
+								Get_Logical_Cursor_Pos(NULL, cursor);
 								Rect tooltip_rect;
 								tooltip_rect.X = cursor.x;
 								tooltip_rect.Y = cursor.y + 16;
 								tooltip_rect.Width = size.cx + 8;
 								tooltip_rect.Height = size.cy + 6;
 
-								Rect mainclient;
-								GetClientRect(MainWindow, (LPRECT)&mainclient);
+								Rect mainclient = VisibleSurface->Get_Rect();
 								if (tooltip_rect.Width + tooltip_rect.X >= mainclient.Width) {
 									tooltip_rect.X = mainclient.Width - tooltip_rect.Width;
 								}
@@ -1833,6 +1880,13 @@ cleanup:
 								Theme.AI();
 								Speak_AI();
 							}
+
+							/*
+							 * The whole animation runs inside one paint, so each step
+							 * has to reach the screen from here.
+							 */
+							Video_Present_If_Dirty();
+
 							Sleep(0);
 
 							step += 12;
@@ -4108,8 +4162,7 @@ LRESULT CALLBACK ScrollBarCtrlProc(HWND window, UINT message, WPARAM wparam, LPA
 			grip_bottom = grip_top + grip_height;
 		} else {
 			POINT cursor;
-			GetCursorPos(&cursor);
-			ScreenToClient(window, &cursor);
+			Get_Logical_Cursor_Pos(window, cursor);
 
 			grip_top = cursor.y - grip_height / 2;
 			if (grip_top < 22) {
@@ -4304,8 +4357,7 @@ LRESULT CALLBACK ScrollBarCtrlProc(HWND window, UINT message, WPARAM wparam, LPA
 
 		case WM_TIMER: {
 			POINT cursor;
-			GetCursorPos(&cursor);
-			ScreenToClient(window, &cursor);
+			Get_Logical_Cursor_Pos(window, cursor);
 
 			up_pressed = 0;
 			down_pressed = 0;
@@ -4608,8 +4660,7 @@ LRESULT CALLBACK TrackBarCtrlProc(HWND window, UINT message, WPARAM wparam, LPAR
 		grip_right = grip_left + 12;
 	} else {
 		POINT point;
-		GetCursorPos(&point);
-		ScreenToClient(window, &point);
+		Get_Logical_Cursor_Pos(window, point);
 
 		int xpos = point.x - 6;
 		if (xpos < 1) {

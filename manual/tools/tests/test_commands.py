@@ -65,7 +65,7 @@ class CommandAdapterTests(unittest.TestCase):
     def test_current_direct_controls_and_launch_branches_are_fully_classified(self):
         fixed, launch = commands_engine.adapted_commands(self.manifest)
         self.assertEqual(len(fixed), 31)
-        self.assertEqual(len(launch), 26)
+        self.assertEqual(len(launch), 23)
         self.assertTrue(any(record["id"] == "fixed:map-zoom" for record in fixed))
         self.assertTrue(any(record["id"] == "launch:windowed" for record in launch))
     def test_current_inventory_is_tree_wide(self):

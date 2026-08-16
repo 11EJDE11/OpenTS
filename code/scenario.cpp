@@ -164,7 +164,6 @@ static void Remove_AI_Players(void);
 static void Create_Units(bool official);
 static Cell const Clip_Scatter(Cell const & cell, int maxdist);
 static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist);
-
 static void Multiplayer_Last_Minute_Fixups(bool official = true);
 static char const * Pick_Load_Background_Name(Point2D & text_pos);
 
@@ -404,7 +403,6 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 	HiddenSurface->Fill(0);
 	Update_Visible_Surface();
 
-	Toggle_Display_Mode(true);
 	Scen->ElapsedTimer.Start();
 
 	ScenarioActive = true;
@@ -497,35 +495,6 @@ void Unlock_Scenario_Input(void)
 	Scen->IsInputLocked = false;
 	IgnoreInput = false;
 	Keyboard->Clear();
-}
-
-
-/// <summary>
-/// Switches the display between the menu and the in-game resolutions.
-/// The menus and movies are authored for a low resolution while the game itself runs at
-/// whatever the player selected, so the screen mode is flipped as play starts and stops.
-/// </summary>
-/// <param name="ingame">Should the display switch to the in-game resolution?</param>
-void Toggle_Display_Mode(bool ingame)
-{
-	if (!Debug_IngameModeChange) {
-		return;
-	}
-
-	if (ingame) {
-		if (VisibleRect.Width != Options.ScreenWidth || VisibleRect.Height != Options.ScreenHeight) {
-			DebugString("Toggle display mode to %d X %d\n", Options.ScreenWidth, Options.ScreenHeight);
-			Change_Display_Mode(Options.ScreenWidth, Options.ScreenHeight);
-		}
-	} else {
-		if (VisibleRect.Width != 640 && VisibleRect.Height > 480) {
-			DebugString("Toggling display mode back to 640 X 480 / 400\n");
-
-			if (Change_Display_Mode(640, 400) == false) {
-				Change_Display_Mode(640, 480);
-			}
-		}
-	}
 }
 
 
@@ -679,7 +648,6 @@ bool Read_Scenario(char const * fname)
 
 	if (!read_ok) {
 		DebugString("Error - Unable to read scenario: %s\n", name);
-		Set_Palette(GamePalette, FADE_PALETTE_FAST, Call_Back);
 		WWMessageBox().Process(TXT_UNABLE_READ_SCENARIO, TXT_OK);
 
 		BEnd(BENCH_SCENARIO);
@@ -1073,12 +1041,9 @@ void Do_Win(void)
 	Scen->ElapsedTimer.Stop();
 	Stop_Ingame_Movie();
 
-	MouseCursor->Erase_Mouse(HiddenSurface);
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
 	Theme.Queue_Song(THEME_QUIET);
-
-	Toggle_Display_Mode(false);
 
 	/*
 	**	If this is a multiplayer game, clear the game's name so we won't respond
@@ -1194,7 +1159,6 @@ void Do_Win(void)
 	Environment.Restore();
 
 	Map.Render();
-	Set_Palette(GamePalette, FADE_PALETTE_FAST, Call_Back);
 }
 
 
@@ -1228,12 +1192,10 @@ void Do_Lose(void)
 	Scen->ElapsedTimer.Stop();
 	Stop_Ingame_Movie();
 
-	MouseCursor->Erase_Mouse(HiddenSurface);
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
 
 	Theme.Queue_Song(THEME_QUIET);
-	Toggle_Display_Mode(false);
 
 	/*
 	**	If this is a multiplayer game, clear the game's name so we won't respond
@@ -1357,7 +1319,6 @@ void Do_Abort(void)
 	Stop_Ingame_Movie();
 	Keyboard->Clear();
 
-	MouseCursor->Erase_Mouse(HiddenSurface);
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Theme.Queue_Song(THEME_QUIET);
 
@@ -1371,7 +1332,6 @@ void Do_Abort(void)
 	}
 
 	Stop_Speaking();
-	Toggle_Display_Mode(false);
 	GameActive = false;
 }
 

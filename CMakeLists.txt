@@ -11,5 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(TS_RUN_DIR "${CMAKE_SOURCE_DIR}/Run" CACHE PATH "Tiberian Sun run directory")
 
+add_subdirectory(thirdparty)
 add_subdirectory(code)
 add_subdirectory(code/language)

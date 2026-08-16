@@ -599,11 +599,6 @@ void Dropship_Screen(void)
 	while (!accept) {
 		bool redraw = false;
 
-		if (SurfacesRestored) {
-			SurfacesRestored = false;
-			full_redraw = true;
-		}
-
 		if (full_redraw) {
 			full_redraw = false;
 			redraw = true;
@@ -1032,7 +1027,7 @@ void Dropship_Screen(void)
 				HiddenSurface->Draw_Rect(Rect(x + _cameo_x + (_cameo_width + _cameo_gap_x) * (hover_slot % 2), y + _cameo_y + (_cameo_height + _cameo_gap_y) * (hover_slot / 2), _cameo_width, _cameo_height), color);
 			}
 
-			Update_Visible_Surface(true, HiddenSurface, NULL);
+			Update_Visible_Surface(HiddenSurface, NULL);
 		}
 	}
 

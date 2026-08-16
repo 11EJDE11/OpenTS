@@ -2,7 +2,7 @@
 key: ScreenHeight
 scope: client-settings
 label: Stored height
-see_also: [ScreenWidth, AllowModeToggle]
+see_also: [ScreenWidth, Fullscreen]
 when_omitted:
   kind: unchanged
   note: The read passes through the height the display was already opened at, and nothing later overwrites it.

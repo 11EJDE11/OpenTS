@@ -2,10 +2,10 @@
 key: ScreenHeight
 scope: client-settings-2
 label: Height the display opens at
-see_also: [ScreenWidth, AllowModeToggle, AllowHiResModes]
+see_also: [ScreenWidth, WindowHeight, Fullscreen]
 when_omitted:
   kind: computed
-  note: Both dimensions become 640 by 480 when either is left out, and 640 by 400 instead on a Windows release outside the NT family that reports no more than two megabytes of video memory.
+  note: Both dimensions become 640 by 480 when either is left out.
 ---
 
 This is the earlier of the two reads of the assignment, made before the main window exists. [`ScreenWidth`](/keys/screenwidth/#scope-client-settings-2) covers what the pair does at that point: either dimension missing or written as `-1` replaces both, and the resulting size opens the window and sets the video mode.

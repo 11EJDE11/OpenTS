@@ -152,7 +152,6 @@ SidebarClass::StripClass::SelectClass
 SidebarClass::StripClass::SelectButton[COLUMNS][MAX_SLOTS];
 
 bool SidebarClass::IsToBlitSidebar = false;
-bool SidebarClass::IsToEraseSidebarMouse = false;
 
 /*
 **	Shape data pointers
@@ -915,28 +914,18 @@ void SidebarClass::Blit_Sidebar(bool complete)
 {
 	if (IsSidebarActive && GameActive && ScenarioActive) {
 
-		RECT crect;
-		GetClientRect(MainWindow, &crect);
-
-		POINT scrnpt;
-		scrnpt.x = crect.left;
-		scrnpt.y = crect.top;
-		ClientToScreen(MainWindow, &scrnpt);
-
 		if (!IsToBlitSidebar && !complete) {
 			IsToBlitSidebar = false;
 			if (Map.LastDrawRect == RECT_NONE) {
 				if (IsToRedrawCredits) {
-					MouseCursor->Draw_Mouse(SidebarSurface, true);
 					VisibleSurface->Blit_From(
-						Rect(scrnpt.x + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), scrnpt.y, SIDE_WIDTH, CREDITS_HEIGHT),
+						Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), 0, SIDE_WIDTH, CREDITS_HEIGHT),
 						*SidebarSurface,
 						Rect(0, 0, SIDE_WIDTH, CREDITS_HEIGHT),
 						false,
 						true
 					);
 					IsToRedrawCredits = false;
-					IsToEraseSidebarMouse = true;
 				}
 				IsToBlitSidebar = false;
 				return;
@@ -945,17 +934,15 @@ void SidebarClass::Blit_Sidebar(bool complete)
 			IsToBlitSidebar = true;
 		}
 
-		MouseCursor->Draw_Mouse(SidebarSurface, true);
 		if (Map.LastDrawRect == RECT_NONE && !complete) {
-			VisibleSurface->Blit_From(Rect(scrnpt.x + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), scrnpt.y, SIDE_WIDTH, CREDITS_HEIGHT), *SidebarSurface, Rect(0, 0, SIDE_WIDTH, CREDITS_HEIGHT));
-			VisibleSurface->Blit_From(Rect(scrnpt.x + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), scrnpt.y + SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y), *SidebarSurface, Rect(0, SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y));
+			VisibleSurface->Blit_From(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), 0, SIDE_WIDTH, CREDITS_HEIGHT), *SidebarSurface, Rect(0, 0, SIDE_WIDTH, CREDITS_HEIGHT));
+			VisibleSurface->Blit_From(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y), *SidebarSurface, Rect(0, SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y));
 		} else if (!IsToBlitSidebar) {
-			VisibleSurface->Blit_From(Rect(scrnpt.x + Map.LastDrawRect.X + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), scrnpt.y + Map.LastDrawRect.Y, Map.LastDrawRect.Width, Map.LastDrawRect.Height), *SidebarSurface, Map.LastDrawRect);
+			VisibleSurface->Blit_From(Rect(Map.LastDrawRect.X + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), Map.LastDrawRect.Y, Map.LastDrawRect.Width, Map.LastDrawRect.Height), *SidebarSurface, Map.LastDrawRect);
 		} else {
 			Rect sb_rect = SidebarSurface->Get_Rect();
-			VisibleSurface->Blit_From(Rect(scrnpt.x + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), scrnpt.y, sb_rect.Width, sb_rect.Height), *SidebarSurface, Rect(0, 0, sb_rect.Width, sb_rect.Height));
+			VisibleSurface->Blit_From(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), 0, sb_rect.Width, sb_rect.Height), *SidebarSurface, Rect(0, 0, sb_rect.Width, sb_rect.Height));
 		}
-		IsToEraseSidebarMouse = true;
 	}
 	IsToBlitSidebar = false;
 }

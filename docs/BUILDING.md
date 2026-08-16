@@ -23,6 +23,20 @@ supported by the current tree.
 Install Visual Studio 2022 with the **Desktop development with C++** workload,
 a Windows SDK, CMake 3.23 or newer, and Git for Windows.
 
+## Dependencies
+
+The renderer is built on [bgfx](https://github.com/bkaradzic/bgfx), vendored as the
+`thirdparty/bgfx.cmake` submodule and pinned to a tested tag. It carries bgfx, bx, and
+bimg as submodules of its own, so the checkout must be recursive:
+
+```powershell
+git submodule update --init --recursive
+```
+
+A fresh clone can do the same in one step with `git clone --recurse-submodules`.
+Configuration fails with instructions if the submodule is missing. Updating the
+dependency means moving the submodule to a new tag in its own change.
+
 ## Configure and build
 
 Run these commands from the repository root in PowerShell:

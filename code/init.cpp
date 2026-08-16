@@ -125,6 +125,7 @@
 #include "logic.h"
 #include "mainopt.h"
 #include "mixfile.h"
+#include "misc.h"
 #include "mono.h"
 #include "movie.h"
 #include "mplayer.h"
@@ -258,8 +259,6 @@ struct CheatEntryStruct {
 static CheatEntryStruct CheatEntries[] = {
 	{ &VisceroidsAsSnoBees,    "PENGO",    " PG", false },
 	{ &Just4Fun,               "THETEAM",  NULL,  false },
-	{ &Options.AllowHiResModes,"HIRES",    " RS", false },
-	{ &Debug_IngameModeChange, "TOGGLE",   NULL,  true  },
 };
 
 static void Cheat_Disable(void);
@@ -1341,10 +1340,6 @@ restart:
 							if (res == WONLINE_DOWNLOAD_PATCH) {
 								Theme.Stop(true);
 
-								if (!HicolorFlag) {
-									Set_Palette(BlackPalette, FADE_PALETTE_SLOW);
-								}
-
 								Ipx.Shutdown();
 								return(false);
 							}
@@ -1474,10 +1469,6 @@ restart:
 
 						Theme.Stop();
 
-						if (!HicolorFlag) {
-							Set_Palette(BlackPalette, FADE_PALETTE_SLOW);
-						}
-
 						return(false);
 					}
 
@@ -1540,12 +1531,8 @@ restart:
 		Hide_Mouse();
 
 		if (selection != SEL_CAMPAIGN_GAME) {
-			if (!HicolorFlag) {
-				Set_Palette(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-			}
-
 			HiddenSurface->Fill(0);
-			Update_Visible_Surface(true, HiddenSurface);
+			Update_Visible_Surface(HiddenSurface);
 		}
 
 		Show_Mouse();
@@ -1618,12 +1605,8 @@ restart:
 	Call_Back();
 	Hide_Mouse();
 
-	if (!HicolorFlag) {
-		Set_Palette(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-	}
-
 	HiddenSurface->Fill(0);
-	Update_Visible_Surface(true, HiddenSurface);
+	Update_Visible_Surface(HiddenSurface);
 	Show_Mouse();
 	LogicalSurface = HiddenSurface;
 	Map.Override_Mouse_Shape(MOUSE_NO_MOVE);
@@ -1855,11 +1838,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 			continue;
 		}
 
-		if (strcmp(string, "-16") == 0) {
-			HicolorFlag = true;
-			continue;
-		}
-
 		if (stricmp(string, "-WIN") == 0) {
 			WindowedMode = true;
 			continue;
@@ -2081,7 +2059,7 @@ void Load_Title_Page(const char * name, bool visible)
 	HiddenSurface->Fill(0);
 	Load_Title_Screen(name, HiddenSurface, &CCPalette);
 	if (visible)
-		Update_Visible_Surface(true, HiddenSurface);
+		Update_Visible_Surface(HiddenSurface);
 }
 
 
@@ -2700,10 +2678,6 @@ static bool Bootstrap(void)
 {
 	int index;
 
-	if (!HicolorFlag) {
-		Set_Palette(BlackPalette);
-	}
-
 	/*
 	**	Process the message loop until we are in focus. We need to be in focus to read pixels from
 	**	the screen.
@@ -2711,8 +2685,6 @@ static bool Bootstrap(void)
 	do {
 		Keyboard->Check();
 	} while (!GameInFocus);
-
-	SurfacesRestored = false;
 
 	/*
 	**	Perform any special debug-only processing. This includes preparing the
@@ -3426,13 +3398,12 @@ BOOL CALLBACK Main_Menu_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LP
 /// <param name="force">Should the title screen be redrawn even if nothing was lost?</param>
 void Title_Screen_Restore(bool force)
 {
-	if (SurfacesRestored == true || force == true) {
-		SurfacesRestored = false;
+	if (force == true) {
 		HiddenSurface->Fill(0);
 		char *menu = Get_New_Menu()->Background;
 		Load_Title_Screen(menu, HiddenSurface, &CCPalette);
 		Draw_Version_Text(HiddenSurface);
-		Update_Visible_Surface(false, HiddenSurface);
+		Update_Visible_Surface(HiddenSurface);
 	}
 }
 
@@ -4799,35 +4770,12 @@ class ScreenCaptureCommandClass : public CommandClass
 			return(Fetch_String(TXT_SCRNCAP_DESC));
 		}
 		virtual void Execute(void) const {
-			RECT win_rect;
-
-			if (GetClientRect(MainWindow, &win_rect)) {
-
+			{
 				/*
-				 * Build the main display coordinate rectangle to be used as the destination rectangle.
+				 * The whole frame is captured whatever size the window happens to be,
+				 * limited only by the surface it is copied into.
 				 */
-				POINT upper_left;
-				upper_left.x = win_rect.left;
-				upper_left.y = win_rect.top;
-
-				if (!ClientToScreen(MainWindow, &upper_left)) {
-					return;		/// error detected.
-				}
-
-				POINT lower_right;
-				lower_right.x = win_rect.right;
-				lower_right.y = win_rect.bottom;
-
-				if (!ClientToScreen(MainWindow, &lower_right)) {
-					return;		/// error detected.
-				}
-
-				/*
-				 * Convert the Windows based coordinate values into the destination rectangle
-				 * to use. Limit the size to the size of the hidden surface (scaling is not yet
-				 * supported).
-				 */
-				Rect dest_rect(upper_left.x, upper_left.y, win_rect.right + 1, win_rect.bottom + 1);
+				Rect dest_rect = VisibleSurface->Get_Rect();
 				dest_rect.Width = MIN(dest_rect.Width, HiddenSurface->Get_Width());
 				dest_rect.Height = MIN(dest_rect.Height, HiddenSurface->Get_Height());
 
@@ -5222,64 +5170,48 @@ bool Allocate_Surfaces(const Rect & hidden_rect, const Rect & composite_rect, co
 
 	if (hidden_first && hidden_rect.Is_Valid()) {
 		HiddenSurface = new DSurface(hidden_rect.Width, hidden_rect.Height);
+		assert(HiddenSurface != NULL);
 		HiddenSurface->Fill(0);
 
-		DebugString("HiddenSurface (%dx%d) %s\n", hidden_rect.Width, hidden_rect.Height,
-					((DSurface *)CompositeSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
+		DebugString("HiddenSurface (%dx%d)\n", hidden_rect.Width, hidden_rect.Height);
 	}
 
 	if (composite_rect.Is_Valid()) {
 		CompositeSurface = new DSurface(composite_rect.Width, composite_rect.Height);
 		CompositeSurface->Fill(0);
 
-		DebugString("CompositeSurface (%dx%d) %s\n", composite_rect.Width, composite_rect.Height,
-					((DSurface *)CompositeSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
+		DebugString("CompositeSurface (%dx%d)\n", composite_rect.Width, composite_rect.Height);
 	}
 
 	if (tile_rect.Is_Valid()) {
 		TileSurface = new DSurface(tile_rect.Width, tile_rect.Height);
 		TileSurface->Fill(0);
 
-		DebugString("TileSurface (%dx%d) %s\n", tile_rect.Width, tile_rect.Height,
-					((DSurface *)TileSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
-	}
-
-	if ((CompositeSurface != NULL) && (TileSurface != NULL)) {
-		bool is_composite_surf_in_vram = ((DSurface *)CompositeSurface)->In_Video_Ram();
-		bool is_tile_surf_in_vram = ((DSurface *)TileSurface)->In_Video_Ram();
-
-		if (is_composite_surf_in_vram ^ is_tile_surf_in_vram) {
-			delete CompositeSurface;
-			delete TileSurface;
-			DebugString("Moving TileSurface and CompositeSurface into system memory\n");
-			CompositeSurface = new DSurface(composite_rect.Width, composite_rect.Height, true);
-			TileSurface = new DSurface(tile_rect.Width, tile_rect.Height, true);
-		}
+		DebugString("TileSurface (%dx%d)\n", tile_rect.Width, tile_rect.Height);
 	}
 
 	if (sidebar_rect.Is_Valid()) {
 		SidebarSurface = new DSurface(sidebar_rect.Width, sidebar_rect.Height);
 		SidebarSurface->Fill(0);
 
-		DebugString("SidebarSurface (%dx%d) %s\n", sidebar_rect.Width, sidebar_rect.Height,
-					((DSurface *)SidebarSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
+		DebugString("SidebarSurface (%dx%d)\n", sidebar_rect.Width, sidebar_rect.Height);
 	}
 
 	if (!hidden_first && hidden_rect.Is_Valid()) {
 		HiddenSurface = new DSurface(hidden_rect.Width, hidden_rect.Height);
 		HiddenSurface->Fill(0);
 
-		DebugString("HiddenSurface (%dx%d) %s\n", hidden_rect.Width, hidden_rect.Height,
-					((DSurface *)HiddenSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
+		DebugString("HiddenSurface (%dx%d)\n", hidden_rect.Width, hidden_rect.Height);
 	}
 
 	if (hidden_rect.Is_Valid()) {
-		AlternateSurface = new DSurface(hidden_rect.Width, hidden_rect.Height, true);
+		AlternateSurface = new DSurface(hidden_rect.Width, hidden_rect.Height);
+		assert(AlternateSurface != NULL);
 		AlternateSurface->Fill(0);
 
-		DebugString("AlternateSurface (%dx%d) %s\n", hidden_rect.Width, hidden_rect.Height,
-					((DSurface *)AlternateSurface)->In_Video_Ram() ? "VRAM" : "SYSTEM MEMORY");
+		DebugString("AlternateSurface (%dx%d)\n", hidden_rect.Width, hidden_rect.Height);
 	}
+
 
 	return(success);
 }

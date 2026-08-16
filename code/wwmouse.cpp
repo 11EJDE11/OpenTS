@@ -58,139 +58,27 @@
 
 #include "wwmouse.h"
 
-#include "_convert.h"
-#include "_mono.h"
-#include "_surface.h"
-#include "assert.h"
-#include "bsurface.h"
 #include "dbgprint.h"
-#include "draw.h"
-#include "globals.h"
-#include "goptions.h"
-#include "shapeset.h"
-#include "surface.h"
+#include "misc.h"
+#include "video.h"
+#include "vidscale.h"
 #include "win.h"
-
-/*
-**	Persistant mouse object pointer that is used to facilitate access to the mouse
-**	handler object outside of the context of a member function. This will be set to the
-**	mouse object most recently created.
-*/
-static WWMouseClass * _MousePtr = NULL;
-
-bool AllowNegativeY = false;
+#include "wincursor.h"
 
 
-/***********************************************************************************************
- * Callback_Process_Mouse -- Mouse O/S callback function.                                      *
- *                                                                                             *
- *    This routine is called periodically by the operating system. It handles updating the     *
- *    mouse cursor position to match the mouse movement.                                       *
- *                                                                                             *
- * INPUT:   n/a                                                                                *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void CALLBACK Callback_Process_Mouse( UINT, UINT, DWORD, DWORD, DWORD  )
-{
-	if (_MousePtr != NULL) {
-		_MousePtr->Process_Mouse();
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::WWMouseClass -- Constructor for mouse handler object.                         *
- *                                                                                             *
- *    This is the constructor for the mouse handler object. It is assigned to a surface and    *
- *    given a confining rectangle. The mouse begins in a non-captured state.                   *
- *                                                                                             *
- * INPUT:   surfaceptr  -- Pointer to the visible display surface that will show the mouse.    *
- *                                                                                             *
- *          confine     -- The confining rectangle within the visible surface. The mouse       *
- *                         coordinates are bound to this rectangle.                            *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-WWMouseClass::WWMouseClass(Surface * surfaceptr, HWND window) :
-	MouseMutex(NULL),
+/// <summary>
+/// Constructs the mouse handler object.
+/// The handler is bound to the game window and derives the confining rectangle from it.
+/// The mouse begins in a non-captured state.
+/// </summary>
+/// <param name="window">Handle to the game window that the mouse is bound to.</param>
+WWMouseClass::WWMouseClass(HWND window) :
 	MouseState(-1),
 	IsCaptured(false),
-	MouseX(0),
-	MouseY(0),
-	SurfacePtr(surfaceptr),
 	Window(window),
-	MouseShape(NULL),
-	ShapeNumber(0),
-	ConfiningRect(RECT_NONE),
-	MouseXHot(0),
-	MouseYHot(0),
-	Background(NULL),
-	SavedRegion(RECT_NONE),
-	Alternate(NULL),
-	AltRegion(RECT_NONE),
-	SidebarAlternate(NULL),
-	SidebarAltRegion(RECT_NONE),
-	ConditionalRect(RECT_NONE),
-	ConditionalState(-1),
-	TimerHandle(0)
+	ConfiningRect(RECT_NONE)
 {
-	_MousePtr = this;
-	MouseMutex = CreateMutex(NULL, FALSE, NULL);
-	TimerHandle = timeSetEvent(1000/60, 1, Callback_Process_Mouse, 0, TIME_PERIODIC);
 	Calc_Confining_Rect();
-	MouseXHot = ConfiningRect.X + (ConfiningRect.Width/2);
-	MouseYHot = ConfiningRect.Y + (ConfiningRect.Height/2);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::~WWMouseClass -- Destructor for mouse handler object.                         *
- *                                                                                             *
- *    This will remove the mouse handler object from being processed. It returns the mouse     *
- *    back to O/S control.                                                                     *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-WWMouseClass::~WWMouseClass(void)
-{
-	if (TimerHandle != NULL) {
-		timeKillEvent(TimerHandle);
-		_MousePtr = NULL;
-	}
-	CloseHandle(MouseMutex);
-
-	if (Background != NULL) {
-		delete Background;
-		Background = NULL;
-	}
-
-	if (Alternate != NULL) {
-		delete Alternate;
-		Alternate = NULL;
-	}
-
-	if (SidebarAlternate != NULL) {
-		delete SidebarAlternate;
-		SidebarAlternate = NULL;
-	}
 }
 
 
@@ -216,7 +104,6 @@ void WWMouseClass::Calc_Confining_Rect(void)
 	ClientToScreen(Window, &lr);
 
 	ConfiningRect = Rect(point.x, point.y, lr.x-point.x, lr.y-point.y);
-//	ConfiningRect = Rect(point.x, point.y, lr.x-point.x+1, lr.y-point.y+1);
 	DebugString("Calc_Confining_Rect(%d,%d,%d,%d)\n", point.x, point.y, lr.x-point.x, lr.y-point.y);
 }
 
@@ -273,452 +160,8 @@ int WWMouseClass::Get_Mouse_State(void) const
 void WWMouseClass::Set_Cursor(Point2D const & hotspot, ShapeSet const * cursor, int shape)
 {
 	if (cursor != NULL) {
-		if (Is_Captured()) {
-			Block_Mouse();
-			if (!Is_Hidden()) Low_Hide_Mouse();
-			MouseShape = cursor;
-			ShapeNumber = shape;
-			MouseXHot = hotspot.X;
-			MouseYHot = hotspot.Y;
-			if (!Is_Hidden()) Low_Show_Mouse();
-			Unblock_Mouse();
-		} else {
-			MouseShape = cursor;
-			ShapeNumber = shape;
-			MouseXHot = hotspot.X;
-			MouseYHot = hotspot.Y;
-		}
+		Win_Cursor_Set(cursor, shape, hotspot.X, hotspot.Y, Is_Captured());
 	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Is_Data_Valid -- Determines if there is valid shape image data.               *
- *                                                                                             *
- *    This routine does a simple check to determine if the shape handler has been supplied     *
- *    a pointer to shape imagery. Any internal routine that requires the data to be present    *
- *    should call this routine to be sure it actually is.                                      *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  bool; Has a shape image data pointer been supplied to this mouse handler?          *
- *                                                                                             *
- * WARNINGS:   When the mouse object is first created, no image data has been assigned. The    *
- *             Set_Cursor must be called before this routine will return TRUE.                 *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool WWMouseClass::Is_Data_Valid(void) const
-{
-	if (MouseShape != NULL) {
-		return(true);
-	}
-	return(false);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Validate_Copy_Buffer -- Checks for and validates the background copy buffer.  *
- *                                                                                             *
- *    This routine checks and allocates if necessary a buffer that is big enough to hold the   *
- *    background image under the mouse. Whenever the background buffer is needed, this routine *
- *    should be called to ensure that it is valid.                                             *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  bool; Is the buffer valid?                                                         *
- *                                                                                             *
- * WARNINGS:   This routine might fail if there was insufficient memory.                       *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool WWMouseClass::Validate_Copy_Buffer(void)
-{
-	if (Is_Data_Valid()) {
-
-		/*
-		**	If there is a background buffer already allocated, then verify that
-		**	it is large enough for the current shape data. If not, then free the
-		**	buffer and reallocate it at the larger size.
-		*/
-		if (Background != NULL) {
-			if (MouseShape->Get_Width() > Background->Get_Width() ||
-				MouseShape->Get_Height() > Background->Get_Height()) {
-
-				delete Background;
-				Background = NULL;
-			}
-		}
-		if (Alternate != NULL) {
-			if (MouseShape->Get_Width() > Alternate->Get_Width() ||
-				MouseShape->Get_Height() > Alternate->Get_Height()) {
-
-				delete Alternate;
-				Alternate = NULL;
-			}
-		}
-		if (SidebarAlternate != NULL) {
-			if (MouseShape->Get_Width() > SidebarAlternate->Get_Width() ||
-				MouseShape->Get_Height() > SidebarAlternate->Get_Height()) {
-
-				delete SidebarAlternate;
-				SidebarAlternate = NULL;
-			}
-		}
-
-		/*
-		**	Allocate a new background buffer if necessary. This must be big enough to
-		**	hold the largest sized shape from the currently assigned shape set data.
-		*/
-		if (SurfacePtr != NULL) {
-			if (Background == NULL) {
-				Background = new BSurface(MouseShape->Get_Width(), MouseShape->Get_Height(), SurfacePtr->Bytes_Per_Pixel());
-			}
-			if (Alternate == NULL) {
-				Alternate = new BSurface(MouseShape->Get_Width(), MouseShape->Get_Height(), SurfacePtr->Bytes_Per_Pixel());
-			}
-			if (SidebarAlternate == NULL) {
-				SidebarAlternate = new BSurface(MouseShape->Get_Width(), MouseShape->Get_Height(), SurfacePtr->Bytes_Per_Pixel());
-			}
-		}
-
-		return(Background != NULL && Alternate != NULL && SidebarAlternate != NULL);
-	}
-	return(false);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Matching_Rect -- Finds rectangle of current cursor position & size.           *
- *                                                                                             *
- *    This routine will return the logical rectangle that exactly encloses the cursor. This    *
- *    routine is typically used when drawing the cursor and manipulating the background buffer *
- *    under it.                                                                                *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  Returns with the rectangle that surrounds the cursor.                              *
- *                                                                                             *
- * WARNINGS:   The rectangle is in logical coordinates. It may have to be biased to O/S        *
- *             coordinates if necessary.                                                       *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-Rect WWMouseClass::Matching_Rect(void) const
-{
-	Rect rect(0,0,0,0);
-	if (Is_Data_Valid()) {
-		((WWMouseClass *)this)->Block_Mouse();
-
-		/*
-		**	Build the rectangle that the mouse shape will consume.
-		*/
-		rect = MouseShape->Get_Rect(ShapeNumber);
-		rect.X += MouseX - MouseXHot;
-		rect.Y += MouseY - MouseYHot;
-
-		((WWMouseClass *)this)->Unblock_Mouse();
-	}
-	return(rect);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Save_Background -- Saves the background to a copy buffer.                     *
- *                                                                                             *
- *    This routine will save the region under the mouse (or where the mouse would appear at)   *
- *    to a copy buffer.                                                                        *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   The previous contents of the copy buffer will be overwritten by this routine.   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Save_Background(void)
-{
-	if (Validate_Copy_Buffer() && SurfacePtr != NULL) {
-
-		/*
-		**	Build the rectangle that the mouse shape will consume.
-		*/
-		SavedRegion = Matching_Rect();
-
-		Rect rect = SavedRegion;
-		rect.X += ConfiningRect.X;
-		rect.Y += ConfiningRect.Y;
-
-		/*
-		**	Blit the background from the surface to the holding buffer.
-		*/
-//		Rect old = SurfacePtr->Get_Rect();
-//		SurfacePtr->Window.Reset();
-		Background->Blit_From(Rect(0, 0, rect.Width, rect.Height), *SurfacePtr, rect);
-//		SurfacePtr->Window.Set(old);
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Restore_Background -- Restores the image back where it came from.             *
- *                                                                                             *
- *    This is the counterpart routine to the Save_Background function. It will restore the     *
- *    image from the copy buffer back to the screen where it came from.                        *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Restore_Background(void)
-{
-	if (SavedRegion.Is_Valid() && SurfacePtr != NULL && Background != NULL) {
-
-		Rect rect = SavedRegion;
-		rect.X += ConfiningRect.X;
-		rect.Y += ConfiningRect.Y;
-
-		/*
-		**	Blit the background from the holding buffer to the surface.
-		*/
-//		Rect old = SurfacePtr->Get_Rect();
-//		SurfacePtr->Window.Reset();
-		SurfacePtr->Blit_From(rect, *Background, Rect(0, 0, rect.Width, rect.Height));
-//		SurfacePtr->Window.Set(old);
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Draw_Mouse -- Manually draw the mouse to the surface specified.               *
- *                                                                                             *
- *    This is a kludge function that can be used to reduce mouse flicker. Normally the mouse   *
- *    must be hidden before an image is copied to the visible surface. By drawing the mouse    *
- *    in the correct position on the source image prior to the copy, the mouse doesn't need    *
- *    to be hidden and no mouse flicker occurs. This routine handles this manual draw process. *
- *                                                                                             *
- * INPUT:   surface  -- Pointer to the surface that the mouse will be drawn to.                *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   The destination surface is presumed to be the exact dimensions of the bouding   *
- *             rectangle specified in the mouse constructor. The call to Erase_Mouse must      *
- *             occur as soon as possible since the mouse is frozen until it is called.         *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Draw_Mouse(Surface * surface, bool issidebarsurface)
-{
-
-	BSurface *savesurface;
-	Rect *savedregion;
-	int xoffset;
-	int yoffset;
-
-	if (!Is_Hidden() && Is_Captured() && surface != NULL && surface != SurfacePtr) {
-
-		if (issidebarsurface){
-			if (Options.IsSidebarOnRight) {
-				xoffset = -TacticalRect.Width;
-				yoffset = 0;
-			}else{
-				xoffset = 0;
-				yoffset = 0;
-			}
-			savesurface = SidebarAlternate;
-			savedregion = &SidebarAltRegion;
-		}else{
-			if (!Options.IsSidebarOnRight) {
-				if (-SidebarSurface->Get_Width() > surface->Get_Width()-VisibleRect.Width) {
-					xoffset = -SidebarSurface->Get_Width();
-					yoffset = 0;
-				}else{
-					xoffset = surface->Get_Width()-VisibleRect.Width;
-					yoffset = 0;
-				}
-			}else{
-				xoffset = 0;
-				yoffset = 0;
-			}
-			savesurface = Alternate;
-			savedregion = &AltRegion;
-		}
-
-		if (savesurface != NULL && Background != NULL) {
-			Block_Mouse();
-
-			/*
-			**	Blit the background from the surface to the holding buffer.
-			*/
-			//Rect old = surface->Window.Get_Rect();
-			//surface->Window.Reset();
-			*savedregion = SavedRegion;
-			savedregion->X += xoffset;
-			savedregion->Y += yoffset;
-			savesurface->Blit_From(Rect(0, 0, savedregion->Width, savedregion->Height), *surface, *savedregion);
-			if (issidebarsurface && savedregion->X < 0 && -savedregion->X < Background->Get_Width()){
-				Background->Blit_From(Rect(-savedregion->X, 0, savedregion->Width, savedregion->Height),
-											*surface, Rect(0,savedregion->Y, savedregion->Width, savedregion->Height));
-			}else{
-				Background->Blit_From(Rect(0, 0, savedregion->Width, savedregion->Height), *surface, *savedregion);
-			}
-			//surface->Window.Set(old);
-			Raw_Draw_Mouse(surface, xoffset, yoffset);
-			Unblock_Mouse();
-		} else {
-			savedregion->Width = 0;
-		}
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Erase_Mouse -- Restores the surface after a Draw_Mouse call.                  *
- *                                                                                             *
- *    This is the counterpart routine to Draw_Mouse. It will restore the specified surface     *
- *    back to its original state. The mouse is frozen between the calls to Draw_Mouse and      *
- *    Erase_Mouse, so it is imperative to call this routine at the first legal opportunity.    *
- *                                                                                             *
- * INPUT:   surface  -- Pointer to the surface that the mouse was previously drawn to.         *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Erase_Mouse(Surface * surface, bool issidebarsurface)
-{
-	if (!Is_Hidden() && surface != NULL && surface != SurfacePtr && Alternate != NULL && SidebarAlternate != NULL) {
-
-		BSurface *savesurface;
-		Rect savedregion;
-
-		if (issidebarsurface){
-			savesurface = SidebarAlternate;
-			savedregion = SidebarAltRegion;
-		}else{
-			savesurface = Alternate;
-			savedregion = AltRegion;
-		}
-
-		/*
-		**	Blit the background from the holding buffer to the surface.
-		*/
-		if (savesurface != NULL) {
-			Block_Mouse();
-			//Rect old = surface->Window.Get_Rect();
-			//surface->Window.Reset();
-			surface->Blit_From(savedregion, *savesurface, Rect(0, 0, savedregion.Width, savedregion.Height));
-			//surface->Window.Set(old);
-			Unblock_Mouse();
-		}
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Raw_Draw_Mouse -- Draws the mouse to the surface specified.                   *
- *                                                                                             *
- *    This will draw the mouse image to the surface specified. It does not do any checking     *
- *    except to make sure that the mouse image data is nominally valid.                        *
- *                                                                                             *
- * INPUT:   surface  -- The surface to draw the mouse upon.                                    *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   The background is not preserved by this routine.                                *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Raw_Draw_Mouse(Surface * surface, int xoffset, int yoffset)
-{
-	if (Is_Data_Valid() && surface != NULL && MouseDrawer != NULL) {
-
-		/*
-		**	Determine the rectangle that the mouse will be drawn
-		**	to.
-		*/
-
-		Rect rect = SavedRegion;
-		rect.X += xoffset;
-		rect.Y += yoffset;
-//		if (surface == SurfacePtr) {
-//			rect.X += ConfiningRect.X;
-//			rect.Y += ConfiningRect.Y;
-//		}
-
-//		Rect old = surface->Get_Rect();
-//		surface->Window.Reset();
-		BSurface mdata(rect.Width, rect.Height, 1, MouseShape->Get_Data(ShapeNumber));
-
-		if (surface == SurfacePtr) {
-			Blit_Block(*surface, *MouseDrawer, mdata, Rect(0, 0, rect.Width, rect.Height), Point2D(rect.X, rect.Y), ConfiningRect);
-		} else {
-			Blit_Block(*surface, *MouseDrawer, mdata, Rect(0, 0, rect.Width, rect.Height), Point2D(rect.X, rect.Y), surface->Get_Rect());
-		}
-
-		//surface->Window.Set(old);
-	}
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Low_Show_Mouse -- Shows the mouse and saves the background.                   *
- *                                                                                             *
- *    This routine will save the background and then draw the mouse to the visible surface.    *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Low_Show_Mouse(void)
-{
-	Block_Mouse();
-	Save_Background();
-	Raw_Draw_Mouse(SurfacePtr, 0, 0);
-	Unblock_Mouse();
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Low_Hide_Mouse -- Restores the surface image in order to hide the mouse.      *
- *                                                                                             *
- *    This routine will hide the mouse on the visible surface. It does this by restoring the   *
- *    pixels under where the mouse was previously drawn.                                       *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Low_Hide_Mouse(void)
-{
-	Block_Mouse();
-	Restore_Background();
-	Unblock_Mouse();
 }
 
 
@@ -741,16 +184,9 @@ void WWMouseClass::Show_Mouse(void)
 	if (!Is_Captured()) {
 		ShowCursor(TRUE);
 	} else {
-		Block_Mouse();
 		MouseState++;
-		if (MouseState == 0) {
-			Low_Show_Mouse();
-		}
-		/*
-		 * assert(MouseState != 1); // temp until all the shows and hides are right
-		 */
 		if (MouseState > 0) MouseState = 0;
-		Unblock_Mouse();
+		Win_Cursor_Set_Visible(!Is_Hidden());
 	}
 }
 
@@ -775,12 +211,8 @@ void WWMouseClass::Hide_Mouse(void)
 	if (!Is_Captured()) {
 		ShowCursor(FALSE);
 	} else {
-		Block_Mouse();
 		MouseState--;
-		if (MouseState == -1) {
-			Low_Hide_Mouse();
-		}
-		Unblock_Mouse();
+		Win_Cursor_Set_Visible(!Is_Hidden());
 	}
 }
 
@@ -805,14 +237,28 @@ void WWMouseClass::Capture_Mouse(void)
 {
 	if (this != NULL && !Is_Captured()) {
 		DebugString("Capture_Mouse()\n");
-		Block_Mouse();
-		while (ShowCursor(FALSE) > -1) {}
-		while (ShowCursor(TRUE) < -1) {}
 		Hide_Mouse();
 		IsCaptured = true;
 
+		/*
+		 * The game's pointer is now the O/S pointer, so its display count has to come
+		 * back up; it was left negative while the game drew a pointer of its own.
+		 */
+		while (ShowCursor(TRUE) < 0) {}
+
+		/*
+		 * There is no exclusive display mode any more, so the pointer is kept inside
+		 * the window by hand while the game covers the screen.
+		 */
+		if (!WindowedMode) {
+			RECT clip_rect;
+			GetClientRect(Window, &clip_rect);
+			ClientToScreen(Window, (LPPOINT)&clip_rect.left);
+			ClientToScreen(Window, (LPPOINT)&clip_rect.right);
+			ClipCursor(&clip_rect);
+		}
+
 		Show_Mouse();
-		Unblock_Mouse();
 	}
 }
 
@@ -842,15 +288,12 @@ void WWMouseClass::Release_Mouse(void)
 {
 	if (this != NULL && Is_Captured()) {
 		DebugString("Release_Mouse()\n");
-		Block_Mouse();
 		Hide_Mouse();
 		IsCaptured = false;
+		ClipCursor(NULL);
 		if (GetCapture() == Window) ReleaseCapture();
-		while (ShowCursor(FALSE) > -1) {}
-		while (ShowCursor(TRUE) < -1) {}
+		while (ShowCursor(TRUE) < 0) {}
 		Show_Mouse();
-
-		Unblock_Mouse();
 	}
 }
 
@@ -918,12 +361,18 @@ void WWMouseClass::Convert_Coordinate(int & x, int & y) const
 	/*
 	**	Convert the mouse position to legal bounds.
 	*/
-	x -= ConfiningRect.X;
-	y -= ConfiningRect.Y;
+	POINT point;
+	point.x = x - ConfiningRect.X;
+	point.y = y - ConfiningRect.Y;
+	Window_Point_To_Game(point);
+
+	VideoScaleInfo const & scale = Video_Get_Scale_Info();
+	x = point.x;
+	y = point.y;
 	if (x < 0) x = 0;
-	if (y < 0 && !AllowNegativeY) y = 0;
-	if (x >= ConfiningRect.Width) x = ConfiningRect.Width-1;
-	if (y >= ConfiningRect.Height) y = ConfiningRect.Height-1;
+	if (y < 0) y = 0;
+	if (x >= scale.GameWidth) x = scale.GameWidth-1;
+	if (y >= scale.GameHeight) y = scale.GameHeight-1;
 }
 
 
@@ -951,105 +400,4 @@ void WWMouseClass::Get_Bounded_Position(int & x, int & y) const
 	x = pt.x;
 	y = pt.y;
 	Convert_Coordinate(x, y);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Update_Mouse_Position -- Updates the mouse position to match that specified.  *
- *                                                                                             *
- *    This routine will update the mouse to match the position speicifed.                      *
- *                                                                                             *
- * INPUT:   x,y   -- The coordinates to position the mouse (hot spot). The coordinates are     *
- *                   specified as logical not O/S relative.                                    *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Update_Mouse_Position(int x, int y, bool forced)
-{
-	/*
-	**	If the desired position is not the same as the current
-	**	position, then hide the mouse, reposition it, then show
-	**	the mouse.
-	*/
-	Block_Mouse();
-	if (x != MouseX || y != MouseY || forced) {
-		if (Is_Captured() && !Is_Hidden() && GameInFocus) Low_Hide_Mouse();
-		MouseX = x;
-		MouseY = y;
-		if (Is_Captured() && !Is_Hidden() && GameInFocus) Low_Show_Mouse();
-	}
-	Unblock_Mouse();
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::Process_Mouse -- Mouse processing callback routine.                           *
- *                                                                                             *
- *    This routine should be called periodically (recommended 15 times per second). It will    *
- *    examine the operating system mouse position and then update the visible mouse to match.  *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-void WWMouseClass::Process_Mouse(void)
-{
-	static bool _forced = false;
-
-	if (SurfacePtr != NULL) {
-		Block_Mouse();
-
-		/*
-		**	Fetch and update the mouse position.
-		*/
-		int x;
-		int y;
-		Get_Bounded_Position(x, y);
-		if (!SurfacePtr->entry_64() && !_forced) {
-			MouseX = x;
-			MouseY = y;
-			_forced = true;
-		} else {
-			Update_Mouse_Position(x, y, _forced);
-			_forced = false;
-		}
-
-		Unblock_Mouse();
-	}
-}
-
-
-/// <summary>
-/// Locks the mouse against the background update thread.
-/// This routine will wait for the timer callback that moves and redraws the cursor to
-/// relinquish the mouse, so that the caller may safely examine or alter the cursor state.
-/// </summary>
-/// <remarks>Every call must be paired with a matching call to Unblock_Mouse.</remarks>
-void WWMouseClass::Block_Mouse(void)
-{
-	if (WaitForSingleObject(MouseMutex, 10000) == WAIT_TIMEOUT) {
-		DebugString("Warning: Probable deadlock occurred on MouseMutex. %s, line %d\n", __FILE__, __LINE__);
-
-	}
-}
-
-
-/// <summary>
-/// Releases the mouse lock taken by Block_Mouse.
-/// This routine hands the mouse back to the background timer callback so that cursor
-/// updates may resume.
-/// </summary>
-void WWMouseClass::Unblock_Mouse(void)
-{
-	ReleaseMutex(MouseMutex);
 }

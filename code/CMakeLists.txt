@@ -104,7 +104,7 @@ set(OPENTS_COMPILE_OPTIONS
         # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
         # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /Od /RTC1 /Gr /GR /MP /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise
+            /Zi /Od /RTC1 /GR /MP /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
@@ -125,7 +125,7 @@ set(OPENTS_COMPILE_OPTIONS
         # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
         # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /O2 /GF /Gr /GR /MP /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise
+            /Zi /O2 /GF /GR /MP /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
@@ -156,6 +156,15 @@ target_include_directories(OpenTS PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+# Only the renderer's own translation unit sees bgfx, so its headers and the shaders it
+# embeds are put on that file rather than on the whole target.
+set(BGFX_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/bgfx.cmake/bgfx")
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/bgfxbackend.cpp" PROPERTIES
+    INCLUDE_DIRECTORIES
+        "${BGFX_ROOT}/include;${CMAKE_SOURCE_DIR}/thirdparty/bgfx.cmake/bx/include;${BGFX_ROOT}/examples/common/imgui"
+    COMPILE_OPTIONS "/Zc:preprocessor"
+)
+
 message(STATUS "${PROJECT_NAME}: Adding compilier definitions...")
 target_compile_definitions(OpenTS PRIVATE
     WIN32
@@ -172,7 +181,6 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 
 # Required libraries:
 #  Comctl32.lib
-#  ddraw.lib
 #  DSound.lib
 #  Version.lib
 #  Winmm.lib
@@ -180,13 +188,20 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 #  + all Win32 libs
 #
 
+# The bgfx targets are linked by file rather than by name. Their interface settings
+# include compiler switches and a directory of headers that shadow the system ones, and
+# the Visual Studio generator would hand all of that to ML.EXE as well, which fails.
+add_dependencies(OpenTS bgfx bx bimg)
 target_link_libraries(OpenTS PRIVATE
     VQALib
 
+    $<TARGET_FILE:bgfx>
+    $<TARGET_FILE:bx>
+    $<TARGET_FILE:bimg>
     comctl32
-    ddraw
     dsound
     iphlpapi
+    psapi
     version
     winmm
     wsock32
@@ -199,6 +214,10 @@ if (MSVC)
         /SUBSYSTEM:WINDOWS
         /DEBUG
         /MAP
+        # Declares the process per-monitor DPI aware, so a scaled desktop does not blur
+        # the frame by stretching the whole window.
+        "/MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/sun.manifest"
+        /MANIFEST:EMBED
     )
 endif()
 

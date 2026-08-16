@@ -12,13 +12,12 @@
 #include "msengine.h"
 
 #include "_surface.h"
-#include "_xmouse.h"
 #include "conquer.h"
 #include "dbgprint.h"
 #include "dsaudio.h"
 #include "globals.h"
 #include "goptions.h"
-#include "misc.h"
+#include "video.h"
 #include "msanim.h"
 #include "msgloop.h"
 #include "mssfx.h"
@@ -66,6 +65,11 @@ MSEngine::~MSEngine(void)
 
 	Rects.Clear();
 }
+
+
+// Set when the whole display is to be rebuilt from the alternate surface on the next
+// advance, which is how the screen comes back after a dialog has covered it.
+static bool _RebuildFromAlternate = false;
 
 
 /// <summary>
@@ -157,7 +161,7 @@ void MSEngine::Wait_For_Anim(MSAnim * anim, unsigned delay)
 /// </summary>
 void MSEngine::Restore_And_Advance(void)
 {
-	SurfacesRestored = true;
+	_RebuildFromAlternate = true;
 	Advance(HiddenSurface);
 }
 
@@ -171,8 +175,8 @@ void MSEngine::Restore_And_Advance(void)
 /// <param name="surface">The surface the animations are to draw onto.</param>
 void MSEngine::Advance(Surface * surface)
 {
-	if (SurfacesRestored == true) {
-		SurfacesRestored = false;
+	if (_RebuildFromAlternate == true) {
+		_RebuildFromAlternate = false;
 		surface->Fill(TBLACK);
 		Rect rect = AlternateSurface->Get_Rect();
 		rect.X = (surface->Get_Width() - rect.Width) / 2;
@@ -310,36 +314,20 @@ void MSEngine::Add_Update_Rect(Rect const & rect)
 
 /// <summary>
 /// Blits every pending update region to the visible surface.
-/// The regions are offset into wherever the game window happens to sit on the desktop,
-/// and the mouse cursor is drawn over the source for the duration so that it appears
-/// in the copy. The pending list is emptied as a result.
+/// The pending list is emptied as a result.
 /// </summary>
 /// <param name="surface">The surface holding the freshly drawn frame.</param>
 void MSEngine::Blit_All(Surface * surface)
 {
-	RECT client_rect;
-
 	if (RectCount > 0) {
 
-		GetClientRect(MainWindow, (LPRECT)&client_rect);
-		ClientToScreen(MainWindow, (LPPOINT)&client_rect.left);
-
-		if (MouseCursor) {
-			MouseCursor->Draw_Mouse(surface);
-		}
-
 		for (int i = 0; i < RectCount; i++) {
-			Rect offset_rect = Rects[i];
-			offset_rect.X += client_rect.left;
-			offset_rect.Y += client_rect.top;
-			VisibleSurface->Blit_From(offset_rect, *surface, Rects[i]);
+			VisibleSurface->Blit_From(Rects[i], *surface, Rects[i]);
 		}
 
 		RectCount = 0;
 
-		if (MouseCursor) {
-			MouseCursor->Erase_Mouse(surface);
-		}
+		Video_Present_If_Dirty();
 	}
 }
 
@@ -347,32 +335,17 @@ void MSEngine::Blit_All(Surface * surface)
 /// <summary>
 /// Blits a single region to the visible surface.
 /// Use this routine to push one region to the screen straight away rather than letting
-/// it wait for the next Blit_All. The mouse cursor is drawn over the source for the
-/// duration so that it appears in the copy.
+/// it wait for the next Blit_All.
 /// </summary>
 /// <param name="surface">The surface to copy from.</param>
 /// <param name="rect">The region of the surface to copy.</param>
 void MSEngine::Blit_Rect(Surface * surface, Rect const & rect)
 {
-	RECT client_rect;
-
 	if (rect.Is_Valid()) {
 
-		GetClientRect(MainWindow, (LPRECT)&client_rect);
-		ClientToScreen(MainWindow, (LPPOINT)&client_rect.left);
+		VisibleSurface->Blit_From(rect, *surface, rect);
 
-		if (MouseCursor) {
-			MouseCursor->Draw_Mouse(surface);
-		}
-
-		Rect offset_rect = rect;
-		offset_rect.X += client_rect.left;
-		offset_rect.Y += client_rect.top;
-		VisibleSurface->Blit_From(offset_rect, *surface, rect);
-
-		if (MouseCursor) {
-			MouseCursor->Erase_Mouse(surface);
-		}
+		Video_Present_If_Dirty();
 	}
 }
 
@@ -393,7 +366,6 @@ void MSEngine::Wait_Delay(int delay)
 		do {
 			Call_Back();
 			Process_Idle();
-			Wait_Blit();
 			Advance(HiddenSurface);
 			Blit_All(HiddenSurface);
 			Windows_Message_Handler();

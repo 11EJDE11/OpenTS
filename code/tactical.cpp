@@ -1340,7 +1340,7 @@ void Tactical::Clear_Caption_Text(void)
 /// <summary>
 /// Draws a line of text across the middle of the tactical view.
 /// This routine paints straight onto the composite surface with GDI, so it does nothing
-/// unless that surface is a real DirectDraw surface. It also stays quiet while the map
+/// unless that surface can hand out a device context. It also stays quiet while the map
 /// editor is running.
 /// </summary>
 /// <param name="text">The text to display. A NULL or empty string draws nothing.</param>
@@ -1352,11 +1352,11 @@ void Tactical::Draw_Screen_Text(char const * text)
 	if (text == NULL || !strlen(text)) {
 		return;
 	}
-	if (CompositeSurface->Is_Direct_Draw()) {
-		HDC hdc;
+	if (CompositeSurface->Is_GDI_Backed()) {
+		DSurface * surface = (DSurface *)CompositeSurface;
 		Rect rect = TacticalRect;
-		HRESULT hr = ((DSurface*)CompositeSurface)->Get_DD_Surface()->GetDC(&hdc);
-		if (SUCCEEDED(hr)) {
+		HDC hdc = surface->GetDC();
+		if (hdc != NULL) {
 			HFONT font = CreateFont(28, 20, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_RASTER_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_SWISS | DEFAULT_PITCH, NULL);
 			HGDIOBJ h = SelectObject(hdc, font);
 			Point2D point = Point2D(TacticalRect.Width / 2, TacticalRect.Height / 2);
@@ -1366,7 +1366,7 @@ void Tactical::Draw_Screen_Text(char const * text)
 			TextOut(hdc, rect.X + point.X, rect.Y + point.Y, text, strlen(text));
 			SelectObject(hdc, h);
 			DeleteObject(font);
-			((DSurface*)CompositeSurface)->Get_DD_Surface()->ReleaseDC(hdc);
+			surface->ReleaseDC(hdc);
 		}
 	}
 }

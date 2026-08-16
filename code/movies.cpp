@@ -20,6 +20,7 @@
 #include "vqa.h"
 #include "vqoption.h"
 #include "win.h"
+#include "video.h"
 
 
 DynamicVectorClass<char const *> Movies;
@@ -72,14 +73,9 @@ bool Movie_Unlock_Surface(void)
 /// </summary>
 void Movie_Blit_To_Screen(void)
 {
-	RECT rect;
-
 	if (!Get_Option(OPTION_NO_BUFFER)) {
-		GetClientRect(MainWindow, &rect);
-		ClientToScreen(MainWindow, (LPPOINT)&rect);
-
 		Rect area;
-		area.Set(rect.left + CurrentVQ->StretchRect.X, rect.top + CurrentVQ->StretchRect.Y,
+		area.Set(CurrentVQ->StretchRect.X, CurrentVQ->StretchRect.Y,
 			CurrentVQ->StretchRect.Width, CurrentVQ->StretchRect.Height);
 
 		VisibleSurface->Blit_From(
@@ -87,6 +83,8 @@ void Movie_Blit_To_Screen(void)
 			*CurrentVQ->DrawSurface,
 			CurrentVQ->InitialRect
 		);
+
+		Video_Present_If_Dirty();
 	}
 }
 
@@ -358,7 +356,7 @@ void Movie_Update_Visible_Surface(void)
 {
 	if (CurrentVQ != NULL) {
 		AlternateSurface->Fill(0);
-		Update_Visible_Surface(false, AlternateSurface);
+		Update_Visible_Surface(AlternateSurface);
 		Movie_Blit_To_Screen();
 	}
 }

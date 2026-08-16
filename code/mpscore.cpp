@@ -228,7 +228,7 @@ bool MultiScore::Init(void)
 {
 	Deinit();
 
-	ScoreSurface = new DSurface(640, 400, true);
+	ScoreSurface = new DSurface(640, 400);
 	if (ScoreSurface == NULL) {
 		DebugString("MultiScore: Failed to create surface!\n");
 		return(false);

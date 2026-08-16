@@ -59,6 +59,7 @@
 #include "suprtype.h"
 #include "surface.h"
 #include "tactical.h"
+#include "vidscale.h"
 #include "waypoint.h"
 
 #include "special.hh"
@@ -739,10 +740,10 @@ void ScrollClass::Scroll_Coast(Point2D const & point)
 					disty = abs(int((double)posy * (12.0 / (double)(Options.ScrollRate + 1))));
 					if (distx + disty > 0) {
 						POINT pt;
-						pt.x = 0;
-						pt.y = 0;
-						ClientToScreen(MainWindow, &pt);
-						SetCursorPos(RightPressPoint.X + pt.x + TacticalRect.X, RightPressPoint.Y + pt.y + TacticalRect.Y);
+						pt.x = RightPressPoint.X + TacticalRect.X;
+						pt.y = RightPressPoint.Y + TacticalRect.Y;
+						Game_Point_To_Screen(pt);
+						SetCursorPos(pt.x, pt.y);
 					}
 					break;
 
@@ -753,10 +754,10 @@ void ScrollClass::Scroll_Coast(Point2D const & point)
 					disty = abs(int((double)posy * (12.0 / (double)(Options.ScrollRate + 1))));
 					if (distx + disty > 0) {
 						POINT pt;
-						pt.x = 0;
-						pt.y = 0;
-						ClientToScreen(MainWindow, &pt);
-						SetCursorPos(RightPressPoint.X + pt.x + TacticalRect.X, RightPressPoint.Y + pt.y + TacticalRect.Y);
+						pt.x = RightPressPoint.X + TacticalRect.X;
+						pt.y = RightPressPoint.Y + TacticalRect.Y;
+						Game_Point_To_Screen(pt);
+						SetCursorPos(pt.x, pt.y);
 					}
 					break;
 			}

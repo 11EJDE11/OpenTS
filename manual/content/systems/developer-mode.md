@@ -3,8 +3,6 @@ title: Developer mode and diagnostics
 summary: Compiles the engine's cheat keys, diagnostic displays and logging into the Debug configuration alone, and raises the flags that arm them as soon as the command line carries any argument.
 category: tools-diagnostics
 keys:
-  - AllowHiResModes
-  - AllowModeToggle
   - Cell
   - CheckHeap
   - Coord
@@ -92,12 +90,10 @@ The classic main menu accumulates alphanumeric keystrokes into a buffer of up to
 
 | Code | What it flips |
 | --- | --- |
-| `HIRES` | [`AllowHiResModes`](/keys/allowhiresmodes/), the display-mode list restriction |
-| `TOGGLE` | [`AllowModeToggle`](/keys/allowmodetoggle/), the in-game display mode switch |
 | `PENGO` | The visceroid art replacement |
 | `THETEAM` | A skirmish-only rules overlay read from `TMCJ4F.INI` |
 
-Starting a network game clears every code not marked as surviving into multiplayer, which leaves only the display mode switch standing. The first two rows are `sun.ini` settings in their own right and can be set without typing anything; the last two exist only as codes.
+Neither is marked as surviving into multiplayer, so starting a network game clears both. Both exist only as codes; no setting reaches them.
 
 ### The version dialog
 

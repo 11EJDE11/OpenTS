@@ -15,6 +15,8 @@ related:
 
 ## Configuration fails before compilation
 
+A message that `thirdparty/bgfx.cmake` is empty means the clone did not fetch the vendored renderer. Run `git submodule update --init --recursive` and configure again.
+
 Use the Visual Studio 2022 generator and `-A Win32`. The build supports no other compilers, Visual Studio versions, or target architectures.
 
 For a Visual Studio installation that CMake cannot discover through the Visual Studio Installer, pass its installation path and product version as described in the repository's `docs/BUILDING.md`.

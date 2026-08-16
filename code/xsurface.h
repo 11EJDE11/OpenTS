@@ -112,7 +112,7 @@ class XSurface : public Surface
 		**	the Watcom compiler doesn't support RTTI, we must resort to using this
 		**	alternative.
 		*/
-		virtual bool Is_Direct_Draw(void) const override {return(false);}
+		virtual bool Is_GDI_Backed(void) const override {return(false);}
 
 		/*
 		 * Bounds-checked pixel store: writes 'color' at 'point' only if it lies within

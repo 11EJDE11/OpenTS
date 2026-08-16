@@ -1462,57 +1462,6 @@ AllowFind:
       source: code/wonline.cpp
       guard: null
     level: WOnline
-AllowHiResModes:
-  key: AllowHiResModes
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Video
-    value_type: boolean
-    status: generated
-    _provenance:
-      default_candidate: 'no'
-      declared_in: OptionsClass
-      member: AllowHiResModes
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
-AllowModeToggle:
-  key: AllowModeToggle
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Video
-    value_type: boolean
-    status: needs_review
-    _provenance:
-      default_candidate: null
-      declared_in: OptionsClass
-      member: Debug_IngameModeChange
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Video
-    value_type: boolean
-    status: needs_review
-    _provenance:
-      default_candidate: 'no'
-      declared_in: Startup
-      member: Debug_IngameModeChange
-      source: code/startup.cpp
-      guard: null
-    level: Startup
 AllowPage:
   key: AllowPage
   scopes:
@@ -5711,6 +5660,24 @@ CurleyShuffle:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+CursorScale:
+  key: CursorScale
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '0'
+      declared_in: OptionsClass
+      member: CursorScale
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 CustomRotor:
   key: CustomRotor
   scopes:
@@ -8826,6 +8793,24 @@ Full:
       source: code/teamtype.cpp
       guard: null
     level: TeamTypeClass
+Fullscreen:
+  key: Fullscreen
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: Startup
+      member: Options
+      source: code/startup.cpp
+      guard: null
+    level: Startup
 GDIBarracks:
   key: GDIBarracks
   scopes:
@@ -10887,6 +10872,24 @@ Insignificant:
       source: code/objtype.cpp
       guard: null
     level: ObjectTypeClass
+IntegerScaling:
+  key: IntegerScaling
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: OptionsClass
+      member: IntegerScaling
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 IntentionalDeacceleration:
   key: IntentionalDeacceleration
   scopes:
@@ -17206,6 +17209,24 @@ Remapable:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
+Renderer:
+  key: Renderer
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: Startup
+      member: Options
+      source: code/startup.cpp
+      guard: null
+    level: Startup
 RepairBay:
   key: RepairBay
   scopes:
@@ -17785,6 +17806,24 @@ SavourDelay:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+ScaleMode:
+  key: ScaleMode
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: string
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: OptionsClass
+      member: null
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 Scatter:
   key: Scatter
   scopes:
@@ -23191,6 +23230,24 @@ UseTurretShadow:
       source: code/unittype.cpp
       guard: null
     level: UnitTypeClass
+VSync:
+  key: VSync
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: Startup
+      member: Options
+      source: code/startup.cpp
+      guard: null
+    level: Startup
 Value:
   key: Value
   scopes:
@@ -23668,24 +23725,6 @@ VeteranSpeed:
       source: code/rules.cpp
       guard: null
     level: RulesClass
-VideoBackBuffer:
-  key: VideoBackBuffer
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Video
-    value_type: boolean
-    status: generated
-    _provenance:
-      default_candidate: 'yes'
-      declared_in: Startup
-      member: VideoBackBufferAllowed
-      source: code/startup.cpp
-      guard: null
-    level: Startup
 Visceroids:
   key: Visceroids
   scopes:
@@ -24805,6 +24844,42 @@ WindEffect:
       source: code/ptype.cpp
       guard: null
     level: ParticleTypeClass
+WindowHeight:
+  key: WindowHeight
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: Startup
+      member: Options
+      source: code/startup.cpp
+      guard: null
+    level: Startup
+WindowWidth:
+  key: WindowWidth
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: Startup
+      member: Options
+      source: code/startup.cpp
+      guard: null
+    level: Startup
 WobbleDeviation:
   key: WobbleDeviation
   scopes:

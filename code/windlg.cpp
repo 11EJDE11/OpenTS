@@ -17,6 +17,7 @@
 #include "init.h"
 #include "msgloop.h"
 #include "ownrdraw.h"
+#include "video.h"
 #include "win.h"
 
 #include <commctrl.h>
@@ -316,6 +317,12 @@ int WS_Wait_Dialog(HWND window, bool (*callback)(void), bool, bool place_on_top)
 				break;
 			}
 		}
+
+		/*
+		 * This loop pumps messages itself rather than going through the game's handler,
+		 * so anything the dialog drew reaches the screen from here.
+		 */
+		Video_Present_If_Dirty();
 
 		Sleep(0);
 	}

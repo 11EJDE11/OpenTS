@@ -56,6 +56,7 @@
 
 #include "_xmouse.h"
 #include "msgloop.h"
+#include "vidscale.h"
 
 #include <cmath>
 
@@ -605,14 +606,17 @@ int WWKeyboardClass::Message_Handler(HWND window, UINT message, UINT wParam, LON
 {
 	bool processed = false;
 
+	/*
+	 * The message router has already put mouse positions into frame coordinates, so
+	 * there is no screen round trip to make here; the position only needs holding
+	 * inside the frame.
+	 */
 	POINT point;
-	point.x = LOWORD(lParam);
-	point.y = HIWORD(lParam);
-	ClientToScreen(window, &point);
+	point.x = (short)LOWORD(lParam);
+	point.y = (short)HIWORD(lParam);
+	Clamp_To_Game(point);
 	LONG x = point.x;
 	LONG y = point.y;
-	// Special conversion to game coordinates is needed here.
-	if (MouseCursor != NULL) MouseCursor->Convert_Coordinate((int &)x, (int &)y);
 
 	/*
 	**	Examine the message to see if it is one that should be processed. Only keyboard and

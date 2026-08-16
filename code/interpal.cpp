@@ -44,6 +44,7 @@
 #include "ccfile.h"
 #include "hsv.h"
 #include "misc.h"
+#include "palette.h"
 #include "surface.h"
 
 bool	InterpolationPaletteChanged = false;
@@ -323,7 +324,6 @@ void Interpolate_2X_Scale( Surface * source, Surface * dest , char const * palet
 		Write_Interpolation_Palette(palette_file_name);
 	}
 
-	Wait_Blit();
 
 	/*
 	 * Lock video surfaces if required.

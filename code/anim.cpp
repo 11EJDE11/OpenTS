@@ -83,7 +83,6 @@
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
-#include "setpal.h"
 #include "shapeset.h"
 #include "smudtype.h"
 #include "sun.h"
@@ -1287,9 +1286,6 @@ void AnimClass::Do_Atom_Damage(HousesType ownerhouse, Cell const & cell)
 	}
 
 	Wide_Area_Damage(cell, radius * CELL_LEPTON_W, rawdamage, NULL, Rule->NukeWarhead);
-	if (Session.Type == GAME_NORMAL) {
-		Set_Palette(GamePalette, FADE_PALETTE_SLOW, Call_Back);
-	}
 }
 
 

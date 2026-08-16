@@ -81,6 +81,7 @@
 #include "techno.h"
 #include "theme.h"
 #include "vector.h"
+#include "video.h"
 #include "vox.h"
 
 #include "diff.hh"
@@ -123,7 +124,14 @@ OptionsClass::OptionsClass(void) :
 	ScrollMethod(0),
 	DetailLevel(2),
 	StretchMovies(0),
-	AllowHiResModes(0),
+	Fullscreen(true),
+	WindowWidth(-1),
+	WindowHeight(-1),
+	ScaleMode(VIDEO_SCALE_PIXELART),
+	IntegerScaling(false),
+	VSync(false),
+	Renderer(0),
+	CursorScale(0),
 	SoundLatency(9),
 	KeyForceMove1(KN_LALT),
 	KeyForceMove2(KN_LALT),
@@ -285,6 +293,42 @@ void OptionsClass::Set_Voice_Volume(float volume, bool feedback)
 }
 
 
+/// <summary>
+/// Turns the name of a frame filter into the filter itself.
+/// </summary>
+/// <param name="name">The name as it appears in the settings file.</param>
+/// <param name="fallback">What to return when the name is not one of them.</param>
+/// <returns>int; One of the VideoScaleMode values.</returns>
+static int Scale_Mode_From_Name(char const * name, int fallback)
+{
+	if (stricmp(name, "Nearest") == 0) return(VIDEO_SCALE_NEAREST);
+	if (stricmp(name, "Linear") == 0) return(VIDEO_SCALE_LINEAR);
+	if (stricmp(name, "PixelArt") == 0) return(VIDEO_SCALE_PIXELART);
+
+	return(fallback);
+}
+
+
+/// <summary>
+/// Names the frame filter setting for writing back.
+/// </summary>
+/// <param name="mode">One of the VideoScaleMode values.</param>
+/// <returns>The name the settings file uses for that filter.</returns>
+static char const * Scale_Mode_Name(int mode)
+{
+	switch (mode) {
+		case VIDEO_SCALE_NEAREST:
+			return("Nearest");
+
+		case VIDEO_SCALE_LINEAR:
+			return("Linear");
+
+		default:
+			return("PixelArt");
+	}
+}
+
+
 /***********************************************************************************************
  * OptionsClass::Load_Settings -- reads options settings from the INI file                     *
  *                                                                                             *
@@ -348,13 +392,16 @@ void OptionsClass::Load_Settings(void)
 	DebugString("Resolution = %d X %d\n", ScreenWidth, ScreenHeight);
 
 	StretchMovies = ConfigINI.Get_Bool("Video", "StretchMovies", StretchMovies);
-	StretchMovies = StretchMovies == true && DSurface::AllowStretchBlits == true;
 	DebugString("StretchMovies is %s\n", StretchMovies == true ? "ON" : "OFF");
 
-	AllowHiResModes = ConfigINI.Get_Bool("Video", "AllowHiResModes", AllowHiResModes);
-	DebugString("AllowHiRes is %s\n", AllowHiResModes == true ? "ON" : "OFF");
+	IntegerScaling = ConfigINI.Get_Bool("Video", "IntegerScaling", IntegerScaling);
 
-	Debug_IngameModeChange = ConfigINI.Get_Bool("Video", "AllowModeToggle", Debug_IngameModeChange);
+	char scalename[32];
+	ConfigINI.Get_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode), scalename, sizeof(scalename));
+	ScaleMode = Scale_Mode_From_Name(scalename, ScaleMode);
+	DebugString("ScaleMode is %d, IntegerScaling is %s\n", ScaleMode, IntegerScaling == true ? "ON" : "OFF");
+
+	CursorScale = ConfigINI.Get_Int("Video", "CursorScale", CursorScale);
 
 	Set_Sound_Volume(ConfigINI.Get_Float("Audio", "SoundVolume", SoundVolume), false);
 	Set_Voice_Volume(ConfigINI.Get_Float("Audio", "VoiceVolume", VoiceVolume), false);
@@ -411,6 +458,14 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Int("Video", "ScreenWidth", ScreenWidth);
 	ConfigINI.Put_Int("Video", "ScreenHeight", ScreenHeight);
 	ConfigINI.Put_Bool("Video", "StretchMovies", StretchMovies);
+	ConfigINI.Put_Bool("Video", "Fullscreen", Fullscreen);
+	ConfigINI.Put_Int("Video", "WindowWidth", WindowWidth);
+	ConfigINI.Put_Int("Video", "WindowHeight", WindowHeight);
+	ConfigINI.Put_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode));
+	ConfigINI.Put_Bool("Video", "IntegerScaling", IntegerScaling);
+	ConfigINI.Put_Bool("Video", "VSync", VSync);
+	ConfigINI.Put_Int("Video", "Renderer", Renderer);
+	ConfigINI.Put_Int("Video", "CursorScale", CursorScale);
 	ConfigINI.Put_Float("Audio", "SoundVolume", SoundVolume);
 	ConfigINI.Put_Float("Audio", "VoiceVolume", VoiceVolume);
 	ConfigINI.Put_Float("Audio", "ScoreVolume", ScoreVolume);

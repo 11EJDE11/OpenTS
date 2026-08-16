@@ -104,3 +104,28 @@
     - -SOCKET
     - IPX socket offset
   summary: Selected an IPX socket offset at launch. Removed with IPX network play.
+- type: key
+  id: VideoBackBuffer
+  route: /keys/videobackbuffer/
+  search_aliases:
+    - VideoBackBuffer
+  summary: Stored a back buffer preference that nothing read. Removed with DirectDraw.
+- type: key
+  id: AllowHiResModes
+  route: /keys/allowhiresmodes/
+  search_aliases:
+    - AllowHiResModes
+  summary: Allowed resolutions above 800 pixels wide to be offered. Removed when the display options screen began offering every resolution the display reports.
+- type: key
+  id: AllowModeToggle
+  route: /keys/allowmodetoggle/
+  search_aliases:
+    - AllowModeToggle
+  summary: Switched resolution between the menus and play. Removed when the picture began being scaled into the window instead.
+- type: command
+  id: launch:high-color
+  route: /using/command-line/high-color/
+  search_aliases:
+    - "-16"
+    - High color
+  summary: Set a high-color flag at launch. Removed when it lost its last reader; the game always renders in high color.

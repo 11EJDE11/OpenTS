@@ -34,7 +34,6 @@
 #include "win.h"
 #include "xmouse.h"
 
-class BSurface;
 class ShapeSet;
 
 /*
@@ -48,13 +47,7 @@ class WWMouseClass : public Mouse {
 		/*
 		**	Private constructor.
 		*/
-		WWMouseClass(Surface * surfaceptr, HWND window);
-		virtual ~WWMouseClass(void) override;
-
-		/*
-		**	Maintenance callback routine.
-		*/
-		void Process_Mouse(void);
+		WWMouseClass(HWND window);
 
 		/*
 		**	Sets the game-drawn mouse imagery.
@@ -88,16 +81,15 @@ class WWMouseClass : public Mouse {
 		**	Query about the mouse visiblity state and location.
 		*/
 		virtual int Get_Mouse_State(void) const override;
-		virtual int Get_Mouse_X(void) const override {return(MouseX);}
-		virtual int Get_Mouse_Y(void) const override {return(MouseY);}
-		virtual Point2D Get_Mouse_Point(void) const override {return(Point2D(MouseX, MouseY));}
 
 		/*
-		**	The following two routines can be used to render the mouse onto an alternate
-		**	surface.
-		*/
-		virtual void Draw_Mouse(Surface * scr, bool issidebarsurface = false) override;
-		virtual void Erase_Mouse(Surface * scr, bool issidebarsurface = false) override;
+		 * The position is asked of Windows on demand. There used to be a timer thread
+		 * keeping a copy fresh, but its real job was repainting a software pointer,
+		 * and the pointer is Windows' own now.
+		 */
+		virtual int Get_Mouse_X(void) const override {int x; int y; Get_Bounded_Position(x, y); return(x);}
+		virtual int Get_Mouse_Y(void) const override {int x; int y; Get_Bounded_Position(x, y); return(y);}
+		virtual Point2D Get_Mouse_Point(void) const override {int x; int y; Get_Bounded_Position(x, y); return(Point2D(x, y));}
 
 		/*
 		**	Converts O/S screen coordinates into game coordinates.
@@ -110,22 +102,6 @@ class WWMouseClass : public Mouse {
 		void Calc_Confining_Rect(void);
 
 	private:
-
-		/*
-		**	This specifies the mouse shape data. It records the shape set
-		**	data as well as the particular image contained within.
-		*/
-		ShapeSet const * MouseShape;
-		int ShapeNumber;
-
-		/*
-		**	Used to prevent conflict between the processing callback and
-		**	the normal mouse processing routines. The only potential conflict
-		**	would be with the maintenance callback routine. Since this callback
-		**	and the mouse class maintain a strict master/slave relationship, a
-		**	simple critial section flag is all that is needed.
-		*/
-		HANDLE MouseMutex;
 
 		/*
 		**	Mouse hide/show state. If zero or greater, the mouse is visible. Otherwise
@@ -142,90 +118,18 @@ class WWMouseClass : public Mouse {
 		bool IsCaptured;
 
 		/*
-		**	This is the last recorded mouse position that it was drawn to.
-		*/
-		int MouseX;
-		int MouseY;
-
-		/*
-		**	Points to the main display surface that the mouse will be drawn
-		**	to as it moves.
-		*/
-		Surface * SurfacePtr;
-
-		/*
 		**	This is the window handle that is used to bind and bias the mouse
-		**	position and drawing procedures.
+		**	position.
 		*/
 		HWND Window;
 
 		/*
-		**	This specifies the rectangle that the game oriented mouse will be
-		**	confined to on the visible surface. If the mouse is manually drawn
-		**	on another surface, then this rectangle cooresponds to the hidden
-		**	surface area where the mouse is to be drawn.
-		*/
+		 * The screen rectangle that the mouse is confined to while it is captured.
+		 * It tracks the game window's client area.
+		 */
 		Rect ConfiningRect;
 
-		/*
-		**	Specifies the hot spot where the image click maps to. This is an
-		**	offset from the upper left corner of the shape image.
-		*/
-		int MouseXHot;
-		int MouseYHot;
-
-		/*
-		**	Holds the background image behind the mouse to be used for
-		**	restoring the surface pixels.
-		*/
-		BSurface * Background;
-		Rect SavedRegion;
-
-		/*
-		**	This is the alternate mouse background buffer to be used when the
-		**	mouse is manually drawn to an alternate surface by the Draw_Mouse()
-		**	function.
-		*/
-		BSurface * Alternate;
-		Rect AltRegion;
-
-		/*
-		**	This is another alternate buffer for drawing the mouse pointer across a second, adjoining
-		**	offscreen buffer.
-		*/
-		BSurface * SidebarAlternate;
-		Rect SidebarAltRegion;
-
-		/*
-		**	Conditional hide mouse bounding rectangle and mouse state
-		**	flag.
-		*/
-		Rect ConditionalRect;
-		int ConditionalState;
-
-		/*
-		**	Maintenance timer handle.
-		*/
-		MMRESULT TimerHandle;
-
-		// Determines if there is valid mouse shape data available.
-		bool Is_Data_Valid(void) const;
-		bool Validate_Copy_Buffer(void);
-
-		void Save_Background(void);
-		void Restore_Background(void);
-
-		Rect Matching_Rect(void) const;
-		void Raw_Draw_Mouse(Surface * surface, int xoffset, int yoffset);
 		void Get_Bounded_Position(int & x, int & y) const;
-		void Update_Mouse_Position(int x, int y, bool forced);
-
-		void Low_Show_Mouse(void);
-		void Low_Hide_Mouse(void);
-
-		void Block_Mouse(void);
-		void Unblock_Mouse(void);
-		//bool Is_Blocked(void) const {return(Blocked != 0);}
 
 		virtual bool Is_Hidden(void) const override {return(MouseState < 0);}
 };

@@ -33,7 +33,6 @@
 
 #include "rect.h"
 
-class Surface;
 class ShapeSet;
 
 /*
@@ -53,10 +52,6 @@ class ShapeSet;
 **
 **	4> The game mouse "active" region may be a subset rectangle of the normal visible surface.
 **		This bounding requirement should be transparent to system's functionality.
-**
-**	The system assumes that the sub-rectangle that binds the mouse to the visible surface will
-**	exactly match the dimensions of any hidden surface that the mouse may have occasion to be
-**	drawn upon.
 */
 class Mouse {
 	public:
@@ -99,14 +94,6 @@ class Mouse {
 		virtual int Get_Mouse_X(void) const = 0;
 		virtual int Get_Mouse_Y(void) const = 0;
 		virtual Point2D Get_Mouse_Point(void) const = 0;
-
-		/*
-		**	The following two routines can be used to render the mouse onto an alternate
-		**	surface.
-		*/
-		virtual void Draw_Mouse(Surface * scr, bool issidebarsurface = false) = 0;
-		virtual void Erase_Mouse(Surface * scr, bool issidebarsurface = false) = 0;
-		//virtual void Erase_Mouse(Surface * scr) = 0;
 
 		/*
 		**	Converts O/S screen coordinates into game coordinates.

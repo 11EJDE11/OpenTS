@@ -103,7 +103,6 @@
 #include "rules.h"
 #include "scenario.h"
 #include "session.h"
-#include "setpal.h"
 #include "sidebar.h"
 #include "sounddlg.h"
 #include "stats.h"
@@ -370,7 +369,6 @@ ret_addr:
 		**	values, and then show the mouse.  This PRESUMES that Select_Game() has
 		**	told the map to draw itself.
 		*/
-		Set_Palette(GamePalette, FADE_PALETTE_MEDIUM, NULL);
 		Keyboard->Clear();
 		/*
 		**	Only show the mouse if we're not playing back a recording.
@@ -457,10 +455,6 @@ ret_addr:
 
 		Print_MP_Stats();
 
-		/*
-		**	Scenario is done; fade palette to black
-		*/
-		if (!HicolorFlag) Set_Palette(BlackPalette, FADE_PALETTE_SLOW, NULL);
 		//VisiblePage.Clear();
 		Title_Screen_Restore(true);
 
@@ -872,8 +866,6 @@ bool Map_Edit_Loop(void)
 			int x;
 			int y;
 
-			MouseCursor->Erase_Mouse(HiddenSurface, true);
-
 			Map.Input(input, x, y);
 
 			/*
@@ -1096,7 +1088,7 @@ void Go_Editor(bool flag)
 		Map.Render();
 	}
 
-	Update_Visible_Surface(true, HiddenSurface);
+	Update_Visible_Surface(HiddenSurface);
 }
 
 #endif

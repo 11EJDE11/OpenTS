@@ -17,6 +17,7 @@
 
 #include "data.h"
 #include "dbgprint.h"
+#include "vidscale.h"
 
 
 /// <summary>
@@ -117,7 +118,7 @@ void ToolTipManager::Message_Handler(MSG * msg)
 						Reset_Current();
 					} else {
 						GetCursorPos((LPPOINT)&LastMousePos);
-						ScreenToClient(Window, (LPPOINT)&LastMousePos);
+						Screen_Point_To_Game((POINT &)LastMousePos);
 						CurrentToolTip = Find_From_Pos((Point2D &)LastMousePos);
 						if (Process() == true) {
 							SetTimer(Window, TOOLTIP_EVENT, ToolTipLifetime, NULL);
@@ -254,7 +255,7 @@ bool ToolTipManager::Find(unsigned id, ToolTip * tooltip)
 /// Finds the tooltip whose region covers the point specified.
 /// This routine is used to work out which tooltip, if any, the mouse is resting over.
 /// </summary>
-/// <param name="xy">The point, in client coordinates, to test the regions against.</param>
+/// <param name="xy">The point, in frame coordinates, to test the regions against.</param>
 /// <returns>Returns with a pointer to the tooltip found, or NULL if the point is bare.</returns>
 ToolTip const * ToolTipManager::Find_From_Pos(Point2D &xy)
 {

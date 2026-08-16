@@ -21,5 +21,3 @@ Surface * LogicalSurface;
 Surface * Unk2Surface;
 Surface * CompositeSurface;
 Surface * PreviewSurface;
-
-bool HicolorFlag = true;

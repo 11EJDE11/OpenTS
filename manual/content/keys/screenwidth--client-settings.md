@@ -2,13 +2,13 @@
 key: ScreenWidth
 scope: client-settings
 label: Stored width
-see_also: [ScreenHeight, AllowModeToggle]
+see_also: [ScreenHeight, Fullscreen]
 when_omitted:
   kind: unchanged
   note: The read passes through the width the display was already opened at, and nothing later overwrites it.
 ---
 
-This is the later of the two reads of the assignment, made with the rest of the client settings once the display is already open. It cannot change the size of the screen the game is drawing on; what it settles is the size the display options screen starts from, and the size a scenario switches to where [`AllowModeToggle`](/keys/allowmodetoggle/) allows switching.
+This is the later of the two reads of the assignment, made with the rest of the client settings once the display is already open. It cannot change the size of the screen the game is drawing on; what it settles is the size the display options screen starts from.
 
 Accepting the display options screen stores the mode picked there, and leaving the options screen behind it writes the stored width back to `sun.ini`, so the file normally carries one once that screen has been used.
 

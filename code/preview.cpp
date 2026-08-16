@@ -148,7 +148,7 @@ void MapPreviewClass::Create_Preview(void)
 		delete SurfacePtr;
 	}
 
-	SurfacePtr = new DSurface(width, height, true);
+	SurfacePtr = new DSurface(width, height);
 	SurfacePtr->Fill(0);
 
 	Map.Reset_Iterator();
@@ -313,7 +313,7 @@ bool MapPreviewClass::Read_INI(CCINIClass const & ini)
 
 	Rect rect = ini.Get_Rect(PREVIEW, "Size", Map.LocalRect);
 
-	SurfacePtr = new DSurface(rect.Width, rect.Height, true);
+	SurfacePtr = new DSurface(rect.Width, rect.Height);
 	SurfacePtr->Fill(0);
 
 	int size = AlternateSurface->Get_Width() * AlternateSurface->Get_Height() * AlternateSurface->Bytes_Per_Pixel();
@@ -366,7 +366,7 @@ bool MapPreviewClass::Read_PCX_Preview(char const * filename)
 		Surface *surf = Read_PCX_File(file);
 
 		if (surf != NULL && surf->Get_Width() && surf->Get_Height()) {
-			SurfacePtr = new DSurface(surf->Get_Width(), surf->Get_Height(), true);
+			SurfacePtr = new DSurface(surf->Get_Width(), surf->Get_Height());
 			SurfacePtr->Fill(TBLACK);
 			SurfacePtr->Blit_From(*surf);
 			delete surf;
@@ -554,7 +554,7 @@ void MapPreviewClass::Create_Preview_Surface(char * buffer)
 	if (SurfacePtr != NULL) {
 		delete SurfacePtr;
 	}
-	SurfacePtr = new DSurface(width, height, true);
+	SurfacePtr = new DSurface(width, height);
 	SurfacePtr->Fill(TBLACK);
 
 	int offset = (colorcount * sizeof(unsigned short)) + sizeof(Header) + sizeof(int);

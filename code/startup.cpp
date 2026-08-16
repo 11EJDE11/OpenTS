@@ -97,6 +97,7 @@
 #include "lightcon.h"
 #include "mech.h"
 #include "mixfile.h"
+#include "misc.h"
 #include "movie.h"
 #include "msgloop.h"
 #include "netdlg.h" // for Shutdown_Network.
@@ -144,6 +145,7 @@
 #include "vanim.h"
 #include "vanimtype.h"
 #include "vector.h"
+#include "video.h"
 #include "walk.h"
 #include "warhead.h"
 #include "wave.h"
@@ -158,8 +160,6 @@
 #include <conio.h>
 #include <io.h>
 #include <cfloat>
-
-bool VideoBackBufferAllowed = true;
 
 extern	HINSTANCE LanguageResources;
 
@@ -376,7 +376,7 @@ void Reset_Surfaces(void)
 			VisibleSurface = NULL;
 		}
 
-		Reset_Video_Mode();
+		Video_Shutdown();
 
 		surfaces_reset = true;
 	}
@@ -757,10 +757,25 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		RawFileClass *cfile = new RawFileClass(CONFIG_FILE_NAME);
 
 		ConfigINI.Load(*cfile, false);
-		VideoBackBufferAllowed = ConfigINI.Get_Bool("Video", "VideoBackBuffer", true);
-		Debug_IngameModeChange = ConfigINI.Get_Bool("Video", "AllowModeToggle", false);
 		Options.ScreenWidth = ConfigINI.Get_Int("Video", "ScreenWidth", Options.ScreenWidth);
 		Options.ScreenHeight = ConfigINI.Get_Int("Video", "ScreenHeight", Options.ScreenHeight);
+
+		/*
+		 * These are wanted before the window and the renderer exist, which is well
+		 * before the rest of the settings are read.
+		 */
+		Options.Fullscreen = ConfigINI.Get_Bool("Video", "Fullscreen", Options.Fullscreen);
+		Options.WindowWidth = ConfigINI.Get_Int("Video", "WindowWidth", Options.WindowWidth);
+		Options.WindowHeight = ConfigINI.Get_Int("Video", "WindowHeight", Options.WindowHeight);
+		Options.VSync = ConfigINI.Get_Bool("Video", "VSync", Options.VSync);
+		Options.Renderer = ConfigINI.Get_Int("Video", "Renderer", Options.Renderer);
+
+		/*
+		 * The command line asks for a window regardless of what the settings say.
+		 */
+		if (!WindowedMode) {
+			WindowedMode = !Options.Fullscreen;
+		}
 
 		Keyboard = new KeyboardClass();
 
@@ -776,99 +791,32 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 			}
 		}
 
-		int screen_height;
-
 		if (Session.ShowInternetDebug) {
 			Options.ScreenWidth = 640;
-			screen_height = 480;
-			Options.ScreenHeight = 480;
-		} else {
-			screen_height = Options.ScreenHeight;
+			Options.ScreenHeight = 400;
 		}
 
-		if (Options.ScreenWidth == -1 || screen_height == -1) {
+		if (Options.ScreenWidth == -1 || Options.ScreenHeight == -1) {
 			Options.ScreenWidth = 640;
-
-			if (WinVersion.Is_WinNTx() || GetVideoMemory() > 0x200000) {
-				screen_height = 480;
-			} else {
-				screen_height = 400;
-			}
-
-			Options.ScreenHeight = screen_height;
+			Options.ScreenHeight = 480;
 		}
 
-		BOOL video_success = FALSE;
+		VisibleRect = Rect(0, 0, Options.ScreenWidth, Options.ScreenHeight);
+		VideoModeWidth = Options.ScreenWidth;
+		VideoModeHeight = Options.ScreenHeight;
 
-		if (Debug_IngameModeChange) {
-			Create_Main_Window(instance, command_show, 640, 400);
-			Audio.Init(MainWindow, 16, 0, 22050);
-			Prep_Direct_Draw();
-			if (WindowedMode) {
-				VisibleRect = Rect(0,0,640,400);
-				VideoModeWidth = VisibleRect.Width;
-				VideoModeHeight = VisibleRect.Height;
-				VideoModeBitsPerPixel = HicolorFlag ? 16 : 8;
-			} else {
-				/*
-				** Set 640x400 video mode. If its not available then try for 640x480
-				*/
-				VisibleRect = Rect(0,0,640,400);
-				video_success = Set_Video_Mode(MainWindow, 640, 400, HicolorFlag ? 16 : 8);
-				if (!video_success) {
-					video_success = Set_Video_Mode(MainWindow, 640, 480, HicolorFlag ? 16 : 8);
-					VisibleRect = Rect(0,0,640,480);
-					if (!video_success) {
-						Destroy_Direct_Draw();
-						MessageBox(MainWindow, Fetch_String(TXT_VIDEO_ERROR) ,Fetch_String(TXT_SHORT_TITLE), MB_ICONWARNING);
-						exit(EXIT_FAILURE);
-					}
-				}
-			}
-		} else {
-			Create_Main_Window(instance, command_show, Options.ScreenWidth, screen_height);
-			Audio.Init(MainWindow, 16, 0, 22050);
-			Prep_Direct_Draw();
-			if (WindowedMode) {
-				VisibleRect = Rect(0,0,Options.ScreenWidth,Options.ScreenHeight);
-				VideoModeWidth = Options.ScreenWidth;
-				VideoModeHeight = Options.ScreenHeight;
-				VideoModeBitsPerPixel = HicolorFlag ? 16 : 8;
-			} else {
-				/*
-				 * Set desired video mode. If its not available then try for 640x480
-				 */
-				video_success = Set_Video_Mode(MainWindow, Options.ScreenWidth, Options.ScreenHeight, HicolorFlag ? 16 : 8);
-				VisibleRect = Rect(0,0,Options.ScreenWidth,Options.ScreenHeight);
-				if (!video_success) {
-					if (Options.ScreenWidth != 640 || Options.ScreenHeight != 480) {
-						Options.ScreenWidth = 640;
-						Options.ScreenHeight = 480;
-						video_success = Set_Video_Mode(MainWindow, Options.ScreenWidth, Options.ScreenHeight, HicolorFlag ? 16 : 8);
-						VisibleRect = Rect(0,0,Options.ScreenWidth,Options.ScreenHeight);
-					}
-					if (!video_success) {
-						Destroy_Direct_Draw();
-						MessageBox(MainWindow, Fetch_String(TXT_VIDEO_ERROR), Fetch_String(TXT_SHORT_TITLE), MB_ICONWARNING);
-						exit(EXIT_FAILURE);
-					}
-				}
-			}
+		Create_Main_Window(instance, command_show, Options.ScreenWidth, Options.ScreenHeight);
+		Audio.Init(MainWindow, 16, 0, 22050);
+
+		if (!Video_Init(MainWindow)) {
+			MessageBox(MainWindow, Fetch_String(TXT_VIDEO_ERROR), Fetch_String(TXT_SHORT_TITLE), MB_ICONWARNING);
+			exit(EXIT_FAILURE);
 		}
 
 		VisibleSurface = DSurface::Create_Primary();
-
-		int visible_bpp = VisibleSurface->Bytes_Per_Pixel();
-		HicolorFlag = visible_bpp == 2;
-		if (!HicolorFlag) {
-			MessageBox(MainWindow, Fetch_String(TXT_INVALIDMODE), Fetch_String(TXT_SHORT_TITLE), MB_ICONEXCLAMATION);
-			Emergency_Exit();
-		}
-
-		if (Session.ShowInternetDebug) {
-			Options.ScreenHeight = 400;
-			VideoModeHeight = 400;
-			VisibleRect = Rect(0,0,Options.ScreenWidth,Options.ScreenHeight);
+		if (VisibleSurface == NULL) {
+			MessageBox(MainWindow, Fetch_String(TXT_VIDEO_ERROR), Fetch_String(TXT_SHORT_TITLE), MB_ICONWARNING);
+			exit(EXIT_FAILURE);
 		}
 
 		do {
@@ -876,11 +824,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		}
 		while (!GameInFocus);
 
-		SurfacesRestored = false;
-
-		if (!WindowedMode) {
-			VisibleSurface->Fill(0);
-		}
+		VisibleSurface->Fill(0);
 
 		Rect sidebar_rect(0,0,SidebarClass::SIDE_WIDTH,VisibleRect.Height);
 		Rect tile_rect(0,0,VisibleRect.Width-sidebar_rect.Width, sidebar_rect.Height);
@@ -888,14 +832,14 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 
 		Allocate_Surfaces(VisibleRect, composite_rect, tile_rect, sidebar_rect, false);
 		LogicalSurface = HiddenSurface;
-		Update_Visible_Surface(true, HiddenSurface);
+		Update_Visible_Surface(HiddenSurface);
 
 		DepthBuffer = new ZBuffer(Rect(TacticalRect.X, TacticalRect.Y, 480, 480 - TacticalRect.Y));
 		DepthBuffer->Set_Scroll(ZBUFFER_MAX);
 
 		AlphaBuffer = new ABuffer(Rect(TacticalRect.X, TacticalRect.Y, 480, 480 - TacticalRect.Y));
 
-		MouseCursor = new WWMouseClass(VisibleSurface, MainWindow);
+		MouseCursor = new WWMouseClass(MainWindow);
 		MouseCursor->Capture_Mouse();
 
 		/*
@@ -958,7 +902,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		}
 
 		HiddenSurface->Fill(0);
-		Update_Visible_Surface(true, HiddenSurface);
+		Update_Visible_Surface(HiddenSurface);
 
 		/*
 		**	Flag that this is a clean shutdown (not killed with Ctrl-Alt-Del)

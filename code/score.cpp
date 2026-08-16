@@ -1075,16 +1075,6 @@ void ScoreClass::Animate_Score_Objs(void)
 {
 	StillUpdating = false;
 
-	/*
-	**	If we have just received input focus again after running in the background then
-	**	we need to redraw.
-	*/
-	if (SurfacesRestored) {
-		SurfacesRestored=FALSE;
-		HiddenSurface->Fill(0);
-		HiddenSurface->Blit_From(*AlternateSurface);
-	}
-
 	for (int i = 0; i < ScoreObjs.Count(); i++) {
 		if (ScoreObjs[i]->Update(SurfacePtr) == true) {
 			delete ScoreObjs[i];
@@ -1096,23 +1086,13 @@ void ScoreClass::Animate_Score_Objs(void)
 
 /// <summary>
 /// Blits the finished score screen to the visible surface.
-/// The mouse is drawn over the hidden surface for the duration of the blit and erased
-/// again afterwards, so the cursor appears without ever being baked into the page.
 /// </summary>
 void ScoreClass::Draw(void)
 {
-	RECT r;
-	GetClientRect(MainWindow, &r);
-	ClientToScreen(MainWindow, (LPPOINT)&r);
-
-	Rect rect1(XPos + r.left, YPos + r.top, 640, 400);
+	Rect rect1(XPos, YPos, 640, 400);
 	Rect rect2(XPos, YPos, 640, 400);
 
-	if (MouseCursor != NULL) MouseCursor->Draw_Mouse(HiddenSurface);
-
 	VisibleSurface->Blit_From(rect1, *HiddenSurface, rect2);
-
-	if (MouseCursor != NULL) MouseCursor->Erase_Mouse(HiddenSurface);
 }
 
 

@@ -31,7 +31,6 @@
 
 #pragma once
 
-#include "misc.h"
 #include "palette.h"
 #include "win.h"
 #include "xsurface.h"
@@ -46,10 +45,9 @@ enum DSurfaceColorMode {
 };
 
 
-/*
-**	This is a concrete surface class that is based on the DirectDraw
-**	API.
-*/
+// A concrete surface whose pixels are a GDI device independent bitmap in system memory.
+// The bitmap is permanently selected into a memory device context, so the surface can be
+// drawn to either as raw 16 bit pixels through Lock or with GDI through GetDC.
 class DSurface : public XSurface
 {
 		typedef XSurface BASECLASS;
@@ -58,22 +56,12 @@ class DSurface : public XSurface
 		virtual ~DSurface(void) override;
 
 		/*
-		**	Default constructor.
-		*/
-		DSurface(void);
-
-		/*
 		**	Constructs a working surface (not visible).
 		*/
-		DSurface(int width, int height, bool system_memory = false);
+		DSurface(int width, int height);
 
 		/*
-		**	Creates a surface from a previously created DirectDraw surface object.
-		*/
-		DSurface(LPDIRECTDRAWSURFACE surfaceptr);
-
-		/*
-		**	Get/Release a windows device context from a DirectX surface
+		**	Get/Release a windows device context for the surface pixels.
 		*/
 		HDC GetDC(void);
 		int ReleaseDC(HDC hdc);
@@ -81,7 +69,7 @@ class DSurface : public XSurface
 		/*
 		**	Create a surface object that represents the currently visible screen.
 		*/
-		static DSurface * Create_Primary(DSurface ** backsurface1=NULL);
+		static DSurface * Create_Primary(void);
 
 		/*
 		**	Copies regions from one surface to another.
@@ -106,49 +94,43 @@ class DSurface : public XSurface
 		virtual bool Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, RGBClass const & start_color, RGBClass const & end_color, float & gradient_step, float & gradient_position) const;
 
 		/*
-		**	Gets and frees a direct pointer to the video memory.
+		**	Gets and frees a direct pointer to the surface memory.
 		*/
 		virtual void * Lock(Point2D point = Point2D(0, 0)) const override;
 		virtual bool Unlock(void) const override;
 		virtual bool Can_Lock(int x = 0, int y = 0) const override;
 
 		/*
+		 * The pixels, reachable without the lock bookkeeping. The presenter reads the
+		 * frame this way, since a locked surface refuses to be blitted from.
+		 */
+		void * Get_Buffer(void) const {return(GDIBuffer);}
+
+		/*
 		**	Queries information about the surface.
 		*/
 		virtual int Bytes_Per_Pixel(void) const override;
 		virtual int Stride(void) const override;
-		bool In_Video_Ram(void) const {return(IsVideoRam);}
 
 		/*
-		**	Verifies that this is a direct draw enabled surface.
-		*/
-		virtual bool Is_Direct_Draw(void) const override {return(true);}
+		 * This surface owns a device context, so GetDC yields one that draws on these
+		 * same pixels.
+		 */
+		virtual bool Is_GDI_Backed(void) const override {return(true);}
 
 		virtual bool Can_Blit(void) const;
 
-		LPDIRECTDRAWSURFACE Get_DD_Surface(void) { return(SurfacePtr); }
-
 		/*
-		 * If the video hardware can blit with stretching, then this flag will be true. The
-		 * movie player scales to the full screen only when it is, so the stretch option is
-		 * taken away on a card that would have to do the work in software.
+		 * The movie player scales to the full screen only when this is true. Surfaces
+		 * stretch in software now, so it always is.
 		 */
 		static bool AllowStretchBlits;
 
 		/*
-		 * This is the bit layout that the primary surface packs its color guns into, worked
-		 * out from the shift values when that surface is created. It is COLORMODE_INVALID
-		 * if the layout is not one of the arrangements the game recognizes.
+		 * The bit layout that the primary surface packs its color guns into. The
+		 * surfaces are always 565, so it never changes.
 		 */
 		static int PrimaryColorMode;
-
-		/*
-		 * If the video hardware can fill a rectangle with a solid color, then this flag
-		 * will be true. Otherwise the region is filled by the software routine instead.
-		 */
-		static bool AllowHWFill;
-
-		static bool OverlappedVideoBlits;	// Can video driver blit overlapped regions?
 
 		static int Build_Hicolor_Pixel(int red, int green, int blue);
 		static int Build_Hicolor_Pixel(RGBClass const & rgb);
@@ -167,9 +149,6 @@ class DSurface : public XSurface
 		static int Get_Blue_Left(void);
 		static int Get_Primary_Color_Mode(void);
 
-	///protected: //winstub calls it..
-		bool Restore_Check(void) const;
-
 	protected:
 
 		/*
@@ -179,39 +158,27 @@ class DSurface : public XSurface
 		mutable int BytesPerPixel;
 
 		/*
-		**	Lock count and pointer values. This is used to keep track of the levels
-		**	of locking the graphic data. This is only here because DirectDraw prohibits
-		**	the blitter from working on a surface that has been locked.
-		*/
-		mutable void * LockPtr;
-
-		/*
 		**	If this surface object represents the one that is visible and associated
 		**	with the system GDI, then this flag will be true.
 		*/
 		bool IsPrimary;
 
 		/*
-		**	Is this surface represented in video ram?
-		*/
-		mutable bool IsVideoRam;
+		 * The bitmap holding the pixels, the context it is selected into, and the object
+		 * that context held beforehand. GDI will not free a bitmap that is still
+		 * selected, so the original has to go back before this one can be destroyed.
+		 */
+		HBITMAP GDIBitmap;
+		mutable HDC GDIDC;
+		HGDIOBJ GDIOldBitmap;
 
 		/*
-		**	Direct draw specific data.
-		*/
-		LPDIRECTDRAWSURFACE SurfacePtr;
-		DDSURFACEDESC * Description;
-
-		/*
-		**	Pointer to the clipper object that is attached to the primary
-		**	surface.
-		*/
-		static LPDIRECTDRAWCLIPPER Clipper;
-
-		/*
-		**	Pixel format of primary surface.
-		*/
-		static DDPIXELFORMAT PixelFormat;
+		 * The pixels themselves, owned by the bitmap, and the bytes from one row of them
+		 * to the next. GDI rounds that up to a multiple of four, so it is not always the
+		 * width times the pixel size.
+		 */
+		void * GDIBuffer;
+		int Pitch;
 
 	public:
 		/*

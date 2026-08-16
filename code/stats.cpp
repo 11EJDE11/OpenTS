@@ -82,7 +82,6 @@ int WestwoodOnline_PortNumber = 1234;
 #define FIELD_GAME_BUILD_DATE					"DATE"
 #define FIELD_CPU_TYPE							"PROC"
 #define FIELD_MEMORY							"MEMO"
-#define FIELD_VIDEO_MEMORY						"VIDM"
 #define FIELD_SHADOW_REGROWS					"SHAD"
 
 #define FIELD_TOURNAMENT						"TRNY"
@@ -391,22 +390,6 @@ void Send_Statistics_Packet(void)
 	mem_info.dwLength=sizeof(mem_info);
 	GlobalMemoryStatus(&mem_info);
 	stats.Add_Field (FIELD_MEMORY, (int)mem_info.dwTotalPhys);
-
-	/*
-	**	Video memory
-	*/
-	DDCAPS	video_capabilities;
-	int		video_memory;
-
-	if (DirectDrawObject){
-		video_capabilities.dwSize = sizeof (video_capabilities);
-		if (DD_OK == DirectDrawObject->GetCaps (&video_capabilities , NULL)){
-			video_memory = video_capabilities.dwVidMemTotal;
-			video_memory += 1024*1024 -1;
-			video_memory &= 0xfff00000;
-			stats.Add_Field (FIELD_VIDEO_MEMORY, (int) video_memory);
-		}
-	}
 
 	/*
 	**	Game speed setting.

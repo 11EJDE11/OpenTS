@@ -53,39 +53,30 @@
 #include "dbgprint.h"
 #include "misc.h"
 #include "swap.h"
+#include "video.h"
 
 #include <math.h>
 
-extern bool WindowedMode;
 extern bool GameInFocus;
 
-extern	LPDIRECTDRAW	DirectDrawObject;	//pointer to direct draw object
-extern	LPDIRECTDRAWSURFACE	PaletteSurface;
-
 /*
-**	Clipper object (for primary surface).
-*/
-LPDIRECTDRAWCLIPPER DSurface::Clipper = NULL;
-
-int DSurface::RedRight = 0;
-int DSurface::RedLeft = 0;
+ * The surfaces are 16 bit 565 and nothing else. The engine refuses to start on a display
+ * it cannot present that way, so the shifts that pack a color into a pixel are fixed
+ * rather than worked out from the display.
+ */
+int DSurface::RedRight = 11;
+int DSurface::RedLeft = 3;
 int DSurface::BlueRight = 0;
-int DSurface::BlueLeft = 0;
-int DSurface::GreenRight = 0;
-int DSurface::GreenLeft = 0;
+int DSurface::BlueLeft = 3;
+int DSurface::GreenRight = 5;
+int DSurface::GreenLeft = 2;
 
 unsigned short DSurface::HalfbrightMask = 0;
 unsigned short DSurface::QuarterbrightMask = 0;
 unsigned short DSurface::EighthbrightMask = 0;
 
-DDPIXELFORMAT DSurface::PixelFormat;
-
-bool DSurface::AllowStretchBlits = false;
-int DSurface::PrimaryColorMode = -1;
-bool DSurface::AllowHWFill = true;
-bool DSurface::OverlappedVideoBlits = true;	// Can video driver blit overlapped regions?
-
-extern int PrimaryColorMode;
+bool DSurface::AllowStretchBlits = true;
+int DSurface::PrimaryColorMode = COLORMODE_565;
 
 
 /***********************************************************************************************
@@ -109,40 +100,63 @@ extern int PrimaryColorMode;
  * HISTORY:                                                                                    *
  *   02/07/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-DSurface::DSurface(int width, int height, bool system_memory) :
+DSurface::DSurface(int width, int height) :
 	BASECLASS(width, height),
-	BytesPerPixel(0),
-	LockPtr(NULL),
+	BytesPerPixel(2),
 	IsPrimary(false),
-	IsVideoRam(false),
-	SurfacePtr(NULL),
-	Description(NULL)
+	GDIBitmap(NULL),
+	GDIDC(NULL),
+	GDIOldBitmap(NULL),
+	GDIBuffer(NULL),
+	Pitch(0)
 {
-	Description = new DDSURFACEDESC;
-	if (Description != NULL) {
-		memset(Description, '\0', sizeof(DDSURFACEDESC));
-		Description->dwSize = sizeof(DDSURFACEDESC);
-		Description->dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
-		Description->dwWidth = width;
-		Description->dwHeight = height;
+	/*
+	 * BITMAPINFO carries room for a single color entry, but a bitfields bitmap is
+	 * described by three masks following the header, so the header is declared with
+	 * room for them rather than written past its end.
+	 */
+	struct {
+		BITMAPINFOHEADER Header;
+		unsigned long Masks[3];
+	} info;
 
-		if (system_memory == true) {
-			Description->ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
-		}
+	memset(&info, 0, sizeof(info));
 
+	/*
+	 * A negative height asks for the rows in the order the engine expects, with the top
+	 * one first. The masks spell out the 565 layout.
+	 */
+	info.Header.biSize = sizeof(BITMAPINFOHEADER);
+	info.Header.biWidth = width;
+	info.Header.biHeight = -height;
+	info.Header.biPlanes = 1;
+	info.Header.biBitCount = 16;
+	info.Header.biCompression = BI_BITFIELDS;
 
-		DirectDrawObject->CreateSurface(Description, &SurfacePtr, NULL);
+	info.Masks[0] = 0xF800;
+	info.Masks[1] = 0x07E0;
+	info.Masks[2] = 0x001F;
 
-		/*
-		**	Get a description of the surface that was just allocated.
-		*/
-		if (SurfacePtr != NULL) {
-			memset(Description, '\0', sizeof(DDSURFACEDESC));
-			Description->dwSize = sizeof(DDSURFACEDESC);
-			SurfacePtr->GetSurfaceDesc(Description);
-			BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
-			IsVideoRam = ((Description->ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY) != 0);
-		}
+	GDIDC = CreateCompatibleDC(NULL);
+	if (GDIDC == NULL) {
+		return;
+	}
+
+	GDIBitmap = CreateDIBSection(GDIDC, (BITMAPINFO *)&info, DIB_RGB_COLORS, &GDIBuffer, NULL, 0);
+	if (GDIBitmap == NULL) {
+		DeleteDC(GDIDC);
+		GDIDC = NULL;
+		GDIBuffer = NULL;
+		return;
+	}
+
+	GDIOldBitmap = SelectObject(GDIDC, GDIBitmap);
+
+	DIBSECTION section;
+	if (GetObject(GDIBitmap, sizeof(section), &section) == sizeof(section)) {
+		Pitch = section.dsBm.bmWidthBytes;
+	} else {
+		Pitch = width * 2;
 	}
 }
 
@@ -164,55 +178,24 @@ DSurface::DSurface(int width, int height, bool system_memory) :
 DSurface::~DSurface(void)
 {
 	/*
-	**	If this is the primary surface, then the clipper must be detached from
-	**	this surface and the clipper object deleted.
-	*/
-	if (IsPrimary && SurfacePtr != NULL && Clipper != NULL) {
-		SurfacePtr->SetClipper(NULL);
-		Clipper->Release();
-		Clipper = NULL;
+	 * GDI will not free a bitmap that is still selected into a context, so the one the
+	 * context started with has to go back first.
+	 */
+	if (GDIDC != NULL) {
+		if (GDIOldBitmap != NULL) {
+			SelectObject(GDIDC, GDIOldBitmap);
+			GDIOldBitmap = NULL;
+		}
+		DeleteDC(GDIDC);
+		GDIDC = NULL;
 	}
 
-	/*
-	**	Delete the description of the surface.
-	*/
-	delete Description;
-	Description = NULL;
-
-	if (SurfacePtr != NULL)  {
-		SurfacePtr->Release();
+	if (GDIBitmap != NULL) {
+		DeleteObject(GDIBitmap);
+		GDIBitmap = NULL;
 	}
-	SurfacePtr = NULL;
-}
 
-
-/***********************************************************************************************
- * DSurface::DSurface -- Default constructor for surface object.                               *
- *                                                                                             *
- *    This default constructor for a surface object should not be used. Although it properly   *
- *    creates a non-functional surface, there is no use for such a surface. This default       *
- *    constructor is provided for those rare cases where symatics require a default            *
- *    constructor.                                                                             *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/07/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-DSurface::DSurface(void) :
-	BytesPerPixel(0),
-	LockPtr(NULL),
-	IsPrimary(false),
-	IsVideoRam(false),
-	SurfacePtr(NULL)
-{
-	Description = new DDSURFACEDESC;
-	memset(Description, '\0', sizeof(DDSURFACEDESC));
-	Description->dwSize = sizeof(DDSURFACEDESC);
+	GDIBuffer = NULL;
 }
 
 
@@ -236,215 +219,22 @@ DSurface::DSurface(void) :
  * HISTORY:                                                                                    *
  *   02/07/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-DSurface * DSurface::Create_Primary(DSurface ** backsurface1)
+DSurface * DSurface::Create_Primary(void)
 {
-	DebugString("DSurface::Create_Primary\n");
+	DSurface * surface = new DSurface(VideoModeWidth, VideoModeHeight);
 
-	unsigned video_capabilities = Get_Video_Hardware_Capabilities();
-
-	AllowStretchBlits = false;
-	if ((video_capabilities & VIDEO_BLIT_STRETCH) != 0) {
-		AllowStretchBlits = true;
-	}
-	DebugString("DSurface::AllowStretchBlits = %s\n", AllowStretchBlits ? "true" : "false");
-
-	if ((video_capabilities & VIDEO_COLOR_FILL) == 0) {
-		AllowHWFill = false;
-	}
-	DebugString("DSurface::AllowHWFill = %s\n", AllowHWFill == true ? "true" : "false");
-
-	DSurface * surface = new DSurface();
-	int backcount = (backsurface1 != NULL) ? 1 : 0;
-
-	/*
-	**	Setup parameter for creating the primary surface. This will
-	**	always be the visible surface plus optional back buffers of identical
-	**	dimensions.
-	*/
-	surface->Description->dwFlags = DDSD_CAPS;
-	surface->Description->ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-	if (backcount > 0) {
-		surface->Description->ddsCaps.dwCaps |= DDSCAPS_FLIP | DDSCAPS_COMPLEX;
-		surface->Description->dwFlags |= DDSD_BACKBUFFERCOUNT;
-		surface->Description->dwBackBufferCount = backcount;
-	}
-
-	DebugString("DSurface::Create_Primary - Creating surface\n");
-	HRESULT result = DirectDrawObject->CreateSurface(surface->Description, &surface->SurfacePtr, NULL);
-
-	/*
-	**	If the primary surface object was created, then fetch a pointer to the
-	**	back buffer if there is one present.
-	*/
-	if (result == DD_OK) {
-		DebugString("CreateSurface OK\n");
-		if (backcount > 0) {
-			LPDIRECTDRAWSURFACE back;
-			DDSCAPS caps;
-			caps.dwCaps = DDSCAPS_BACKBUFFER;
-			result = surface->SurfacePtr->GetAttachedSurface(&caps, &back);
-			if (result == DD_OK) {
-				*backsurface1 = new DSurface(back);
-			}
-		}
-
-		/*
-		**	Get a description of the surface that was just allocated.
-		*/
-		memset(surface->Description, '\0', sizeof(DDSURFACEDESC));
-		surface->Description->dwSize = sizeof(DDSURFACEDESC);
-
-		result = surface->SurfacePtr->GetSurfaceDesc(surface->Description);
-		if (result != DD_OK) {
-			DebugString("Failed to get description of primary surface\n");
-		}
-
-		surface->BytesPerPixel = (surface->Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
-		surface->IsVideoRam = (surface->Description->ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY) != 0;
-		surface->IsPrimary = true;
-
-//		surface->Window.Set(Rect(0, 0, surface->Description->dwWidth, surface->Description->dwHeight));
-		surface->Width = surface->Description->dwWidth;
-		surface->Height = surface->Description->dwHeight;
-		PaletteSurface = surface->SurfacePtr;
-
-		/*
-		**	Attach a clipper object to the surface so that it can cooperate
-		**	with the system GDI. This only comes into play if there are going
-		**	to be GDI graphical elements on top of the surface (normally this
-		**	isn't the case for full screen games). It doesn't hurt to attach
-		**	a clipper object anyway -- just in case.
-		*/
-		if (DirectDrawObject->CreateClipper(0, &Clipper, NULL) == DD_OK) {
-			if (Clipper->SetHWnd(0, GetActiveWindow()) == DD_OK) {
-				surface->SurfacePtr->SetClipper(Clipper);
-			}
-		}
-
-		/*
-		**	Fetch the pixel format for the surface.
-		*/
-		memcpy(&PixelFormat, &surface->Description->ddpfPixelFormat, sizeof(DDPIXELFORMAT));
-
-		/*
-		**	If this is a hicolor surface, then build the shift values for
-		**	building and extracting the colors from the hicolor pixel.
-		*/
-		if (surface->Bytes_Per_Pixel() == 2) {
-			int index;
-			int shift = PixelFormat.dwRBitMask;
-			RedRight = 0;
-			RedLeft = 0;
-			for (index = 0; index < 16; index++) {
-				if (shift & 0x01) break;
-				shift >>= 1;
-				RedRight++;
-			}
-			for (index = 0; index < 8; index++) {
-				if (shift & 0x80) break;
-				shift <<= 1;
-				RedLeft++;
-			}
-
-			shift = PixelFormat.dwGBitMask;
-			GreenRight = 0;
-			GreenLeft = 0;
-			for (index = 0; index < 16; index++) {
-				if (shift & 0x01) break;
-				GreenRight++;
-				shift >>= 1;
-			}
-			for (index = 0; index < 8; index++) {
-				if (shift & 0x80) break;
-				GreenLeft++;
-				shift <<= 1;
-			}
-
-			shift = PixelFormat.dwBBitMask;
-			BlueRight = 0;
-			BlueLeft = 0;
-			for (index = 0; index < 16; index++) {
-				if (shift & 0x01) break;
-				BlueRight++;
-				shift >>= 1;
-			}
-			for (index = 0; index < 8; index++) {
-				if (shift & 0x80) break;
-				BlueLeft++;
-				shift <<= 1;
-			}
-
-			PrimaryColorMode = COLORMODE_INVALID;
-
-			/*
-			**	Create the halfbright mask.
-			*/
-			HalfbrightMask = (unsigned short)Build_Hicolor_Pixel(127, 127, 127);
-			QuarterbrightMask = (unsigned short)Build_Hicolor_Pixel(63, 63, 63);
-			EighthbrightMask = (unsigned short)Build_Hicolor_Pixel(31, 31, 31);
-
-			if (BlueRight == 0 && BlueLeft == 3 && GreenRight == 5 && GreenLeft == 3 && RedRight == 10 && RedLeft == 3) {
-				PrimaryColorMode = COLORMODE_555;
-			} else
-			if (BlueRight == 0 && BlueLeft == 2 && GreenRight == 6 && GreenLeft == 3 && RedRight == 11 && RedLeft == 3) {
-				PrimaryColorMode = COLORMODE_556;
-			} else
-			if (BlueRight == 0 && BlueLeft == 3 && GreenRight == 5 && GreenLeft == 2 && RedRight == 11 && RedLeft == 3) {
-				PrimaryColorMode = COLORMODE_565;
-			} else
-			if (BlueRight == 0 && BlueLeft == 3 && GreenRight == 5 && GreenLeft == 3 && RedRight == 11 && RedLeft == 2) {
-				PrimaryColorMode = COLORMODE_556;
-			}
-		}
-		DebugString("DSurface::Create_Primary done\n");
-
-	} else {
-		Process_DD_Result(result, TRUE);
-		DebugString("CreateSurface failed with error code %08x\n", result);
+	if (surface == NULL || surface->Get_Buffer() == NULL) {
 		delete surface;
-		surface = NULL;
+		return(NULL);
 	}
+
+	surface->IsPrimary = true;
+
+	HalfbrightMask = (unsigned short)Build_Hicolor_Pixel(127, 127, 127);
+	QuarterbrightMask = (unsigned short)Build_Hicolor_Pixel(63, 63, 63);
+	EighthbrightMask = (unsigned short)Build_Hicolor_Pixel(31, 31, 31);
 
 	return(surface);
-}
-
-
-/***********************************************************************************************
- * DSurface::DSurface -- Create a surface attached to specified DDraw Surface Object.          *
- *                                                                                             *
- *    If an existing Direct Draw Surface Object is available, use this constructor to create   *
- *    a DSurface object that is attached to the surface specified.                             *
- *                                                                                             *
- * INPUT:   surfaceptr  -- Pointer to a preexisting Direct Draw Surface Object.                *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/07/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-DSurface::DSurface(LPDIRECTDRAWSURFACE surfaceptr) :
-	BytesPerPixel(0),
-	LockPtr(NULL),
-	IsPrimary(false),
-	IsVideoRam(false),
-	SurfacePtr(surfaceptr),
-	Description(NULL)
-{
-	if (SurfacePtr != NULL) {
-		Description = new DDSURFACEDESC;
-		memset(Description, '\0', sizeof(DDSURFACEDESC));
-		Description->dwSize = sizeof(DDSURFACEDESC);
-		HRESULT result = SurfacePtr->GetSurfaceDesc(Description);
-		if (result == DD_OK) {
-			BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
-//			Window.Set(Rect(0, 0, Description->dwWidth, Description->dwHeight));
-			IsVideoRam = (Description->ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY) != 0;
-			Width = Description->dwWidth;
-			Height = Description->dwHeight;
-		}
-	}
 }
 
 
@@ -462,43 +252,38 @@ DSurface::DSurface(LPDIRECTDRAWSURFACE surfaceptr) :
  *=============================================================================================*/
 HDC DSurface::GetDC(void)
 {
-	HDC hdc = NULL;
-	HRESULT hr;
-
-	hr = SurfacePtr->GetDC(&hdc);
-	// GetDC() locks the surface internally, so we need to reflect that here
-	if (hr == DD_OK) {
-		LockCount++;
-	}else{
-		hdc = NULL;
+	if (GDIDC == NULL) {
+		return(NULL);
 	}
 
-	return(hdc);
+	/*
+	 * The count is raised so the software blitter keeps off the pixels while GDI is
+	 * drawing on them, which is what it did when this context came from DirectDraw.
+	 */
+	LockCount++;
+	return(GDIDC);
 }
 
 
-/***********************************************************************************************
- * DSurface::ReleaseDC -- Release the windows device context from our surface                  *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS: Restores any locks held before the call to GetDC()                                *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/21/2000 NAK : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Releases a device context obtained from GetDC.
+/// </summary>
+/// <param name="hdc">The context to release.</param>
+/// <returns>int; Always one. The context outlives the call and is reused.</returns>
 int DSurface::ReleaseDC(HDC hdc)
 {
-	HRESULT hr;
+	/*
+	 * GDI batches its drawing, so the pixels are not all there until it is flushed.
+	 * Everything else reads them directly.
+	 */
+	GdiFlush();
 
-	hr = SurfacePtr->ReleaseDC(hdc);
-	//assert(hr == DD_OK);
-
-	// ReleaseDC() unlocks the surface internally, so we need to reflect that here.
-	if ((hr == DD_OK) && (LockCount > 0)) {
+	if (LockCount > 0) {
 		LockCount--;
+	}
+
+	if (IsPrimary && LockCount == 0) {
+		Video_Mark_Dirty();
 	}
 
 	return(1);
@@ -544,7 +329,7 @@ int DSurface::Bytes_Per_Pixel(void) const
  *=============================================================================================*/
 int DSurface::Stride(void) const
 {
-	return(Description->lPitch);
+	return(Pitch);
 }
 
 
@@ -571,55 +356,32 @@ int DSurface::Stride(void) const
  *=============================================================================================*/
 void * DSurface::Lock(Point2D point) const
 {
-	if (!Restore_Check()) return(NULL);
+	if (GDIBuffer == NULL) return(NULL);
 	if (point.X < 0 || point.Y < 0) return(NULL);
 
-	if (LockCount == 0) {
-		DDSURFACEDESC desc;
-		memset(&desc, '\0', sizeof(desc));
-		desc.dwSize = sizeof(desc);
-		HRESULT result = SurfacePtr->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR|DDLOCK_WAIT, NULL);
-		if (result != DD_OK) return(NULL);
-		memcpy(Description, &desc, sizeof(DDSURFACEDESC));
-		BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
-		IsVideoRam = (Description->ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY) != 0;
-		LockPtr = Description->lpSurface;
-	}
 	BASECLASS::Lock();
-	return(((char*)LockPtr) + point.Y * Stride() + point.X * Bytes_Per_Pixel());
+	return(((char *)GDIBuffer) + point.Y * Stride() + point.X * Bytes_Per_Pixel());
 }
 
 
 /// <summary>
 /// Determines if the surface can be locked.
-/// Use this routine to find out whether surface memory could be mapped in without actually
-/// committing to a lock. A surface that has been lost, or that the blitter still has hold of,
-/// cannot be locked.
 /// </summary>
 /// <returns>bool; Can the surface be locked?</returns>
 bool DSurface::Can_Lock(int x, int y) const
 {
-	if (LockCount == 0) {
-		DDSURFACEDESC desc;
-		memset(&desc, 0, sizeof(desc));
-		desc.dwSize = sizeof(desc);
-		HRESULT result = SurfacePtr->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR, NULL) != DD_OK;
-		if (result != DD_OK) return(NULL);
-		SurfacePtr->Unlock(desc.lpSurface);
-	}
-	return(true);
+	return(GDIBuffer != NULL);
 }
 
 
 /// <summary>
 /// Determines if the blitter is free to take more work.
-/// This routine is asked before a hardware fill is attempted. When the blitter is still busy
-/// with earlier work the caller draws the pixels itself instead of waiting on it.
+/// Blits are done on this thread now, so it always is.
 /// </summary>
 /// <returns>bool; Is the blitter ready for another operation?</returns>
 bool DSurface::Can_Blit(void) const
 {
-	return(SurfacePtr->GetBltStatus(DDGBS_CANBLT) == DD_OK);
+	return(true);
 }
 
 
@@ -641,12 +403,10 @@ bool DSurface::Can_Blit(void) const
  *=============================================================================================*/
 bool DSurface::Unlock(void) const
 {
-	Restore_Check();
 	if (LockCount > 0) {
 		BASECLASS::Unlock();
-		if (LockCount == 0) {
-			SurfacePtr->Unlock(LockPtr);
-			LockPtr = NULL;
+		if (IsPrimary && LockCount == 0) {
+			Video_Mark_Dirty();
 		}
 		return(true);
 	}
@@ -655,48 +415,10 @@ bool DSurface::Unlock(void) const
 
 
 /***********************************************************************************************
- * DSurface::Restore_Check -- Checks for and restores surface memory if necessary.             *
- *                                                                                             *
- *    This routine will check to see if surface memory has been lost to the surface. If it     *
- *    has, then the surface memory will be restored.                                           *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/07/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool DSurface::Restore_Check(void) const
-{
-	if (!WindowedMode && !GameInFocus) {
-		return(false);
-	}
-
-	if (SurfacePtr != NULL && SurfacePtr->IsLost() == DDERR_SURFACELOST) {
-		if (SurfacePtr->Restore() != DD_OK || SurfacePtr->IsLost() != DD_OK) return(false);
-		int oldlockcount = LockCount;
-		if (LockCount > 0) {
-			LockCount = 0;
-			Lock();
-			LockCount++;
-			Unlock();
-			LockCount = oldlockcount;
-		}
-	}
-
-	return(true);
-}
-
-
-/***********************************************************************************************
  * DSurface::Blit_From -- Blit graphic memory from one rectangle to another.                   *
  *                                                                                             *
- *    This routine will use the blitter (if possible) to blit a block of graphic memory from   *
- *    one screen rectangle to another. If the rectangles do no match in size, scaling may      *
- *    be performed.                                                                            *
+ *    This routine will blit from the source surface to this surface. The entire surfaces      *
+ *    serve as the clipping rectangles.                                                        *
  *                                                                                             *
  * INPUT:   destrect -- The destination rectangle.                                             *
  *                                                                                             *
@@ -751,61 +473,49 @@ bool DSurface::Blit_From(Rect const & dcliprect, Rect const & destrect, Surface 
 {
 	if (!dcliprect.Is_Valid() || !scliprect.Is_Valid() || !destrect.Is_Valid() || !sourcerect.Is_Valid()) return(false);
 
-	bool use_xsurface = false;
+	bool samesize = (sourcerect.Width == destrect.Width && sourcerect.Height == destrect.Height);
 
 	/*
-	**	For non-direct draw surfaces, perform a manual blit operation. This is also
-	**	necessary if any of the surfaces are currently locked. It is also necessary if the
-	**	blit regions overlap and the blitter cannot handle overlapped regions.
-	**
-	**	NOTE: Its legal to blit to a locked surface but not from a locked surface.
-	** 	 	ST - 4/23/97 1:03AM
-	*/
-	DSurface & dsource = (DSurface &)ssource;
-	if (!ssource.Is_Direct_Draw() == true || dsource.Is_Locked() == true || trans == true || Bytes_Per_Pixel() != ssource.Bytes_Per_Pixel()) {
-		use_xsurface = true;
-	}
-
-	if (IsPrimary == true && WindowedMode == true) {
-		unknown = false;
-	}
-
-	if ((use_xsurface == false && unknown == true && (IsVideoRam == false || ((DSurface &)ssource).Is_Direct_Draw() == true && ((DSurface &)ssource).IsVideoRam == false) && sourcerect.Width == destrect.Width) &&
-		sourcerect.Height == destrect.Height) {
-		use_xsurface = true;
-	}
-
-	if (Restore_Check() == false) {
-		return(false);
-	}
-
-	if (use_xsurface == true) {
-		return(BASECLASS::Blit_From(destrect, ssource, sourcerect, trans, true));
+	 * The software blitter handles everything except a size change between two of these
+	 * surfaces, which GDI stretches instead.
+	 */
+	if (trans || !ssource.Is_GDI_Backed() || samesize) {
+		bool result = BASECLASS::Blit_From(dcliprect, destrect, ssource, scliprect, sourcerect, trans, unknown);
+		if (result && IsPrimary) {
+			Video_Mark_Dirty();
+		}
+		return(result);
 	}
 
 	DSurface const & source = (DSurface const &)ssource;
 
-	Rect drect = destrect;
-	Rect srect = sourcerect;
-	Rect swindow = Intersect(scliprect, ssource.Get_Rect());
-	Rect dwindow = Intersect(dcliprect, Get_Rect());
-	if (Blit_Clip(drect, dwindow, srect, swindow)) {
-		RECT xdestrect;
-		xdestrect.left = drect.X+dwindow.X;
-		xdestrect.top = drect.Y+dwindow.Y;
-		xdestrect.right = drect.X+dwindow.X+drect.Width;
-		xdestrect.bottom = drect.Y+dwindow.Y+drect.Height;
-
-		RECT xsrcrect;
-		xsrcrect.left = srect.X+swindow.X;
-		xsrcrect.top = srect.Y+swindow.Y;
-		xsrcrect.right = srect.X+swindow.X+srect.Width;
-		xsrcrect.bottom = srect.Y+swindow.Y+srect.Height;
-
-		HRESULT result = SurfacePtr->Blt(&xdestrect, source.SurfacePtr, &xsrcrect, DDBLT_WAIT, NULL);
-		return(result == DD_OK);
+	if (GDIDC == NULL || source.GDIDC == NULL) {
+		return(false);
 	}
-	return(false);
+
+	Rect drect = destrect.Bias_To(dcliprect);
+	Rect srect = sourcerect.Bias_To(scliprect);
+
+	drect = Intersect(drect, Intersect(dcliprect, Get_Rect()));
+	if (!drect.Is_Valid()) return(false);
+
+	/*
+	 * Both sets of pixels are read and written directly elsewhere, so any drawing GDI
+	 * still holds has to land first.
+	 */
+	GdiFlush();
+
+	SetStretchBltMode(GDIDC, COLORONCOLOR);
+	bool result = StretchBlt(GDIDC, drect.X, drect.Y, drect.Width, drect.Height,
+		source.GDIDC, srect.X, srect.Y, srect.Width, srect.Height, SRCCOPY) != 0;
+
+	GdiFlush();
+
+	if (result && IsPrimary) {
+		Video_Mark_Dirty();
+	}
+
+	return(result);
 }
 
 
@@ -855,48 +565,15 @@ bool DSurface::Fill_Rect(Rect const & fillrect, int color)
  *=============================================================================================*/
 bool DSurface::Fill_Rect(Rect const & cliprect, Rect const & fillrect, int color)
 {
-	if (SurfacePtr == NULL || !fillrect.Is_Valid()) return(false);
+	if (GDIBuffer == NULL || !fillrect.Is_Valid()) return(false);
 
-	/*
-	**	If the buffer is locked, then using the blitter to perform the fill is not possible.
-	**	In such a case, perform a manual fill of the region.
-	*/
-	if (!AllowHWFill || Is_Locked() || !DSurface::Can_Blit()) {
-		return(BASECLASS::Fill_Rect(cliprect, fillrect, color));
+	bool result = BASECLASS::Fill_Rect(cliprect, fillrect, color);
+
+	if (result && IsPrimary) {
+		Video_Mark_Dirty();
 	}
 
-	if (!Restore_Check()) return(false);
-
-	/*
-	**	Ensure that the clipping rectangle is legal.
-	*/
-	Rect crect = Intersect(cliprect, Get_Rect());
-
-	/*
-	**	Bias the fill rect to the clipping rectangle.
-	*/
-	Rect frect = fillrect.Bias_To(cliprect);
-
-	/*
-	**	Find the region that should be filled after being clipped by the
-	**	clipping rectangle. This could result in no fill operation being performed
-	**	if the desired fill rectangle has been completely clipped away.
-	*/
-	frect = Intersect(frect, crect);
-	if (!frect.Is_Valid()) return(false);
-
-	RECT rect;
-	rect.left = frect.X;
-	rect.top = frect.Y;
-	rect.right = rect.left + frect.Width;
-	rect.bottom = rect.top + frect.Height;
-
-	DDBLTFX fx;
-	memset(&fx, '\0', sizeof(fx));
-	fx.dwSize = sizeof(fx);
-	fx.dwFillColor = color;
-	HRESULT result = SurfacePtr->Blt(&rect, NULL, NULL, DDBLT_WAIT|DDBLT_COLORFILL, &fx);
-	return(result == DD_OK);
+	return(result);
 }
 
 

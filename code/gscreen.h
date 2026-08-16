@@ -147,4 +147,5 @@ class GScreenClass : public IGameMap
 		GScreenRedrawFlags DrawFlags;
 };
 
-void Update_Visible_Surface(bool flip_mouse = true, Surface *surface = HiddenSurface, Rect *rect = NULL);
+void Update_Visible_Surface(Surface *surface = HiddenSurface, Rect *rect = NULL);
+void Heal_Dialog_Controls(void);

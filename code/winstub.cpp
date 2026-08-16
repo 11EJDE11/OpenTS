@@ -57,14 +57,18 @@
 #include "dsaudio.h"
 #include "dsurface.h"
 #include "globals.h"
+#include "goptions.h"
 #include "init.h"
 #include "misc.h"
 #include "movie.h"
 #include "movies.h"
+#include "msgroute.h"
 #include "pcx.h"
 #include "resource.h"
 #include "theme.h"
+#include "video.h"
 #include "win.h"
+#include "wincursor.h"
 #include "windlg.h"
 #include "winfix.h"
 #include "wsproto.h"
@@ -140,8 +144,8 @@ void Focus_Loss(void)
 /// <summary>
 /// Restores the game when it regains the input focus.
 /// This routine is the counterpart to Focus_Loss. It starts the sound and the music
-/// back up, recaptures the mouse if it was captured when focus was lost, checks the
-/// display surfaces for loss, and flags the whole screen for redraw.
+/// back up, recaptures the mouse if it was captured when focus was lost, and flags the
+/// whole screen for redraw.
 /// </summary>
 void Focus_Restore(void)
 {
@@ -151,34 +155,7 @@ void Focus_Restore(void)
 	if (MouseCursor && _MouseCaptured == true && !Debug_Map) {
 		MouseCursor->Capture_Mouse();
 	}
-	if (!WindowedMode) {
-		if (AlternateSurface != NULL) {
-			((DSurface *)AlternateSurface)->Restore_Check();
-		}
-		if (HiddenSurface != NULL) {
-			((DSurface *)HiddenSurface)->Restore_Check();
-		}
-		if (CompositeSurface != NULL && ((DSurface *)CompositeSurface)->Restore_Check()) {
-			if (!ScenarioActive || Frame > 16) {
-				CompositeSurface->Fill(0);
-			}
-		}
-		if (TileSurface != NULL && ((DSurface *)TileSurface)->Restore_Check()) {
-			if (!ScenarioActive || Frame > 16) {
-				TileSurface->Fill(0);
-			}
-		}
-		if (SidebarSurface != NULL && ((DSurface *)SidebarSurface)->Restore_Check()) {
-			if (!ScenarioActive || Frame > 16) {
-				SidebarSurface->Fill(0);
-			}
-		}
-		if (VisibleSurface != NULL && ((DSurface *)VisibleSurface)->Restore_Check()) {
-			if (!ScenarioActive || Frame > 16) {
-				VisibleSurface->Fill_Rect(VisibleRect, 0);
-			}
-		}
-	}
+	Heal_Dialog_Controls();
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
 	InvalidateRect(MainWindow, 0, 0);
 	Theme.Play_Song(OldTheme);
@@ -202,6 +179,18 @@ extern bool InMovie;
 /// <returns>Returns with the result Windows expects for the message handled.</returns>
 LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wParam, LONG lParam)
 {
+
+	/*
+	 * The frame may be drawn scaled, so a click has to be matched against where the
+	 * player sees the controls rather than where Windows finds them.
+	 */
+	{
+		LPARAM translated_lparam;
+		if (Route_Mouse_Message(hwnd, message, wParam, lParam, &translated_lparam)) {
+			return(0);
+		}
+		lParam = (LONG)translated_lparam;
+	}
 
 	int	low_param = LOWORD(wParam);
 
@@ -252,20 +241,40 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			if (GameInFocus == true || WindowedMode == true) {
 				if (MouseCursor != NULL && VisibleSurface != NULL && HiddenSurface != NULL && CompositeSurface != NULL) {
 					if (ScenarioActive == true) {
-						Update_Visible_Surface(MouseCursor->Is_Captured(), CompositeSurface);
+						Update_Visible_Surface(CompositeSurface);
 						Map.Blit_Sidebar(true);
 					} else if (Movie_Is_Playing() == true) {
 						Movie_Update_Visible_Surface();
 					} else {
-						Update_Visible_Surface(MouseCursor->Is_Captured(), HiddenSurface);
+						Update_Visible_Surface(HiddenSurface);
 					}
 				}
 			}
+			Video_Present_If_Dirty();
 			ValidateRect(hwnd, NULL);
 			break;
 
 		case WM_ERASEBKGND:
 			return(1);
+
+		case WM_SETCURSOR:
+			if (LOWORD(lParam) == HTCLIENT && Win_Cursor_Handle_Set_Cursor()) {
+				return(TRUE);
+			}
+			break;
+
+		case WM_SIZE:
+			if (wParam != SIZE_MINIMIZED) {
+				Video_On_Resize(LOWORD(lParam), HIWORD(lParam));
+				if (MouseCursor != NULL) {
+					((WWMouseClass *)MouseCursor)->Calc_Confining_Rect();
+				}
+			}
+			break;
+
+		case WM_DISPLAYCHANGE:
+			Video_On_Display_Change();
+			break;
 
 		case WM_CLOSE:
 			break;
@@ -320,7 +329,6 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 					Focus_Restore();
 					DebugString("Focus gained\n");
 				}
-				SurfacesRestored = true;
 			}
 			return(0);
 
@@ -506,7 +514,11 @@ void Create_Main_Window ( HINSTANCE instance , int command_show , int width , in
 	// Register the window class
 	//
 
-	wndclass.style         = CS_HREDRAW | CS_VREDRAW ;
+	/*
+	 * The dialog controls are hit tested through the main window, so its class has to
+	 * report the double clicks they expect.
+	 */
+	wndclass.style         = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS ;
 	wndclass.lpfnWndProc   = Windows_Procedure ;
 	wndclass.cbClsExtra    = 0 ;
 	wndclass.cbWndExtra    = 0 ;
@@ -523,12 +535,20 @@ void Create_Main_Window ( HINSTANCE instance , int command_show , int width , in
 	//
 	// Create our main window
 	//
+	/*
+	 * The dialogs paint themselves onto the game's surfaces rather than into their own
+	 * windows, so clipping their regions out of the main window would leave holes where
+	 * they sit.
+	 */
 	if (WindowedMode) {
-		MainWindow = CreateWindowEx(
+		int clientwidth = (Options.WindowWidth > 0) ? Options.WindowWidth : width;
+		int clientheight = (Options.WindowHeight > 0) ? Options.WindowHeight : height;
+
+		MainWindow = CreateWindowEx (
 								0,
 								WINDOW_NAME,
 								WINDOW_NAME,
-								WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX|WS_CLIPCHILDREN,
+								WS_OVERLAPPEDWINDOW,
 								0,
 								0,
 								0,
@@ -539,31 +559,35 @@ void Create_Main_Window ( HINSTANCE instance , int command_show , int width , in
 								NULL );
 
 		RECT rect;
-		SetRect(&rect, 0, 0, width, height);
-		AdjustWindowRectEx(&rect, GetWindowLong(MainWindow, GWL_STYLE), GetMenu(MainWindow) != 0, GetWindowLong(MainWindow, GWL_EXSTYLE));
-		MoveWindow(MainWindow, 0, 0, rect.right - rect.left, rect.bottom - rect.top, 1);
+		SetRect(&rect, 0, 0, clientwidth, clientheight);
+		AdjustWindowRectEx(&rect, GetWindowLong(MainWindow, GWL_STYLE), FALSE, GetWindowLong(MainWindow, GWL_EXSTYLE));
+
+		int windowwidth = rect.right - rect.left;
+		int windowheight = rect.bottom - rect.top;
+		int x = (GetSystemMetrics(SM_CXSCREEN) - windowwidth) / 2;
+		int y = (GetSystemMetrics(SM_CYSCREEN) - windowheight) / 2;
+
+		MoveWindow(MainWindow, MAX(x, 0), MAX(y, 0), windowwidth, windowheight, 1);
 
 	} else {
-		MainWindow = CreateWindowEx(
-								WS_EX_TOPMOST,
+		/*
+		 * The desktop keeps its own resolution and the window simply covers it. The
+		 * frame is scaled to fit at presentation time.
+		 */
+		MainWindow = CreateWindowEx (
+								0,
 								WINDOW_NAME,
 								WINDOW_NAME,
-								WS_POPUP|WS_CLIPCHILDREN,
+								WS_POPUP,
 								0,
 								0,
-								// Denzil 5/18/98 - Making window fullscreen prevents other apps
-								// from getting WM_PAINT messages
-								GetSystemMetrics(SM_CXSCREEN), //width,
-								GetSystemMetrics(SM_CYSCREEN), //height,
-								// End Denzil
+								GetSystemMetrics(SM_CXSCREEN),
+								GetSystemMetrics(SM_CYSCREEN),
 								NULL,
 								NULL,
 								instance,
 								NULL );
 	}
-// Denzil
-width = width; height = height;
-// End
 
 	ShowWindow (MainWindow, SW_NORMAL);
 	ShowCommand = command_show;

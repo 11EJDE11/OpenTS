@@ -136,7 +136,7 @@ const scoped = (view, area) => ({
 await expectRoute('BounceAnim', `${base}/keys/bounceanim/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.rules));
 await expectRoute('BounceAnim', `${base}/keys/bounceanim/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.art));
 await expectRoute('Action', `${base}/keys/action/`, scoped(SEARCH_VIEWS.mapping, SEARCH_AREAS.scenario));
-await expectRoute('AllowHiResModes', `${base}/keys/allowhiresmodes/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.other));
+await expectRoute('StretchMovies', `${base}/keys/stretchmovies/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.other));
 await expectRoute('MISSION_HUNT', `${base}/reference/enums/mission/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.enums));
 await expectRoute('Change House', `${base}/mapping/actions/taction-change-house/`, scoped(SEARCH_VIEWS.mapping, SEARCH_AREAS.actions));
 await expectRoute('GDI Drop Pods superweapon', `${base}/systems/drop-pods/`, scoped(SEARCH_VIEWS.systems, 'Superweapons & special systems'));

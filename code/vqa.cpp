@@ -23,7 +23,6 @@
 #include "mixfile.h"
 #include "movies.h"
 #include "session.h"
-#include "setpal.h"
 #include "unvqtblc.h"
 #include "vector.h"
 #include "vqoption.h"
@@ -205,7 +204,6 @@ VQAClass::VQAClass(char const * filename, int flags, VQA_SURF_LOCK_CALLBACK surf
 	DrawBufferWidth = 0;
 	DrawBufferHeight = 0;
 	PrimaryColorMode = -1;
-	HasPaletteChanged = false;
 	SurfaceLockCallback = surface_lock;
 	SurfaceUnlockCallback = surface_unlock;
 	SurfaceDrawCallback = surface_draw;
@@ -327,19 +325,6 @@ long VQAClass::CacheHandler(long action, void * buffer, long nbytes)
 			break;
 	}
 	return(rc);
-}
-
-
-void VQAClass::Handle_Palette_Event(void *buffer)
-{
-	memcpy(Palette, buffer, sizeof(Palette));
-	HasPaletteChanged = true;
-}
-
-
-void VQAClass::Set_DirectDraw_Palette(void)
-{
-	Set_Palette(Palette);
 }
 
 
@@ -556,10 +541,6 @@ int VQAClass::Play_VQA(int last_frame_to_play, bool nobreakout)
 			errval = VQA_Play(Handle, VQAMODE_WALK, 0);
 
 			if (errval >= VQAERR_OK) {
-				if (HasPaletteChanged) {
-					Set_DirectDraw_Palette();
-					HasPaletteChanged = false;
-				}
 				if (SurfaceDrawCallback) {
 					SurfaceDrawCallback();
 				}
@@ -666,10 +647,6 @@ bool VQAClass::Advance_Frame(bool & finished)
 	if (GameInFocus == true && !IsPaused) {
 		int res = VQA_Play(Handle, VQAMODE_WALK, 0);
 		if (res >= VQAERR_OK) {
-			if (HasPaletteChanged) {
-				Set_DirectDraw_Palette();
-				HasPaletteChanged = false;
-			}
 			if (SurfaceDrawCallback) {
 				SurfaceDrawCallback();
 			}
@@ -1139,7 +1116,6 @@ long __cdecl VQAEventHandler(VQAHandle * vqa, long action, void * buffer, long n
 	switch (action) {
 		case VQAEVENT_PALETTE:
 			VQAScalePalette((unsigned char *)buffer);
-			_this->Handle_Palette_Event((unsigned char *)buffer);
 			error = 0;
 			break;
 

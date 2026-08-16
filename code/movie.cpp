@@ -120,7 +120,7 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 		*/
 		if (clrscrn_before) {
 			HiddenSurface->Fill(0);
-			Update_Visible_Surface(1, HiddenSurface);
+			Update_Visible_Surface(HiddenSurface);
 		}
 
 		Movie_Play(vqa, true, theme, false);
@@ -134,7 +134,7 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 		*/
 		if (clrscrn_after == true) {
 			HiddenSurface->Fill(0);
-			Update_Visible_Surface(true, HiddenSurface);
+			Update_Visible_Surface(HiddenSurface);
 		}
 
 		Map.Flag_To_Redraw(GS_REDRAW_ALL);
@@ -155,7 +155,7 @@ void _Play_Movie(char const * name, ThemeType theme)
 	bool notavailable = CCFileClass(name).Is_Available() == false;
 	if (!notavailable) {
 		HiddenSurface->Fill(0);
-		Update_Visible_Surface(true, HiddenSurface);
+		Update_Visible_Surface(HiddenSurface);
 		Keyboard->Clear();
 		VQHandle * vqa = Movie_Create(name, HiddenSurface, Rect(0,0,0,0), Rect(0,0,0,0), -1, true);
 		if (vqa != NULL) {

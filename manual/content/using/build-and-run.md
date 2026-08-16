@@ -15,7 +15,10 @@ related:
 
 Install Visual Studio 2022 with the **Desktop development with C++** workload, a Windows SDK, CMake 3.23 or newer, and Git for Windows. The repository's `docs/BUILDING.md` covers toolchain details and options.
 
+The renderer is a vendored dependency, so a clone that did not fetch submodules has to fetch them before configuring. Configuration stops with instructions if they are missing.
+
 ```powershell title="PowerShell"
+git submodule update --init --recursive
 cmake -S . -B build -G "Visual Studio 17 2022" -A Win32
 cmake --build build --config Debug
 ```

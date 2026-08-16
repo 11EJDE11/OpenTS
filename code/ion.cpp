@@ -134,7 +134,7 @@ void IonStormClass::Do_Screen_Static(int shapenum)
 				Draw_Shape(*CompositeSurface, *NormalDrawer, StaticShape, shapenum, Point2D(x, y), Rect(0, 0, TacticalRect.Width, TacticalRect.Y + TacticalRect.Height));
 			}
 		}
-		Update_Visible_Surface(false, CompositeSurface);
+		Update_Visible_Surface(CompositeSurface);
 	}
 }
 
