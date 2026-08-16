@@ -1046,8 +1046,8 @@ MultiMission::MultiMission(INIClass const & ini, char const * name)
 
 	assert(name != NULL);
 
-	ScenarioDescription[0] = '0';
-	Digest[0] = '0';
+	ScenarioDescription[0] = '\0';
+	Digest[0] = '\0';
 	Set_Digest(NULL);
 	IsOfficial = true;
 	MinPlayers = 2;

@@ -203,7 +203,7 @@ bool HouseTypeClass::Read_INI(CCINIClass const & ini)
 		if (Side != oldside) {
 			int & house = (int &)House;
 			if (oldside != SIDE_NONE) {
-				Sides[oldside]->Houses.Delete_Index(house);
+				Sides[oldside]->Houses.Delete(house);
 			}
 			if (Side != SIDE_NONE) {
 				Sides[Side]->Houses.Add(house);
