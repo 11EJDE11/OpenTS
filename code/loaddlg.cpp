@@ -76,7 +76,8 @@ LoadOptionsClass::LoadOptionsClass(void) :
 	Files(0),
 	Style(NONE),
 	Description(NULL),
-	Callback(NULL)
+	Callback(NULL),
+	State(STATE_PENDING)
 {
 	Style = NONE;
 	Description = NULL;

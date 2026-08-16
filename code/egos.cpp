@@ -192,10 +192,7 @@ void EgoClass::Render(bool fresh)
 			ReleaseDC(MainWindow, dc);
 		}
 
-		Rect textrect;
-		textrect.X = XPos;
-		textrect.Width = VideoModeWidth;
-		textrect.Y = YPos;
+		Rect textrect(XPos, YPos, VideoModeWidth, 0);
 
 		int alignment = 0;
 		if (Flags & TPF_CENTER) {
