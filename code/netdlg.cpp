@@ -243,7 +243,7 @@ void Destroy_Connection(int id, int error)
 
 	if (Debug_Print_Events) {
 		DebugString("Destroying connection for house %d (%s)\n",
-			id,housep->IniName);
+			id,(char const *)housep->IniName);
 	}
 
 	//------------------------------------------------------------------------

@@ -626,7 +626,7 @@ TiberiumType Which_Tiberium_Type(OverlayType overlay)
 				}
 			}
 
-			DebugString("Overlay %s not really tiberium\n", otype->GivenName);
+			DebugString("Overlay %s not really tiberium\n", (char const *)otype->GivenName);
 			return(TIBERIUM_RIPARIUS);
 		}
 	}
