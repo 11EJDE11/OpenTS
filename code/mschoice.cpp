@@ -265,6 +265,7 @@ short MapChoice::Get_Stage_ID(MapStage * stage)
 MSSfxEntry * MapChoice::Find_Sound(char const * name)
 {
 	if (!Audio_Available()) return(NULL);
+	if (name == NULL) return(NULL);
 	for (int i = 0; i < SoundEntries.Count(); i++) {
 		MSSfxEntry * sfx = SoundEntries[i];
 		if (stricmp(name, sfx->Get_Name()) == 0) {
@@ -457,6 +458,7 @@ MapStage::~MapStage(void)
 /// <returns>Returns with a pointer to the selection. Otherwise, NULL is returned.</returns>
 MapSelection * MapStage::Find_Selection_By_Name(char const * name) const
 {
+	if (name == NULL) return(NULL);
 	for (int i = 0; i < Selections.Count(); i++) {
 		const char * selection = Selections[i]->Get_Stage_Label();
 		if (selection != NULL) {

@@ -293,6 +293,9 @@ TextLabelClass * MessageListClass::Add_Message(char const * name, int id, char c
 		return(NULL);
 	}
 	FontClass *font = Font_From_TPF(style);
+	if (!font) {
+		return(NULL);
+	}
 
 	TextLabelClass * txtlabel = NULL;
 	int i;

@@ -235,16 +235,16 @@ void Destroy_Connection(int id, int error)
 
 	housep = Houses[(HousesType)id];
 
-	if (Debug_Print_Events) {
-		DebugString("Destroying connection for house %d (%s)\n",
-			id,housep->IniName);
-	}
-
 	//------------------------------------------------------------------------
 	// Do nothing if the house isn't human.
 	//------------------------------------------------------------------------
 	if (!housep || !housep->IsHuman)
 		return;
+
+	if (Debug_Print_Events) {
+		DebugString("Destroying connection for house %d (%s)\n",
+			id,housep->IniName);
+	}
 
 	//------------------------------------------------------------------------
 	// Create a message to display to the user

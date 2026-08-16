@@ -408,6 +408,7 @@ bool SessionClass::Am_I_Master(void)
 	int i;
 	HouseClass *hptr;
 
+	if (PlayerPtr == NULL) return(false);
 
 	if (Session.Type == GAME_INTERNET) {
 		if (MasterPlayerID != -1) {

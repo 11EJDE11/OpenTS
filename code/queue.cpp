@@ -2528,6 +2528,10 @@ void ListBox_Trim(HWND listbox)
 /// <param name="id">Index into the session player list of the one to be kicked.</param>
 void Propose_Kick_Player(HWND window, int id)
 {
+	if (id < 0 || id >= Session.Players.Count()) {
+		return;
+	}
+
 	DebugString("Propose_Kick_Player %d - %s. Local id is %d\n", id, Session.Players[id]->Name, Session.Players[0]->Player.ID);
 	HWND listbox = GetDlgItem(window, IDC_DISCONNECT_MESSAGES);
 

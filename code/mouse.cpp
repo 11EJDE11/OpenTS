@@ -210,6 +210,10 @@ Point2D MouseClass::Get_Mouse_Hotspot(MouseType mouse) const
 {
 	Point2D hotspot(0,0);
 
+	if (MouseShapes == NULL) {
+		return(hotspot);
+	}
+
 	MouseStruct const * control = &MouseControl[mouse];
 
 	if (control->X == MOUSE_HOTSPOT_CENTER) {

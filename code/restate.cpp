@@ -341,9 +341,15 @@ bool RestateMission::Presentation(ScenarioClass * scen)
 				}
 			}
 
-			Get_Button(BUTTON_RESUME)->Enable();
+			MyButton *resume_button = Get_Button(BUTTON_RESUME);
+			if (resume_button != NULL) {
+				resume_button->Enable();
+			}
 			if (scen->BriefMovie != VQ_NONE) {
-				Get_Button(BUTTON_VIDEO)->Enable();
+				MyButton *video_button = Get_Button(BUTTON_VIDEO);
+				if (video_button != NULL) {
+					video_button->Enable();
+				}
 			}
 
 			Show_Mouse();

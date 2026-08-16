@@ -618,6 +618,9 @@ int WinsockInterfaceClass::Read(void *buffer, int &buffer_len, void *address, in
 	int packetnum = 0;
 	WinsockBufferType *packet = InBuffers[packetnum];
 	fw_assert(packet != NULL);
+	if (packet == NULL) {
+		return(0);
+	}
 
 	fw_assert(packet->InUse);
 
@@ -773,7 +776,7 @@ void WinsockInterfaceClass::Clear_Socket_Error(SOCKET socket)
 	unsigned int error_code;
 	int length = 4;
 
-	{
+	if (socket != INVALID_SOCKET) {
 		getsockopt (socket, SOL_SOCKET, SO_ERROR, (char*)&error_code, &length);
 		error_code = 0;
 		setsockopt (socket, SOL_SOCKET, SO_ERROR, (char*)&error_code, length);

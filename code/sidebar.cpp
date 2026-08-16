@@ -1668,6 +1668,9 @@ char const * SidebarClass::StripClass::Help_Text(int id)
 			}
 
 			TechnoTypeClass const * choice = Fetch_Techno_Type(Buildables[i].BuildableType, Buildables[i].BuildableID);
+			if (choice == NULL) {
+				return(NULL);
+			}
 
 			if (Map.IsCameoText) {
 				sprintf(_buffer, Fetch_String(TXT_MONEY_FORMAT_1), choice->Cost_Of(PlayerPtr));
