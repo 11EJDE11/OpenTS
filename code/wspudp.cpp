@@ -574,9 +574,11 @@ int UDPInterfaceClass::Message_Handler(HWND, UINT message, UINT, LONG lParam)
 				packet = (WinsockBufferType *)Get_New_In_Buffer();
 				packet->BufferLen = rc - sizeof(packet->CRC);
 
-				/// The packet is copied into the holding buffer before Passes_CRC_Check bounds
-				/// its length, so a datagram longer than WS_INTERNET_BUFFER_LEN overruns Buffer
-				/// by up to WS_RECEIVE_BUFFER_LEN - WS_INTERNET_BUFFER_LEN bytes.
+				// A datagram this long is not ours; truncating it lets the CRC check reject it.
+				if (packet->BufferLen > (int)sizeof(packet->Buffer)) {
+					packet->BufferLen = (int)sizeof(packet->Buffer);
+				}
+
 				packet->CRC = *((unsigned int*) (&ReceiveBuffer[0]));
 				memcpy ( packet->Buffer, ReceiveBuffer + sizeof(packet->CRC), packet->BufferLen);
 
