@@ -21,7 +21,7 @@ class CCToolTip : public ToolTipManager
 	public:
 		CCToolTip(HWND hWnd) :			/// Inlined in Windows_Procedure
 			BASECLASS(hWnd),
-			/// UseSidebarSurface(),	/// does not seem to be set by ctor.
+			UseSidebarSurface(false),
 			Style(TPF_MAP)
 		{
 		}

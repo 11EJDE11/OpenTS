@@ -79,6 +79,9 @@ bool CCToolTip::Update(ToolTipText * text)
 			if (text->Pos.y + text->TextHeight - trect->Height - trect->Y > 0) {
 				text->Pos.y = text->Pos.y - text->TextHeight - 16;
 			}
+			if (text->Pos.y < trect->Y) {
+				text->Pos.y = trect->Y;
+			}
 		}
 
 		return(true);
@@ -125,7 +128,10 @@ void CCToolTip::Reset(const ToolTipText * text)
 void CCToolTip::Draw_Current(bool sidebar)
 {
 	UseSidebarSurface = sidebar;
-	BASECLASS::Draw_Current(sidebar == 0);
+
+	// Placement flags the sidebar for a redraw, and the sidebar clears that flag at the end
+	// of its own draw, so placement has to be worked out in the tactical pass.
+	BASECLASS::Draw_Current(!sidebar);
 }
 
 

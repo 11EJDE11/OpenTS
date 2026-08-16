@@ -320,6 +320,8 @@ bool ToolTipManager::Process(void)
 
 			CurrentToolTipInfo.Pos.x = LastMousePos.x;
 			CurrentToolTipInfo.Pos.y = LastMousePos.y;
+			CurrentToolTipInfo.TextWidth = 0;
+			CurrentToolTipInfo.TextHeight = 0;
 
 			ToolTipText & txt = CurrentToolTipInfo;
 
