@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include "ipx.h" // for NetNumType & NetNodeType
+#include <cstdint>
 
 
 /*
@@ -51,39 +51,31 @@ class IPXAddressClass
 	*/
 	public:
 		/*.....................................................................
-		Constructors:
+		Constructors. The default one is the broadcast address.
 		.....................................................................*/
 		IPXAddressClass(void);
-		IPXAddressClass(NetNumType net, NetNodeType node);
-		IPXAddressClass(IPXHeaderType *header);
+		IPXAddressClass(uint32_t ip, uint16_t port);
 
-		/*.....................................................................
-		Set the address from explicit variables, or from the SOURCE values
-		in an IPX packet header.
-		.....................................................................*/
-		void Set_Address(NetNumType net, NetNodeType node);
-		void Set_Address(IPXHeaderType *header);
-		/*.....................................................................
-		Get the address values explicitly, or copy them into the DESTINATION
-		values in an IPX packet header.
-		.....................................................................*/
-		void Get_Address (NetNumType net, NetNodeType node);
-		void Get_Address(IPXHeaderType *header);
+		/*
+		 * The address, in network byte order. A port of zero means the transport should
+		 * send to whichever port it was configured with; a tunnelled game names its
+		 * players by tunnel ID in the port, with the IP left at zero.
+		 */
+		void Set_Address(uint32_t ip, uint16_t port);
+		uint32_t Get_IP(void) const {return(IP);}
+		uint16_t Get_Port(void) const {return(Port);}
+		void Set_Port(uint16_t port) {Port = port;}
 
 		/*.....................................................................
 		Tells if this address is a broadcast address
 		.....................................................................*/
-		int Is_Broadcast(void);
+		int Is_Broadcast(void) const;
 
 		/*.....................................................................
 		Overloaded operators:
 		.....................................................................*/
 		bool operator == (IPXAddressClass & addr);
 		bool operator != (IPXAddressClass & addr);
-		bool operator > (IPXAddressClass &addr);
-		bool operator < (IPXAddressClass &addr);
-		bool operator >= (IPXAddressClass &addr);
-		bool operator <= (IPXAddressClass &addr);
 
 		/*.....................................................................
 		Convert address to human readable string
@@ -98,8 +90,8 @@ class IPXAddressClass
 	--------------------------- Private Interface ----------------------------
 	*/
 	private:
-		NetNumType NetworkNumber;
-		NetNodeType NodeAddress;
+		uint32_t IP;
+		uint16_t Port;
 };
 
 

@@ -9534,11 +9534,6 @@ void Fill_Session_Players(struct User * users)
 	Clear_Vector(&Session.Players);
 	memset(WestwoodOnline_PingTimes, 0, sizeof(WestwoodOnline_PingTimes));
 
-	NetNumType netnum;
-	NetNodeType net;
-	memset(&netnum, 0, sizeof(netnum));
-	memset(&net, 0, sizeof(net));
-
 	NodeNameType * who;
 
 	/*
@@ -9558,12 +9553,9 @@ void Fill_Session_Players(struct User * users)
 
 	g_UserList.getPointer(&temp, index);
 	who->Player.SquadID = temp->squadID;
-	unsigned int ip_addr = ntohl((unsigned int)temp->ipaddr);
-	net[3] = ip_addr & 0xff;
-	net[2] = (ip_addr >> 8) & 0xff;
-	net[1] = (ip_addr >> 16) & 0xff;
-	net[0] = (ip_addr >> 24) & 0xff;
-	who->Address.Set_Address(netnum, net);
+
+	// Port zero leaves the transport to send to the port it was configured with.
+	who->Address.Set_Address((unsigned int)temp->ipaddr, 0);
 	Session.Players.Add(who);
 	Session.NumPlayers++;
 
@@ -9604,13 +9596,7 @@ void Fill_Session_Players(struct User * users)
 			who->Player.House = g_UserInfo[index].house;
 			who->Player.Color = g_UserInfo[index].color;
 
-			unsigned int ip_addr = ntohl((unsigned int)user.ipaddr);
-			net[3] = ip_addr & 0xff;
-			net[2] = (ip_addr >> 8) & 0xff;
-			net[1] = (ip_addr >> 16) & 0xff;
-			net[0] = (ip_addr >> 24) & 0xff;
-
-			who->Address.Set_Address(netnum, net);
+			who->Address.Set_Address((unsigned int)user.ipaddr, 0);
 
 			/// The channel owner's address becomes the session's host address.
 			if (user.flags & CHAT_USER_CHANNELOWNER) {
@@ -9630,12 +9616,8 @@ void Fill_Session_Players(struct User * users)
 
 	/// Register every remote player's address as a broadcast address for the transport.
 	PacketTransport->Clear_Broadcast_Addresses();
-	char address[32] = {"xxx.xxx.xxx.xxx"};
-	NetNumType dummy;
-	NetNodeType ipaddr;
 	for (int p = 1; p < Session.Players.Count(); p++) {
-		Session.Players[p]->Address.Get_Address(dummy, ipaddr);
-		PacketTransport->Set_Broadcast_Address(address);
+		PacketTransport->Set_Broadcast_Address(Session.Players[p]->Address);
 	}
 }
 

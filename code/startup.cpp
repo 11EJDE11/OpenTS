@@ -762,51 +762,6 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		Options.ScreenWidth = ConfigINI.Get_Int("Video", "ScreenWidth", Options.ScreenWidth);
 		Options.ScreenHeight = ConfigINI.Get_Int("Video", "ScreenHeight", Options.ScreenHeight);
 
-		int socket = ConfigINI.Get_Int("Network", "Socket", 0);
-		if (socket > 0) {
-			socket += 0x4000;
-			if (socket >= 0x4000 && socket < 0x8000) {
-				Ipx.Set_Socket(socket);
-			}
-		}
-
-		char netbuf[INIClass::MAX_LINE_LENGTH];
-		memset(netbuf, 0, sizeof(netbuf));
-		bool has_destination_network = ConfigINI.Get_String("Network", "DestNet", 0, netbuf, sizeof(netbuf)) ? true : false;
-		if (has_destination_network && netbuf && strlen(netbuf)) {
-
-			NetNumType net;
-			NetNodeType node;
-
-			/*
-			**	Scan thestring, pulling off each address piece
-			*/
-			int i = 0;
-			char * p = strtok(netbuf + 8, ".");
-			while (p) {
-				int x;
-
-				sscanf(p, "%x", &x);			// convert from hex string to int
-				if (i < 4) {
-					net[i] = (char)x;			// fill NetNum
-				} else {
-					node[i-4] = (char)x;		// fill NetNode
-				}
-				i++;
-				p = strtok(NULL, ".");
-			}
-
-			/*
-			**	If all the address components were successfully read, fill in the
-			**	BridgeNet with a broadcast address to the network across the bridge.
-			*/
-			if (i >= 4) {
-				Session.IsBridge = 1;
-				memset(node, 0xff, 6);
-				Session.BridgeNet = IPXAddressClass(net, node);
-			}
-		}
-
 		Keyboard = new KeyboardClass();
 
 		/*

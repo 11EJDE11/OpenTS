@@ -170,30 +170,13 @@ int Update_WWChat(void);
  *=============================================================================================*/
 bool Init_Network (void)
 {
-	NetNumType net;
-	NetNodeType node;
-
 	assert ( PacketTransport != NULL );
 
 	//------------------------------------------------------------------------
-	// This call allocates all necessary queue buffers, allocates Real-mode
-	// memory, and commands IPX to start listening on the Global Channel.
+	// This call allocates all necessary queue buffers and commands the
+	// transport to start listening on the Global Channel.
 	//------------------------------------------------------------------------
-	if (!Ipx.Init()) {
-		return(false);
-	}
-
-	//------------------------------------------------------------------------
-	// Set up the IPX manager to cross a bridge
-	//------------------------------------------------------------------------
-	if (Session.Type != GAME_INTERNET) {
-		if (Session.IsBridge) {
-			Session.BridgeNet.Get_Address(net,node);
-			Ipx.Set_Bridge(net);
-		}
-	}
-
-	return(true);
+	return(Ipx.Init() != 0);
 
 }	/* end of Init_Network */
 
@@ -215,65 +198,12 @@ bool Init_Network (void)
  *=============================================================================================*/
 void Shutdown_Network (void)
 {
-//
-// Note: The thought behind this section of code was that if the program
-// terminates early, without an EventClass::EXIT event, it still needs to
-// tell the other systems that it's gone, so it would send a SIGN_OFF packet.
-// BUT, this causes a sync bug if the systems are running slow and this system
-// is running ahead of the others; it will send the NET_SIGN_OFF >>before<<
-// the other system execute their EventClass::EXIT event, and the other systems
-// will kill the connection at some random Frame # & turn my stuff over to
-// the computer possibly at different times.
-// BRR, 10/29/96
-//
-#if 0
-	//------------------------------------------------------------------------
-	// If the Players vector contains at least one name, send a sign-off
-	// packet.  If 'Players' is empty, I have no name, so there's no point
-	// in sending a sign-off.
-	//------------------------------------------------------------------------
-	if (Session.Players.Count()) {
-		//.....................................................................
-		// Build a sign-off packet & send it
-		//.....................................................................
-		memset (&Session.GPacket, 0, sizeof(GlobalPacketType));
-		Session.GPacket.Command = NET_SIGN_OFF;
-		strcpy (Session.GPacket.Name, Session.Players[0]->Name);
-
-		Ipx.Send_Global_Message (&Session.GPacket, sizeof (GlobalPacketType),
-			0, NULL);
-		Ipx.Send_Global_Message (&Session.GPacket, sizeof (GlobalPacketType),
-			0, NULL);
-
-		if (Session.IsBridge	&& !Winsock.Get_Connected()) {
-			Ipx.Send_Global_Message (&Session.GPacket, sizeof(GlobalPacketType), 0,
-				&Session.BridgeNet);
-			Ipx.Send_Global_Message (&Session.GPacket, sizeof(GlobalPacketType), 0,
-				&Session.BridgeNet);
-		}
-
-		//.....................................................................
-		//	Wait for the packets to finish going out (or the Global Channel
-		// times out)
-		//.....................................................................
-		for (;;) {
-			if (Ipx.Global_Num_Send()==0) {
-				break;
-			}
-			Ipx.Service();
-		}
-	}
-#endif
-
 	//------------------------------------------------------------------------
 	// If I was in a game, I'm not now, so clear the game name
 	//------------------------------------------------------------------------
 	Session.GameName[0] = 0;
 
-	if ( PacketTransport ) {
-		delete  PacketTransport;
-	}
-	PacketTransport = NULL;
+	Ipx.Shutdown();
 
 }	/* end of Shutdown_Network */
 

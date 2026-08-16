@@ -20,7 +20,6 @@ int Net2FirstFreeColor(int reqcolor, int index);
 bool Net2Callback(void);
 void Net2DisplayUsers(void);
 bool Net2Init_Network(void);
-void Net2Shutdown_Network(void);
 void Net2EncodeGameopt(char *out);
 void Net2SetAccept(char *who, int status);
 int Net2GetAccept(char *who);

@@ -186,6 +186,7 @@ target_link_libraries(OpenTS PRIVATE
     comctl32
     ddraw
     dsound
+    iphlpapi
     version
     winmm
     wsock32

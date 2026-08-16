@@ -83,7 +83,6 @@ IPXGlobalConnClass::IPXGlobalConnClass (int numsend, int numreceive,
 	int i;
 
 	ProductID = product_id;
-	IsBridge = 0;
 	MaxRXIndex = numreceive;
 	LastPacketID = new unsigned int[MaxRXIndex];
 	LastAddress = new IPXAddressClass[MaxRXIndex];
@@ -456,13 +455,7 @@ int IPXGlobalConnClass::Send(char *buf, int buflen, void *extrabuf, int )
 	Otherwise, send it
 	------------------------------------------------------------------------*/
 	else {
-		if (IsBridge && !memcmp (addr, BridgeNet, 4)) {
-			rc = Send_To (buf, buflen, addr, BridgeNode);
-		}
-		else {
-			rc = Send_To (buf, buflen, addr, NULL);
-		}
-		return(rc);
+		return(Send_To (buf, buflen, addr));
 	}
 
 } 	/* end of Send */
@@ -507,34 +500,6 @@ int IPXGlobalConnClass::Service_Receive_Queue (void)
 	return(1);
 
 } 	/* end of Service_Receive_Queue */
-
-
-/***************************************************************************
- * Set_Bridge -- Sets up connection to cross a bridge                      *
- *                                                                         *
- * This routine is designed to prevent the connection from having to       *
- * call Get_Local_Target, except the minimum number of times, since that   *
- * routine is buggy & goes away for long periods sometimes.                *
- *                                                                         *
- * INPUT:                                                                  *
- *      bridge      network number of the destination bridge               *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none                                                               *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none                                                               *
- *                                                                         *
- * HISTORY:                                                                *
- *   07/06/1995 BRR : Created.                                             *
- *=========================================================================*/
-void IPXGlobalConnClass::Set_Bridge(NetNumType bridge)
-{
-	if (Configured) {
-		bridge = bridge;
-		IsBridge = 0;
-	}
-} 	/* end of Set_Bridge */
 
 
 /// <summary>

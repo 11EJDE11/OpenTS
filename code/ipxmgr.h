@@ -122,24 +122,10 @@
 ********************************** Defines **********************************
 */
 /*---------------------------------------------------------------------------
-This is Virgin Interactive Entertainment's registered socket ID.
----------------------------------------------------------------------------*/
-#define	VIRGIN_SOCKET		0x8813
-
-/*---------------------------------------------------------------------------
-This is the maximum number of IPX connections supported.  Just change this
+This is the maximum number of connections supported.  Just change this
 value to support more.
 ---------------------------------------------------------------------------*/
 #define	CONNECT_MAX			7
-
-/*---------------------------------------------------------------------------
-These routines report the location & length of the real-mode routine, as
-it's stored in protected-mode memory.
----------------------------------------------------------------------------*/
-extern "C" {
-	void * __cdecl Get_RM_IPX_Address(void);
-	int __cdecl Get_RM_IPX_Size(void);
-}
 
 /*
 ***************************** Class Declaration *****************************
@@ -152,23 +138,47 @@ class IPXManagerClass : public ConnManClass
 	---------------------------- Public Interface ----------------------------
 	*/
 	public:
+		/*
+		 * How the packets reach the other players. The mode decides how the transport is
+		 * set up and how an address is read, not how the game plays; a LAN game and a
+		 * tunnelled game differ only here.
+		 */
+		enum TransportModeType {
+			TRANSPORT_NONE = 0,     // not configured; Init() will fail
+			TRANSPORT_LAN,          // broadcast onto the local network to find games
+			TRANSPORT_WOL,          // send to the addresses Westwood Online hands us
+			TRANSPORT_TUNNEL,       // send through a CnCNet tunnel server
+			TRANSPORT_DIRECT_PEERS  // send straight to a known set of peers
+		};
+
 		/*.....................................................................
 		Constructor/destructor.
 		.....................................................................*/
 		IPXManagerClass (int glb_maxlen, int pvt_maxlen, int glb_num_packets,
-			int pvt_num_packets, unsigned short socket, unsigned short product_id);
+			int pvt_num_packets, unsigned short product_id);
 		virtual ~IPXManagerClass () override;	// stop listening
+
+		/*
+		 * One of these must be called before Init(). Each disposes of the transport
+		 * already in place and creates the one its mode needs; Shutdown() takes it down.
+		 */
+		void Configure_LAN(unsigned short port = 0);
+		void Configure_WOL();
+		void Configure_Tunnel(unsigned short local_id, unsigned long tunnel_ip, unsigned short tunnel_port);
+		void Configure_Direct_Peers(unsigned short listen_port);
+		void Add_Peer(const IPXAddressClass &address);
+		void Shutdown();
+
+		TransportModeType Transport_Mode() const {return(TransportMode);}
 
 		/*.....................................................................
 		Initialization routines.
 		.....................................................................*/
 		int Init (void);
-		int Is_IPX(void);
 		virtual void Set_Timing (unsigned int retrydelta, unsigned int maxretries,
 			unsigned int timeout, bool set_external = true) override;
 		virtual void Set_External_Timing (unsigned int retrydelta, unsigned int maxretries,
 			unsigned int timeout) override;
-		void Set_Bridge(NetNumType bridge);
 
 		/*.....................................................................
 		These routines control creation of the "Connections" (data queues) for
@@ -215,14 +225,6 @@ class IPXManagerClass : public ConnManClass
 		virtual int Private_Num_Receive(int id = CONNECTION_NONE) override;
 
 		/*.....................................................................
-		This routine changes the socket ID assigned the IPX Manager when it
-		was constructed.  Do not call this function after calling Init()!
-		The Socket ID should be known by both ends of the communications before
-		any packets are sent.
-		.....................................................................*/
-		void Set_Socket(unsigned short socket);
-
-		/*.....................................................................
 		Routines to return the largest average queue response time, and to
 		reset the response time for all queues.
 		.....................................................................*/
@@ -256,12 +258,11 @@ class IPXManagerClass : public ConnManClass
 		/*.....................................................................
 		Misc variables
 		.....................................................................*/
-		bool IPXStatus;		// 0 = no IPX, 1 = IPX found
+		TransportModeType TransportMode;	// how the packets reach the other players
 		bool Listening;		// 1 = Listening is on
-		bool RealMemAllocd;	// 1 = Real-mode memory has been alloc'd
 
 		/*.....................................................................
-		Packet Sizes, used for allocating real-mode memory
+		Packet Sizes, used when allocating the channels
 		.....................................................................*/
 		int Glb_MaxPacketLen;				// Global Channel maximum packet size
 		int Glb_NumPackets;					// # Global send/receive packets
@@ -275,9 +276,8 @@ class IPXManagerClass : public ConnManClass
 		unsigned short ProductID;			// product ID
 
 		/*.....................................................................
-		The Socket ID, and local Novell Connection Number
+		Local connection number
 		.....................................................................*/
-		unsigned short Socket;				// Our socket ID for sending/receiving
 		int ConnectionNum;					// local connection #, 0=not logged in
 
 		/*.....................................................................
@@ -298,91 +298,6 @@ class IPXManagerClass : public ConnManClass
 		unsigned int RetryDelta;
 		unsigned int MaxRetries;
 		unsigned int Timeout;
-
-		/*---------------------------------------------------------------------
-		Real-mode memory pointers and such
-		---------------------------------------------------------------------*/
-		/*.....................................................................
-		This is a structure that mirrors data in real-mode memory:
-		.....................................................................*/
-		struct RealModeDataType {
-			short Marker1;                  // the byte ID marker
-			ECBType ListenECB;              // the Listening ECB
-			short NumBufs;                  // # of buffers we're giving to the handler
-			char *BufferFlags;              // array of buffer-avail flags
-			short PacketSize;               // size of packet including IPX header
-			IPXHeaderType *FirstPacketBuf;  // ptr to 1st packet buffer
-			short CurIndex;                 // handler's current packet index
-			IPXHeaderType *CurPacketBuf;    // handler's current packet buf
-			short FuncOffset;               // contains offset of code
-			char Semaphore;                 // prevents re-entrancy
-			short ReEntrantCount;           // times we've been called re-entrantly
-			short StackPtr;                 // real-mode stack pointer
-			short StackSeg;                 // real-mode stack segment
-			short StackPtr_int;             // internal stack pointer
-			short StackSeg_int;             // internal stack segment
-			short StackCheck;               // stack check value (0x1234)
-			short Stack[256];               // actual stack space
-			short StackSpace;               // label for top of stack
-			short Marker2;                  // the byte ID marker
-		};
-
-		/*.....................................................................
-		The number & size of packet buffers in low memory
-		.....................................................................*/
-		int NumBufs;        // # packet buffers allocated
-		int PacketLen;      // size of packet without IPX header
-		int FullPacketLen;  // size of packet including IPX header
-
-#if 0
-		/*.....................................................................
-		Selector & Segment of the DOS allocation;
-		Size of the allocation;
-		Ptr to the real-mode assembly data area
-		.....................................................................*/
-		unsigned short Selector;				// selector of DOS allocation pointer
-		unsigned short Segment;					// real-mode segment of DOS allocation
-		int RealMemSize;							// size of real mode memory allocated
-		RealModeDataType *RealModeData;		// assembly routine & its data
-
-		/*.....................................................................
-		This is a real-mode pointer to the address of the real-mode assembly
-		entry point.
-		.....................................................................*/
-		int Handler;
-
-		/*.....................................................................
-		Event Control Block for listening; contained within the real-mode
-		assembly routine's data area
-		.....................................................................*/
-		ECBType *ListenECB;						// ECB for listening
-#endif
-
-		/*.....................................................................
-		ptr to the 1st header & data buffers in the packet buffer array
-		.....................................................................*/
-		IPXHeaderType *FirstHeaderBuf;  // array of packet headers & buffers
-		char *FirstDataBuf;             // 1st data buffer area
-
-		/*.....................................................................
-		Current packet index & ptrs for parsing packets
-		.....................................................................*/
-		int CurIndex;                   // Current packet index, for reading
-		IPXHeaderType *CurHeaderBuf;    // Current packet ptr, for reading
-		char *CurDataBuf;               // Current actual data ptr
-
-		/*.....................................................................
-		ECB, header, & buffer for sending
-		.....................................................................*/
-		ECBType *SendECB;           // ECB for sending
-		IPXHeaderType *SendHeader;  // Header for sending
-		char *SendBuf;              // buffer for sending
-
-		/*.....................................................................
-		Flags indicating whether a buffer contains data or not (1 = full)
-		The IPXManager must clear this flag; the real-mode routine will set it.
-		.....................................................................*/
-		char *BufferFlags;						// array of rx-buffer-avail flags
 
 		/*.....................................................................
 		Various Statistics

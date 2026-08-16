@@ -125,8 +125,6 @@ OptionsClass::OptionsClass(void) :
 	StretchMovies(0),
 	AllowHiResModes(0),
 	SoundLatency(9),
-	Socket(-1),
-	NetCard(0),
 	KeyForceMove1(KN_LALT),
 	KeyForceMove2(KN_LALT),
 	KeyForceAttack1(KN_LCTRL),
@@ -136,7 +134,6 @@ OptionsClass::OptionsClass(void) :
 	KeyQueueMove1(KN_Q),
 	KeyQueueMove2(KN_Q)
 {
-	DestNet[0] = '\0';
 }
 
 
@@ -369,15 +366,10 @@ void OptionsClass::Load_Settings(void)
 	SoundLatency = ConfigINI.Get_Int("Audio", "SoundLatency", SoundLatency);
 	DebugString("Emulated sound card latency default = %d\n", SoundLatency);
 
-	Socket = ConfigINI.Get_Int("Network", "Socket", Socket);
-	NetCard = ConfigINI.Get_Int("Network", "NetCard", NetCard);
-	ConfigINI.Get_String("Network", "DestNet", "", DestNet, sizeof(DestNet));
-
 	DebugString("--------- Complete -------------------------------\n");
 
 	Map.Toggle_Cameo_Text(SidebarCameoText);
 	TechnoClass::Set_Action_Lines(ActionLines);
-	Setup_Dest_Net();
 }
 
 
@@ -425,75 +417,11 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Bool("Audio", "IsScoreRepeat", IsScoreRepeat);
 	ConfigINI.Put_Bool("Audio", "IsScoreShuffle", IsScoreShuffle);
 	ConfigINI.Put_Int("Audio", "SoundLatency", SoundLatency);
-	ConfigINI.Put_Int("Network", "Socket", Socket);
-	ConfigINI.Put_Int("Network", "NetCard", NetCard);
-	ConfigINI.Put_String("Network", "DestNet", DestNet);
 
 	/*
 	**	Write the INI data out to a file.
 	*/
 	ConfigINI.Save(file, false);
-
-	Setup_Dest_Net();
-}
-
-
-/// <summary>
-/// Sets up the network socket and destination address.
-/// This routine is called once the settings have been read in. It puts the IPX socket into
-/// service and, when a destination network was specified, arranges for the game to broadcast
-/// across the bridge to that network as well.
-/// </summary>
-void OptionsClass::Setup_Dest_Net(void)
-{
-	if (Socket == 0xFFFF) {
-		Ipx.Set_Socket(VIRGIN_SOCKET);
-	} else if (Socket < 0x4000) {
-		Ipx.Set_Socket(Socket + 0x4000);
-	}
-
-	int len = strlen(DestNet);
-	if (len != 0) {
-		char *string = new char[len + 1];
-		strcpy(string, DestNet);
-
-		/*
-		**	Specify destination connection for network play
-		*/
-		NetNumType net;
-		NetNodeType node;
-
-		/*
-		**	Scan the command-line string, pulling off each address piece
-		*/
-		int i = 0;
-		char * p = strtok(string, ".");
-		if (p != NULL) {
-			while (p) {
-				int x;
-
-				sscanf(p, "%x", &x);			// convert from hex string to int
-				if (i < 4) {
-					net[i] = (char)x;			// fill NetNum
-				} else {
-					node[i-4] = (char)x;		// fill NetNode
-				}
-				i++;
-				p = strtok(NULL, ".");
-			}
-
-			/*
-			**	If all the address components were successfully read, fill in the
-			**	BridgeNet with a broadcast address to the network across the bridge.
-			*/
-			if (i >= 4) {
-				Session.IsBridge = true;
-				memset(node, 0xff, sizeof(node));
-				Session.BridgeNet = IPXAddressClass(net, node);
-			}
-		}
-
-	}
 }
 
 

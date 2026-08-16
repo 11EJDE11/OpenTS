@@ -74,11 +74,12 @@
 #include "queue.h"
 #include "scheme.h"
 #include "session.h"
+#include "stats.h"
 #include "stimer.h"
 #include "surface.h"
 #include "vector.h"
-#include "wspipx.h"
 #include "wsproto.h"
+#include "wspudp.h"
 
 
 /***************************************************************************
@@ -87,42 +88,23 @@
  * INPUT:                                                                  *
  *      glb_maxlen      Global Channel maximum packet length               *
  *      pvt_maxlen      Private Channel maximum packet length              *
- *      socket         socket ID to use                                    *
  *      product_id      a unique numerical ID for this product             *
  *                                                                         *
  * OUTPUT:                                                                 *
  *      none.                                                              *
  *                                                                         *
  * WARNINGS:                                                               *
- *      The socket number is byte-swapped, since IPX requires socket ID's  *
- *      to be stored high/low.                                             *
+ *      none.                                                              *
  *                                                                         *
  * HISTORY:                                                                *
  *   12/20/1994 BR : Created.                                              *
  *=========================================================================*/
 IPXManagerClass::IPXManagerClass (int glb_maxlen, int pvt_maxlen,
-	int glb_num_packets, int pvt_num_packets, unsigned short socket,
-	unsigned short product_id)
+	int glb_num_packets, int pvt_num_packets, unsigned short product_id)
 {
 	int i;
 
-	/*
-	**	Find out if Packet protocol services are available through Winsock.
-	*/
-	if ( PacketTransport ) {
-		delete  PacketTransport;
-		PacketTransport = NULL;
-	}
-	PacketTransport = new IPXInterfaceClass;
-	assert ( PacketTransport != NULL );
-
-	if ( PacketTransport->Init() ){
-		IPXStatus = 1;
-	}else{
-		IPXStatus = 0;
-	}
-	delete PacketTransport;
-	PacketTransport = NULL;
+	TransportMode = TRANSPORT_NONE;
 
 	//........................................................................
 	// Set listening state flag to off
@@ -130,7 +112,7 @@ IPXManagerClass::IPXManagerClass (int glb_maxlen, int pvt_maxlen,
 	Listening = 0;
 
 	//........................................................................
-	// Set max packet sizes, for allocating real-mode memory
+	// Set max packet sizes, for allocating the channels
 	//........................................................................
 	Glb_MaxPacketLen = glb_maxlen;
 	Glb_NumPackets = glb_num_packets;
@@ -141,12 +123,6 @@ IPXManagerClass::IPXManagerClass (int glb_maxlen, int pvt_maxlen,
 	// Save the app's product ID
 	//........................................................................
 	ProductID = product_id;
-
-	//........................................................................
-	// Save our socket ID number
-	//........................................................................
-	Socket = (unsigned short)( (((unsigned int)socket & 0x00ff) << 8) |
-		(((unsigned int)socket & 0xff00) >> 8));
 
 	//------------------------------------------------------------------------
 	// Get the user's IPX local connection number
@@ -219,6 +195,126 @@ IPXManagerClass::~IPXManagerClass(void)
 }	/* end of ~IPXManagerClass */
 
 
+/// <summary>
+/// Sets the manager up to play over the local network.
+/// Games are found by broadcasting onto every network the machine is attached to, and
+/// the players answering are recorded at the address their packets came from.
+/// </summary>
+/// <param name="port">UDP port to play over, or zero to take the default one.</param>
+void IPXManagerClass::Configure_LAN(unsigned short port)
+{
+	Shutdown();
+
+	if (port == 0) {
+		port = static_cast<unsigned short>(WestwoodOnline_PortNumber);
+	}
+
+	UDPInterfaceClass *udp = new UDPInterfaceClass;
+	udp->Set_Local_Port(port);
+	udp->Set_Destination_Port(port);
+	udp->Enable_Broadcast(true);
+
+	PacketTransport = udp;
+	TransportMode = TRANSPORT_LAN;
+}
+
+
+/// <summary>
+/// Sets the manager up to play over Westwood Online.
+/// The lobby hands us the address of every other player, so nothing has to be discovered
+/// here; the transport is left with its default port and no broadcasting.
+/// </summary>
+void IPXManagerClass::Configure_WOL()
+{
+	Shutdown();
+
+	PacketTransport = new UDPInterfaceClass;
+	TransportMode = TRANSPORT_WOL;
+}
+
+
+/// <summary>
+/// Sets the manager up to play through a CnCNet tunnel server, for players who have no
+/// route to each other. Every player, including us, is known by a tunnel ID instead of an
+/// address, so there is nothing to discover and nothing to relearn.
+/// </summary>
+/// <param name="local_id">The ID the tunnel server knows us by.</param>
+/// <param name="tunnel_ip">Address of the tunnel server, in network order.</param>
+/// <param name="tunnel_port">Port of the tunnel server, in network order.</param>
+void IPXManagerClass::Configure_Tunnel(unsigned short local_id, unsigned long tunnel_ip, unsigned short tunnel_port)
+{
+	Shutdown();
+
+	UDPInterfaceClass *udp = new UDPInterfaceClass;
+
+	// The tunnel server replies to whatever port we send from, so any will do.
+	udp->Set_Local_Port(0);
+	udp->Configure_Tunnel(local_id, tunnel_ip, tunnel_port);
+
+	PacketTransport = udp;
+	TransportMode = TRANSPORT_TUNNEL;
+}
+
+
+/// <summary>
+/// Sets the manager up to play straight to a known set of players, each at an address it
+/// was given rather than one discovered by asking the network who is out there.
+/// </summary>
+/// <param name="listen_port">Port to play over, in host order.</param>
+void IPXManagerClass::Configure_Direct_Peers(unsigned short listen_port)
+{
+	Shutdown();
+
+	UDPInterfaceClass *udp = new UDPInterfaceClass;
+	udp->Set_Local_Port(listen_port);
+	udp->Set_Destination_Port(listen_port);
+
+	PacketTransport = udp;
+	TransportMode = TRANSPORT_DIRECT_PEERS;
+}
+
+
+/// <summary>
+/// Names a player the game is to reach without discovering them first. The address is
+/// what a broadcast fans out to, in place of the network-wide one a LAN game uses.
+/// </summary>
+/// <param name="address">The player's address, or their tunnel ID when tunnelling.</param>
+void IPXManagerClass::Add_Peer(const IPXAddressClass &address)
+{
+	if (PacketTransport) {
+		PacketTransport->Set_Broadcast_Address(address);
+	}
+}
+
+
+/// <summary>
+/// Takes the network back down.
+/// This stops the listening, throws away the channels and disposes of the transport, so
+/// that a later Configure call starts from nothing. It is safe to call at any time.
+/// </summary>
+void IPXManagerClass::Shutdown()
+{
+	if (Listening) {
+		IPXConnClass::Stop_Listening();
+		Listening = false;
+	}
+
+	delete GlobalChannel;
+	GlobalChannel = nullptr;
+
+	for (int i = 0; i < NumConnections; i++) {
+		delete Connection[i];
+		Connection[i] = nullptr;
+	}
+	NumConnections = 0;
+
+	delete PacketTransport;
+	PacketTransport = nullptr;
+
+	TransportMode = TRANSPORT_NONE;
+}
+
+
 /***************************************************************************
  * IPXManagerClass::Init -- initialization routine                         *
  *                                                                         *
@@ -240,31 +336,16 @@ int IPXManagerClass::Init(void)
 {
 	int i;
 
-	if (Session.Type != GAME_INTERNET) {
-
-		//------------------------------------------------------------------------
-		// Error if IPX not installed
-		//------------------------------------------------------------------------
-		if (!IPXStatus) {
-			return(0);
-		}
-
-		//------------------------------------------------------------------------
-		// Stop Listening
-		//------------------------------------------------------------------------
-		if (Listening) {
-			IPXConnClass::Stop_Listening();
-			Listening = 0;
-		}
-	} else {
-		/*
-		**	Pretend IPX is available for Internet games whether it is or not
-		*/
-		IPXStatus = 1;
+	//------------------------------------------------------------------------
+	// Stop Listening
+	//------------------------------------------------------------------------
+	if (Listening) {
+		IPXConnClass::Stop_Listening();
+		Listening = 0;
 	}
 
 	//------------------------------------------------------------------------
-	// Free protected-mode memory
+	// Free the channels left over from any previous session
 	//------------------------------------------------------------------------
 	if (GlobalChannel) {
 		delete GlobalChannel;
@@ -290,10 +371,9 @@ int IPXManagerClass::Init(void)
 	GlobalChannel->Set_TimeOut (Timeout);
 
 	//------------------------------------------------------------------------
-	// Configure the IPX Connections
+	// Configure the connections
 	//------------------------------------------------------------------------
-	IPXConnClass::Configure(Socket, ConnectionNum, /*ListenECB, SendECB,*/
-		FirstHeaderBuf, SendHeader, FirstDataBuf, SendBuf, /*Handler,*/ PacketLen);
+	IPXConnClass::Configure(ConnectionNum);
 
 	if (PacketTransport == NULL) {
 		return(0);
@@ -302,36 +382,12 @@ int IPXManagerClass::Init(void)
 	//------------------------------------------------------------------------
 	// Start Listening
 	//------------------------------------------------------------------------
-	if (Session.Type != GAME_INTERNET) {
-		if (!IPXConnClass::Start_Listening()) return(0);
-	}
+	if (!IPXConnClass::Start_Listening()) return(0);
 	Listening = 1;
 
 	return(1);
 
 }	/* end of Init */
-
-
-/***************************************************************************
- * IPXManagerClass::Is_IPX -- tells if IPX is installed or not             *
- *                                                                         *
- * INPUT:                                                                  *
- *      none.                                                              *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      1 = IPX is installed; 0 = isn't                                    *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/20/1994 BR : Created.                                              *
- *=========================================================================*/
-int IPXManagerClass::Is_IPX(void)
-{
-	return(IPXStatus);
-
-}	/* end of Is_IPX */
 
 
 /***************************************************************************
@@ -421,13 +477,6 @@ int IPXManagerClass::Create_Connection(int id, char *name,
 	IPXAddressClass *address)
 {
 	//------------------------------------------------------------------------
-	// Error if IPX not installed
-	//------------------------------------------------------------------------
-	if (!IPXStatus) {
-		return(0);
-	}
-
-	//------------------------------------------------------------------------
 	// Error if no more room
 	//------------------------------------------------------------------------
 	if (NumConnections==CONNECT_MAX) {
@@ -473,13 +522,6 @@ int IPXManagerClass::Create_Connection(int id, char *name,
 int IPXManagerClass::Delete_Connection(int id)
 {
 	int i,j;
-
-	//------------------------------------------------------------------------
-	// Error if IPX not installed
-	//------------------------------------------------------------------------
-	if (!IPXStatus) {
-		return(0);
-	}
 
 	//------------------------------------------------------------------------
 	// Error if no connections to delete
@@ -715,7 +757,7 @@ int IPXManagerClass::Send_Global_Message(void *buf, int buflen,
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening) return(0);
+	if (!Listening) return(0);
 
 	if (ack_req != 0 && (address == NULL || address->Is_Broadcast())) {
 		ack_req = 0;
@@ -756,7 +798,7 @@ int IPXManagerClass::Get_Global_Message(void *buf, int *buflen,
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening) return(0);
+	if (!Listening) return(0);
 
 	return(GlobalChannel->Get_Packet (buf, buflen, address, product_id));
 
@@ -791,7 +833,7 @@ int IPXManagerClass::Send_Private_Message(void *buf, int buflen, int ack_req,
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
 
-	if (!IPXStatus || !Listening || (NumConnections==0)) {
+	if (!Listening || (NumConnections==0)) {
 		return(0);
 	}
 
@@ -874,7 +916,7 @@ int IPXManagerClass::Get_Private_Message(void *buf, int *buflen, int *conn_id)
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening || (NumConnections==0)) {
+	if (!Listening || (NumConnections==0)) {
 		return(0);
 	}
 
@@ -955,10 +997,9 @@ int IPXManagerClass::Service(void)
 			temp_address_len = sizeof (temp_address);
 			packetlen = PacketTransport->Read ( temp_receive_buffer, temp_receive_buffer_len, temp_address, temp_address_len );
 			if ( packetlen ) {
-				CurDataBuf = (char*)temp_receive_buffer;
 				address = *((IPXAddressClass*) temp_address);
 
-				packet = (CommHeaderType *)CurDataBuf;
+				packet = (CommHeaderType *)temp_receive_buffer;
 				if (packet->MagicNumber == GlobalChannel->Magic_Num()) {
 
 					/*
@@ -992,7 +1033,9 @@ int IPXManagerClass::Service(void)
 						}
 
 						if (!found_address) {
-							if ( Session.Type == GAME_INTERNET && !ScenarioInit)
+							// A tunnel ID names a player rather than a place, so it cannot
+							// go stale the way an address a player moved away from can.
+							if ( TransportMode != TRANSPORT_TUNNEL && !ScenarioInit)
 							{
 								/*
 								**	This packet came from an unknown source. If it looks like one of our players
@@ -1111,7 +1154,7 @@ int IPXManagerClass::Global_Num_Send(void)
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening) {
+	if (!Listening) {
 		return(0);
 	}
 
@@ -1140,7 +1183,7 @@ int IPXManagerClass::Global_Num_Receive(void)
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening) {
+	if (!Listening) {
 		return(0);
 	}
 
@@ -1172,7 +1215,7 @@ int IPXManagerClass::Private_Num_Send(int id)
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening || (NumConnections==0)) {
+	if (!Listening || (NumConnections==0)) {
 		return(0);
 	}
 
@@ -1229,7 +1272,7 @@ int IPXManagerClass::Private_Num_Receive(int id)
 	//------------------------------------------------------------------------
 	// Error if IPX not installed or not Listening
 	//------------------------------------------------------------------------
-	if (!IPXStatus || !Listening || (NumConnections==0))
+	if (!Listening || (NumConnections==0))
 		return(0);
 
 	//------------------------------------------------------------------------
@@ -1260,32 +1303,6 @@ int IPXManagerClass::Private_Num_Receive(int id)
 	}
 
 }	/* end of Private_Num_Receive */
-
-
-/***************************************************************************
- * IPXManagerClass::Set_Socket -- sets socket ID for all connections       *
- *                                                                         *
- * INPUT:                                                                  *
- *      socket   new socket ID to use                                      *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      Do not call this function after communications have started; you   *
- *      must call it before calling Init().                                *
- *      The socket number is byte-swapped, since IPX requires socket ID's  *
- *      to be stored high/low.                                             *
- *                                                                         *
- * HISTORY:                                                                *
- *   01/25/1995 BR : Created.                                              *
- *=========================================================================*/
-void IPXManagerClass::Set_Socket(unsigned short socket)
-{
-	Socket = (unsigned short)( (((unsigned int)socket & 0x00ff) << 8) |
-		(((unsigned int)socket & 0xff00) >> 8));
-
-}	/* end of Set_Socket */
 
 
 /***************************************************************************
@@ -1559,34 +1576,6 @@ void * IPXManagerClass::Oldest_Send(void)
 
 
 /***************************************************************************
- * IPXManagerClass::Set_Bridge -- prepares to cross a bridge               *
- *                                                                         *
- * This routine is designed to prevent the connection from having to       *
- * call Get_Local_Target, except the minimum number of times, since that   *
- * routine is buggy & goes away for long periods sometimes.                *
- *                                                                         *
- * INPUT:                                                                  *
- *      bridge      network number of the destination bridge               *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none                                                               *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none                                                               *
- *                                                                         *
- * HISTORY:                                                                *
- *   07/06/1995 BRR : Created.                                             *
- *=========================================================================*/
-void IPXManagerClass::Set_Bridge(NetNumType bridge)
-{
-	if (GlobalChannel) {
-		GlobalChannel->Set_Bridge(bridge);
-	}
-
-}	/* end of Set_Bridge */
-
-
-/***************************************************************************
  * IPXManagerClass::Configure_Debug -- sets up special debug values        *
  *                                                                         *
  * Mono_Debug_Print2() can look into a packet to pull out a particular     *
@@ -1686,18 +1675,6 @@ void IPXManagerClass::Mono_Debug_Print(int index, int refresh)
 
 	Mono_Set_Cursor (59,2);
 	Mono_Printf ("%d  ", ReceiveOverflows);
-
-	for (i = 0; i < NumBufs; i++) {
-		if (BufferFlags[i]) {
-			txt[i] = 'X';
-		}
-		else {
-			txt[i] = '_';
-		}
-	}
-	txt[i] = 0;
-	Mono_Set_Cursor ((80-NumBufs)/2,3);
-	Mono_Printf ("%s",txt);
 
 #else
 	index = index;

@@ -33,14 +33,12 @@
 #include "sounddlg.h"
 #include "stimer.h"
 #include "surface.h"
-#include "wspipx.h"
 #include "wwmouse.h"
 
 #include "color.hh"
 
 
 BOOL CALLBACK Main_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-BOOL CALLBACK IPX_Options_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK Display_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 bool Change_Display_Mode(int width, int height);
 bool Test_Display_Mode_Dialog(int width, int height);
@@ -135,25 +133,6 @@ void Main_Options_Dialog(void)
 			}
 			break;
 
-			case IDC_OPTMAIN_NETWORK: {
-				in_rc = -1;
-				in_handle = OwnerDraw::Begin_Dialog(IDD_OPT_IPX, IPX_Options_Proc);
-				if (in_handle) {
-					SetWindowLong(in_handle, DWL_USER, (LONG)&in_rc);
-					OwnerDraw::Display_Dialog(in_handle);
-
-					while (in_rc < 0) {
-						if (OwnerDraw::Dialog_Message_Handler() == true) {
-							break;
-						}
-						Title_Screen_Restore();
-					}
-
-					OwnerDraw::End_Dialog(in_handle);
-				}
-			}
-			break;
-
 			case IDC_OPTMAIN_KEYBOARD:
 				Options.Hotkey_Dialog();
 				break;
@@ -201,152 +180,6 @@ BOOL CALLBACK Main_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 		}
 		return(0);
 	}
-	return(rc);
-}
-
-
-/// <summary>
-/// Handles the network options dialog.
-/// This routine lists the IPX addresses of the network cards bound to the machine and lets
-/// the player choose one, along with the socket number and destination network to use. The
-/// socket and destination network are validated before the options are accepted.
-/// </summary>
-BOOL CALLBACK IPX_Options_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-	static int _current_ipx = -1;
-
-	HWND handle;
-	int i;
-	bool inited;
-	int *result;
-	char socket_string[16];
-	char addr_string[32];
-	char addr_str[64];
-
-	int rc = OwnerDraw::Default_Dialog_Proc(window, message, wparam, lparam);
-
-	if (rc == 0) {
-		result = (int *)GetWindowLong(window, DWL_USER);
-
-		switch (message) {
-			case WM_INITDIALOG: {
-				HWND combobox = GetDlgItem(window, IDC_IPX_NETCARD);
-
-				inited = false;
-				if (PacketTransport == NULL) {
-					PacketTransport = new IPXInterfaceClass;
-					PacketTransport->Init();
-					inited = true;
-				}
-
-				if (PacketTransport != NULL) {
-					DebugString("Creating IPX Interface\n");
-					IPXInterfaceClass *ipxi = (IPXInterfaceClass *)PacketTransport;
-					for ( i = 0; ipxi->Get_Network_Card_Address_As_String(i, addr_str, sizeof(addr_str)); ++i )
-					{
-						DebugString("Got address for network card %d\n", i);
-						DebugString("Address is %s\n", addr_str);
-						if (ComboBox_FindString(combobox, 0, addr_str) != -1) {
-							break;
-						}
-						ComboBox_AddString(combobox, addr_str);
-					}
-				}
-
-				if (inited) {
-					delete PacketTransport;
-					PacketTransport = NULL;
-				}
-
-				if (ComboBox_GetCount(combobox) == 0) {
-					ComboBox_AddString(combobox, Fetch_String(TXT_NO_BOUND_NET_CARD));
-				}
-				int netcard = Options.NetCard;
-				if (netcard < 0 || netcard >= ComboBox_GetCount(combobox)) {
-					netcard = 0;
-				}
-				ComboBox_SetCurSel(combobox, netcard);
-
-
-				_current_ipx = -1;
-				handle = GetDlgItem(window, IDC_IPX_SOCKET);
-				if (Options.Socket != 0xFFFF) {
-					sprintf(socket_string, "%d", Options.Socket);
-					Edit_SetText(handle, socket_string);
-				}
-				Edit_LimitText(handle, 5);
-				handle = GetDlgItem(window, IDC_IPX_DESTNET);
-				if (strlen(Options.DestNet)) {
-					Edit_SetText(handle, Options.DestNet);
-				}
-				Edit_LimitText(handle, 11);
-				return(0);
-			}
-
-			case WM_COMMAND: {
-				switch (LOWORD(wparam)) {
-					case IDOK:
-						handle = GetDlgItem(window, IDC_IPX_SOCKET);
-						GetWindowText(handle, socket_string, sizeof(socket_string));
-						unsigned short socket;
-						if ( strlen(socket_string) )
-						{
-							socket = atoi(socket_string);
-							if (strlen(socket_string) > 5 || socket > 16383) {
-								WWMessageBox().Process(TXT_INVALID_SOCKET, TXT_OK);
-								return(0);
-							}
-						} else {
-							socket = -1;
-						}
-						handle = GetDlgItem(window, IDC_IPX_DESTNET);
-						GetWindowText(handle, addr_string, sizeof(addr_string));
-						strncpy(addr_str, addr_string, sizeof(addr_string));
-
-						if (strlen(addr_string)) {
-							int i = 0;
-							char *octet = strtok(addr_string, ".");
-							int net[4];
-							net[0] = -1;
-							net[1] = -1;
-							net[2] = -1;
-							net[3] = -1;
-							if (octet != NULL) {
-								while (octet) {
-									sscanf(octet, "%x", &net[i]);
-									i++;
-									octet = strtok(NULL, ".");
-								}
-							}
-							if ((unsigned char)net[0] != net[0] || (unsigned char)net[1] != net[1] || (unsigned char)net[2] != net[2] || (unsigned char)net[3] != net[3]) {
-								WWMessageBox().Process(TXT_DESTNET_ADDR_ERROR, TXT_OK);
-								return(0);
-							}
-						}
-
-						handle = GetDlgItem(window, IDC_IPX_NETCARD);
-						Options.NetCard = ComboBox_GetCurSel(handle);
-						Options.Socket = socket;
-						strcpy(Options.DestNet, addr_str);
-						break;
-
-					case IDCANCEL:
-						break;
-
-					case IDC_IPX_NETCARD:
-						handle = GetDlgItem(window, IDC_IPX_NETCARD);
-						_current_ipx = ComboBox_GetCurSel(handle);
-						return(0);
-
-					default:
-						return(0);
-				}
-				*result = 2;
-			}
-		}
-		rc = 0;
-	}
-
 	return(rc);
 }
 

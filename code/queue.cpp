@@ -4496,11 +4496,8 @@ static void Print_CRCs(EventClass *ev)
 	for (i = 0; i < MAX_PLAYERS; i++) {
 		MPStatsType *stat = &Session.ConnectionStats[i];
 		if (*stat->Name != '\0') {
-			NetNumType net;
-			NetNodeType node;
-			stat->Address.Get_Address(net, node);
 			fprintf(fp, "\nName: %s\n", stat->Name);
-			fprintf(fp, "Address: %d.%d.%d.%d\n", node[0], node[1], node[2], node[3]);
+			fprintf(fp, "Address: %s\n", stat->Address.As_String());
 			fprintf(fp, "Max avg round trip: %d\n", stat->MaxAvgRoundTrip);
 			fprintf(fp, "Max round trip: %d\n", stat->MaxRoundTrip);
 			fprintf(fp, "Resends: %d\n", stat->Resends);

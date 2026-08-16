@@ -213,7 +213,6 @@ SessionClass::SessionClass(void)
 	Play = 0;                           // set via command line
 	Attract = 0;                        // set via command line
 
-	IsBridge = 0;
 	NetStealth = 0;
 	NetProtect = 1;
 	NetOpen = 0;
@@ -337,8 +336,6 @@ void SessionClass::Init(void)
 int SessionClass::Create_Connections(void)
 {
 	int i;
-	NetNumType net;
-	NetNodeType node;
 
 	DebugString("Entering Create_Connections\n");
 
@@ -365,13 +362,7 @@ int SessionClass::Create_Connections(void)
 
 			Houses[Players[i]->Player.ID]->SquadID = Players[i]->Player.SquadID;
 
-			Session.Players[i]->Address.Get_Address(net, node);
-
-			unsigned int ip=0;
-			for (int k = 0; k < 4; k++) {
-				ip <<= 8;
-				ip |= node[k];
-			}
+			unsigned int ip = ntohl(Session.Players[i]->Address.Get_IP());
 
 			DebugString("House[%d] IP = %X  Clan=%d\n",Players[i]->Player.ID, ip, Players[i]->Player.SquadID);
 
@@ -549,9 +540,6 @@ void SessionClass::Read_MultiPlayer_Settings(void)
 bool SessionClass::Log_To_File(FILE *out)
 {
 	int i;
-	int j;
-	NetNumType net;
-	NetNodeType node;
 
 	if (Session.Options.ScenarioIndex < 0) {
 		fprintf(out, "BOGUS scenario index!?!\n");
@@ -562,31 +550,11 @@ bool SessionClass::Log_To_File(FILE *out)
 	fprintf(out, "Handle = %s\n", Handle);
 
 	for (i = 0; i < NumPlayers; i++) {
-		Session.Players[i]->Address.Get_Address(net,node);
-		fprintf(out, "Player Addr[%d] = ", i);
-		for (j = 0; j < sizeof(NetNumType); j++) {
-			fprintf(out, "%02X", net[j]);
-		}
-		fprintf(out,":");
-		for (j = 0; j < sizeof(NetNodeType); j++) {
-			fprintf(out, "%02X", node[j]);
-		}
-		fprintf(out, "\n");
+		fprintf(out, "Player Addr[%d] = %s\n", i, Session.Players[i]->Address.As_String());
 	}
 	fprintf(out, "\n");
 
-	Session.HostAddress.Get_Address(net, node);
-	fprintf(out, "Address = ");
-	for (i = 0; i < sizeof(NetNumType); i++) {
-		fprintf(out, "%02X", net[i]);
-	}
-
-	fprintf(out,":");
-	for (i = 0; i < sizeof(NetNodeType); i++) {
-		fprintf(out, "%02X", node[i]);
-	}
-
-	fprintf(out,"\n\n");
+	fprintf(out, "Address = %s\n\n", Session.HostAddress.As_String());
 	fprintf(out,"MaxAhead = %d\n", MaxAhead);
 	fprintf(out,"LoadGame = %d\n", LoadGame);
 	fprintf(out,"PrefColor = %d\n", PrefColor);

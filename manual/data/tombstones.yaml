@@ -72,3 +72,35 @@
   search_aliases:
     - PhoneIndex
   summary: Remembered the last phone book entry dialed. Removed with modem and null-modem play.
+- type: key
+  id: Socket
+  route: /keys/socket/
+  search_aliases:
+    - Socket
+  summary: Chose the IPX socket the game communicated over. Removed with IPX network play.
+- type: key
+  id: NetCard
+  route: /keys/netcard/
+  search_aliases:
+    - NetCard
+  summary: Chose which network adapter an IPX game played over. Removed with IPX network play.
+- type: key
+  id: DestNet
+  route: /keys/destnet/
+  search_aliases:
+    - DestNet
+  summary: Named a network across a bridge for IPX broadcasts to reach. Removed with IPX network play.
+- type: command
+  id: launch:destination-network
+  route: /using/command-line/destination-network/
+  search_aliases:
+    - -DESTNET
+    - IPX destination network
+  summary: Set the IPX bridge destination network at launch. Removed with IPX network play.
+- type: command
+  id: launch:socket
+  route: /using/command-line/socket/
+  search_aliases:
+    - -SOCKET
+    - IPX socket offset
+  summary: Selected an IPX socket offset at launch. Removed with IPX network play.

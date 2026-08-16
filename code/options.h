@@ -67,7 +67,6 @@ class OptionsClass {
 		void Load_Settings(void);
 		void Save_Settings(void);
 
-		void Setup_Dest_Net(void);
 		void Set(void);
 
 		/*
@@ -152,25 +151,6 @@ class OptionsClass {
 		 * sound driver stays in step with the video; a real driver has it zeroed instead.
 		 */
 		unsigned short SoundLatency;
-
-		/*
-		 * This is the IPX socket the game communicates over. A socket below 0x4000 is biased up
-		 * into the dynamic range before use, and 0xFFFF means to take the default socket.
-		 */
-		unsigned short Socket;
-
-		/*
-		 * This is which network adapter to send over on a machine that has more than one,
-		 * expressed as an index into the adapter list. It defaults to zero, the first one.
-		 */
-		int NetCard;
-
-		/*
-		 * This is the address of a network on the far side of a bridge, written as dot
-		 * separated hexadecimal bytes. When one is given the game broadcasts there as well as
-		 * locally, so that players on either side of a router can find each other.
-		 */
-		char DestNet[64];
 
 		/*
 		**	These are the hotkeys used for keyboard control.

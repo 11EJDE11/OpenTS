@@ -82,11 +82,7 @@ class IPXConnClass : public ConnectionClass
 		It's static because it doesn't apply to any specific connection, but
 		all of them.
 		.....................................................................*/
-		static void Configure(unsigned short socket,
-			int conn_num, /*ECBType *listen_ecb, ECBType *send_ecb,*/
-			IPXHeaderType *listen_header, IPXHeaderType *send_header,
-			char *listen_buf, char *send_buf, /*long handler_rm_ptr,*/
-			int maxpacketlen);
+		static void Configure(int conn_num);
 
 		/*.....................................................................
 		These routines tell IPX to start listening for packets, and to stop
@@ -98,19 +94,12 @@ class IPXConnClass : public ConnectionClass
 		static int Stop_Listening (void);
 
 		/*.....................................................................
-		The Destination IPX Address for this connection
+		The Destination address for this connection
 		.....................................................................*/
 		IPXAddressClass Address;
 
 		/*.....................................................................
-		The "Immediate" (Bridge) address for this connection, and a flag
-		telling if the address has been precomputed.
-		.....................................................................*/
-		NetNodeType ImmediateAddress;
-		int Immed_Set;
-
-		/*.....................................................................
-		Each IPX Connection can have a Name & Unique numerical ID
+		Each Connection can have a Name & Unique numerical ID
 		.....................................................................*/
 		int ID;
 		char Name[CONN_NAME_MAX];
@@ -127,59 +116,20 @@ class IPXConnClass : public ConnectionClass
 		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen) override;
 
 		/*.....................................................................
-		These are the routines that access IPX.  Open_Socket & Close_Socket are
-		static because they're called by Start_Listening & Stop_Listening.
-		Send_To & Broadcast are static since they're direct interfaces to IPX,
-		and there's only one IPX instance running.
+		These are the routines that access the transport.  Open_Socket &
+		Close_Socket are static because they're called by Start_Listening &
+		Stop_Listening.  Send_To & Broadcast are static since they're direct
+		interfaces to the transport, and there's only one instance running.
 		.....................................................................*/
-		static int Open_Socket(unsigned short socket);
-		static void Close_Socket(unsigned short socket);
-		static int Send_To(char *buf, int buflen, IPXAddressClass *address,
-			NetNodeType immed);
+		static int Open_Socket(void);
+		static void Close_Socket(void);
+		static int Send_To(char *buf, int buflen, IPXAddressClass *address);
 		static int Broadcast(char *buf, int buflen);
-
-		/*.....................................................................
-		The socket ID for this connection
-		.....................................................................*/
-		static unsigned short Socket;
 
 		/*.....................................................................
 		User's local Connection # (0 = not logged in)
 		.....................................................................*/
 		static int ConnectionNum;
-
-		/*.....................................................................
-		This is a static version of MaxPacketLen, which is the size of the
-		app's packets, plus our internal CommHeaderType.  It's used in the
-		Start_Listening routine.
-		.....................................................................*/
-		static int PacketLen;
-
-		/*.....................................................................
-		Variables for Listening (created by the IPXManagerClass, and passed
-		in via Init).  All IPX connections share these buffers.
-		.....................................................................*/
-		//static ECBType *ListenECB;
-		static IPXHeaderType *ListenHeader;
-		static char *ListenBuf;
-
-		/*.....................................................................
-		Variables for Sending (created by the IPXManagerClass, and passed
-		in via Init).  All IPX connections share these buffers.
-		.....................................................................*/
-		//static ECBType *SendECB;
-		static IPXHeaderType *SendHeader;
-		static char *SendBuf;
-
-		/*.....................................................................
-		This is a REAL-MODE pointer to the event-service-routine for IPX.
-		If it's 0, IPX will operate in polled mode.  Otherwise, the high word
-		must contain the segment, and the low word must contain the offset.
-		CS will be the high word value when the routine is called.  (Requiring
-		the segment/offset to be computed by the caller gives the caller
-		control over CS.)
-		.....................................................................*/
-		//static long Handler;
 
 		/*.....................................................................
 		This status flag tells us if Configure() has been called or not.

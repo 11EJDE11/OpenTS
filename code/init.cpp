@@ -173,7 +173,6 @@
 #include "winstub.h"
 #include "wonline.h"
 #include "worlddom.h"
-#include "wspipx.h"
 #include "wsproto.h"
 #include "wspudp.h"
 #include "wwfont.h"
@@ -988,149 +987,6 @@ static bool Init_Rules(void)
 }
 
 
-/// <summary>
-/// Handles the messages for the network protocol choice dialog.
-/// This routine ends the dialog with a one for IPX, a two for UDP, and a zero if the
-/// player backed out without choosing.
-/// </summary>
-BOOL CALLBACK Pick_Protocol_Dialog(HWND window, UINT message, WPARAM wparam, LPARAM /*lparam*/)
-{
-	switch (message) {
-		case WM_COMMAND:
-			switch ((int)wparam) {
-				case IDCANCEL:
-					EndDialog(window, 0);
-					break;
-
-				case IDC_PROTOCOL_IPX:
-					EndDialog(window, 1);
-					break;
-
-				case IDC_PROTOCOL_UDP:
-					EndDialog(window, 2);
-					break;
-			}
-			break;
-	}
-	return(FALSE);
-}
-
-
-/// <summary>
-/// Registers every address in the shared pool as a broadcast target.
-/// This routine is a development aid. It lets machines sitting on separate subnets find
-/// each other, where a plain broadcast would never reach.
-/// </summary>
-void Set_Broadcast_Addresses(void)
-{
-	static char _path[] = {"\\\\Lore\\Projects\\Projects\\C&C2\\ip_pool\\*.*"};
-
-	WIN32_FIND_DATA fd;
-	char filename[512];
-
-	char hostname[128];
-	PacketTransport->Get_Host_Name(hostname, sizeof(hostname));
-
-	HANDLE handle = FindFirstFile(_path, &fd);
-
-	if (handle != INVALID_HANDLE_VALUE) {
-		do {
-			if (strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0) {
-
-				strcpy(filename, _path);
-				strcpy(filename + strlen(filename) - 3, fd.cFileName);
-
-				RawFileClass file(filename);
-
-				if (file.Is_Available()) {
-					char *buf = new char[fd.nFileSizeLow];
-					unsigned int size = file.Read(buf, fd.nFileSizeLow);
-
-					buf[size] = '\0';
-					if (buf[size - 1] == '\r' || buf[size - 1] == '\n') {
-						buf[size - 1] = '\0';
-					}
-					if (buf[size - 2] == '\r' || buf[size - 1] == '\n') {
-						buf[size - 2] = '\0';
-					}
-
-					if (size == fd.nFileSizeLow) {
-						PacketTransport->Set_Broadcast_Address(buf);
-					}
-
-					delete [] buf;
-				}
-			}
-		} while (FindNextFile(handle, &fd) != 0);
-	}
-}
-
-
-int TotalLocalAddresses = 0;
-
-
-/// <summary>
-/// Publishes this machine's network addresses into the shared pool.
-/// This routine is a development aid. It writes one file per local address into a shared
-/// directory that the other machines read in order to find each other.
-/// </summary>
-void Write_Local_Addresses(void)
-{
-	static char _path[] = {"\\\\Lore\\Projects\\Projects\\C&C2\\ip_pool\\"};
-
-	char filename[512];
-	strcpy(filename, _path);
-
-	char hostname[128];
-	PacketTransport->Get_Host_Name(hostname, sizeof(hostname));
-
-	strcat(filename, hostname);
-	strcat(filename, ".000");
-
-	int num = PacketTransport->Get_Num_Local_Addresses();
-	TotalLocalAddresses = num;
-
-	for (int i = 0; i < num; i++) {
-		unsigned char *local_addr = PacketTransport->Get_Local_Address(i);
-
-		filename[strlen(filename) - 1] = '0' + i;
-		RawFileClass file(filename);
-
-		char addr[20];
-		sprintf(addr,"%d.%d.%d.%d", local_addr[0], local_addr[1], local_addr[2], local_addr[3]);
-		file.Write(addr, strlen(addr));
-	}
-}
-
-
-/// <summary>
-/// Removes this machine's address files from the shared pool.
-/// This routine is the counterpart to Write_Local_Addresses, and is used to tidy up after
-/// the machine when it leaves.
-/// </summary>
-void Delete_Local_Addresses(void)
-{
-	if (PacketTransport != NULL) {
-		static char _path[] = {"\\\\Lore\\Projects\\Projects\\C&C2\\ip_pool\\"};
-
-		char filename[512];
-		strcpy(filename, _path);
-
-		char hostname[128];
-		if (PacketTransport->Get_Host_Name(hostname, sizeof(hostname))) {
-
-			strcat(filename, hostname);
-			strcat(filename, ".000");
-
-			for (int i = 0; i < TotalLocalAddresses; i++) {
-				filename[strlen(filename) - 1] = '0' + i;
-				DeleteFile(filename);
-			}
-		}
-	}
-}
-
-
 /***********************************************************************************************
  * Select_Game -- The game's main menu                                                         *
  *                                                                                             *
@@ -1257,10 +1113,8 @@ restart:
 			/*
 			**	Display menu and fetch selection from player.
 			*/
-			if (PacketTransport != NULL) {
-				delete PacketTransport;
-				PacketTransport = NULL;
-				Ipx.Init();
+			if (PacketTransport) {
+				Ipx.Shutdown();
 			}
 
 			if ((selection == SEL_NONE) && !Debug_ForceScenario) {
@@ -1409,11 +1263,6 @@ restart:
 						case GAME_INTERNET: {
 							Cheat_Disable();
 
-							if (PacketTransport != NULL) {
-								delete PacketTransport;
-								PacketTransport = NULL;
-							}
-
 							OwnerDraw::Capture_Mouse();
 
 							/*
@@ -1423,18 +1272,12 @@ restart:
 								HouseTypes[house]->Read_INI(*RuleINI);
 							}
 
-							if (PacketTransport == NULL) {
-								PacketTransport = new UDPInterfaceClass;
-							}
-
-							assert(PacketTransport != NULL);
+							Ipx.Configure_WOL();
 							Session.CommProtocol = COMM_PROTOCOL_MULTI_E_COMP;
 
-							PacketTransport->Open_Socket(0);
 							Ipx.Set_Timing(TIMER_SECOND / 2, (unsigned int)-1, 10 * TIMER_SECOND);
 							DebugString("About to initialise the network code\n");
 							bool success = Init_Network();
-							PacketTransport->Start_Listening();
 
 							OwnerDraw::Release_Mouse();
 
@@ -1502,20 +1345,12 @@ restart:
 									Set_Palette(BlackPalette, FADE_PALETTE_SLOW);
 								}
 
-								if (PacketTransport != NULL) {
-									delete PacketTransport;
-								}
-
-								PacketTransport = NULL;
+								Ipx.Shutdown();
 								return(false);
 							}
 
 							if (res == WONLINE_BACK) {
-								if (PacketTransport != NULL) {
-									delete PacketTransport;
-								}
-
-								PacketTransport = NULL;
+								Ipx.Shutdown();
 								selection = SEL_NONE;
 								Session.Type = GAME_NORMAL;
 								Theme.Play_Song(Fetch_Main_Menu_Theme());
@@ -1532,14 +1367,7 @@ restart:
 									Session.Type = GAME_NORMAL;
 									selection = SEL_NONE;
 
-									if (PacketTransport != NULL) {
-										/*
-										** We failed to connect to the other player
-										*/
-										delete PacketTransport;
-									}
-
-									PacketTransport = NULL;
+									Ipx.Shutdown();
 									protocol = -1;
 								}
 							}
@@ -1559,16 +1387,11 @@ restart:
 							break;
 
 						/*
-						**	Network (IPX): start a new network game.
+						**	Network: start a new local network game.
 						*/
 						case GAME_IPX: {
 							Cheat_Disable();
 							Session.Read_MultiPlayer_Settings();
-
-							if (PacketTransport != NULL) {
-								delete PacketTransport;
-								PacketTransport = NULL;
-							}
 
 							/*
 							**	Fetch the house attribute override values.
@@ -1580,29 +1403,22 @@ restart:
 							Session.Type = GAME_IPX;
 							Session.CommProtocol = COMM_PROTOCOL_MULTI_E_COMP;
 
-							if (PacketTransport == NULL) {
-								PacketTransport = new IPXInterfaceClass;
-								assert(PacketTransport != NULL);
+							Ipx.Configure_LAN();
 
-								/*
-								**	Init network system & remote-connect
-								*/
-								Draw_Menu_Background();
+							/*
+							**	Init network system & remote-connect
+							*/
+							Draw_Menu_Background();
 
-								if (Net2Init_Network() && Net2Remote_Connect()) {
-									process = false;
-									Theme.Stop(true);
-								} else {
-									// user hit cancel, or init failed
-									Session.Type = GAME_NORMAL;
-									selection = SEL_NONE;
+							if (Net2Init_Network() && Net2Remote_Connect()) {
+								process = false;
+								Theme.Stop(true);
+							} else {
+								// user hit cancel, or init failed
+								Session.Type = GAME_NORMAL;
+								selection = SEL_NONE;
 
-									if (PacketTransport != NULL) {
-										delete PacketTransport;
-									}
-
-									PacketTransport = NULL;
-								}
+								Ipx.Shutdown();
 							}
 						}
 						break;
@@ -1701,7 +1517,6 @@ restart:
 		//Scen.Set_Scenario_Name("SCG01EA.INI");
 	}
 
-	//Delete_Local_Addresses();
 	/*
 	**	Don't carry stray keystrokes into game.
 	*/
@@ -1992,60 +1807,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 		*/
 		if (strstr(string, "-CD")) {
 			CCFileClass::Set_Search_Drives(&string[3]);
-			continue;
-		}
-
-		/*
-		**	Specify destination connection for network play
-		*/
-		if (strstr(string, "-DESTNET")) {
-			NetNumType net;
-			NetNodeType node;
-
-			/*
-			**	Scan the command-line string, pulling off each address piece
-			*/
-			int i = 0;
-			char * p = strtok(string + 8, ".");
-
-			while (p) {
-				int x;
-
-				sscanf(p, "%x", &x);			// convert from hex string to int
-
-				if (i < 4) {
-					net[i] = (char)x;			// fill NetNum
-				} else {
-					node[i-4] = (char)x;		// fill NetNode
-				}
-
-				i++;
-				p = strtok(NULL, ".");
-			}
-
-			/*
-			**	If all the address components were successfully read, fill in the
-			**	BridgeNet with a broadcast address to the network across the bridge.
-			*/
-			if (i >= 4) {
-				Session.IsBridge = 1;
-				memset(node, 0xff, 6);
-				Session.BridgeNet = IPXAddressClass(net, node);
-			}
-			continue;
-		}
-
-		/*
-		**	Specify socket ID, as an offset from 0x4000.
-		*/
-		if (strstr(string, "-SOCKET")) {
-			unsigned short socket;
-
-			socket = (unsigned short)(atoi(string + strlen("SOCKET")));
-			socket += (unsigned short)0x4000;
-			if (socket >= 0x4000 && socket < 0x8000) {
-				Ipx.Set_Socket(socket);
-			}
 			continue;
 		}
 

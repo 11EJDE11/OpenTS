@@ -698,10 +698,8 @@ class SessionClass
 		unsigned Attract			 	: 1;
 
 		//.....................................................................
-		// IPX-specific variables
+		// Network-specific variables
 		//.....................................................................
-		int IsBridge;                                   // 1 = we're crossing a bridge
-		IPXAddressClass BridgeNet;                      // address of bridge
 		bool NetStealth;                                // makes us invisible
 		bool NetProtect;                                // keeps others from messaging us
 		bool NetOpen;                                   // 1 = game is open for joining

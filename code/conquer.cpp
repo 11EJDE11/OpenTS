@@ -1464,11 +1464,8 @@ void Print_MP_Stats(void)
 					continue;
 				}
 
-				NetNumType net;
-				NetNodeType node;
-				stats.Address.Get_Address(net, node);
 				fprintf(file, "\nName: %s\n", stats.Name);
-				fprintf(file, "Address: %d.%d.%d.%d\n", node[0], node[1], node[2], node[3]);
+				fprintf(file, "Address: %s\n", stats.Address.As_String());
 				fprintf(file, "Max avg round trip: %d\n", stats.MaxAvgRoundTrip);
 				fprintf(file, "Max round trip: %d\n", stats.MaxRoundTrip);
 				fprintf(file, "Resends: %d\n", stats.Resends);

@@ -54,19 +54,10 @@
 /*
 ********************************* Globals ***********************************
 */
-unsigned short 	IPXConnClass::Socket;
 int			 		IPXConnClass::ConnectionNum;
-//ECBType *			IPXConnClass::ListenECB;
-IPXHeaderType *	IPXConnClass::ListenHeader;
-char *				IPXConnClass::ListenBuf;
-//ECBType *			IPXConnClass::SendECB;
-IPXHeaderType *	IPXConnClass::SendHeader;
-char *				IPXConnClass::SendBuf;
-//long 					IPXConnClass::Handler;
 int 					IPXConnClass::Configured = 0;
 int 					IPXConnClass::SocketOpen = 0;
 int 					IPXConnClass::Listening = 0;
-int					IPXConnClass::PacketLen;
 
 
 /***************************************************************************
@@ -100,9 +91,6 @@ IPXConnClass::IPXConnClass (int numsend, int numreceive, int maxlen,
 		60,         // timeout
 		extralen)   // (currently, this is only used by the Global Channel)
 {
-	NetNumType net;
-	NetNodeType node;
-
 	/*------------------------------------------------------------------------
 	Save the values passed in
 	------------------------------------------------------------------------*/
@@ -110,10 +98,6 @@ IPXConnClass::IPXConnClass (int numsend, int numreceive, int maxlen,
 		Address = (*address);
 	ID = id;
 	strcpy (Name, name);
-
-	Address.Get_Address(net,node);
-	memcpy(ImmediateAddress,node,6);
-	Immed_Set = 0;
 }	/* end of IPXConnClass */
 
 
@@ -145,51 +129,28 @@ void IPXConnClass::Init (void)
 /***************************************************************************
  * IPXConnClass::Configure -- One-time initialization routine              *
  *                                                                         *
- * This routine sets up static members that are shared by all IPX          *
+ * This routine sets up static members that are shared by all              *
  * connections (ie those variables used by the Send/Listen/Broadcast       *
  * routines).                                                              *
  *                                                                         *
  * INPUT:                                                                  *
- *      socket            socket ID for sending & receiving                *
- *      conn_num            local IPX Connection Number (0 = not logged in)*
- *      listen_ecb         ptr to ECBType for listening                    *
- *      send_ecb            ptr to ECBType for sending                     *
- *      listen_header      ptr to IPXHeaderType for listening              *
- *      send_header         ptr to IPXHeaderType for sending               *
- *      listen_buf         ptr to buffer for listening                     *
- *      send_buf            ptr to buffer for sending                      *
- *      handler_rm_ptr      REAL-MODE pointer to event service routine     *
- *                        (high word = segment, low word = offset)         *
- *      maxpacketlen      max packet size to listen for                    *
+ *      conn_num            local connection number (0 = not logged in)    *
  *                                                                         *
  * OUTPUT:                                                                 *
  *      none.                                                              *
  *                                                                         *
  * WARNINGS:                                                               *
- *      - All pointers must be protected-mode pointers, but must point to  *
- *        DOS real-mode memory (except the Handler segment/offset)         *
+ *      none.                                                              *
  *                                                                         *
  * HISTORY:                                                                *
  *   12/20/1994 BR : Created.                                              *
  *=========================================================================*/
-void IPXConnClass::Configure (unsigned short socket, int conn_num,
-	/*ECBType *listen_ecb, ECBType *send_ecb, */IPXHeaderType *listen_header,
-	IPXHeaderType *send_header, char *listen_buf, char *send_buf,
-	/*long handler_rm_ptr, */int maxpacketlen)
+void IPXConnClass::Configure (int conn_num)
 {
 	/*------------------------------------------------------------------------
 	Save the values passed in
 	------------------------------------------------------------------------*/
-	Socket = socket;
 	ConnectionNum = conn_num;
-	//ListenECB = listen_ecb;
-	//SendECB = send_ecb;
-	ListenHeader = listen_header;
-	SendHeader = send_header;
-	ListenBuf = listen_buf;
-	SendBuf = send_buf;
-	//Handler = handler_rm_ptr;
-	PacketLen = maxpacketlen;
 
 	Configured = 1;
 
@@ -222,7 +183,7 @@ int IPXConnClass::Start_Listening(void)
 	/*
 	**	Open the socket.
 	*/
-	SocketOpen = Open_Socket(Socket);
+	SocketOpen = Open_Socket();
 	if (!SocketOpen)
 		return(false);
 
@@ -233,7 +194,7 @@ int IPXConnClass::Start_Listening(void)
 		Listening =1;
 		return(true);
 	} else {
-		Close_Socket(Socket);
+		Close_Socket();
 		SocketOpen = false;
 		return(false);
 	}
@@ -288,12 +249,8 @@ int IPXConnClass::Send(char *buf, int buflen, void *, int)
 	/*------------------------------------------------------------------------
 	Invoke our own Send_To routine, filling in our Address as the destination.
 	------------------------------------------------------------------------*/
-	if (Immed_Set) {
-		return(Send_To (buf, buflen, &Address, ImmediateAddress));
-	}
-	else {
-		return(Send_To (buf, buflen, &Address, NULL));
-	}
+	return(Send_To (buf, buflen, &Address));
+
 }	/* end of Send */
 
 
@@ -302,7 +259,7 @@ int IPXConnClass::Send(char *buf, int buflen, void *, int)
  * IPXConnClass::Open_Socket -- opens communications socket                *
  *                                                                         *
  * INPUT:                                                                  *
- *      socket      desired socket ID number                               *
+ *      none.                                                              *
  *                                                                         *
  * OUTPUT:                                                                 *
  *      1 = OK, 0 = error                                                  *
@@ -313,12 +270,9 @@ int IPXConnClass::Send(char *buf, int buflen, void *, int)
  * HISTORY:                                                                *
  *   12/16/1994 BR : Created.                                              *
  *=========================================================================*/
-int IPXConnClass::Open_Socket(unsigned short socket)
+int IPXConnClass::Open_Socket(void)
 {
-	int rc;
-
-	PacketTransport->Set_NetCard(Options.NetCard);
-	rc = PacketTransport->Open_Socket(socket);
+	int rc = PacketTransport->Open_Socket(0);
 
 	SocketOpen = rc;
 	return( rc );
@@ -329,7 +283,7 @@ int IPXConnClass::Open_Socket(unsigned short socket)
  * IPXConnClass::Close_Socket -- closes the socket                         *
  *                                                                         *
  * INPUT:                                                                  *
- *      socket      desired socket ID number                               *
+ *      none.                                                              *
  *                                                                         *
  * OUTPUT:                                                                 *
  *      none.                                                              *
@@ -340,9 +294,8 @@ int IPXConnClass::Open_Socket(unsigned short socket)
  * HISTORY:                                                                *
  *   12/16/1994 BR : Created.                                              *
  *=========================================================================*/
-void IPXConnClass::Close_Socket(unsigned short socket)
+void IPXConnClass::Close_Socket(void)
 {
-	socket = socket;
 	PacketTransport->Close_Socket();
 	SocketOpen = 0;
 }	/* end of Close_Socket */
@@ -351,21 +304,10 @@ void IPXConnClass::Close_Socket(unsigned short socket)
 /***************************************************************************
  * IPXConnClass::Send_To -- sends the packet to the given address          *
  *                                                                         *
- * The "ImmediateAddress" field of the SendECB must be filled in with the  *
- * address of a bridge, or the node address of the destination if there    *
- * is no bridge.  The NETX call to find this address will always crash     *
- * if NETX isn't loaded (ConnectionNum is 0), so this case is trapped &    *
- * prevented.                                                              *
- * Also, if the address of this IPX connection is known when the           *
- * constructor is called, and Configure has been called, Get_Local_Target  *
- * is called to precompute the ImmediateAddress; this case is detected &   *
- * if the value is already computed, it's just memcpy'd over.              *
- *                                                                         *
  * INPUT:                                                                  *
  *      buf         buffer to send                                         *
  *      buflen      length of buffer                                       *
  *      address      Address to send to                                    *
- *      immed         ImmediateAddress value, NULL if none                 *
  *                                                                         *
  * OUTPUT:                                                                 *
  *      1 = OK, 0 = error                                                  *
@@ -376,20 +318,9 @@ void IPXConnClass::Close_Socket(unsigned short socket)
  * HISTORY:                                                                *
  *   12/16/1994 BR : Created.                                              *
  *=========================================================================*/
-int IPXConnClass::Send_To(char *buf, int buflen, IPXAddressClass *address,
-	NetNodeType immed)
+int IPXConnClass::Send_To(char *buf, int buflen, IPXAddressClass *address)
 {
-	IPXAddressClass addr;
-
-	addr = *address;
-
-	if (immed) {
-		NetNodeType node;
-		NetNumType net;
-		address->Get_Address(net, node);
-		memcpy(net, immed, sizeof(net));
-		addr.Set_Address(net, node);
-	}
+	IPXAddressClass addr = *address;
 
 	if (PacketTransport) {
 		PacketTransport->WriteTo ( (void*)buf, buflen, (void*) &addr , sizeof(IPXAddressClass));

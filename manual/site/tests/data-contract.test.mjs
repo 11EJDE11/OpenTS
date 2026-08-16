@@ -235,7 +235,7 @@ test('Other INI references are file-first, ordered, and use selector labels', ()
 	assert.deepEqual(OTHER_INI_FILES.map((file) => file.id), ['sun', 'campaigns', 'sounds', 'themes']);
 	const groups = referenceGroups(keys, 'other');
 	assert.deepEqual(groups.map((group) => group.slug), [
-		'intro', 'options', 'video', 'audio', 'network', 'wonline', 'multiplayer', 'syncbug',
+		'intro', 'options', 'video', 'audio', 'wonline', 'multiplayer', 'syncbug',
 		'campaign', 'sounds', 'themes',
 	]);
 	assert.equal(groups.find((group) => group.slug === 'options').displayTitle, '[Options] in SUN.INI');

@@ -455,7 +455,6 @@ IPXManagerClass Ipx(
 	MAX_IPX_PACKET_SIZE,
 	160,                                        // # entries in Global Queue
 	32,                                         // # entries in Private Queues
-	VIRGIN_SOCKET,                              // Socket ID #
 	IPXGlobalConnClass::COMMAND_AND_CONQUER2);  // Product ID #
 
 

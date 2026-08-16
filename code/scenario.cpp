@@ -104,6 +104,7 @@
 #include "init.h"
 #include "inline.h"
 #include "ion.h"
+#include "ipxmgr.h"
 #include "isotype.h"
 #include "language\language.h"
 #include "light.h"
@@ -653,19 +654,13 @@ bool Read_Scenario(char const * fname)
 		Progress.Set_Graphic_Data((players > 1) ? "PROGBARM.SHP" : "PROGBAR.SHP", background, prog_msg, prog_bar_pos);
 		Progress.Display_Progress();
 
-		if (PacketTransport != NULL && Session.Type == GAME_INTERNET && Session.Players.Count() > 1) {
+		if (PacketTransport != NULL && Ipx.Transport_Mode() == IPXManagerClass::TRANSPORT_WOL && Session.Players.Count() > 1) {
 			DebugString("Setting addresses for UDP broadcast\n");
 			PacketTransport->Clear_Broadcast_Addresses();
 
-			char address[32] = {"xxx.xxx.xxx.xxx"};
-			NetNumType net;
-			NetNodeType node;
-
 			for (int p = 1; p < Session.Players.Count(); p++) {
-				Session.Players[p]->Address.Get_Address(net, node);
-				sprintf(address, "%d.%d.%d.%d", node[0], node[1], node[2], node[3]);
-				DebugString("Adding broadcast address %s\n", address);
-				PacketTransport->Set_Broadcast_Address(address);
+				DebugString("Adding broadcast address %s\n", Session.Players[p]->Address.As_String());
+				PacketTransport->Set_Broadcast_Address (Session.Players[p]->Address);
 			}
 		}
 	}

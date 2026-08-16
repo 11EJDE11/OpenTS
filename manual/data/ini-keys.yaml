@@ -6585,39 +6585,6 @@ Description:
       source: code/mapgen.cpp
       guard: null
     level: MapSeedClass
-DestNet:
-  key: DestNet
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Network
-    value_type: string
-    status: needs_review
-    _provenance:
-      default_candidate: ''
-      declared_in: OptionsClass
-      member: null
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Network
-    value_type: string
-    status: needs_review
-    _provenance:
-      default_candidate: null
-      declared_in: Startup
-      member: b
-      source: code/startup.cpp
-      guard: null
-    level: Startup
 DestroyWalls:
   key: DestroyWalls
   scopes:
@@ -14085,24 +14052,6 @@ NaturalParticleSystem:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
-NetCard:
-  key: NetCard
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Network
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '0'
-      declared_in: OptionsClass
-      member: NetCard
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
 NewINIFormat:
   key: NewINIFormat
   scopes:
@@ -19099,39 +19048,6 @@ SnowOccupationBits:
       source: code/terrtype.cpp
       guard: null
     level: TerrainTypeClass
-Socket:
-  key: Socket
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Network
-    value_type: integer
-    status: needs_review
-    _provenance:
-      default_candidate: '-1'
-      declared_in: OptionsClass
-      member: Socket
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Network
-    value_type: integer
-    status: needs_review
-    _provenance:
-      default_candidate: null
-      declared_in: Startup
-      member: socket
-      source: code/startup.cpp
-      guard: null
-    level: Startup
 SoloCrateMoney:
   key: SoloCrateMoney
   scopes:

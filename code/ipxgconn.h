@@ -155,24 +155,9 @@ class IPXGlobalConnClass : public IPXConnClass
 		virtual int Discard_Undeliverable_Packets(void) override;
 
 		//.....................................................................
-		// This is for telling the connection it can cross a bridge.
-		//.....................................................................
-		void Set_Bridge (NetNumType bridge);
-
-		//.....................................................................
 		// The Product ID for this product.
 		//.....................................................................
 		unsigned short ProductID;
-
-		//.....................................................................
-		// This describes the address of a bridge we have to cross.  This class
-		// supports crossing only one bridge.  Storing the bridge's network
-		// number allows us to obtain its local target address only once, then
-		// re-use it.
-		//.....................................................................
-		NetNumType BridgeNet;
-		NetNodeType BridgeNode;
-		int IsBridge;
 
 	//------------------------------------------------------------------------
 	// Protected Interface

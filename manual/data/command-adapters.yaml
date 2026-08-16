@@ -474,22 +474,6 @@ launch_options:
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CD' }
-  - id: launch:destination-network
-    title: IPX destination network
-    syntax: -DESTNET<hex network address>
-    description: Sets the IPX bridge destination network from dot-separated hexadecimal bytes.
-    audience: developer
-    availability: *all
-    sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-DESTNET' }
-  - id: launch:socket
-    title: IPX socket offset
-    syntax: -SOCKET<number>
-    description: Selects an IPX socket offset; the current parser does not advance past the option name and resolves the suffix to zero.
-    audience: developer
-    availability: *all
-    sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-SOCKET' }
   - id: launch:tournament-time
     title: Tournament time limit
     syntax: -TIME=<minutes>

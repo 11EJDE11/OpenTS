@@ -50,9 +50,26 @@ class UDPInterfaceClass : public WinsockInterfaceClass {
 
 		virtual int Message_Handler(HWND window, UINT message, UINT wParam, LONG lParam) override;
 		virtual bool Open_Socket ( SOCKET socketnum ) override;
-		virtual void Set_Broadcast_Address ( void *address ) override;
+		virtual void Set_Broadcast_Address ( const IPXAddressClass &address ) override;
 		virtual void Clear_Broadcast_Addresses(void) override;
 		virtual void Broadcast (void *buffer, int buffer_len) override;
+
+		/*
+		 * Ports are in host order. Left unset, both follow WestwoodOnline_PortNumber; a
+		 * local port of zero binds whatever port Winsock hands out.
+		 */
+		void Set_Local_Port(unsigned short port);
+		void Set_Destination_Port(unsigned short port);
+
+		void Enable_Broadcast(bool enable);
+
+		/*
+		 * Route everything through a CnCNet tunnel server, which forwards between players
+		 * that cannot reach each other directly. Every datagram gains a routing header
+		 * naming the sender and the recipient by their tunnel ID; a player is addressed by
+		 * that ID in place of a real endpoint. All arguments are in network order.
+		 */
+		void Configure_Tunnel(unsigned short local_id, unsigned long tunnel_ip, unsigned short tunnel_port);
 
 		virtual ProtocolEnum Get_Protocol (void) override {
 			return(PROTOCOL_UDP);
@@ -72,13 +89,33 @@ class UDPInterfaceClass : public WinsockInterfaceClass {
 
 	private:
 
+		void Register_Local_Addresses();
+
 		/*
-		**	Address to use when broadcasting a packet.
+		 * Wrappers around sendto/recvfrom that add and strip the tunnel routing header.
+		 * They fall through to plain Winsock when no tunnel is configured.
+		 */
+		int Send_To(const char *buffer, int buffer_len, sockaddr_in *destination);
+		int Receive_From(char *buffer, int buffer_len, sockaddr_in *source);
+
+		/*
+		**	Addresses to send to when broadcasting a packet.
 		*/
-		DynamicVectorClass <unsigned char *> BroadcastAddresses;
+		DynamicVectorClass <IPXAddressClass *> BroadcastAddresses;
 
 		/*
 		**	List of local addresses.
 		*/
 		DynamicVectorClass <unsigned char *> LocalAddresses;
+
+		unsigned short LocalPort;
+		unsigned short DestinationPort;
+		bool LocalPortSet;
+		bool DestinationPortSet;
+		bool UseBroadcast;
+
+		// A tunnel is in use when TunnelPort is non-zero.
+		unsigned short TunnelID;
+		unsigned long TunnelIP;
+		unsigned short TunnelPort;
 };

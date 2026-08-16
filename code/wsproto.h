@@ -32,6 +32,7 @@
 #pragma once
 
 #include "_WSProto.h"
+#include "ipxaddr.h"
 #include "vector.h"
 
 /*
@@ -65,7 +66,6 @@
 /*
 **	Define events for Winsock callbacks
 */
-#define WM_IPXASYNCEVENT		(WM_USER + 115)	// IPX socket Async event
 #define WM_UDPASYNCEVENT		(WM_USER + 116)	// UDP socket Async event
 
 
@@ -74,7 +74,6 @@
 */
 enum ProtocolEnum {
 	PROTOCOL_NONE,
-	PROTOCOL_IPX,
 	PROTOCOL_UDP
 };
 
@@ -112,7 +111,7 @@ class WinsockInterfaceClass {
 
 		virtual bool Set_Socket_Options ( void );
 
-		virtual void Set_Broadcast_Address ( void * ) {};
+		virtual void Set_Broadcast_Address ( const IPXAddressClass & ) {};
 		virtual void Clear_Broadcast_Addresses(void) {};
 
 		virtual ProtocolEnum Get_Protocol (void) {
@@ -135,8 +134,6 @@ class WinsockInterfaceClass {
 
 		virtual int Get_Num_Local_Addresses(void) { return(0); }
 		virtual unsigned char *Get_Local_Address(int index) { return(NULL); }
-
-		virtual void Set_NetCard(int card) { NetCard = card; }
 
 		enum ConnectStatusEnum {
 			CONNECTED_OK = 0,
@@ -229,10 +226,4 @@ class WinsockInterfaceClass {
 		**	Current connection status.
 		*/
 		ConnectStatusEnum	ConnectStatus;
-
-		/*
-		 * This is the index of the network adapter the player chose in the options dialog.
-		 * A machine with more than one card needs telling which to play over.
-		 */
-		int NetCard;
 };

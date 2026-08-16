@@ -1759,29 +1759,6 @@ launch_options:
   _provenance:
     source: code/init.cpp
     guard: null
-- id: launch:destination-network
-  route_id: destination-network
-  kind: launch
-  title: IPX destination network
-  description: Sets the IPX bridge destination network from dot-separated hexadecimal bytes.
-  audience: developer
-  availability: *id001
-  syntax: -DESTNET<hex network address>
-  _provenance:
-    source: code/init.cpp
-    guard: null
-- id: launch:socket
-  route_id: socket
-  kind: launch
-  title: IPX socket offset
-  description: Selects an IPX socket offset; the current parser does not advance past the option name
-    and resolves the suffix to zero.
-  audience: developer
-  availability: *id001
-  syntax: -SOCKET<number>
-  _provenance:
-    source: code/init.cpp
-    guard: null
 - id: launch:tournament-time
   route_id: tournament-time
   kind: launch
