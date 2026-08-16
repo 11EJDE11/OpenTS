@@ -18,14 +18,13 @@
 #include "vector.h"
 #include "win.h"
 
-#include <comdef.h>
+#include <new>
+#include <objidl.h>
 
 template<typename T>
 class TypeList : public DynamicVectorClass<T>
 {
 		typedef DynamicVectorClass<T> BASECLASS;
-
-		using BASECLASS::ActiveCount;
 
 	public:
 		using BASECLASS::Count;
@@ -33,55 +32,42 @@ class TypeList : public DynamicVectorClass<T>
 
 		TypeList(void) {}
 		TypeList(const NoInitClass & x) : BASECLASS(x) {}
-		TypeList(const TypeList & that) : BASECLASS(that) {}
-
-		TypeList & operator=(const TypeList & that);
 
 		bool Is_In_List(T const & object) const;
 
 		T const Pick(int index) const;
-		T const & Random_Pick(Random2Class & rand) const;
+		T const Random_Pick(Random2Class & rand) const;
 
-		void Load(IStream * stream);
-		void Save(IStream * stream) const;
-
-	private:
-		/// Unused
-		int Unused1;
+		void Load_Self(IStream * stream);
+		void Save_Self(IStream * stream) const;
 };
-
-
-template<typename T>
-inline TypeList<T> & TypeList<T>::operator=(const TypeList<T> & that)
-{
-	BASECLASS::operator=(that);
-	Unused1 = that.Unused1;
-	return(*this);
-}
 
 
 template<typename T>
 inline bool TypeList<T>::Is_In_List(T const & object) const
 {
-	for (int index = 0; index < ActiveCount; index++) {
-		if ((*this)[index] == object) {
-			return(true);
-		}
-	}
-	return(false);
+	return(BASECLASS::ID(object) != -1);
 }
 
 
+/// An empty list picks nothing rather than dividing by zero.
 template<typename T>
 inline T const TypeList<T>::Pick(int index) const
 {
+	if (Count() <= 0) {
+		return(T());
+	}
 	return(*this)[(unsigned)index % (unsigned)Count()];
 }
 
 
+/// An empty list picks nothing rather than drawing from an empty range.
 template<typename T>
-inline T const & TypeList<T>::Random_Pick(Random2Class & rand) const
+inline T const TypeList<T>::Random_Pick(Random2Class & rand) const
 {
+	if (Count() <= 0) {
+		return(T());
+	}
 	return(*this)[rand((unsigned)0, (unsigned)Count()-1)];
 }
 
