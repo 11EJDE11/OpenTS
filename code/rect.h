@@ -50,64 +50,63 @@ class TRect
 {
 	public:
 		TRect(void) {}		// Default constructor does nothing by design.
-		TRect(T x, T y, T w, T h) : X(x), Y(y), Width(w), Height(h) {}
-		TRect(TPoint2D<T> const & point, T w, T h) : X(point.X), Y(point.Y), Width(w), Height(h) {}
+		constexpr TRect(T x, T y, T w, T h) : X(x), Y(y), Width(w), Height(h) {}
+		constexpr TRect(TPoint2D<T> const & point, T w, T h) : X(point.X), Y(point.Y), Width(w), Height(h) {}
 
 		// Equality comparison operators.
-		bool operator == (TRect<T> const & rvalue) const {return(X==rvalue.X && Y==rvalue.Y && Width==rvalue.Width && Height==rvalue.Height);}
-		bool operator != (TRect<T> const & rvalue) const {return(X!=rvalue.X || Y!=rvalue.Y || Width!=rvalue.Width || Height!=rvalue.Height);}
+		[[nodiscard]] constexpr bool operator == (TRect<T> const & rvalue) const = default;
 
 		// Addition and subtraction operators.
-		TRect<T> const & operator += (TPoint2D<T> const & point) {X += point.X;Y += point.Y;return(*this);}
-		TRect<T> const & operator -= (TPoint2D<T> const & point) {X -= point.X;Y -= point.Y;return(*this);}
-		TRect<T> const operator + (TPoint2D<T> const & point) const {return(TRect<T>(Top_Left() + point, Width, Height));}
-		TRect<T> const operator - (TPoint2D<T> const & point) const {return(TRect<T>(Top_Left() - point, Width, Height));}
+		constexpr TRect<T> & operator += (TPoint2D<T> const & point) {X += point.X;Y += point.Y;return(*this);}
+		constexpr TRect<T> & operator -= (TPoint2D<T> const & point) {X -= point.X;Y -= point.Y;return(*this);}
+		[[nodiscard]] constexpr TRect<T> const operator + (TPoint2D<T> const & point) const {return(TRect<T>(Top_Left() + point, Width, Height));}
+		[[nodiscard]] constexpr TRect<T> const operator - (TPoint2D<T> const & point) const {return(TRect<T>(Top_Left() - point, Width, Height));}
 
 		/*
 		**	Bias this rectangle within another.
 		*/
-		TRect<T> const Bias_To(TRect<T> const & rect) const {return(TRect<T>(Top_Left() + rect.Top_Left(), Width, Height));}
+		[[nodiscard]] constexpr TRect<T> const Bias_To(TRect<T> const & rect) const {return(TRect<T>(Top_Left() + rect.Top_Left(), Width, Height));}
 
 		// Assign values
-		void Set(T x, T y, T w, T h) {X = x; Y = y; Width = w; Height = h;}
+		constexpr void Set(T x, T y, T w, T h) {X = x; Y = y; Width = w; Height = h;}
 
 		/*
 		**	Determine if two rectangles overlap.
 		*/
-		bool Is_Overlapping(TRect<T> const & rect) const {return(X < rect.X+rect.Width && Y < rect.Y+rect.Height && X+Width > rect.X && Y+Height > rect.Y);}
+		[[nodiscard]] constexpr bool Is_Overlapping(TRect<T> const & rect) const {return(X < rect.X+rect.Width && Y < rect.Y+rect.Height && X+Width > rect.X && Y+Height > rect.Y);}
 
 		/*
 		**	Determine is rectangle is valid.
 		*/
-		bool Is_Valid(void) const {return(Width > 0 && Height > 0);}
+		[[nodiscard]] constexpr bool Is_Valid(void) const {return(Width > 0 && Height > 0);}
 		__declspec(property(get=Is_Valid)) bool IsValid;
 
 		/*
 		**	Returns size of rectangle if each discrete location within it is presumed
 		**	to be of size 1.
 		*/
-		int Size(void) const {return(int(Width) * int(Height));}
+		[[nodiscard]] constexpr int Size(void) const {return(int(Width) * int(Height));}
 
 		/*
 		**	Fetch points of rectangle (used as a convenience for the programmer).
 		*/
-		TPoint2D<T> Top_Left(void) const {return(TPoint2D<T>(X, Y));}
+		[[nodiscard]] constexpr TPoint2D<T> Top_Left(void) const {return(TPoint2D<T>(X, Y));}
 		__declspec(property(get=Top_Left)) TPoint2D<T> TopLeft;
 
-		TPoint2D<T> Top_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), Y));}
+		[[nodiscard]] constexpr TPoint2D<T> Top_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), Y));}
 		__declspec(property(get=Top_Right)) TPoint2D<T> TopRight;
 
-		TPoint2D<T> Bottom_Left(void) const {return(TPoint2D<T>(X, T(Y + Height - 1)));}
+		[[nodiscard]] constexpr TPoint2D<T> Bottom_Left(void) const {return(TPoint2D<T>(X, T(Y + Height - 1)));}
 		__declspec(property(get=Bottom_Left)) TPoint2D<T> BottomLeft;
 
-		TPoint2D<T> Bottom_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), T(Y + Height - 1)));}
+		[[nodiscard]] constexpr TPoint2D<T> Bottom_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), T(Y + Height - 1)));}
 		__declspec(property(get=Bottom_Right)) TPoint2D<T> BottomRight;
 
 
 		/*
 		**	Determine if a point lies within the rectangle.
 		*/
-		bool Is_Point_Within(TPoint2D<T> const & point) const {return(point.X >= X && point.X < X+Width && point.Y >= Y && point.Y < Y+Height);}
+		[[nodiscard]] constexpr bool Is_Point_Within(TPoint2D<T> const & point) const {return(point.X >= X && point.X < X+Width && point.Y >= Y && point.Y < Y+Height);}
 
 	public:
 
@@ -127,7 +126,7 @@ class TRect
 
 
 template<class T>
-TPoint2D<T> const Bias_To(TPoint2D<T> const & point, TRect<T> const & rect)
+[[nodiscard]] constexpr TPoint2D<T> const Bias_To(TPoint2D<T> const & point, TRect<T> const & rect)
 {
 	return(TPoint2D<T>(T(point.X + rect.X), T(point.Y + rect.Y)));
 }
@@ -150,7 +149,7 @@ TPoint2D<T> const Bias_To(TPoint2D<T> const & point, TRect<T> const & rect)
  *   06/04/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-TRect<T> const Union(TRect<T> const & rect1, TRect<T> const & rect2)
+[[nodiscard]] constexpr TRect<T> const Union(TRect<T> const & rect1, TRect<T> const & rect2)
 {
 	if (rect1.Is_Valid()) {
 		if (rect2.Is_Valid()) {
@@ -205,7 +204,7 @@ TRect<T> const Union(TRect<T> const & rect1, TRect<T> const & rect2)
  *   06/04/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-TRect<T> const Intersect(TRect<T> const & bounding_rect, TRect<T> const & draw_rect, T * x, T * y)
+[[nodiscard]] constexpr TRect<T> const Intersect(TRect<T> const & bounding_rect, TRect<T> const & draw_rect, T * x, T * y)
 {
 	TRect<T> bad_rect(0, 0, 0, 0);			// Dummy (illegal) draw_rect.
 	TRect<T> new_draw_rect = draw_rect;		// Working draw_rect.
@@ -285,9 +284,9 @@ TRect<T> const Intersect(TRect<T> const & bounding_rect, TRect<T> const & draw_r
  *   06/04/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-TRect<T> const Intersect(TRect<T> const & rect1, TRect<T> const & rect2)
+[[nodiscard]] constexpr TRect<T> const Intersect(TRect<T> const & rect1, TRect<T> const & rect2)
 {
-	return(Intersect(rect1, rect2, (T*)NULL, (T*)NULL));
+	return(Intersect(rect1, rect2, (T*)nullptr, (T*)nullptr));
 }
 
 
@@ -297,6 +296,4 @@ TRect<T> const Intersect(TRect<T> const & rect1, TRect<T> const & rect2)
 */
 typedef TRect<int> Rect;
 
-/// Made extern: as a const definition in this header, every module created its own
-/// instance of it, which bloated the binary.
-extern const Rect RECT_NONE;
+inline constexpr Rect RECT_NONE(0, 0, 0, 0);

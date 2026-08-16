@@ -13,7 +13,6 @@
 
 #include "rect.h"
 
-const Rect RECT_NONE(0,0,0,0);
 Rect TacticalRect(0,0,640,400);
 Rect VisibleRect(0,0,640,400);
 Rect SidebarRect(0,0,0,0);
