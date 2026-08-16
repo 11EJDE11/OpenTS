@@ -219,6 +219,10 @@ if (MSVC)
         /SUBSYSTEM:WINDOWS
         /DEBUG
         /MAP
+        # Raises the user address space from 2GB to 4GB under 64-bit Windows. Pointers may
+        # then have the high bit set, so anything holding one in a signed integer must only
+        # round-trip the bits and never compare or scale them.
+        /LARGEADDRESSAWARE
         # Declares the process per-monitor DPI aware, so a scaled desktop does not blur
         # the frame by stretching the whole window.
         "/MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/sun.manifest"
