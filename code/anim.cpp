@@ -929,7 +929,7 @@ void AnimClass::AI(void)
 						Set_Stage(Class->LoopStart-Class->Start);
 					}
 					if (Class->RandomLoopDelayMin != 0 || Class->RandomLoopDelayMax != 0) {
-						Delay = Sim_Random_Pick(Class->RandomLoopDelayMin, Class->RandomLoopDelayMax);
+						Delay = Random_Pick(Class->RandomLoopDelayMin, Class->RandomLoopDelayMax);
 					}
 				} else {
 
