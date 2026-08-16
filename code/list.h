@@ -38,6 +38,8 @@
 #include "slider.h"
 #include "vector.h"
 
+#include <algorithm>
+
 class ShapeSet;
 
 /***************************************************************************
@@ -576,7 +578,7 @@ void TListClass<T>::Peer_To_Peer(unsigned flags, KeyNumType &, BASECLASS & whom)
 template<class T>
 int TListClass<T>::Set_View_Index(int index)
 {
-	index = Bound(index, 0, MAX(0, List.Count() - LineCount));
+	index = std::clamp(index, 0, MAX(0, List.Count() - LineCount));
 	if (index != CurrentTopIndex) {
 		CurrentTopIndex = index;
 		Flag_To_Redraw();

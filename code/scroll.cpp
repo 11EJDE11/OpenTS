@@ -44,7 +44,6 @@
 #include "_rules.h"
 #include "_surface.h"
 #include "_tactica.h"
-#include "bound.h"
 #include "building.h"
 #include "cell.h"
 #include "dbgprint.h"
@@ -63,6 +62,8 @@
 #include "waypoint.h"
 
 #include "special.hh"
+
+#include <algorithm>
 
 
 // for some reason in wave..
@@ -458,7 +459,7 @@ void ScrollClass::Scroll_Edge(Point2D const & point)
 				**	Increase the scroll rate if the mouse button is held down.
 				*/
 				if (Keyboard->Down(KN_RMOUSE)) {
-					rate = Bound(rate+1, 4, (int)(sizeof(_rate)/sizeof(_rate[0]))-1);
+					rate = std::clamp(rate+1, 4, (int)(sizeof(_rate)/sizeof(_rate[0]))-1);
 				}
 
 				/*

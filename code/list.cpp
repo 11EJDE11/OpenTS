@@ -58,7 +58,6 @@
 
 #include "_convert.h"
 #include "_surface.h"
-#include "bound.h"
 #include "convert.h"
 #include "data.h"
 #include "dialog.h"
@@ -68,6 +67,8 @@
 #include "scheme.h"
 #include "vector.h"
 #include "wwmouse.h"
+
+#include <algorithm>
 
 
 /***************************************************************************
@@ -603,7 +604,7 @@ void ListClass::Peer_To_Peer(unsigned flags, KeyNumType &, BASECLASS & whom)
  *=============================================================================================*/
 int ListClass::Set_View_Index(int index)
 {
-	index = Bound(index, 0, MAX(0, List.Count() - LineCount));
+	index = std::clamp(index, 0, MAX(0, List.Count() - LineCount));
 	if (index != CurrentTopIndex) {
 		CurrentTopIndex = index;
 		Flag_To_Redraw();

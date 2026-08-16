@@ -53,7 +53,6 @@
 #include "factory.h"
 
 #include "_rules.h"
-#include "bound.h"
 #include "building.h"
 #include "crc.h"
 #include "dbgprint.h"
@@ -66,6 +65,8 @@
 #include "voc.h"
 
 #include "super.hh"
+
+#include <algorithm>
 
 /***********************************************************************************************
  * FactoryClass::FactoryClass -- Default constructor for factory objects.                      *
@@ -399,7 +400,7 @@ int FactoryClass::Build_Rate(void) const
 	}
 
 	time /= STEP_COUNT;
-	time = Bound(time, 1, 255);
+	time = std::clamp(time, 1, 255);
 
 	return(time);
 }

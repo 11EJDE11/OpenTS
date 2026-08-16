@@ -118,7 +118,6 @@
 #include "anim.h"
 #include "animtype.h"
 #include "blight.h"
-#include "bound.h"
 #include "bsurface.h"
 #include "builtype.h"
 #include "bullet.h"
@@ -179,6 +178,8 @@
 #include "weapon.h"
 
 #include "color.hh"
+
+#include <algorithm>
 
 
 char const * const BuildingClass::INI_NAME = "Structures";
@@ -5759,7 +5760,7 @@ int BuildingClass::Do_MISSION_REPAIR(void)
 						//fixed pfrac = Saturate(House->Power_Fraction(), 1);
 						//if (pfrac < fixed::_1_2) pfrac = fixed::_1_2;
 						//int time;// = Inverse(pfrac) * Rule->ReloadRate * TICKS_PER_MINUTE;
-//						int time = Bound((int)(TICKS_PER_SECOND * Saturate(House->Power_Fraction(), 1)), 0, TICKS_PER_SECOND);
+//						int time = std::clamp((int)(TICKS_PER_SECOND * Saturate(House->Power_Fraction(), 1)), 0, TICKS_PER_SECOND);
 //						time = (TICKS_PER_SECOND*3) - time;
 						//IsReadyToCommence = false;
 						//return(time);
@@ -7573,7 +7574,7 @@ int BuildingClass::How_Many_Survivors(void) const
 	if (divisor == 0) return(0);
 	if (IsCaptured) divisor *= 2;
 	int count = (Class->Cost_Of(House) * Rule->SurvivorFraction) / divisor;
-	return(Bound(count, 1, 5));
+	return(std::clamp(count, 1, 5));
 }
 
 

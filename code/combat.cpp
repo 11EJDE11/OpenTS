@@ -44,7 +44,6 @@
 #include "_tactica.h"
 #include "aircraft.h"
 #include "anim.h"
-#include "bound.h"
 #include "building.h"
 #include "builtype.h"
 #include "ccrand.h"
@@ -75,6 +74,7 @@
 
 #include "mph.hh"
 
+#include <algorithm>
 #include <windef.h>
 
 
@@ -137,7 +137,7 @@ int Modify_Damage(int damage, WarheadTypeClass const * warhead, ArmorType armor,
 		} else {
 			distance /= warhead->SpreadFactor * (PIXEL_LEPTON_W/3);
 		}
-		distance = Bound(distance, 0, 16);
+		distance = std::clamp(distance, 0, 16);
 		if (distance) {
 			damage = damage / distance;
 		}

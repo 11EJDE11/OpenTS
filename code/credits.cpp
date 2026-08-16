@@ -42,7 +42,6 @@
 #include "_rules.h"
 #include "_surface.h"
 #include "bench.h"
-#include "bound.h"
 #include "dialog.h"
 #include "dsurface.h"
 #include "globals.h"
@@ -56,6 +55,8 @@
 
 #include "bench.hh"
 #include "color.hh"
+
+#include <algorithm>
 
 
 /***********************************************************************************************
@@ -237,7 +238,7 @@ void CreditClass::AI(bool forced)
 		adder >>= 3;
 //		adder >>= 4;
 //		adder >>= 5;
-		adder = Bound(adder, 1, 71+72);
+		adder = std::clamp(adder, 1, 71+72);
 		if (Current > Credits) adder = -adder;
 		Current += adder;
 		if (Current-adder != Current) {

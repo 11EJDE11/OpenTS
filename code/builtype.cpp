@@ -65,7 +65,6 @@
 #include "_rules.h"
 #include "_theater.h"
 #include "airctype.h"
-#include "bound.h"
 #include "bsurface.h"
 #include "building.h"
 #include "bullettype.h"
@@ -89,6 +88,8 @@
 #include "unittype.h"
 #include "warhead.h"
 #include "weapon.h"
+
+#include <algorithm>
 
 void const * BuildingTypeClass::BuildingZShape;
 void const * BuildingTypeClass::PowerOffShapes;
@@ -793,9 +794,9 @@ int BuildingTypeClass::Max_Pips(void) const
 	switch (PipScale) {
 		case PIPSCALE_TIBERIUM:
 			if (IsWeeder) {
-				return(Bound((int)(Rule->WeedCapacity), 0, maxpips));
+				return(std::clamp((int)(Rule->WeedCapacity), 0, maxpips));
 			} else {
-				return(Bound((int)(Capacity), 0, maxpips));
+				return(std::clamp((int)(Capacity), 0, maxpips));
 			}
 
 		case PIPSCALE_POWER:

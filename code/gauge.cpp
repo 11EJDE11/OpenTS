@@ -42,7 +42,6 @@
 
 #include "_convert.h"
 #include "_surface.h"
-#include "bound.h"
 #include "control.h"
 #include "convert.h"
 #include "dialog.h"
@@ -52,6 +51,8 @@
 #include "xmouse.h"
 
 #include "color.hh"
+
+#include <algorithm>
 
 
 /***************************************************************************
@@ -129,7 +130,7 @@ int GaugeClass::Set_Maximum(int value)
  *=============================================================================================*/
 int GaugeClass::Set_Value(int value)
 {
-	value = Bound(value, 0, MaxValue);
+	value = std::clamp(value, 0, MaxValue);
 	if (value != CurValue) {
 		CurValue = value;
 		Flag_To_Redraw();
@@ -166,7 +167,7 @@ int GaugeClass::Pixel_To_Value(int pixel)
 		maximum = Height;
 	}
 	maximum -= 2;
-	pixel = Bound(pixel, 0, maximum);
+	pixel = std::clamp(pixel, 0, maximum);
 	return(int(MaxValue * ((double)pixel / maximum)));
 }
 

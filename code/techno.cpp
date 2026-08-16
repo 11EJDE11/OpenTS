@@ -145,7 +145,6 @@
 #include "anim.h"
 #include "bench.h"
 #include "blit.h"
-#include "bound.h"
 #include "bsurface.h"
 #include "building.h"
 #include "builtype.h"
@@ -204,6 +203,8 @@
 
 #include "bench.hh"
 #include "tube.hh"
+
+#include <algorithm>
 
 CDTimerClass<FrameTimerClass> TechnoClass::ActionLineTimer;
 bool TechnoClass::ActionLines = true;
@@ -1595,7 +1596,7 @@ void TechnoClass::Draw_It(int x, int y, int /*WindowNumberType*/ window) const
 			*/
 			pwidth = (width-2) * ratio;
 
-			pwidth = Bound(pwidth, 1, width-2);
+			pwidth = std::clamp(pwidth, 1, width-2);
 
 			color = LTGREEN;
 			if (ratio <= Rule->ConditionYellow) {
@@ -6571,9 +6572,9 @@ int TechnoClass::Threat_Range(int control) const
 
 	range *= 2;
 	if (control == 2) {
-		range = Bound(range, 7 * CELL_LEPTON, 16 * CELL_LEPTON);
+		range = std::clamp(range, 7 * CELL_LEPTON, 16 * CELL_LEPTON);
 	} else {
-		range = Bound(range, 0, 16 * CELL_LEPTON);
+		range = std::clamp(range, 0, 16 * CELL_LEPTON);
 	}
 
 	return(range);
