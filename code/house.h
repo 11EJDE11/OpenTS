@@ -45,7 +45,6 @@
 #include "object.h"
 #include "region.h"
 #include "rgb.h"
-#include "smartptr.h"
 #include "storage.h"
 #include "teamtype.h"
 #include "timer.h"
