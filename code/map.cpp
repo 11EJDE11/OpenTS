@@ -95,7 +95,6 @@
 #include "psystype.h"
 #include "rules.h"
 #include "smartdeform.h"
-#include "swap.h"
 #include "tactical.h"
 #include "tag.h"
 #include "tiberium.h"
@@ -107,6 +106,7 @@
 #include "ramp.hh"
 
 #include <new>
+#include <utility>
 
 Cell const MapClass::RadiusOffset[] = {
 	/* 0  */	Cell(0,0),
@@ -2864,7 +2864,7 @@ int MapClass::Zone_Reset(void)
 			int to_zone = Get_Cell_Zone_ID(connection->To);
 			if (to_zone != from_zone) {
 				if (to_zone < from_zone) {
-					swap(to_zone, from_zone);
+					std::swap(to_zone, from_zone);
 				}
 				ZoneAdjacency->Add_Object(ZONE_PAIR_HASH_SET::ObjectType(from_zone, to_zone));
 			}

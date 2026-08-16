@@ -26,13 +26,14 @@
 #include "infatype.h"
 #include "inline.h"
 #include "mouse.h"
-#include "swap.h"
 #include "tube.h"
 #include "unit.h"
 #include "unittype.h"
 #include "vector.h"
 
 #include "tube.hh"
+
+#include <utility>
 
 
 /*
@@ -1512,8 +1513,8 @@ bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell con
 		}
 
 		if (first_dist == 0 || blocked) {
-			swap(second_dir, first_dir);
-			swap(second_dist, first_dist);
+			std::swap(second_dir, first_dir);
+			std::swap(second_dist, first_dist);
 		} else {
 			int i;
 			for (i = 0; i < first_dist; i++) {
@@ -1877,7 +1878,7 @@ void AStarClass::Ban_Blocked_Subzone_Edges(FootClass const * foot)
 bool AStarClass::Subzone_Edge_Banned(unsigned short subzone1, unsigned short subzone2, int subzone_level)
 {
 	if (subzone2 < subzone1) {
-		swap(subzone1, subzone2);
+		std::swap(subzone1, subzone2);
 	}
 	unsigned int edge = subzone2 | (subzone1 << 16);
 
@@ -1901,7 +1902,7 @@ void AStarClass::Ban_Subzone_Edge(unsigned int subzone1, unsigned int subzone2, 
 {
 	if (subzone1 != subzone2) {
 		if (subzone2 < subzone1) {
-			swap(subzone2, subzone1);
+			std::swap(subzone2, subzone1);
 		}
 		unsigned int edge = subzone2 | (subzone1 << 16);
 		HierBannedEdges[subzone_level].Add(edge);

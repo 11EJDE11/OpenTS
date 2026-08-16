@@ -52,10 +52,10 @@
 #include "blit.h"
 #include "dbgprint.h"
 #include "misc.h"
-#include "swap.h"
 #include "video.h"
 
 #include <math.h>
+#include <utility>
 
 extern bool GameInFocus;
 
@@ -843,7 +843,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 	 * Sort the endpoints left-to-right, carrying the depth values with them.
 	 */
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 		z1 = end_depth;
 		z2 = start_depth;
 	}
@@ -1179,7 +1179,7 @@ bool DSurface::Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const 
 	int astart = start_depth;
 	int aend = end_depth;
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 		astart = end_depth;
 		aend = start_depth;
 	}
@@ -1769,7 +1769,7 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 	if (!Clip_Line_To_Rect(start, end, clipped_rect)) return(false);
 
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 	}
 
 	if (Bytes_Per_Pixel() == 2) {
@@ -1955,7 +1955,7 @@ bool DSurface::Draw_Depth_Shaded_Line(Rect const & cliprect, Point2D const & sta
 	int zfirst = start_depth;
 	int zlast = end_depth;
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 		zfirst = end_depth;
 		zlast = start_depth;
 	}
@@ -2283,7 +2283,7 @@ int DSurface::Draw_Masked_Dashed_Line(Point2D const & startpoint, Point2D const 
 	if (Bytes_Per_Pixel() != 2) return(0);
 
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 		int dx = abs(start.X - end.X);
 		int dy = abs(start.Y - end.Y) + 1;
 		if (dx < dy) {
@@ -2647,7 +2647,7 @@ bool DSurface::Draw_Masked_Line(Point2D const & startpoint, Point2D const & endp
 		if (!Clip_Line_To_Rect(start, end, cliprect)) return(false);
 
 		if (start.X > end.X) {
-			swap(start, end);
+			std::swap(start, end);
 		}
 
 		Point2D point = start;

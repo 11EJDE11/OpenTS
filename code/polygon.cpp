@@ -11,9 +11,9 @@
 
 #include "polygon.h"
 
-#include "swap.h"
 
 #include <cmath>
+#include <utility>
 
 
 /// <summary>
@@ -88,7 +88,7 @@ void Rasterize_Polygon(const PolygonShapeStruct & shape, PolygonRasterStruct & r
 			if (bottom_span_exists == 1) {
 				if (left_x > right_x) {
 					winding_direction = bottom_span_exists;
-					swap(left_chain_start, right_chain_start);
+					std::swap(left_chain_start, right_chain_start);
 				}
 			} else {
 				int next_right = (right_chain_start + 1) % vertex_count;
@@ -100,7 +100,7 @@ void Rasterize_Polygon(const PolygonShapeStruct & shape, PolygonRasterStruct & r
 				 */
 				if ((vertices[next_right].X - left_x) * (vertices[prev_left].Y - test_y) - (vertices[prev_left].X - left_x) * (vertices[next_right].Y - test_y) < 0) {
 					winding_direction = 1;
-					swap(left_chain_start, right_chain_start);
+					std::swap(left_chain_start, right_chain_start);
 				}
 			}
 

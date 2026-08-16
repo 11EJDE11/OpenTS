@@ -40,7 +40,6 @@
 #include "rules.h"
 #include "session.h"
 #include "srfcache.h"
-#include "swap.h"
 #include "theme.h"
 #include "voc.h"
 #include "vox.h"
@@ -49,6 +48,7 @@
 #include <commctrl.h>
 #include <ctime>
 #include <sys\timeb.h>
+#include <utility>
 
 
 
@@ -5277,7 +5277,7 @@ bool ODDrawEdgeGlow(Surface & surf, Point2D const & start, Point2D const & end, 
 	Point2D endpoint = end;
 
 	if (startpoint.X > endpoint.X) {
-		swap(startpoint, endpoint);
+		std::swap(startpoint, endpoint);
 	}
 
 	int bpp = surf.Bytes_Per_Pixel();

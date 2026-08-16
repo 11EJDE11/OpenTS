@@ -58,7 +58,6 @@
 #include "session.h"
 #include "stimer.h"
 #include "sun.h"
-#include "swap.h"
 #include "swizzle.h"
 #include "terrain.h"
 #include "terrtype.h"
@@ -69,6 +68,8 @@
 
 #include "ramp.hh"
 #include "scrspeed.hh"
+
+#include <utility>
 
 
 extern Point2D Lerp(Point2D const & a, Point2D const & b, float t);
@@ -3002,10 +3003,10 @@ void Tactical::Select_Rubber_Band(void (*select_callback)(ObjectClass * object))
 		**	and coordinate number two represents the lower right corner.
 		*/
 		if (start.X > end.X) {
-			swap(start.X, end.X);
+			std::swap(start.X, end.X);
 		}
 		if (start.Y > end.Y) {
-			swap(start.Y, end.Y);
+			std::swap(start.Y, end.Y);
 		}
 
 		Select_These(Rect(start, end.X - start.X + 1, end.Y - start.Y + 1), select_callback);
@@ -3043,10 +3044,10 @@ void Tactical::Draw_Rubber_Band(void)
 		**	and coordinate number two represents the lower right corner.
 		*/
 		if (end.X < start.X) {
-			swap(start.X, end.X);
+			std::swap(start.X, end.X);
 		}
 		if (end.Y < start.Y) {
-			swap(start.Y, end.Y);
+			std::swap(start.Y, end.Y);
 		}
 
 		int w = (end.X - start.X) + 1;

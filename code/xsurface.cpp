@@ -52,7 +52,8 @@
 #include "assert.h"
 #include "blit.h"
 #include "blitblit.h"
-#include "swap.h"
+
+#include <utility>
 
 /***********************************************************************************************
  * XSurface::Draw_Line -- Draws a line upon the surface.                                       *
@@ -123,7 +124,7 @@ bool XSurface::Draw_Line(Rect const & xcliprect, Point2D const & startpoint, Poi
 	if (!Clip_Line_To_Rect(start, end, cliprect)) return(false);
 
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 	}
 
 	int bpp = Bytes_Per_Pixel();
@@ -255,7 +256,7 @@ int XSurface::Draw_Dashed_Line(Point2D const & startpoint, Point2D const & endpo
 	int initial_offset = 1;
 
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 		int norm = abs(start.X - end.X);
 		if (norm < abs(start.Y - end.Y) + 1) {
 			norm = abs(start.Y - end.Y) + 1;
@@ -490,7 +491,7 @@ bool XSurface::Plot_Line(Rect const & xcliprect, Point2D & startpoint, Point2D &
 	if (!Clip_Line_To_Rect(start, end, cliprect)) return(false);
 
 	if (start.X > end.X) {
-		swap(start, end);
+		std::swap(start, end);
 	}
 
 	if (start.Y == end.Y) {
