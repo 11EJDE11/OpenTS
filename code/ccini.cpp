@@ -1143,7 +1143,7 @@ bool CCINIClass::Put_ArmorType(char const * section, char const * entry, ArmorTy
  *=============================================================================================*/
 bool CCINIClass::Put_VocType(char const * section, char const * entry, VocType value)
 {
-	if ((char)value == VOC_NONE) {
+	if (value == VOC_NONE) {
 		return(Put_String(section, entry, "<none>"));
 	}
 	return(Put_String(section, entry, Voc_Name(value)));

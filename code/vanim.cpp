@@ -100,7 +100,7 @@ VoxelAnimClass::VoxelAnimClass(VoxelAnimTypeClass const * type, Coord const & co
 		BounceClass::Init(Center_Coord(), Class->Elasticity, 1.4f, 0.0, velocity, (abs(rnd) % int(Class->MaxAngularVelocity - Class->MinAngularVelocity + 1.0)) + Class->MinAngularVelocity);
 	}
 
-	if ((unsigned char)Class->StartSound != (unsigned char)VOC_NONE) {
+	if (Class->StartSound != VOC_NONE) {
 		Sound_Effect(Class->StartSound, coord);
 	}
 
@@ -319,7 +319,7 @@ void VoxelAnimClass::AI(void)
 				Explosion_Damage(Get_Bounce_Coord(), Class->Damage, 0, Class->Warhead, 1);
 				Combat_Lighting(Get_Bounce_Coord(), Class->Damage, Class->Warhead, 0);
 			}
-			if ((unsigned char)Class->ExpireSound != (unsigned char)VOC_NONE) {
+			if (Class->ExpireSound != VOC_NONE) {
 				Sound_Effect(Class->ExpireSound, Coord(Position.X, Position.Y, Position.Z));
 			}
 

@@ -743,7 +743,7 @@ void AnimClass::AI(void)
 					Explosion_Damage(Bounce.Get_Bounce_Coord(), Class->Damage, NULL, Class->Warhead);
 					Combat_Lighting(Bounce.Get_Bounce_Coord(), Class->Damage, Class->Warhead);
 				}
-				if ((unsigned char)Class->ExpireSound != (unsigned char)VOC_NONE) {
+				if (Class->ExpireSound != VOC_NONE) {
 					Sound_Effect(Class->ExpireSound, Center_Coord());
 				}
 			}
