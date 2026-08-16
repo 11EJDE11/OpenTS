@@ -73,6 +73,7 @@ Selection::Selection(Campaign * campaign, bool vq_anim) :
 	ZoomingTarget(NULL),
 	ThrobbingTarget(NULL),
 	ThrobbingTargetDividingFrame(32),
+	CancelButtonRectangle(RECT_NONE),
 	CancelButtonAnim(NULL),
 	CancelButtonHoverAnim(NULL),
 	CancelButtonHovered(false),

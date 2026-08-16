@@ -1220,7 +1220,7 @@ Rect const INIClass::Get_Rect(char const * section, char const * entry, Rect con
 {
 	char buffer[64];
 
-	if (Get_String(section, entry, "0,0,0,0", buffer, sizeof(buffer))) {
+	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
 		Rect retval = defvalue;
 		sscanf(buffer, "%d,%d,%d,%d", &retval.X, &retval.Y, &retval.Width, &retval.Height);
 		return(retval);
@@ -1601,7 +1601,7 @@ bool INIClass::Get_Bool(char const * section, char const * entry, bool defvalue)
  *=============================================================================================*/
 bool INIClass::Put_Point(char const * section, char const * entry, TPoint2D<int> const & value)
 {
-	char buffer[54];
+	char buffer[64];
 	sprintf(buffer, "%d,%d", value.X, value.Y);
 	return(Put_String(section, entry, buffer));
 }
@@ -1660,7 +1660,7 @@ TPoint2D<int> const INIClass::Get_Point(char const * section, char const * entry
  *=============================================================================================*/
 bool INIClass::Put_Point(char const * section, char const * entry, TPoint3D<int> const & value)
 {
-	char buffer[54];
+	char buffer[64];
 	sprintf(buffer, "%d,%d,%d", value.X, value.Y, value.Z);
 	return(Put_String(section, entry, buffer));
 }
@@ -1720,7 +1720,7 @@ TPoint3D<int> const INIClass::Get_Point(char const * section, char const * entry
  *=============================================================================================*/
 bool INIClass::Put_Point(char const * section, char const * entry, TPoint3D<float> const & value)
 {
-	char buffer[54];
+	char buffer[64];
 	sprintf(buffer, "%f,%f,%f", (float)value.X, (float)value.Y, (float)value.Z);
 	return(Put_String(section, entry, buffer));
 }
