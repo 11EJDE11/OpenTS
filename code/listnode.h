@@ -69,13 +69,6 @@ class GenericNode {
 			}
 		}
 
-		GenericList * Main_List(void) const {
-			GenericNode const * node = this;
-			while (node->PrevNode) {
-				node = PrevNode;
-			}
-			return((GenericList *)this);
-		}
 		void Link(GenericNode * node) {
 			assert(node != (GenericNode *)0);
 			node->Unlink();
@@ -93,7 +86,7 @@ class GenericNode {
 		GenericNode * Prev_Valid(void) const {
 			return ((PrevNode && PrevNode->PrevNode) ? PrevNode : (GenericNode *)0);
 		}
-		bool Is_Valid(void) const {return(this != (GenericNode *)0 && NextNode != (GenericNode *)0 && PrevNode != (GenericNode *)0);}
+		bool Is_Valid(void) const {return(NextNode != (GenericNode *)0 && PrevNode != (GenericNode *)0);}
 
 	protected:
 		GenericNode * NextNode;
@@ -152,8 +145,8 @@ class GenericList {
 		GenericNode LastNode;
 
 	private:
-		GenericList(GenericList & list);
-		GenericList & operator = (GenericList const &);
+		GenericList(GenericList & list) = delete;
+		GenericList & operator = (GenericList const &) = delete;
 };
 
 
@@ -169,7 +162,6 @@ template<class T> class List;
 template<class T>
 class Node : public GenericNode {
 	public:
-		List<T> * Main_List(void) const {return((List<T> *)GenericNode::Main_List());}
 		T Next(void) const {return((T)GenericNode::Next());}
 		T Next_Valid(void) const {return((T)GenericNode::Next_Valid());}
 		T Prev(void) const {return((T)GenericNode::Prev());}
@@ -185,6 +177,22 @@ class Node : public GenericNode {
 template<class T>
 class List : public GenericList {
 	public:
+		/*
+		**	Walks the real nodes of the list. The end of the list is the first node
+		**	that is not linked on both sides, which is the tail sentinel.
+		*/
+		class Iterator {
+			public:
+				Iterator(T node) : Node(node) {}
+
+				T operator * (void) const {return(Node);}
+				Iterator & operator ++ (void) {Node = Node->Next(); return(*this);}
+				bool operator != (Iterator const &) const {return(Node->Is_Valid());}
+
+			private:
+				T Node;
+		};
+
 		List(void) {};
 
 		T First(void) const {return((T)GenericList::First());}
@@ -193,7 +201,10 @@ class List : public GenericList {
 		T Last_Valid(void) const {return((T)GenericList::Last_Valid());}
 		void Delete(void) {while (First()->Is_Valid()) delete First();}
 
+		Iterator begin(void) const {return(Iterator(First()));}
+		Iterator end(void) const {return(Iterator(nullptr));}
+
 	private:
-		List(List<T> const & rvalue);
-		List<T> operator = (List<T> const & rvalue);
+		List(List<T> const & rvalue) = delete;
+		List<T> operator = (List<T> const & rvalue) = delete;
 };
