@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-The fuse trips when the projectile comes within 64 leptons of the point it was aimed at, measured flat, and again when it is within two cells of that point and has started to move away from it. While the arming count is still running the fuse reports nothing at all, so the projectile flies on. The count is in game frames — 15 to the second, 900 to the game minute — and it starts when the projectile is launched.
+The fuse trips when the projectile comes within 64 leptons of the point it was aimed at, height included, and again when it is within two cells of that point and has started to move away from it. While the arming count is still running the fuse reports nothing at all, so the projectile flies on. The count is in game frames — 15 to the second, 900 to the game minute — and it starts when the projectile is launched.
 
 Only a projectile steered by the homing flight model consults its fuse at all. A projectile whose [`ROT`](/keys/rot/#scope-bullettype) is zero never checks it, so the setting changes nothing on an unguided shot.
 

@@ -135,10 +135,7 @@ FuseResultType FuseClass::Fuse_Checkup(Coord const & newlocation)
 		*/
 		//if (!Timer) return(true);
 
-		Point2D l1 = Point2D(HeadTo.X / 2, HeadTo.Y / 2);
-		Point2D l2 = Point2D(newlocation.X / 2, newlocation.Y / 2);
-
-		proximity = l2.Distance_To(l1);
+		proximity = newlocation.Distance_To(HeadTo) / 2;
 		if (proximity < 0x0010*2) return(FUSE_EXPLODE_CLOSE);
 
 		if (proximity < CELL_LEPTON_W && proximity > Proximity) {

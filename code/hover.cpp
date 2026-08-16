@@ -1163,8 +1163,10 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Moving_Here(CoordStruct to)
 {
 	Coord coord = Head_To_Coord();
 
-	if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
-		return(true);
+	if (coord != COORD_NONE) {
+		if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
+			return(true);
+		}
 	}
 	return(false);
 }
