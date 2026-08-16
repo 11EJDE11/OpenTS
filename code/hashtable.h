@@ -144,12 +144,14 @@ inline bool HashTableClass<K, V>::Add_Object(ObjectType const & object)
 	unsigned packed = object.Value | (object.Key << 16);
 	BucketType & bucket = Buckets[object.Value & 0xF | ((object.Key & 0xF) << 4)];
 
-	ObjectType * obj = &bucket[0];
-	for (int index = bucket.Count() - 1; index >= 0; index--) {
-		if (ObjectType(packed, packed) == *obj) {
-			return(false);
+	if (bucket.Count() > 0) {
+		ObjectType * obj = &bucket[0];
+		for (int index = bucket.Count() - 1; index >= 0; index--) {
+			if (ObjectType(packed, packed) == *obj) {
+				return(false);
+			}
+			obj++;
 		}
-		obj++;
 	}
 
 	return(bucket.Add(ObjectType(packed, packed)));
@@ -161,13 +163,15 @@ inline bool HashTableClass<K, V>::Add_Object(int bucket_index, ObjectType const 
 {
 	BucketType & bucket = Buckets[bucket_index];
 
-	ObjectType * obj = &bucket[0];
-	for (int index = bucket.Count() - 1; index >= 0; index--) {
-		if ((K &)object == (K &)*obj) {
+	if (bucket.Count() > 0) {
+		ObjectType * obj = &bucket[0];
+		for (int index = bucket.Count() - 1; index >= 0; index--) {
+			if ((K &)object == (K &)*obj) {
 
-			return(false);
+				return(false);
+			}
+			obj++;
 		}
-		obj++;
 	}
 	bucket.Add(object);
 	return(true);
@@ -178,11 +182,13 @@ template<typename K, typename V>
 inline bool HashTableClass<K, V>::Add_Object(const ObjectType & o, bool head)
 {
 	BucketType & bucket = Buckets[o.Key.Hash()];
-	const ObjectType * oo = &bucket[0];
+	if (bucket.Count() > 0) {
+		const ObjectType * oo = &bucket[0];
 
-	for (int index = 0; index < bucket.Count(); index++) {
-		if (oo[index] == o) {
-			return(false);
+		for (int index = 0; index < bucket.Count(); index++) {
+			if (oo[index] == o) {
+				return(false);
+			}
 		}
 	}
 

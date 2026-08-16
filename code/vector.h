@@ -50,11 +50,16 @@
 #pragma once
 
 #include "always.h"
+#include "assert.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <new.h>
+#include <ranges>
+#include <span>
+#include <type_traits>
+#include <utility>
 
 
 class	NoInitClass;
@@ -64,8 +69,8 @@ class	NoInitClass;
 **	class, as an array of arbitrary objects where the array can be dynamically
 **	sized. Because is deals with arbitrary object types, it can handle everything.
 **	As a result of this, it is not terribly efficient for integral objects (such
-**	as char or int). It will function correctly, but the copy constructor and
-**	equality operator could be highly optimized if the integral type were known.
+**	as char or int). It will function correctly, but the copy constructor
+**	could be highly optimized if the integral type were known.
 **	This efficiency can be implemented by deriving an integral vector template
 **	from this one in order to supply more efficient routines.
 */
@@ -74,22 +79,30 @@ class VectorClass
 {
 	public:
 		VectorClass(NoInitClass const &) {};
-		VectorClass(int size=0, T const * array=0);
+		VectorClass(int size=0);
 		VectorClass(VectorClass<T> const &);		// Copy constructor.
-		virtual ~VectorClass(void);
+		VectorClass(VectorClass<T> &&) noexcept;	// Move constructor.
+		~VectorClass(void);
 
-		T & operator[](int index) {return(Vector[index]);};
-		T const & operator[](int index) const {return(Vector[index]);};
+		T & operator[](int index) {assert((unsigned)index < (unsigned)VectorMax); return(Vector[index]);};
+		T const & operator[](int index) const {assert((unsigned)index < (unsigned)VectorMax); return(Vector[index]);};
 
 		VectorClass<T> & operator =(VectorClass<T> const &); // Assignment operator.
+		VectorClass<T> & operator =(VectorClass<T> &&) noexcept;
 
-		virtual bool operator == (VectorClass<T> const &) const;	// Equality operator.
+		bool Resize(int newsize);
+		void Clear(void);
+		[[nodiscard]] int Length(void) const noexcept {return(VectorMax);};
+		[[nodiscard]] int ID(T const * ptr) const;	// Pointer based identification.
+		[[nodiscard]] int ID(T const & ptr) const;	// Value based identification.
 
-		virtual bool Resize(int newsize, T const * array=0);
-		virtual void Clear(void);
-		int Length(void) const {return(VectorMax);};
-		virtual int ID(T const * ptr);	// Pointer based identification.
-		virtual int ID(T const & ptr);	// Value based identification.
+		[[nodiscard]] T * begin(void) noexcept {return(Vector);};
+		[[nodiscard]] T * end(void) noexcept {return(Vector + VectorMax);};
+		[[nodiscard]] T const * begin(void) const noexcept {return(Vector);};
+		[[nodiscard]] T const * end(void) const noexcept {return(Vector + VectorMax);};
+
+		operator std::span<T>(void) noexcept {return(std::span<T>(Vector, (std::size_t)VectorMax));};
+		operator std::span<T const>(void) const noexcept {return(std::span<T const>(Vector, (std::size_t)VectorMax));};
 
 	protected:
 
@@ -104,35 +117,20 @@ class VectorClass
 		int VectorMax;
 
 		/*
-		**	This indicates if the vector is in a valid (even if empty) state.
-		*/
-		bool IsValid;
-
-		/*
 		**	Does the vector data pointer refer to memory that this class has manually
 		**	allocated? If so, then this class is responsible for deleting it.
 		*/
 		bool IsAllocated;
-
-		/*
-		**	Padding to align the class.
-		*/
-		bool VectorClassPad[2];
 };
 
 
 /***********************************************************************************************
  * VectorClass<T>::VectorClass -- Constructor for vector class.                                *
  *                                                                                             *
- *    This constructor for the vector class is passed the initial size of the vector and an    *
- *    optional pointer to a preallocated block of memory that the vector will be placed in.    *
- *    If this optional pointer is NULL (or not provided), then the vector is allocated out     *
- *    of free store (with the "new" operator).                                                 *
+ *    This constructor for the vector class is passed the initial size of the vector. The      *
+ *    vector is allocated out of free store (with the "new" operator).                         *
  *                                                                                             *
  * INPUT:   size  -- The number of elements to initialize this vector to.                      *
- *                                                                                             *
- *          array -- Optional pointer to a previously allocated memory block to hold the       *
- *                   vector.                                                                   *
  *                                                                                             *
  * OUTPUT:  none                                                                               *
  *                                                                                             *
@@ -142,23 +140,20 @@ class VectorClass
  *   03/10/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-VectorClass<T>::VectorClass(int size, T const * array) :
-	Vector(0),
+VectorClass<T>::VectorClass(int size) :
+	Vector(nullptr),
 	VectorMax(size),
-	IsValid(true),
 	IsAllocated(false)
 {
 	/*
 	**	Allocate the vector. The default constructor will be called for every
 	**	object in this vector.
 	*/
-	if (size) {
-		if (array) {
-			Vector = new((void*)array) T[size];
-		} else {
-			Vector = new T[size];
-			IsAllocated = true;
-		}
+	if (size > 0) {
+		Vector = new T[size];
+		IsAllocated = true;
+	} else {
+		VectorMax = 0;
 	}
 }
 
@@ -181,7 +176,7 @@ VectorClass<T>::VectorClass(int size, T const * array) :
 template<class T>
 VectorClass<T>::~VectorClass(void)
 {
-	VectorClass<T>::Clear();
+	Clear();
 }
 
 
@@ -202,12 +197,27 @@ VectorClass<T>::~VectorClass(void)
  *=============================================================================================*/
 template<class T>
 VectorClass<T>::VectorClass(VectorClass<T> const & vector) :
-	Vector(0),
+	Vector(nullptr),
 	VectorMax(0),
-	IsValid(true),
 	IsAllocated(false)
 {
 	*this = vector;
+}
+
+
+/// <summary>
+/// Takes over the storage of another vector, leaving that vector empty.
+/// </summary>
+/// <param name="vector">The vector to take the elements from.</param>
+template<class T>
+VectorClass<T>::VectorClass(VectorClass<T> && vector) noexcept :
+	Vector(vector.Vector),
+	VectorMax(vector.VectorMax),
+	IsAllocated(vector.IsAllocated)
+{
+	vector.Vector = nullptr;
+	vector.VectorMax = 0;
+	vector.IsAllocated = false;
 }
 
 
@@ -230,53 +240,45 @@ template<class T>
 VectorClass<T> & VectorClass<T>::operator =(VectorClass<T> const & vector)
 {
 	if (this != &vector) {
-		Clear();
-		VectorMax = vector.Length();
-		if (VectorMax) {
-			Vector = new T[VectorMax];
-			if (Vector) {
-				IsAllocated = true;
-				for (int index = 0; index < VectorMax; index++) {
-					Vector[index] = vector[index];
-				}
+
+		// The replacement storage is built before this vector is disturbed, so a failed
+		// allocation leaves the original elements intact.
+		int newmax = vector.Length();
+		T * newptr = nullptr;
+		if (newmax > 0) {
+			newptr = new T[newmax];
+			for (int index = 0; index < newmax; index++) {
+				newptr[index] = vector[index];
 			}
-		} else {
-			Vector = 0;
-			IsAllocated = false;
 		}
+
+		Clear();
+		Vector = newptr;
+		VectorMax = newmax;
+		IsAllocated = (newptr != nullptr);
 	}
 	return(*this);
 }
 
 
-/***********************************************************************************************
- * VectorClass<T>::operator == -- Equality operator for vector objects.                        *
- *                                                                                             *
- *    This operator compares two vectors for equality. It does this by performing an object    *
- *    by object comparison between the two vectors.                                            *
- *                                                                                             *
- * INPUT:   vector   -- The right vector expression.                                           *
- *                                                                                             *
- * OUTPUT:  bool; Are the two vectors essentially equal? (do they contain comparable elements  *
- *                in the same order?)                                                          *
- *                                                                                             *
- * WARNINGS:   The equality operator must exist for the objects that this vector contains.     *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Takes over the storage of another vector, leaving that vector empty.
+/// </summary>
+/// <param name="vector">The vector to take the elements from.</param>
+/// <returns>Returns with a reference to this vector.</returns>
 template<class T>
-bool VectorClass<T>::operator == (VectorClass<T> const & vector) const
+VectorClass<T> & VectorClass<T>::operator =(VectorClass<T> && vector) noexcept
 {
-	if (VectorMax == vector.Length()) {
-		for (int index = 0; index < VectorMax; index++) {
-			if (Vector[index] != vector[index]) {
-				return(false);
-			}
-		}
-		return(true);
+	if (this != &vector) {
+		Clear();
+		Vector = vector.Vector;
+		VectorMax = vector.VectorMax;
+		IsAllocated = vector.IsAllocated;
+		vector.Vector = nullptr;
+		vector.VectorMax = 0;
+		vector.IsAllocated = false;
 	}
-	return(false);
+	return(*this);
 }
 
 
@@ -299,10 +301,9 @@ bool VectorClass<T>::operator == (VectorClass<T> const & vector) const
  *   03/13/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-inline int VectorClass<T>::ID(T const * ptr)
+inline int VectorClass<T>::ID(T const * ptr) const
 {
-	if (!IsValid) return(0);
-	return(((unsigned int)ptr - (unsigned int)&(*this)[0]) / sizeof(T));
+	return((int)(ptr - Vector));
 }
 
 
@@ -323,14 +324,11 @@ inline int VectorClass<T>::ID(T const * ptr)
  *   03/13/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-int VectorClass<T>::ID(T const & object)
+int VectorClass<T>::ID(T const & object) const
 {
-	if (!IsValid) return(0);
-
-	for (int index = 0; index < VectorMax; index++) {
-		if ((*this)[index] == object) {
-			return(index);
-		}
+	T const * found = std::find(begin(), end(), object);
+	if (found != end()) {
+		return((int)(found - Vector));
 	}
 	return(-1);
 }
@@ -357,8 +355,8 @@ void VectorClass<T>::Clear(void)
 {
 	if (Vector && IsAllocated) {
 		delete[] Vector;
-		Vector = 0;
 	}
+	Vector = nullptr;
 	IsAllocated = false;
 	VectorMax = 0;
 }
@@ -372,10 +370,6 @@ void VectorClass<T>::Clear(void)
  *                                                                                             *
  * INPUT:   newsize  -- The desired size of the vector.                                        *
  *                                                                                             *
- *          array    -- Optional pointer to a previously allocated memory block that the       *
- *                      array will be located in. If this parameter is not supplied, then      *
- *                      the array will be allocated from free store.                           *
- *                                                                                             *
  * OUTPUT:  bool; Was the array resized successfully?                                          *
  *                                                                                             *
  * WARNINGS:   Failure to succeed could be the result of running out of memory.                *
@@ -384,45 +378,24 @@ void VectorClass<T>::Clear(void)
  *   03/10/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-bool VectorClass<T>::Resize(int newsize, T const * array)
+bool VectorClass<T>::Resize(int newsize)
 {
-	if (newsize) {
+	if (newsize > 0) {
 
 		/*
 		**	Allocate a new vector of the size specified. The default constructor
 		**	will be called for every object in this vector.
 		*/
-		T * newptr;
+		// This happens before anything is released, so a failed allocation leaves
+		// this vector as it was.
+		T * newptr = new T[newsize];
 
 		/*
-		**	Either create a new memory block for the object array or initialize
-		**	an existing block as indicated by the array parameter. When creating a new
-		**	memory block, flag that the vector object is currently in an invalid
-		**	state. This is necessary because the default constructor for the object
-		**	elements may look to the vector to fetch their ID number.
+		**	Copy as much of the old vector into the new vector as possible. This
+		**	presumes that there is a functional assignment operator for each
+		**	of the objects in the vector.
 		*/
-		IsValid = false;
-		if (!array) {
-			newptr = new T[newsize];
-		} else {
-			newptr = new((void*)array) T[newsize];
-		}
-		IsValid = true;
-		if (!newptr) {
-			return(false);
-		}
-
-		/*
-		**	If there is an old vector, then it must be copied (as much as is feasible)
-		**	to the new vector.
-		*/
-		if (Vector != NULL) {
-
-			/*
-			**	Copy as much of the old vector into the new vector as possible. This
-			**	presumes that there is a functional assignment operator for each
-			**	of the objects in the vector.
-			*/
+		if (Vector != nullptr) {
 			int copycount = (newsize < VectorMax) ? newsize : VectorMax;
 			for (int index = 0; index < copycount; index++) {
 				newptr[index] = Vector[index];
@@ -436,7 +409,6 @@ bool VectorClass<T>::Resize(int newsize, T const * array)
 			*/
 			if (IsAllocated) {
 				delete[] Vector;
-				Vector = 0;
 			}
 		}
 
@@ -445,7 +417,7 @@ bool VectorClass<T>::Resize(int newsize, T const * array)
 		*/
 		Vector = newptr;
 		VectorMax = newsize;
-		IsAllocated = (Vector && !array);
+		IsAllocated = true;
 
 	} else {
 
@@ -475,21 +447,22 @@ class DynamicVectorClass : public VectorClass<T>
 	public:
 		using BASECLASS::Length;
 
-		DynamicVectorClass(unsigned size=0, T const * array=0);
+		DynamicVectorClass(int size=0);
 		DynamicVectorClass(NoInitClass const & x) : BASECLASS(x) {}
 
-		// Stubbed equality operators so you can have dynamic vectors of dynamic vectors
-		bool operator== (const DynamicVectorClass &src)	{ return false; }
-		bool operator!= (const DynamicVectorClass &src)	{ return true; }
+		DynamicVectorClass(DynamicVectorClass<T> const &) = default;
+		DynamicVectorClass<T> & operator =(DynamicVectorClass<T> const &) = default;
+		DynamicVectorClass(DynamicVectorClass<T> &&) noexcept;
+		DynamicVectorClass<T> & operator =(DynamicVectorClass<T> &&) noexcept;
 
 		// Change maximum size of vector.
-		virtual bool Resize(int newsize, T const * array=0) override;
+		bool Resize(int newsize);
 
 		// Resets and frees the vector array.
-		virtual void Clear(void) override {ActiveCount = 0;BASECLASS::Clear();};
+		void Clear(void) {ActiveCount = 0;BASECLASS::Clear();};
 
 		// Fetch number of "allocated" vector objects.
-		int Count(void) const {return(ActiveCount);};
+		[[nodiscard]] int Count(void) const noexcept {return(ActiveCount);};
 
 		// Add object to vector (growing as necessary).
 		bool Add(T const & object);
@@ -510,12 +483,22 @@ class DynamicVectorClass : public VectorClass<T>
 		int Set_Growth_Step(int step) {return(GrowthStep = step);};
 
 		// Fetch current growth step rate.
-		int Growth_Step(void) {return(GrowthStep);};
+		[[nodiscard]] int Growth_Step(void) const noexcept {return(GrowthStep);};
 
-		virtual int ID(T const * ptr) override {return(BASECLASS::ID(ptr));};
-		virtual int ID(T const & ptr) override;
+		[[nodiscard]] int ID(T const * ptr) const {return(BASECLASS::ID(ptr));};
+		[[nodiscard]] int ID(T const & ptr) const;
+
+		[[nodiscard]] T * end(void) noexcept {return(BASECLASS::begin() + ActiveCount);};
+		[[nodiscard]] T const * end(void) const noexcept {return(BASECLASS::begin() + ActiveCount);};
+
+		operator std::span<T>(void) noexcept {return(std::span<T>(BASECLASS::begin(), (std::size_t)ActiveCount));};
+		operator std::span<T const>(void) const noexcept {return(std::span<T const>(BASECLASS::begin(), (std::size_t)ActiveCount));};
 
 	protected:
+
+		// Growing is refused unless this vector owns its storage, or has none yet,
+		// and a growth step has been set.
+		bool Grow(void);
 
 		using BASECLASS::IsAllocated;
 		using BASECLASS::VectorMax;
@@ -542,13 +525,9 @@ class DynamicVectorClass : public VectorClass<T>
  *                                                                                             *
  *    This is the normal constructor for the dynamic vector class. It is similar to the normal *
  *    vector class constructor. The vector is initialized to contain the number of elements    *
- *    specified in the "size" parameter. The memory is allocated from free store unless the    *
- *    optional array parameter is provided. In this case it will place the vector at the       *
- *    memory location specified.                                                               *
+ *    specified in the "size" parameter. The memory is allocated from free store.              *
  *                                                                                             *
  * INPUT:   size  -- The maximum number of objects allowed in this vector.                     *
- *                                                                                             *
- *          array -- Optional pointer to the memory area to place the vector at.               *
  *                                                                                             *
  * OUTPUT:  none                                                                               *
  *                                                                                             *
@@ -558,11 +537,62 @@ class DynamicVectorClass : public VectorClass<T>
  *   03/10/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-DynamicVectorClass<T>::DynamicVectorClass(unsigned size, T const * array)
-	: BASECLASS(size, array)
+DynamicVectorClass<T>::DynamicVectorClass(int size)
+	: BASECLASS(size)
 {
 	GrowthStep = 10;
 	ActiveCount = 0;
+}
+
+
+/// <summary>
+/// Takes over the storage of another vector, leaving that vector empty.
+/// </summary>
+/// <param name="that">The vector to take the elements from.</param>
+template<class T>
+DynamicVectorClass<T>::DynamicVectorClass(DynamicVectorClass<T> && that) noexcept
+	: BASECLASS(std::move(that))
+{
+	ActiveCount = that.ActiveCount;
+	GrowthStep = that.GrowthStep;
+	that.ActiveCount = 0;
+}
+
+
+/// <summary>
+/// Takes over the storage of another vector, leaving that vector empty.
+/// </summary>
+/// <param name="that">The vector to take the elements from.</param>
+/// <returns>Returns with a reference to this vector.</returns>
+template<class T>
+DynamicVectorClass<T> & DynamicVectorClass<T>::operator =(DynamicVectorClass<T> && that) noexcept
+{
+	if (this != &that) {
+		BASECLASS::operator =(std::move(that));
+		ActiveCount = that.ActiveCount;
+		GrowthStep = that.GrowthStep;
+		that.ActiveCount = 0;
+	}
+	return(*this);
+}
+
+
+/// <summary>
+/// Makes room for one more object, expanding the vector by its growth step if needed.
+/// </summary>
+/// <returns>bool; Is there room for another object?</returns>
+/// <remarks>Growing is refused for a vector sitting on storage it does not own, or one
+/// whose growth step is zero.</remarks>
+template<class T>
+bool DynamicVectorClass<T>::Grow(void)
+{
+	if (ActiveCount < Length()) {
+		return(true);
+	}
+	if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
+		return(Resize(Length() + GrowthStep));
+	}
+	return(false);
 }
 
 
@@ -570,13 +600,10 @@ DynamicVectorClass<T>::DynamicVectorClass(unsigned size, T const * array)
  * DynamicVectorClass<T>::Resize -- Changes the size of a dynamic vector.                      *
  *                                                                                             *
  *    Use this routine to change the size of the vector. The size changed is the maximum       *
- *    number of allocated objects within this vector. If a memory buffer is provided, then     *
- *    the vector will be located there. Otherwise, the memory will be allocated out of free    *
- *    store.                                                                                   *
+ *    number of allocated objects within this vector. The memory will be allocated out of      *
+ *    free store.                                                                              *
  *                                                                                             *
  * INPUT:   newsize  -- The desired maximum size of this vector.                               *
- *                                                                                             *
- *          array    -- Optional pointer to a previously allocated memory array.               *
  *                                                                                             *
  * OUTPUT:  bool; Was vector successfully resized according to specifications?                 *
  *                                                                                             *
@@ -586,9 +613,9 @@ DynamicVectorClass<T>::DynamicVectorClass(unsigned size, T const * array)
  *   03/10/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-bool DynamicVectorClass<T>::Resize(int newsize, T const * array)
+bool DynamicVectorClass<T>::Resize(int newsize)
 {
-	if (BASECLASS::Resize(newsize, array)) {
+	if (BASECLASS::Resize(newsize)) {
 		if (Length() < ActiveCount) ActiveCount = Length();
 		return(true);
 	}
@@ -615,10 +642,12 @@ bool DynamicVectorClass<T>::Resize(int newsize, T const * array)
  *   03/13/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 template<class T>
-int DynamicVectorClass<T>::ID(T const & object)
+int DynamicVectorClass<T>::ID(T const & object) const
 {
-	for (int index = 0; index < Count(); index++) {
-		if ((*this)[index] == object) return(index);
+	T const * first = BASECLASS::begin();
+	T const * found = std::find(first, first + ActiveCount, object);
+	if (found != first + ActiveCount) {
+		return((int)(found - first));
 	}
 	return(-1);
 }
@@ -644,24 +673,8 @@ int DynamicVectorClass<T>::ID(T const & object)
 template<class T>
 bool DynamicVectorClass<T>::Add(T const & object)
 {
-	if (ActiveCount >= Length()) {
-		if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
-			if (!Resize(Length() + GrowthStep)) {
-
-				/*
-				**	Failure to increase the size of the vector is an error condition.
-				**	Return with the error flag.
-				*/
-				return(false);
-			}
-		} else {
-
-			/*
-			**	Increasing the size of this vector is not allowed! Bail this
-			**	routine with the error code.
-			*/
-			return(false);
-		}
+	if (!Grow()) {
+		return(false);
 	}
 
 	/*
@@ -690,36 +703,7 @@ bool DynamicVectorClass<T>::Add(T const & object)
 template<class T>
 bool DynamicVectorClass<T>::Add_Head(T const & object)
 {
-	if (ActiveCount >= Length()) {
-		if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
-			if (!Resize(Length() + GrowthStep)) {
-
-				/*
-				**	Failure to increase the size of the vector is an error condition.
-				**	Return with the error flag.
-				*/
-				return(false);
-			}
-		} else {
-
-			/*
-			**	Increasing the size of this vector is not allowed! Bail this
-			**	routine with the error code.
-			*/
-			return(false);
-		}
-	}
-
-	/*
-	**	There is room for the new object now. Add it to the end of the object vector.
-	*/
-	if (ActiveCount) {
-		memmove(&(*this)[1], &(*this)[0], ActiveCount * sizeof(T));
-	}
-	(*this)[0] = object;
-	ActiveCount++;
-	//	(*this)[ActiveCount++] = object;
-	return(true);
+	return(Insert(0, object));
 }
 
 
@@ -741,31 +725,21 @@ bool DynamicVectorClass<T>::Insert(int index, T const & object)
 	if (index < 0) return(false);
 	if (index > ActiveCount) return(false);
 
-	if (ActiveCount >= Length()) {
-		if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
-			if (!Resize(Length() + GrowthStep)) {
-
-				/*
-				**	Failure to increase the size of the vector is an error condition.
-				**	Return with the error flag.
-				*/
-				return(false);
-			}
-		} else {
-
-			/*
-			**	Increasing the size of this vector is not allowed! Bail this
-			**	routine with the error code.
-			*/
-			return(false);
-		}
+	if (!Grow()) {
+		return(false);
 	}
 
 	/*
 	**	There is room for the new object now. Add it at the desired position.
 	*/
 	if (index < ActiveCount) {
-		memmove(&(*this)[index + 1], &(*this)[index], (ActiveCount - index) * sizeof(T));
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			memmove(&(*this)[index + 1], &(*this)[index], (ActiveCount - index) * sizeof(T));
+		} else {
+			for (int i = ActiveCount; i > index; i--) {
+				(*this)[i] = (*this)[i - 1];
+			}
+		}
 	}
 	(*this)[index] = object;
 	ActiveCount++;
@@ -773,38 +747,17 @@ bool DynamicVectorClass<T>::Insert(int index, T const & object)
 }
 
 
+/// <summary>
+/// Inserts an object after the specified index.
+/// </summary>
+/// <param name="index">The index to insert after. An index of -1 places the object at
+/// the head of the vector.</param>
+/// <param name="object">The object to insert.</param>
+/// <returns>bool; Was the object inserted?</returns>
 template<class T>
 bool DynamicVectorClass<T>::Insert_After(int index, T const & object)
 {
-	if (ActiveCount >= Length()) {
-		if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
-			if (!Resize(Length() + GrowthStep)) {
-
-				/*
-				**	Failure to increase the size of the vector is an error condition.
-				**	Return with the error flag.
-				*/
-				return(false);
-			}
-		} else {
-
-			/*
-			**	Increasing the size of this vector is not allowed! Bail this
-			**	routine with the error code.
-			*/
-			return(false);
-		}
-	}
-
-	/*
-	**	There is room for the new object now. Add it at the desired position.
-	*/
-	if (index < ActiveCount - 1) {
-		memmove(&(*this)[index + 2], &(*this)[index + 1], (ActiveCount - (index + 1)) * sizeof(T));
-	}
-	(*this)[index + 1] = object;
-	ActiveCount++;
-	return(true);
+	return(Insert(index + 1, object));
 }
 
 
@@ -855,18 +808,21 @@ bool DynamicVectorClass<T>::Delete(T const & object)
 template<class T>
 bool DynamicVectorClass<T>::Delete_Index(int index)
 {
-	if (index < ActiveCount) {
+	if (index >= 0 && index < ActiveCount) {
 		ActiveCount--;
 
 		/*
 		**	If there are any objects past the index that was deleted, copy those
-		**	objects down in order to fill the hole. A simple memory copy is
-		**	not sufficient since the vector could contain class objects that
-		**	need to use the assignment operator for movement.
+		**	objects down in order to fill the hole.
 		*/
-//		(&(*this)[index])->~ T ();
-		for (int i = index; i < ActiveCount; i++) {
-			(*this)[i] = (*this)[i+1];
+		if (index < ActiveCount) {
+			if constexpr (std::is_trivially_copyable_v<T>) {
+				memmove(&(*this)[index], &(*this)[index + 1], (ActiveCount - index) * sizeof(T));
+			} else {
+				for (int i = index; i < ActiveCount; i++) {
+					(*this)[i] = (*this)[i+1];
+				}
+			}
 		}
 		return(true);
 	}
@@ -881,6 +837,11 @@ void DynamicVectorClass<T>::Delete_All(void)
 	Clear();		// Forces destructor call on each object.
 	Resize(len);
 }
+
+
+// The save/load and sorting code takes pointers into the element storage and walks them.
+static_assert(std::ranges::contiguous_range<VectorClass<int>>);
+static_assert(std::ranges::contiguous_range<DynamicVectorClass<int>>);
 
 
 /*

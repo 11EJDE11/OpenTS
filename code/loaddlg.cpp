@@ -73,7 +73,7 @@
  *   02/14/1995 BR : Created.                                                                  *
  *=============================================================================================*/
 LoadOptionsClass::LoadOptionsClass(void) :
-	Files(0,0),
+	Files(0),
 	Style(NONE),
 	Description(NULL),
 	Callback(NULL)

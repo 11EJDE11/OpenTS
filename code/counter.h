@@ -18,7 +18,7 @@ class CounterClass : protected VectorClass<int>
 {
 public:
 	CounterClass(void);
-	virtual ~CounterClass(void) override;
+	~CounterClass(void);
 
 	int Increment(int index);
 	int Decrement(int index);

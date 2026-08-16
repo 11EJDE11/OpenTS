@@ -2,12 +2,11 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
     <Type Name="VectorClass&lt;*&gt;">
-        <!-- $T1 = T. Every slot up to VectorMax is live; IsValid is false only mid-resize. -->
-        <Intrinsic Name="size" Expression="!IsValid || Vector == 0 ? 0 : VectorMax" />
+        <!-- $T1 = T. Every slot up to VectorMax is live. -->
+        <Intrinsic Name="size" Expression="Vector == 0 ? 0 : VectorMax" />
         <DisplayString>{{ size={size()} }}</DisplayString>
         <Expand>
             <Item Name="[allocated]" ExcludeView="simple">IsAllocated</Item>
-            <Item Name="[valid]" ExcludeView="simple">IsValid</Item>
             <Item Name="[data_ptr]" ExcludeView="simple">Vector</Item>
             <ArrayItems>
                 <Size>size()</Size>
@@ -18,14 +17,13 @@
 
     <Type Name="DynamicVectorClass&lt;*&gt;">
         <!-- $T1 = T. Live elements occupy [0, ActiveCount); VectorMax is capacity. -->
-        <Intrinsic Name="size" Expression="!IsValid || Vector == 0 ? 0 : ActiveCount" />
-        <Intrinsic Name="capacity" Expression="!IsValid || Vector == 0 ? 0 : VectorMax" />
+        <Intrinsic Name="size" Expression="Vector == 0 ? 0 : ActiveCount" />
+        <Intrinsic Name="capacity" Expression="Vector == 0 ? 0 : VectorMax" />
         <DisplayString>{{ size={size()} }}</DisplayString>
         <Expand>
             <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
             <Item Name="[growth_step]" ExcludeView="simple">GrowthStep</Item>
             <Item Name="[allocated]" ExcludeView="simple">IsAllocated</Item>
-            <Item Name="[valid]" ExcludeView="simple">IsValid</Item>
             <Item Name="[data_ptr]" ExcludeView="simple">Vector</Item>
             <!-- iterate only the active prefix, not the full VectorMax capacity -->
             <ArrayItems>
