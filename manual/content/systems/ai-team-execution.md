@@ -150,7 +150,7 @@ Each team runs its own copy of the Script its TeamType names, and that copy carr
 The script step runs only when the fork selects it. Where the advance flag is set, the step clears it, steps the cursor on by one, and clears every member's recorded return point. A cursor stepped past the last line deletes the team outright, which is the ordinary end of a team that finishes its work. Otherwise the mission target is cleared and the handler for the new line is run and told this is its first pass. On every later turn the same handler runs again and is told it is not.
 
 :::caution[An unhandled line stalls the team rather than being skipped]
-The dispatch that selects a handler has no fallback: a line whose mission has no entry in it does nothing at all, and since nothing raises the advance flag on that turn either, the team sits on that line for the rest of the match. Exactly one of the 53 team missions is missing from that dispatch, [Go Berzerk](/mapping/missions/tmission-berzerk/). A handler that runs but neither raises the advance flag itself nor leaves the team on a path that will raise it comes to the same end, and [Change script...](/mapping/missions/tmission-script/) is one such handler.
+The dispatch that selects a handler has no fallback: a line whose mission has no entry in it does nothing at all, and since nothing raises the advance flag on that turn either, the team sits on that line for the rest of the match. Every one of the 53 team missions has an entry in it. A handler that runs but neither raises the advance flag itself nor leaves the team on a path that will raise it comes to the same end, and [Change script...](/mapping/missions/tmission-script/) is one such handler.
 :::
 
 ## Answering damage
