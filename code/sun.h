@@ -41,12 +41,6 @@
 #endif
 
 
-/*
- * Undefine this to compile Blowfish into the binary instead of the dll library.
- */
-//#define NO_BLOWFISH_DLL
-
-
 /// Undefine this for the demo build of the game -- Must be first!
 //#define _DEMO
 

@@ -31,7 +31,6 @@
 
 #pragma once
 
-#include "sun.h"	/// Supplies the NO_BLOWFISH_DLL switch.
 #include "win.h"
 
 /// Names and comments from TLBs
@@ -84,7 +83,6 @@ class BlowfishEngine {
 		void Sub_Key_Encrypt(unsigned int & left, unsigned int & right);
 
 		void Process_Block(void const * plaintext, void * cyphertext, unsigned int const * ptable);
-		void Initialize_Tables(void);
 
 		enum {
 			ROUNDS = 16,		// Feistal round count (16 is standard).
