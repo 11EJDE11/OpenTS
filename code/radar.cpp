@@ -1561,11 +1561,10 @@ void RadarClass::Plot_Radar_Pixel(Point2D const & point)
 
 		RADAR_HASH_TABLE::BucketType &bucket = RadarTrackingTable->Buckets[track.Hash()];
 		int count = bucket.Count();
-		RADAR_HASH_TABLE::ObjectType *ptr = &bucket[0];
 
 		for (int index = 0; index < count; index++) {
-			TechnoClass *candidate = ptr[index].Key.Object;
-			if (ptr[index].Key == track) {
+			TechnoClass *candidate = bucket[index].Key.Object;
+			if (bucket[index].Key == track) {
 				tech = candidate;
 				break;
 			}
