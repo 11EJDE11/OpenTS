@@ -1371,7 +1371,7 @@ void SidebarClass::StripClass::Deactivate(void)
  *=============================================================================================*/
 bool SidebarClass::StripClass::Add(RTTIType type, int id)
 {
-	if (BuildableCount <= MAX_BUILDABLES) {
+	if (BuildableCount < MAX_BUILDABLES) {
 		for (int index = 0; index < BuildableCount; index++) {
 			if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
 				return(false);
@@ -1662,7 +1662,7 @@ char const * SidebarClass::StripClass::Help_Text(int id)
 	int i = id + TopIndex;
 
 	if (GameActive) {
-		if (i < BuildableCount && BuildableCount < MAX_BUILDABLES) {
+		if (i < BuildableCount) {
 			if (Buildables[i].BuildableType == RTTI_SPECIAL) {
 				return(SuperWeaponTypes[Buildables[i].BuildableID]->Full_Name());
 			}
@@ -2644,11 +2644,14 @@ const char * SidebarClass::Help_Text(int id)
 /// resolution. It is used to lay the strips out and to decide when scrolling is called for.
 /// </summary>
 /// <returns>Returns with the number of build cameos that will fit in one strip.</returns>
+/// <remarks>A strip has MAX_SLOTS select buttons, so a taller picture than those can fill
+/// shows the slots it has rather than the slots that would fit.</remarks>
 int SidebarClass::Max_Visible(void)
 {
 	if (SidebarSurface != NULL && SidebarShape != NULL) {
 		Rect r = SidebarRect;
-		return((r.Height - SidebarBottomShape->Get_Height() - SidebarShape->Get_Height()) / SidebarMiddleShape->Get_Height());
+		int fits = (r.Height - SidebarBottomShape->Get_Height() - SidebarShape->Get_Height()) / SidebarMiddleShape->Get_Height();
+		return(MIN(fits, int(StripClass::MAX_SLOTS)));
 	}
 	return(StripClass::MAX_VISIBLE);
 }

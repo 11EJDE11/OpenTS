@@ -31,11 +31,7 @@ The left strip holds structures. The right strip holds everything else — vehic
 
 A type reaching a strip for the first time speaks the new-construction-options line, except while a scenario is still being set up and except for a superweapon cameo, which is always added silently.
 
-A strip holds 75 entries.
-
-:::danger[A seventy-sixth entry is written past the end of the strip]
-The capacity test admits a new entry when the strip already holds 75, so that entry lands one place beyond the array holding them and the strip then reports a length of 76. The right-hand strip is the one to watch, because it carries every vehicle, infantry, aircraft and superweapon a house may build at the same time. A strip that has reached 75 entries also stops answering the cameo tooltip.
-:::
+A strip holds 225 entries, and a type offered to a strip that is already full is silently left off it. The right-hand strip is the one to watch, because it carries every vehicle, infantry, aircraft and superweapon a house may build at the same time.
 
 ### What removes a cameo
 
@@ -140,11 +136,13 @@ The four buttons above the strips toggle the same modes as [Repair Mode](/comman
 
 ## What is fixed in the engine
 
-Almost nothing on this surface is laid out from a setting. The panel's side, its width, the number of strips, their positions, the size of a cameo slot, the 75-entry capacity, the distance a strip scrolls in one update, and the pacing of the power bar's blink and of the radar animation are all compile-time constants.
+Almost nothing on this surface is laid out from a setting. The panel's side, its width, the number of strips, their positions, the size of a cameo slot, the 225-entry capacity, the distance a strip scrolls in one update, and the pacing of the power bar's blink and of the radar animation are all compile-time constants.
 
 The panel occupies the right edge of the screen and nothing moves it. The engine still carries a complete left-hand alternative for the sidebar, the tab bar, the radar and the tooltip regions, but which of the two is used is fixed in code and never read from `sun.ini` or from rules, so the left-hand layout is unreachable.
 
 The one figure that does vary is how many cameo slots a strip shows, and it is not a setting either: it is the height left over after the backdrop's top piece and bottom cap, divided by the height of its repeating middle piece. A taller screen therefore shows more cameos and a shorter one fewer.
+
+A strip stops at 60 slots however tall the picture is. The backdrop is built from that same count, so a picture tall enough for more than 60 rows ends its sidebar art below the sixtieth one rather than at the foot of the screen.
 
 None of the art filenames comes from a setting either. The table gives each file the panel loads and what that file draws; which of them resolve to different art for each side is settled by the paragraph below it rather than by anything in the rules.
 

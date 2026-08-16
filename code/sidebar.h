@@ -182,11 +182,11 @@ class SidebarClass : public PowerClass
 					BUTTON_UP=200,
 					BUTTON_DOWN=210,
 					BUTTON_SELECT=220,
-					MAX_BUILDABLES=75,				// Maximum number of object types in sidebar.
+					MAX_BUILDABLES=225,				// Maximum number of object types in sidebar.
 					OBJECT_HEIGHT=51,				// Pixel height of each buildable object.
 					OBJECT_WIDTH=64,				// Pixel width of each buildable object.
 					MAX_VISIBLE=4,					// Number of object slots visible at any one time.
-					MAX_SLOTS=20,					/// Maximum number of object slots at any resolution.
+					MAX_SLOTS=60,					/// Maximum number of object slots at any resolution.
 					SCROLL_RATE=OBJECT_HEIGHT,		// The pixel jump while scrolling (larger is faster).
 					UP_X_OFFSET=5,					// Scroll up arrow coordinates.
 					UP_Y_OFFSET=25,					/// Y offset of the scroll arrows below the last object slot.
