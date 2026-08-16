@@ -371,9 +371,9 @@ bool FactoryClass::Suspend(bool onhold)
 bool FactoryClass::Start(bool onhold)
 {
 	if ((Object || SpecialItem) && IsSuspended && !Has_Completed()) {
-		if (House->Available_Money() >= Cost_Per_Tick()) {
-			Set_Rate(Build_Rate());
 			IsSuspended = false;
+		Set_Rate(Build_Rate());
+		if (House->Available_Money() >= Cost_Per_Tick()) {
 			IsOnHold = true;
 			if (onhold) {
 				Suspend(true);
