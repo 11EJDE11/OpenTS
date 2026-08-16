@@ -1941,6 +1941,15 @@ bool TActionClass::TAction_LOCK_INPUT(HouseClass * , ObjectClass * , TriggerClas
 {
 	Speak(VOX_CONTROL_ESTABLISHED);
 
+	Map.PendingObjectPtr = NULL;
+	Map.PendingObject = NULL;
+	Map.PendingHouse = HOUSE_NONE;
+	Map.Set_Cursor_Shape(NULL);
+	Map.Repair_Mode_Control(0);
+	Map.Sell_Mode_Control(0);
+	Map.Power_Mode_Control(0);
+	Map.Waypoint_Mode_Control(0);
+
 	Lock_Scenario_Input();
 
 	return(true);
