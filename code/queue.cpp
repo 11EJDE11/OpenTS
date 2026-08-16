@@ -1464,7 +1464,7 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 					if (Session.ShowInternetDebug) {
 						VisibleSurface->Fill_Rect(Rect(count_stall + 140, 475, 40, 3), DSurface::Build_Hicolor_Pixel(255, 40, 40));
 					}
-					Session.ConnectionStats[frame_stall].CommandCountStalls++;
+					Session.ConnectionStats[count_stall].CommandCountStalls++;
 				}
 				stall_drawn = true;
 			}
