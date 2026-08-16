@@ -85,34 +85,8 @@ TiberiumClass::~TiberiumClass(void)
 	AbstractTypePtrTracker.Delete(this);
 	Tiberiums.Delete(this);
 
-	delete [] SpreadNodes;
-	SpreadNodes = NULL;
-
-	delete [] SpreadState;
-	SpreadState = NULL;
-
-	if (SpreadQueue) {
-		delete SpreadQueue;
-	}
-	SpreadQueue = NULL;
-
-	if (GrowthQueue) {
-		GrowthQueue->Clear();
-		delete GrowthQueue;
-		GrowthQueue = NULL;
-	}
-
-	if (GrowthNodes) {
-		delete [] GrowthNodes;
-		GrowthNodes = NULL;
-	}
-
-	if (GrowthState) {
-		delete [] GrowthState;
-		GrowthState = NULL;
-	}
-
-	GrowthCount = 0;
+	Clear_Spread();
+	Clear_Growth();
 }
 
 
@@ -480,12 +454,12 @@ void TiberiumClass::Clear_Spread(void)
 	}
 
 	if (SpreadNodes) {
-		delete SpreadNodes;
+		delete [] SpreadNodes;
 		SpreadNodes = NULL;
 	}
 
 	if (SpreadState) {
-		delete SpreadState;
+		delete [] SpreadState;
 		SpreadState = NULL;
 	}
 
@@ -695,12 +669,12 @@ void TiberiumClass::Clear_Growth(void)
 	}
 
 	if (GrowthNodes) {
-		delete GrowthNodes;
+		delete [] GrowthNodes;
 		GrowthNodes = NULL;
 	}
 
 	if (GrowthState) {
-		delete GrowthState;
+		delete [] GrowthState;
 		GrowthState = NULL;
 	}
 

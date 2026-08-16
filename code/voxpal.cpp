@@ -34,7 +34,7 @@ VoxelPaletteLibrary::VoxelPaletteLibrary(RGBStruct * rgb, void * lut)
 	}
 
 	if (lut == NULL) {
-		LUT = (unsigned char *)new unsigned int[VPL_NUM_COLORS*VPL_NUM_ENTRIES];
+		LUT = new unsigned char[VPL_NUM_COLORS*VPL_NUM_ENTRIES];
 		LUTAllocated = TRUE;
 	} else {
 		LUT = (unsigned char *)lut;
