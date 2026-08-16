@@ -112,9 +112,11 @@ inline BasicTimerClass<T>::BasicTimerClass(NoInitClass const & )
 //lint -esym(1403,BasicTimerClass<class FrameTimerClass>::Timer)
 //lint -esym(1403,BasicTimerClass<class SystemTimerClass>::Timer)
 template<class T>
-inline BasicTimerClass<T>::BasicTimerClass(int set) :
-	Started(Timer()-set)
+inline BasicTimerClass<T>::BasicTimerClass(int set)
 {
+	// Assigned in the body because Timer is declared after Started, so it is not
+	// alive yet while the member initializers run.
+	Started = Timer()-set;
 }
 
 
