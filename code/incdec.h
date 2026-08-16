@@ -31,28 +31,30 @@
 
 #pragma once
 
+#include <type_traits>
+
 /*
 **	These templates allow enumeration types to have simple bitwise
 **	arithmatic performed. The operators must be instatiated for the
 **	enumerated types desired.
 */
-template<class T> inline T operator ++(T & a)
+template<class T> requires std::is_enum_v<T> inline T operator ++(T & a)
 {
 	a = (T)((int)a + (int)1);
 	return(a);
 }
-template<class T> inline T operator ++(T & a, int)
+template<class T> requires std::is_enum_v<T> inline T operator ++(T & a, int)
 {
 	T aa = a;
 	a = (T)((int)a + (int)1);
 	return(aa);
 }
-template<class T> inline T operator --(T & a)
+template<class T> requires std::is_enum_v<T> inline T operator --(T & a)
 {
 	a = (T)((int)a - (int)1);
 	return(a);
 }
-template<class T> inline T operator --(T & a, int)
+template<class T> requires std::is_enum_v<T> inline T operator --(T & a, int)
 {
 	T aa = a;
 	a = (T)((int)a - (int)1);
