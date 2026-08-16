@@ -67,10 +67,9 @@ class TPoint2D {
 		TPoint2D<T> const operator / (T rvalue) const {if (rvalue == T(0)) return(TPoint2D<T>(0,0));return(TPoint2D<T>(T(X / rvalue), T(Y / rvalue)));}
 		TPoint2D<T> const & operator /= (T rvalue) {if (rvalue != T(0)) {X /= rvalue;Y /= rvalue;}return(*this);}
 
-		// Dot and cross product.
+		// Component-wise product and dot product.
 		TPoint2D<T> const operator * (TPoint2D<T> const & rvalue) const {return(TPoint2D<T>(T(X * rvalue.X), T(Y * rvalue.Y)));}
 		T Dot_Product(TPoint2D<T> const & rvalue) const {return((T(X * rvalue.X + Y * rvalue.Y)));}
-		TPoint2D<T> const Cross_Product(TPoint2D<T> const & rvalue) const {return(TPoint2D<T>(T(Y - rvalue.Y), T(rvalue.X - X)));}
 
 		// Negation operator -- simple and effective
 		TPoint2D<T> const operator - (void) const {return(TPoint2D<T>(T(-X), T(-Y)));}
@@ -120,13 +119,6 @@ template<class T>
 T Distance(TPoint2D<T> const & point1, TPoint2D<T> const & point2)
 {
 	return((point1 - point2).Length());
-}
-
-
-template<class T>
-TPoint2D<T> const Cross_Product(TPoint2D<T> const & lvalue, TPoint2D<T> const & rvalue)
-{
-	return(lvalue.Cross_Product(rvalue));
 }
 
 
