@@ -143,7 +143,7 @@ bool ParticleSystemTypeClass::Read_INI(CCINIClass const & ini)
 /// usable name was supplied.</returns>
 ParticleSystemType ParticleSystemTypeClass::From_Name(char const * name)
 {
-	if (stricmp(name, "<none>") && strlen(name)) {
+	if (name != NULL && stricmp(name, "<none>") && strlen(name)) {
 		for (int index = PARTSYS_FIRST; index < ParticleSystemTypes.Count(); index++) {
 			if (stricmp(name, ParticleSystemTypes[index]->Name()) == 0) {
 				return(ParticleSystemType(index));

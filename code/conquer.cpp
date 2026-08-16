@@ -1363,7 +1363,7 @@ VQType VQ_From_Name(char const * name)
 /// there is no match.</returns>
 LandType Land_From_Name(char const * name)
 {
-	if (strcmpi("<none>", name) && name != NULL) {
+	if (name != NULL && strcmpi("<none>", name)) {
 		for (LandType land = LAND_FIRST; land < LAND_COUNT; land++) {
 			if (stricmp(LandName[land], name) == 0) return(land);
 		}
@@ -1397,7 +1397,7 @@ char const * Name_From_Land(LandType land)
 /// there is no match.</returns>
 SpeedType Speed_From_Name(char const * name)
 {
-	if (name != NULL) {
+	if (name != NULL && strcmpi("<none>", name)) {
 		for (SpeedType speed = SPEED_FIRST; speed < SPEED_COUNT; speed++) {
 			if (stricmp(SpeedName[speed], name) == 0) return(speed);
 		}

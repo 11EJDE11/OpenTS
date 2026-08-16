@@ -173,7 +173,7 @@ bool ParticleTypeClass::Read_INI(CCINIClass const & ini)
 /// was named.</returns>
 ParticleType ParticleTypeClass::From_Name(char const * name)
 {
-	if (stricmp(name, "<none>")) {
+	if (name != NULL && stricmp(name, "<none>")) {
 		for (int index = PARTICLE_FIRST; index < ParticleTypes.Count(); index++) {
 			if (stricmp(name, ParticleTypes[index]->Name()) == 0) {
 				return(ParticleType(index));

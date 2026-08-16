@@ -34,7 +34,7 @@ DynamicVectorClass<WarheadTypeClass *> Warheads;
 /// is returned.</returns>
 WarheadType Warhead_From_Name(char const * name)
 {
-	if (stricmp(name, "<none>") != 0 && stricmp(name, "none") != 0) {
+	if (name != NULL && stricmp(name, "<none>") != 0 && stricmp(name, "none") != 0) {
 		for (int index = WARHEAD_FIRST; index < Warheads.Count(); index++) {
 			if (stricmp(name, Warheads[index]->Name()) == 0) {
 				return(WarheadType(index));
