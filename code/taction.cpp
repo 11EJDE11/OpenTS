@@ -2065,12 +2065,9 @@ bool TActionClass::TAction_CHANGE_SPOTLIGHT_BEHAVIOR(HouseClass * , ObjectClass 
 bool TActionClass::TAction_DESTROY_TRIGGER(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
 	if (Trigger != NULL) {
-		int count = Triggers.Count();
-
-		for (int index = 0; index < count; index++) {
+		for (int index = Triggers.Count() - 1; index >= 0; index--) {
 			if (Triggers[index]->Class == Trigger) {
-				delete Triggers[index];
-				index--;
+				Triggers[index]->Mark_To_Delete();
 			}
 		}
 	}
@@ -2086,11 +2083,9 @@ bool TActionClass::TAction_DESTROY_TRIGGER(HouseClass * , ObjectClass * , Trigge
 bool TActionClass::TAction_DESTROY_TAG(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
 	if (Tag != NULL) {
-		int count = Tags.Count();
-		for (int index = 0; index < count; index++) {
+		for (int index = Tags.Count() - 1; index >= 0; index--) {
 			if (Tags[index]->Class == Tag) {
-				delete Tags[index];
-				index--;
+				Tags[index]->Mark_To_Delete();
 			}
 		}
 	}
