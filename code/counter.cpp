@@ -74,7 +74,7 @@ int CounterClass::Decrement(int index)
 /// zero.</returns>
 int CounterClass::Value(int index) const
 {
-	if (const_cast<CounterClass *>(this)->Reserve(index)) {
+	if (index >= 0 && index < VectorMax) {
 		return(Vector[index]);
 	}
 	return(0);
@@ -127,7 +127,7 @@ HRESULT CounterClass::Save(IStream * stream)
 				return(hr);
 			}
 		}
-		return(0);
+		return(S_OK);
 	}
 	return(hr);
 }
@@ -135,20 +135,20 @@ HRESULT CounterClass::Save(IStream * stream)
 
 /// <summary>
 /// Loads the counters from the save game stream.
-/// This routine will reconstruct the counter object before reading, so whatever it
+/// This routine will reset the counter object before reading, so whatever it
 /// was tallying beforehand is discarded.
 /// </summary>
 /// <returns>Returns with S_OK if the counters were read, otherwise with the error code.</returns>
 HRESULT CounterClass::Load(IStream * stream)
 {
-	new (this) CounterClass;
+	VectorClass<int>::Clear();
 
 	int count;
 
 	HRESULT result = stream->Read(&count, sizeof(count), NULL);
 	if (SUCCEEDED(result)) {
-		if (!Resize(count)) {
-			return(8);
+		if (count < 0 || !Resize(count)) {
+			return(E_FAIL);
 		}
 
 		for (int index = 0; index < count; index++) {
@@ -174,6 +174,10 @@ HRESULT CounterClass::Load(IStream * stream)
 /// <returns>bool; Is the counter safe to use now?</returns>
 bool CounterClass::Reserve(int index)
 {
+	if (index < 0) {
+		return(false);
+	}
+
 	if (index < VectorMax) {
 		return(true);
 	}
