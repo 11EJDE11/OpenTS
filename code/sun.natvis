@@ -35,22 +35,6 @@
         </Expand>
     </Type>
 
-    <Type Name="BooleanVectorClass">
-        <!-- Bits packed into BitArray (VectorClass<unsigned char>); BitCount is the logical length. -->
-        <DisplayString Condition="BitCount == 0">{{ empty }}</DisplayString>
-        <DisplayString>{{ size={BitCount} }}</DisplayString>
-        <Expand>
-            <Item Name="[size]">BitCount</Item>
-            <Item Name="[byte_count]" ExcludeView="simple">BitArray.VectorMax</Item>
-            <Item Name="[last_index]" ExcludeView="simple">LastIndex</Item>
-            <!-- one logical bool per bit: byte = i/8, mask = 1 << (i%8) -->
-            <IndexListItems>
-                <Size>BitCount</Size>
-                <ValueNode>(bool)((BitArray.Vector[$i &gt;&gt; 3] &gt;&gt; ($i &amp; 7)) &amp; 1)</ValueNode>
-            </IndexListItems>
-        </Expand>
-    </Type>
-
     <Type Name="VectorCursor&lt;*,*&gt;">
         <!-- $T1 = T (element), $T2 = V (container). Vector is V*; V::Vector is the data pointer. -->
         <DisplayString Condition="Vector == 0">{{ null }}</DisplayString>
