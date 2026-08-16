@@ -365,13 +365,26 @@ def validate_tombstones(
             errors.append(f"{context}: duplicate tombstone route {route}")
         seen_routes.add(route)
         expected_route = None
-        if entity_type in {"system", "command"}:
+        expected_family = None
+        if entity_type == "command":
+            # A launch option is published under its own family and keeps a route_id
+            # that the catalog no longer carries once the option is removed, so only
+            # the family can be checked here. The removal delta pins the whole route.
+            if entity_id.startswith("launch:"):
+                expected_family = "/using/command-line/"
+            else:
+                expected_route = entity_route(entity_type, entity_id)
+        elif entity_type == "system":
             expected_route = entity_route(entity_type, entity_id)
         elif entity_type == "format" and entity_id in FORMAT_ROUTES:
             expected_route = entity_route(entity_type, entity_id)
         if expected_route and route != expected_route:
             errors.append(
                 f"{context}: {entity_type} route must remain {expected_route!r}, "
+                f"found {route!r}")
+        if expected_family and isinstance(route, str) and not route.startswith(expected_family):
+            errors.append(
+                f"{context}: {entity_type} route must stay under {expected_family!r}, "
                 f"found {route!r}")
         if not isinstance(row.get("search_aliases"), list) or not all(
                 isinstance(alias, str) and alias for alias in row.get("search_aliases", [])):
