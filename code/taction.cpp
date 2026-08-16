@@ -286,6 +286,8 @@ TActionClass::~TActionClass(void)
  *=============================================================================================*/
 void TActionClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (Next == target) {
 		Next = Next->Next;
 	}

@@ -298,6 +298,8 @@ bool TriggerTypeClass::Is_Linked_To_Local(int local) const
  *=============================================================================================*/
 void TriggerTypeClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (LinkedTo != NULL && LinkedTo == target) {
 		LinkedTo = LinkedTo->LinkedTo;
 	}

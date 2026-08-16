@@ -324,6 +324,8 @@ ParticleTypeClass * ParticleTypeClass::Find_Or_Make(char const * name)
 /// <param name="all">Should the detachment be forced?</param>
 void ParticleTypeClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (Warhead == target) {
 		Warhead = NULL;
 	}

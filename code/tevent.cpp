@@ -807,6 +807,8 @@ AttachType Attaches_To(TEventType event)
 /// <param name="all">Should every reference be severed?</param>
 void TEventClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (Next == target) {
 		Next = Next->Next;
 	}

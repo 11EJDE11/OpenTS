@@ -409,6 +409,7 @@ bool TagClass::Unlink(TriggerClass *trigger)
 /// <param name="all">Is the target disappearing for good rather than merely hiding?</param>
 void TagClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
 
 	if (Class == target) {
 		Class = NULL;

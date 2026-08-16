@@ -565,6 +565,8 @@ char const * TeamTypeClass::Description(void) const
  *=============================================================================================*/
 void TeamTypeClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (Tag == target) {
 		Tag = NULL;
 	}

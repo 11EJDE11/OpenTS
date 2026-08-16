@@ -398,6 +398,8 @@ TriggerClass * Find_Or_Make(TriggerTypeClass * trigtype)
  *=============================================================================================*/
 void TriggerClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (Class == target) {
 		Class = NULL;
 	}

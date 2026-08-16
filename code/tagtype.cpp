@@ -129,6 +129,8 @@ bool TagTypeClass::Unlink(TriggerTypeClass *trigger)
 /// </summary>
 void TagTypeClass::Detach(AbstractClass const * target, bool all)
 {
+	BASECLASS::Detach(target, all);
+
 	if (FirstTrigger == target) {
 		FirstTrigger = FirstTrigger->LinkedTo;
 	}
