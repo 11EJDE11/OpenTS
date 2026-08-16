@@ -156,7 +156,7 @@ MonoClass::~MonoClass(void)
 void MonoClass::Pan(int )
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		DeviceIoControl(Handle, (DWORD)IOCTL_MONO_PAN, NULL, 0, NULL, 0, &retval, 0);
 	}
@@ -186,7 +186,7 @@ void MonoClass::Pan(int )
 void MonoClass::Sub_Window(int x, int y, int w, int h)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		struct subwindow {
 			int X,Y,W,H;
 		} subwindow;
@@ -223,7 +223,7 @@ void MonoClass::Sub_Window(int x, int y, int w, int h)
 void MonoClass::Set_Cursor(int x, int y)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		struct  {
 			int X,Y;
 		} cursor;
@@ -257,7 +257,7 @@ void MonoClass::Set_Cursor(int x, int y)
 void MonoClass::Clear(void)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 
 		if (DeviceIoControl(Handle, (DWORD)IOCTL_MONO_CLEAR_SCREEN, NULL, 0, NULL, 0, &retval, 0) == 0) {
@@ -292,7 +292,7 @@ void MonoClass::Clear(void)
 void MonoClass::Fill_Attrib(int x, int y, int w, int h, MonoAttribute attrib)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		struct fillcontrol  {
 			int X,Y,W,H,A;
@@ -331,7 +331,7 @@ void MonoClass::Fill_Attrib(int x, int y, int w, int h, MonoAttribute attrib)
 void MonoClass::Scroll(int )
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		DeviceIoControl(Handle, (DWORD)IOCTL_MONO_SCROLL, NULL, 0, NULL, 0, &retval, 0);
 	}
@@ -368,7 +368,7 @@ void __cdecl MonoClass::Printf(char const *text, ...)
 	*/
 	char buffer[256];
 
-	if ( !Enabled ) return;
+	if (!Enabled || Handle == INVALID_HANDLE_VALUE) return;
 
 	va_start(va, text);
 	vsprintf(buffer, text, va);
@@ -410,7 +410,7 @@ void __cdecl MonoClass::Printf(int text, ...)
 	*/
 	char buffer[256];
 
-	if ( !Enabled ) return;
+	if (!Enabled || Handle == INVALID_HANDLE_VALUE) return;
 
 	va_start(va, text);
 	vsprintf(buffer, Fetch_String(text), va);
@@ -441,7 +441,7 @@ void __cdecl MonoClass::Printf(int text, ...)
 void MonoClass::Print(char const * ptr)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		WriteFile(Handle, ptr, strlen(ptr), &retval, NULL);
 	}
@@ -467,7 +467,7 @@ void MonoClass::Print(char const * ptr)
 void MonoClass::Set_Default_Attribute(MonoAttribute attrib)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		DeviceIoControl(Handle, (DWORD)IOCTL_MONO_SET_ATTRIBUTE, &attrib, sizeof(char), NULL, 0, &retval, 0);
 	}
@@ -498,7 +498,7 @@ void MonoClass::Set_Default_Attribute(MonoAttribute attrib)
 void MonoClass::Text_Print(char const *text, int x, int y, MonoAttribute attrib)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 
 		Set_Cursor(x, y);
@@ -530,7 +530,7 @@ void MonoClass::Text_Print(char const *text, int x, int y, MonoAttribute attrib)
  *=============================================================================================*/
 void MonoClass::Text_Print(int text, int x, int y, MonoAttribute attrib)
 {
-	if (!Enabled) return;
+	if (!Enabled || Handle == INVALID_HANDLE_VALUE) return;
 
 	Text_Print(Fetch_String(text), x, y, attrib);
 }
@@ -552,7 +552,7 @@ void MonoClass::Text_Print(int text, int x, int y, MonoAttribute attrib)
  *=============================================================================================*/
 void MonoClass::Print(int text)
 {
-	if (!Enabled) return;
+	if (!Enabled || Handle == INVALID_HANDLE_VALUE) return;
 
 	Print(Fetch_String(text));
 }
@@ -581,7 +581,7 @@ void MonoClass::Print(int text)
 void MonoClass::View(void)
 {
 #ifdef _WINDOWS
-	if ( Enabled ) {
+	if ( Enabled && Handle != INVALID_HANDLE_VALUE ) {
 		DWORD retval;
 		DeviceIoControl(Handle, (DWORD)IOCTL_MONO_BRING_TO_TOP, NULL, 0, NULL, 0, &retval, 0);
 		Current = this;
