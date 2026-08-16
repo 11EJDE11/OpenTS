@@ -161,6 +161,7 @@ int LZOStraw::Get(void * destbuf, int slen)
 			char *staging_buffer = new char [BlockHeader.CompCount];
 			incount = BASECLASS::Get(staging_buffer, BlockHeader.CompCount);
 			if (incount != BlockHeader.CompCount) {
+				delete [] staging_buffer;
  				break;
 			}
 			unsigned int length = sizeof(Buffer);

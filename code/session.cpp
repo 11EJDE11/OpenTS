@@ -480,6 +480,7 @@ void SessionClass::Read_MultiPlayer_Settings(void)
 	buf[0] = 0;
 	ConfigINI.Get_String("MultiPlayer", "PreferredServer", "", buf, sizeof(buf));
 	if (strlen(buf) != 0) {
+		delete [] PreferredServer;
 		PreferredServer = new char [strlen(buf) + 1];
 		strcpy(PreferredServer, buf);
 	}

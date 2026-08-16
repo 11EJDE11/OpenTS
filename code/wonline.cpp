@@ -550,6 +550,8 @@ void ViewHTML(const char * name, int no_ask)
 					waits--;
 				};
 			}
+			CloseHandle(processInfo.hThread);
+			CloseHandle(processInfo.hProcess);
 			return;
 		}
 	} else if (result <= 32) {
