@@ -112,6 +112,7 @@ void EnvironmentClass::Restore(void)
 HRESULT EnvironmentClass::Load(IStream * stream)
 {
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("EnvironmentClass");
 	Serialize(savestream);
 	return(savestream.Result());
 }

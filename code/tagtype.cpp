@@ -174,8 +174,7 @@ void TagTypeClass::Read_All(CCINIClass const & ini)
 		TagTypeClass * tag = Find_Or_Make(entry);
 		assert(tag != NULL);
 
-		//Swizzle_Here_I_Am(id, tag);
-		Swizzler.Here_I_Am(ahtoi(entry), (void*)tag);
+		Swizzle_Here_I_Am(ahtoi(entry), tag);
 		tag->Read_INI(ini);
 	}
 }

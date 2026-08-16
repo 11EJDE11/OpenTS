@@ -2027,6 +2027,7 @@ void RulesClass::Save(IStream * stream)
 void RulesClass::Load(IStream * stream)
 {
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("RulesClass");
 	Serialize(savestream);
 }
 

@@ -1066,7 +1066,7 @@ bool Load_Game(const char *file_name)
 	LoadedSaveVersion = info.Get_Internal_Version();
 
 	Session.Type = (GameType)info.Get_Game_Type();
-	Swizzler.Reset();
+	Swizzler.Discard();
 
 	/*
 	**	Open the file
@@ -1099,7 +1099,7 @@ bool Load_Game(const char *file_name)
 		return(false);
 	}
 
-	Swizzler.Reset();
+	Swizzler.Resolve();
 
 	/*
 	**	Fixup any expediency data that can be inferred from the physical
@@ -1189,6 +1189,7 @@ int Save_Misc_Values(IStream * stream)
 int Load_Misc_Values(IStream * stream)
 {
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("Load_Misc_Values");
 	Serialize_Misc_Values(savestream);
 	return(savestream.Result());
 }

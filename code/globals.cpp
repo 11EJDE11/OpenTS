@@ -47,8 +47,6 @@
 #include "ipublichouse_i.c"
 #include "ipiggy.h"
 #include "ipiggy_i.c"
-#include "iswizzle.h"
-#include "iswizzle_i.c"
 #include "iblockci.h"
 #include "iblockci_i.c"
 #include "iflyctrl.h"

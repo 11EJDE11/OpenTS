@@ -95,6 +95,7 @@ HRESULT IonStormClass::Save(IStream * stream)
 HRESULT IonStormClass::Load(IStream * stream)
 {
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("IonStormClass");
 	Serialize(savestream);
 	return(savestream.Result());
 }

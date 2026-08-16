@@ -302,7 +302,7 @@ HRESULT LocomotionClass::Save_Members(IStream * stream, BOOL cleardirty)
 		return(E_POINTER);
 	}
 
-	ULONG id = (ULONG)(this);
+	uintptr_t id = (uintptr_t)(this);
 
 	HRESULT result = stream->Write(&id, sizeof(id), NULL);
 	if (FAILED(result)) {
@@ -333,17 +333,18 @@ HRESULT LocomotionClass::Load_Members(IStream * stream)
 		return(E_POINTER);
 	}
 
-	ULONG id;
+	uintptr_t id;
 
 	HRESULT result = stream->Read(&id, sizeof(id), NULL);
 	if (FAILED(result)) {
-	return(result);
+		return(result);
 	}
 
 	assert(id != 0);
 	Swizzle_Here_I_Am(id, this);
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context(typeid(*this).name(), id);
 	Serialize(savestream);
 
 	if (SUCCEEDED(savestream.Result())) {

@@ -550,6 +550,7 @@ void BaseClass::Write_INI(CCINIClass & ini, char const * hname)
 HRESULT STDMETHODCALLTYPE BaseClass::Load(IStream *stream)
 {
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("BaseClass");
 	Serialize(savestream);
 	return(savestream.Result());
 }

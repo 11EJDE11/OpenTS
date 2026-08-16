@@ -15,7 +15,6 @@
  * Interfaces.
  */
 #include "iapp.h"
-#include "iswizzle.h"
 
 
 class TiberianSunClassFactory : public IClassFactory
@@ -45,7 +44,6 @@ class ApplicationClass : public IApplication
 		virtual HRESULT STDMETHODCALLTYPE Quit(void) override;
 		virtual HRESULT STDMETHODCALLTYPE get_ScenarioName(BSTR *retval) override;
 		virtual HRESULT STDMETHODCALLTYPE get_FrameCount(LONG *retval) override;
-		virtual HRESULT STDMETHODCALLTYPE get_Swizzle_Interface(ISwizzle **pVal) override;
 		virtual HRESULT STDMETHODCALLTYPE App_Interface(IApplication **pVal);
 		virtual HRESULT STDMETHODCALLTYPE Application_Interface(IApplication **pVal);
 };

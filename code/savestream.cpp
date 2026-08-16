@@ -27,7 +27,9 @@ SaveStreamClass::SaveStreamClass(IStream * stream, ModeType mode) :
 	Stream(stream),
 	Mode(mode),
 	ErrorCode(stream != NULL ? S_OK : E_POINTER),
-	FormatVersion(mode == MODE_LOAD ? LoadedSaveVersion : ExpectedGameVersion)
+	FormatVersion(mode == MODE_LOAD ? LoadedSaveVersion : ExpectedGameVersion),
+	OwnerType(NULL),
+	OwnerID(0)
 {
 }
 

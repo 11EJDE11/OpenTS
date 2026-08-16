@@ -183,8 +183,7 @@ void TaskForceClass::Read_All(CCINIClass const & ini, INIScopeType scope)
 
 		TaskForceClass * tforce = Find_Or_Make(name);
 		assert(tforce != NULL);
-		//Swizzle_Here_I_Am(id, tag);
-		Swizzler.Here_I_Am(ahtoi(name), (void*)tforce);
+		Swizzle_Here_I_Am(ahtoi(name), tforce);
 
 		tforce->Read_INI(ini);
 		tforce->Scope = scope;

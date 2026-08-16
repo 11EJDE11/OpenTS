@@ -304,7 +304,6 @@ set(INTERFACE_FILES
     ipublichouse.h   ipublichouse_i.c
     irtti.h          irtti_i.c
     isun.h           isun_i.c
-    iswizzle.h       iswizzle_i.c
     wolapi/wolapi_i.c
 )
 

@@ -1629,7 +1629,7 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	**
 	*/
 	Session.Update_Progress(3);
-	Swizzler.Reset();
+	Swizzler.Discard();
 
 	/*
 	**
@@ -1968,7 +1968,7 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 	Call_Back();
 
-	Swizzler.Reset();
+	Swizzler.Resolve();
 
 	Session.Update_Progress(96);
 	Call_Back();
@@ -2918,6 +2918,7 @@ void ScenarioClass::Load(IStream * stream)
 	ElapsedTimer.Stop();
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("ScenarioClass");
 	Serialize(savestream);
 
 	ElapsedTimer.Start();

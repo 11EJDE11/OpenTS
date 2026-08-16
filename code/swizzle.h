@@ -9,77 +9,90 @@
 
 #pragma once
 
-#include "iswizzle.h"
-#include "vector.h"
 #include "win.h"
+
+#include <stdint.h>
+#include <vector>
 
 class SwizzlePointerClass
 {
 	public:
-		SwizzlePointerClass(LONG id = 0, void *pointer = NULL) : ID(id), Pointer(pointer) {}
+		SwizzlePointerClass(uintptr_t id = 0, void * pointer = NULL) : ID(id), Pointer(pointer) {}
 
-		bool operator==(const SwizzlePointerClass &that) const { return(ID == that.ID); }
-		bool operator!=(const SwizzlePointerClass &that) const { return(ID != that.ID); }
-		bool operator<(const SwizzlePointerClass &that) const { return(ID < that.ID); }
-		bool operator>(const SwizzlePointerClass &that) const { return(ID > that.ID); }
 	public:
 		/*
-		 * This is the swizzle ID this entry is keyed by -- the address the object occupied
-		 * when the game was saved. Both of the swizzler's tables are sorted on it so that
-		 * they can be walked in step.
+		 * This is the swizzle ID the object announced itself under -- the address it
+		 * occupied when the game was saved.
 		 */
-		LONG ID;
+		uintptr_t ID;
 
 		/*
-		 * This is the address this entry carries. In a request it is the pointer that needs
-		 * fixing up; in an announcement it is where the object was loaded to.
+		 * This is where the object was loaded to.
 		 */
-		void *Pointer;
+		void * Pointer;
 };
 
 
-class SwizzleManagerClass : public ISwizzle
+class SwizzleRequestClass
+{
+	public:
+		SwizzleRequestClass(uintptr_t id = 0, void * pointer = NULL, char const * ownertype = NULL, uintptr_t ownerid = 0, char const * slottype = NULL, char const * file = NULL, unsigned int line = 0) :
+			ID(id), Pointer(pointer), OwnerType(ownertype), OwnerID(ownerid), SlotType(slottype), File(file), Line(line) {}
+
+	public:
+		/*
+		 * This is the swizzle ID this request asks after, and the pointer that needs
+		 * filling in once the object that ID names has announced where it landed.
+		 */
+		uintptr_t ID;
+		void * Pointer;
+
+		/*
+		 * These describe where the request came from, for the report when nothing ever
+		 * answers it: the record being read at the time, that record's own swizzle ID,
+		 * the type of the pointer slot, and the line that serialized it. The strings are
+		 * the static ones type identification and the source location hand out, so
+		 * carrying them costs nothing.
+		 */
+		char const * OwnerType;
+		uintptr_t OwnerID;
+		char const * SlotType;
+		char const * File;
+		unsigned int Line;
+};
+
+
+class SwizzleManagerClass
 {
 	public:
 		SwizzleManagerClass(void);
-		~SwizzleManagerClass(void);
 
-		virtual LONG STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
-		virtual ULONG STDMETHODCALLTYPE AddRef(void) override { return(1); }
-		virtual ULONG STDMETHODCALLTYPE Release(void) override { return(1); }
+		void Swizzle(void ** pointer, char const * ownertype = NULL, uintptr_t ownerid = 0, char const * slottype = NULL, char const * file = NULL, unsigned int line = 0);
+		void Here_I_Am(uintptr_t id, void * pointer);
 
-		virtual HRESULT STDMETHODCALLTYPE Reset(void) override;
-
-		virtual HRESULT STDMETHODCALLTYPE Swizzle(void **pointer);
-		virtual HRESULT STDMETHODCALLTYPE Fetch_Swizzle_ID(void *pointer, LONG *id) override;
-		virtual HRESULT STDMETHODCALLTYPE Here_I_Am(LONG id, void *pointer) override;
-		virtual HRESULT STDMETHODCALLTYPE Save_Interface(IStream *stream, IUnknown *pointer) override { return(E_NOTIMPL); }
-		virtual HRESULT STDMETHODCALLTYPE Load_Interface(IStream *stream, CLSID *riid, void **pointer) { return(E_NOTIMPL); }
-		virtual HRESULT STDMETHODCALLTYPE Get_Save_Size(int *size) override;
+		void Resolve(void);
+		void Discard(void);
 
 	private:
-		void Process_Tables(void);
-
 		/*
 		 * These are the pointers read back from the save file that still hold a swizzle ID
-		 * instead of a real address. They are filled in and the list emptied when the
-		 * tables are processed.
+		 * instead of a real address. They stay in the order the file presented them, so a
+		 * report of unanswered requests follows the shape of the save game.
 		 */
-		DynamicVectorClass<SwizzlePointerClass> RequestTable;
+		std::vector<SwizzleRequestClass> RequestTable;
 
 		/*
-		 * These are the addresses the loaded objects have announced themselves at. Every
-		 * request is matched against this list to discover what its swizzle ID now stands
-		 * for.
+		 * These are the addresses the loaded objects have announced themselves at. The
+		 * table is sorted when the requests are resolved against it.
 		 */
-		DynamicVectorClass<SwizzlePointerClass> PointerTable;
+		std::vector<SwizzlePointerClass> PointerTable;
 };
 
 
 extern SwizzleManagerClass Swizzler;
 
 template<class T>
-inline void Swizzle_Here_I_Am(LONG id, T *ptr)
+inline void Swizzle_Here_I_Am(uintptr_t id, T * ptr)
 {
-	Swizzler.Here_I_Am(id, (void*)ptr);
+	Swizzler.Here_I_Am(id, (void *)ptr);
 }

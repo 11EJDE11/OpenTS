@@ -11,10 +11,6 @@
 
 #include <comdef.h>
 
-/// Names and comments from TLBs
-
-interface ISwizzle;
-
 EXTERN_C const IID IID_IApplication;
 
 struct __declspec(novtable)
@@ -26,5 +22,4 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE Quit(void) = 0;
 	virtual HRESULT STDMETHODCALLTYPE get_ScenarioName(BSTR *retval) = 0;
 	virtual HRESULT STDMETHODCALLTYPE get_FrameCount(LONG *retval) = 0;
-	virtual HRESULT STDMETHODCALLTYPE get_Swizzle_Interface(ISwizzle **pVal) = 0;
 };

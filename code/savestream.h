@@ -15,7 +15,9 @@
 #include "win.h"
 
 #include <optional>
+#include <source_location>
 #include <type_traits>
+#include <typeinfo>
 
 class SaveStreamClass;
 
@@ -87,6 +89,16 @@ class SaveStreamClass
 		 */
 		IStream * Get_Stream(void) const {return(Stream);}
 
+		/*
+		 * Names the record this stream is carrying, so that a pointer which nothing
+		 * answers for can be reported against the object that asked for it.
+		 */
+		void Set_Context(char const * ownertype, uintptr_t ownerid = 0)
+		{
+			OwnerType = ownertype;
+			OwnerID = ownerid;
+		}
+
 		void Serialize_Bytes(void * data, int length);
 
 		/*
@@ -105,14 +117,12 @@ class SaveStreamClass
 		 * until every object has arrived and the real address is known.
 		 */
 		template<SwizzleTarget T>
-		void Serialize(T * & pointer)
+		void Serialize(T * & pointer, std::source_location const & where = std::source_location::current())
 		{
-			static_assert(sizeof(pointer) == sizeof(LONG), "A swizzle identity has to hold a pointer.");
-
 			Serialize_Bytes((void *)&pointer, sizeof(pointer));
 
 			if (Is_Loading() && !Was_Error()) {
-				Swizzler.Swizzle((void **)&pointer);
+				Swizzler.Swizzle((void **)&pointer, OwnerType, OwnerID, typeid(T).name(), where.file_name(), where.line());
 			}
 		}
 
@@ -140,13 +150,21 @@ class SaveStreamClass
 		 * serialized in place, one element at a time.
 		 */
 		template<typename T, int N>
-		void Serialize(T (&array)[N])
+		void Serialize(T (&array)[N], std::source_location const & where = std::source_location::current())
 		{
 			if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
 				Serialize_Bytes(array, sizeof(array));
 			} else {
 				for (int index = 0; index < N; index++) {
-					Serialize(array[index]);
+					/*
+					 * The elements are serialized against the array's own call site, so a
+					 * pointer that nothing answers for names the member rather than this loop.
+					 */
+					if constexpr (std::is_pointer_v<T>) {
+						Serialize(array[index], where);
+					} else {
+						Serialize(array[index]);
+					}
 				}
 			}
 		}
@@ -177,6 +195,13 @@ class SaveStreamClass
 		ModeType Mode;
 		HRESULT ErrorCode;
 		unsigned int FormatVersion;
+
+		/*
+		 * The record this stream is carrying, named for the swizzle manager's report.
+		 * Nothing on the save side needs it.
+		 */
+		char const * OwnerType;
+		uintptr_t OwnerID;
 };
 
 

@@ -432,6 +432,7 @@ HRESULT MouseClass::Load(IStream * stream)
 		Array.Clear();
 
 		SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+		savestream.Set_Context("MouseClass");
 		Serialize(savestream);
 		result = savestream.Result();
 		if (FAILED(result)) {

@@ -1360,6 +1360,7 @@ bool GameOptionsType::Load(IStream * stream)
 	}
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("GameOptionsType");
 	Serialize(savestream);
 	ScenarioIndex = -1;
 	return(SUCCEEDED(savestream.Result()));

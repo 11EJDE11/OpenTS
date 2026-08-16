@@ -246,18 +246,6 @@ HRESULT STDMETHODCALLTYPE ApplicationClass::get_FrameCount(LONG *retval)
 }
 
 
-/// <summary>
-/// Fetches the pointer swizzler interface.
-/// This routine hands a client access to the save game pointer remapper, so that it can
-/// resolve the pointers held in a saved game.
-/// </summary>
-/// <returns>Returns with S_OK if the interface was supplied.</returns>
-HRESULT STDMETHODCALLTYPE ApplicationClass::get_Swizzle_Interface(ISwizzle **pVal)
-{
-	return(Swizzler.QueryInterface(IID_ISwizzle, (void**)pVal));
-}
-
-
 /// Unlike every other interface ID, this one is defined here in the application module.
 #define INITGUID
 #undef DEFINE_GUID

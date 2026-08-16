@@ -396,6 +396,7 @@ bool RadarEventClass::Load(IStream * stream)
 	}
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("RadarEventClass");
 
 	int count = 0;
 	savestream.Serialize(count);

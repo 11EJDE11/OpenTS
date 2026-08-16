@@ -180,6 +180,7 @@ HRESULT LayerClass::Load(IStream * stream)
 	}
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("LayerClass");
 	DynamicVectorClass<ObjectClass *>::Serialize(savestream);
 	return(savestream.Result());
 }

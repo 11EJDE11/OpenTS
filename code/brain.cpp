@@ -188,6 +188,7 @@ HRESULT BrainClass::Load(IStream * stream)
 	}
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	savestream.Set_Context("BrainClass");
 	Serialize(savestream);
 	return(savestream.Result());
 }

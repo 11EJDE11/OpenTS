@@ -905,7 +905,7 @@ bool VeinholeMonsterClass::Load_All(IStream * stream)
 		 */
 		VeinholeMonsterClass * monster = new VeinholeMonsterClass();
 
-		LONG id;
+		uintptr_t id;
 		if (FAILED(stream->Read(&id, sizeof(id), NULL))) {
 			return(false);
 		}
@@ -913,6 +913,7 @@ bool VeinholeMonsterClass::Load_All(IStream * stream)
 		Swizzler.Here_I_Am(id, monster);
 
 		SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+		savestream.Set_Context(typeid(*monster).name(), id);
 		monster->Serialize(savestream);
 		if (FAILED(savestream.Result())) {
 			return(false);
