@@ -28,9 +28,9 @@
 #include "logic.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tracker.h"
@@ -405,71 +405,65 @@ void WaveClass::Detach(AbstractClass const * target, bool all)
 
 
 /// <summary>
-/// Reads the wave in from the save game stream.
-/// The base object is read first and then the cells that the wave was affecting. Every
-/// object pointer is handed to the swizzler so that it can be remapped once the whole save
-/// game has been loaded.
+/// Lists the members this wave carries.
 /// </summary>
-/// <returns>Returns with S_OK, or the failure code of the first read that failed.</returns>
-HRESULT STDMETHODCALLTYPE WaveClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void WaveClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) WaveClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		WaveShape.Vertices = &ActiveWaveStartMiddle;
+	stream.Serialize(Target);
+	stream.Serialize(Type);
+	stream.Serialize(StartCoord);
+	stream.Serialize(EndCoord);
+	stream.Serialize(WaveStartMiddle);
+	stream.Serialize(WaveEndMiddle);
+	stream.Serialize(WaveEndLeft);
+	stream.Serialize(WaveEndRight);
+	stream.Serialize(WaveStartLeft);
+	stream.Serialize(WaveStartRight);
+	stream.Serialize(WaveEndLeftCoord);
+	stream.Serialize(WaveEndRightCoord);
+	stream.Serialize(WaveStartLeftCoord);
+	stream.Serialize(WaveStartRightCoord);
+	stream.Serialize(IsWaveActive);
+	stream.Serialize(WaveEC);
+	stream.Serialize(WaveProgress);
+	stream.Serialize(FadeProgress);
 
-		Swizzle_Pointer(&Target);
-		Swizzle_Pointer(&Source);
+	/*
+	 * The outline of the wave is drawn from the active corners below, so only the number
+	 * of them travels; Post_Load points the shape back at them.
+	 */
+	stream.Serialize(WaveShape.Count);
 
-		int index;
-		int count;
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			CellClass * obj;
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			AffectedCells.Add(obj);
-		}
-
-		for (index = 0; index < count; index++) {
-			Swizzle_Pointer(&AffectedCells[index]);
-		}
-	}
-	return(result);
+	stream.Serialize(ActiveWaveStartMiddle);
+	stream.Serialize(ActiveWaveEndMiddle);
+	stream.Serialize(ActiveWaveEndLeft);
+	stream.Serialize(ActiveWaveEndRight);
+	stream.Serialize(ActiveWaveStartLeft);
+	stream.Serialize(ActiveWaveStartRight);
+	// DrawData -- the pixel offsets the wave is swept with, rebuilt before every draw.
+	// DirectionStrides
+	stream.Serialize(Direction);
+	stream.Serialize(LaserEC);
+	stream.Serialize(Source);
+	stream.Serialize(Facing);
+	stream.Serialize(AffectedCells);
+	// WaveIntensityTable -- the rasterized wave, which belongs to the surface being drawn to and
+	// is rebuilt before every draw.
+	// WaveShape.Vertices
 }
 
 
 /// <summary>
-/// Writes the wave out to the save game stream.
-/// The cells that the wave is currently affecting are written after the base object's own
-/// data.
+/// Points the wave outline back at the corners it is built from.
 /// </summary>
-/// <returns>Returns with S_OK, or the failure code of the first write that failed.</returns>
-HRESULT STDMETHODCALLTYPE WaveClass::Save(IStream * stream, BOOL cleardirty)
+void WaveClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
+	BASECLASS::Post_Load();
 
-	int count = AffectedCells.Count();
-	result = stream->Write(&count, sizeof(count), NULL);
-	if (FAILED(result)) {
-		return(result);
-	}
-
-	for (int index = 0; index < count; index++) {
-		result = stream->Write(&AffectedCells[index], sizeof(AffectedCells[index]), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-	}
-	return(result);
+	WaveShape.Vertices = &ActiveWaveStartMiddle;
 }
 
 
@@ -485,16 +479,6 @@ HRESULT STDMETHODCALLTYPE WaveClass::GetClassID(CLSID * retval)
 	if (retval == NULL) return(E_POINTER);
 	*retval = CLSID_WaveClass;
 	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it is written to the save game file.
-/// </summary>
-/// <returns>Returns with the number of bytes this object occupies.</returns>
-int WaveClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

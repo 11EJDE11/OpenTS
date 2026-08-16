@@ -42,6 +42,7 @@
 #include "_rtti.h"
 #include "house.h"
 #include "mono.h"
+#include "savestream.h"
 #include "swizzle.h"
 #include "techno.h"
 
@@ -340,20 +341,13 @@ void RadioClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this radio set from the save game stream.
-/// This routine chains to the base class and then registers the radio contact pointer
-/// with the swizzle manager so that it can be remapped once every object has been read
-/// back in.
+/// Lists the members this radio set carries.
 /// </summary>
-/// <returns>Returns with S_OK if the radio set was loaded, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE RadioClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void RadioClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		Swizzle_Pointer(&Radio);
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Old);
+	stream.Serialize(Radio);
 }

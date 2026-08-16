@@ -22,6 +22,7 @@
 #include "incdec.h"
 #include "overtype.h"
 #include "priority.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -237,8 +238,8 @@ HRESULT STDMETHODCALLTYPE TiberiumClass::GetClassID(CLSID * retval)
 
 /// <summary>
 /// Loads this tiberium type from a stream.
-/// This routine is used by the save game system to read the tiberium type back in and
-/// to reattach it to the artwork it refers to.
+/// The spread and growth pools are dropped before the members arrive, since the counts
+/// they track are about to be replaced with the saved ones.
 /// </summary>
 /// <returns>Returns with S_OK if the tiberium type was loaded.</returns>
 /// <remarks>The spread and growth systems are not saved, so they come back empty. They
@@ -247,66 +248,43 @@ HRESULT STDMETHODCALLTYPE TiberiumClass::Load(IStream * stream)
 {
 	Clear_Spread();
 	Clear_Growth();
-	Debris.Clear();
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TiberiumClass(NoInitClass());
-
-		Swizzle_Pointer(&Overlay);
-
-		Debris.Load(stream);
-		for (int i = 0; i < Debris.Count(); i++) {
-			Swizzle_Pointer(&Debris[i]);
-		}
-
-		GrowthQueue = NULL;
-		GrowthState = NULL;
-		GrowthNodes = NULL;
-		SpreadQueue = NULL;
-		SpreadState = NULL;
-		SpreadNodes = NULL;
-
-		result = S_OK;
-	}
-	return(result);
+	return(Load_Members(stream));
 }
 
 
 /// <summary>
-/// Fetches the number of bytes this tiberium type needs when saved.
-/// This routine is used by the save game system to reserve room before the object is
-/// written out.
+/// Lists the members this tiberium type carries.
 /// </summary>
-/// <param name="pcbSize">Pointer to the size value to fill in.</param>
-/// <returns>Returns with S_OK if the size was determined.</returns>
-HRESULT STDMETHODCALLTYPE TiberiumClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
+/// <param name="stream">The stream carrying the members.</param>
+void TiberiumClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT res = BASECLASS::GetSizeMax(pcbSize);
-	if (SUCCEEDED(res)) {
-		pcbSize->u.LowPart += sizeof(int) + (Debris.Count() * sizeof(Debris[0]));
-		res = S_OK;
-	}
-	return(res);
-}
+	BASECLASS::Serialize(stream);
 
-
-/// <summary>
-/// Saves this tiberium type to a stream.
-/// This routine is used by the save game system to persist the tiberium type, along with
-/// the list of debris animations it throws off.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it is written?</param>
-/// <returns>Returns with S_OK if the tiberium type was saved.</returns>
-HRESULT STDMETHODCALLTYPE TiberiumClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		Debris.Save(stream);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(SpreadDelay);
+	stream.Serialize(SpreadPercentage);
+	stream.Serialize(GrowthDelay);
+	stream.Serialize(GrowthPercentage);
+	stream.Serialize(CreditValue);
+	stream.Serialize(Power);
+	stream.Serialize(Color);
+	stream.Serialize(Debris);
+	stream.Serialize(Overlay);
+	stream.Serialize(FrameCount);
+	stream.Serialize(Variety);
+	stream.Serialize(RampVariety);
+	stream.Serialize(SpreadCount);
+	// SpreadQueue -- pools sized to the map rather than saved state; Load drops them and the
+	// tiberium systems build them again from the map itself.
+	// SpreadState
+	// SpreadNodes
+	stream.Serialize(SpreadTimer);
+	stream.Serialize(GrowthCount);
+	// GrowthQueue -- the growth pools, dropped and rebuilt the same way.
+	// GrowthState
+	// GrowthNodes
+	stream.Serialize(GrowthTimer);
 }
 
 

@@ -22,6 +22,7 @@
 #include "partsys.h"
 #include "psystype.h"
 #include "rules.h"
+#include "savestream.h"
 
 #include "layer.hh"
 
@@ -907,20 +908,27 @@ HRESULT LevitateLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the levitation locomotor from a save game stream.
-/// The base class reads the raw member data back and this routine then reconstructs the
-/// object in place, so that its virtual table pointer is valid once more.
+/// Lists the members this levitation locomotor carries.
 /// </summary>
-/// <param name="stream">The stream to load the locomotor from.</param>
-/// <returns>Returns with S_OK if the locomotor was loaded, otherwise the failure code
-/// reported by the base class.</returns>
-HRESULT LevitateLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void LevitateLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) LevitateLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(State);
+	stream.Serialize(Speed);
+	stream.Serialize(MoveX);
+	stream.Serialize(MoveY);
+	stream.Serialize(AccelerationX);
+	stream.Serialize(AccelerationY);
+	stream.Serialize(AccelerationsRemaining);
+	stream.Serialize(BlockTriesRemaining);
+	stream.Serialize(MoveRate);
+	stream.Serialize(Dampen);
+	// GlobalControls -- shared by the whole class and read from the rules rather than held per
+	// unit.
+	// PropulsionSoundEffects
+	// INI_NAME
 }
 
 

@@ -37,9 +37,6 @@ class TypeList : public DynamicVectorClass<T>
 
 		T const Pick(int index) const;
 		T const Random_Pick(Random2Class & rand) const;
-
-		void Load_Self(IStream * stream);
-		void Save_Self(IStream * stream) const;
 };
 
 
@@ -72,30 +69,3 @@ inline T const TypeList<T>::Random_Pick(Random2Class & rand) const
 }
 
 
-template<typename T>
-inline void TypeList<T>::Load(IStream * stream)
-{
-	new(this) TypeList<T>;
-
-	T object;
-
-	int count;
-	stream->Read(&count, sizeof(count), NULL);
-
-	for (int index = 0; index < count; index++) {
-		stream->Read(&object, sizeof(T), NULL);
-		Add(object);
-	}
-}
-
-
-template<typename T>
-inline void TypeList<T>::Save(IStream * stream) const
-{
-	int count = Count();
-	stream->Write(&count, sizeof(count), NULL);
-
-	for (int index = 0; index < count; index++) {
-		stream->Write(&(*this)[index], sizeof(T), NULL);
-	}
-}

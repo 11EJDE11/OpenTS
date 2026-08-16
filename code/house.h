@@ -83,6 +83,7 @@ class AbstractClass;
 class UnitClass;
 class CCINIClass;
 class ObjectTypeClass;
+class SaveStreamClass;
 template<class T> class DynamicVectorClass;
 
 #define HOUSE_NAME_MAX	20
@@ -130,6 +131,17 @@ class HouseStaticClass {
 		**	specifies which method is to be used.
 		*/
 		SourceType Edge;
+
+		/// Carries the scenario supplied house control to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(IQ);
+			stream.Serialize(TechLevel);
+			stream.Serialize(Allies);
+			stream.Serialize(InitialCredits);
+			stream.Serialize(Edge);
+		}
 };
 
 
@@ -562,6 +574,15 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 			int AirDefense;
 			int ArmorDefense;
 			int InfantryDefense;
+
+			/// Carries one zone's defense ratings to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(AirDefense);
+				stream.Serialize(ArmorDefense);
+				stream.Serialize(InfantryDefense);
+			}
 		} ZoneInfo[ZONE_COUNT];
 
 		/*
@@ -638,6 +659,14 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 			unsigned InitialAttack;
 			AttackStruct(void) { InitialAttack = 0; }
 			AttackStruct(NoInitClass const & x) : Timer(x) { }
+
+			/// Carries the all out attack schedule to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(Timer);
+				stream.Serialize(InitialAttack);
+			}
 		} Attack;
 
 	public:
@@ -708,7 +737,9 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
@@ -736,7 +767,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		virtual HRESULT STDMETHODCALLTYPE FindConnectionPoint(REFIID riid, IConnectionPoint **ppCP) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual int Fetch_Heap_ID(void) const override;
 

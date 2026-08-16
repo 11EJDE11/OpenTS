@@ -27,11 +27,10 @@ class NeuronClass : public AbstractClass
 		virtual ~NeuronClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_NEURON); }
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(NeuronClass)); }
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual void Compute_CRC(CRCEngine &) const override;
 
@@ -67,6 +66,8 @@ class BrainClass
 
 		HRESULT Load(IStream * stream);
 		HRESULT Save(IStream * stream, BOOL cleardirty);
+
+		void Serialize(SaveStreamClass & stream, BOOL cleardirty = FALSE);
 
 	private:
 		/*

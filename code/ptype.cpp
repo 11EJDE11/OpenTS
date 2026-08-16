@@ -16,6 +16,7 @@
 #include "findmake.h"
 #include "globals.h"
 #include "incdec.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "tracker.h"
@@ -249,74 +250,55 @@ HRESULT STDMETHODCALLTYPE ParticleTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads this particle type in from the save game stream.
-/// The object is rebuilt in place, its warhead reference is swizzled back into a real
-/// pointer, the color list is restored, and the normal image is fetched again.
+/// Re-attaches the artwork this particle type names.
+/// The normal image is fetched again once the members have been read.
 /// </summary>
-/// <returns>Returns with S_OK if the particle type was read, otherwise a failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE ParticleTypeClass::Load(IStream * stream)
+void ParticleTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ParticleTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Swizzle_Pointer(&Warhead);
-
-		int count = 0;
-
-		HRESULT hr = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(hr)) {
-			return(hr);
-		}
-
-		for (int index = 0; index < count; index++) {
-			RGBClass obj;
-			hr = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(hr)) {
-				return(hr);
-			}
-			ColorList.Add(obj);
-		}
-
-		Fetch_Normal_Image();
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Normal_Image();
 }
 
 
 /// <summary>
-/// Writes this particle type out to the save game stream.
-/// The color list is a dynamic vector, so it cannot travel as part of the raw object
-/// image and is written out separately.
+/// Lists the members this particle type carries.
 /// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the particle type was written, otherwise a failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE ParticleTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void ParticleTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int index;
-		int count = ColorList.Count();
+	BASECLASS::Serialize(stream);
 
-		HRESULT hr = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(hr)) {
-			return(hr);
-		}
-
-		for (index = 0; index < count; index++) {
-			hr = stream->Write(&ColorList[index], sizeof(ColorList[index]), NULL);
-			if (FAILED(hr)) {
-				return(S_OK);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(NextParticleOffset);
+	stream.Serialize(XVelocity);
+	stream.Serialize(YVelocity);
+	stream.Serialize(MinZVelocity);
+	stream.Serialize(ZVelocityRange);
+	stream.Serialize(ColorSpeed);
+	stream.Serialize(ColorList);
+	stream.Serialize(StartColor1);
+	stream.Serialize(StartColor2);
+	stream.Serialize(MaxDC);
+	stream.Serialize(MaxEC);
+	stream.Serialize(Warhead);
+	stream.Serialize(Damage);
+	stream.Serialize(StartFrame);
+	stream.Serialize(NumLoopFrames);
+	stream.Serialize(Translucency);
+	stream.Serialize(WindEffect);
+	stream.Serialize(Velocity);
+	stream.Serialize(Deacc);
+	stream.Serialize(Radius);
+	stream.Serialize(DeleteOnStateLimit);
+	stream.Serialize(EndStateAI);
+	stream.Serialize(StartStateAI);
+	stream.Serialize(StateAIAdvance);
+	stream.Serialize(FinalDamageState);
+	stream.Serialize(Translucent25State);
+	stream.Serialize(Translucent50State);
+	stream.Serialize(IsNormalized);
+	stream.Serialize(NextParticle);
+	stream.Serialize(BehavesLike);
 }
 
 
@@ -374,19 +356,6 @@ ParticleBehaviorType Particle_Behavior_From_Name(char const * name)
 		}
 	}
 	return(BEHAVIOR_NONE);
-}
-
-
-/// <summary>
-/// Fetches the memory size of this particle type object.
-/// This routine is used by the save and load system when it needs to know how much of
-/// the raw object image to transfer.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an older save game format?</param>
-/// <returns>Returns with the size of this object in bytes.</returns>
-int ParticleTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

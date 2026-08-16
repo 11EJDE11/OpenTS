@@ -52,10 +52,10 @@
 #include "mixfile.h"
 #include "overtype.h"
 #include "rawfile.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "smudtype.h"
-#include "swizzle.h"
 #include "terrtype.h"
 #include "xmouse.h"
 
@@ -383,22 +383,15 @@ void MouseClass::Init_Clear(void)
 
 /// <summary>
 /// Loads the map layer from a save game stream.
-/// This routine tears down the cell array and the zone tables, reads the saved state
-/// over this class, then reallocates the map and reads the cells and zone data back into
-/// it. Object pointers within the restored state are remapped by the swizzle manager,
-/// and the theater specific type data is reinitialized to match the scenario.
+/// This routine tears down the cell array and the zone tables, reads the members of the
+/// whole display chain back, then reallocates the map and reads the cells and zone data
+/// back into it. Object pointers within the restored state are remapped by the swizzle
+/// manager, and the theater specific type data is reinitialized to match the scenario.
 /// </summary>
 /// <returns>Returns with S_OK if the map was loaded, otherwise the stream error.</returns>
 HRESULT MouseClass::Load(IStream * stream)
 {
 	int i;
-
-	TaggedCells.Clear();
-	DirtyIceCells.Clear();
-	CrackedIce.Clear();
-	PendingBridgeCells.Clear();
-
-	int size = sizeof(*this);
 
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
@@ -438,22 +431,12 @@ HRESULT MouseClass::Load(IStream * stream)
 
 		Array.Clear();
 
-		result = stream->Read(this, sizeof(*this), NULL);
+		SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+		Serialize(savestream);
+		result = savestream.Result();
 		if (FAILED(result)) {
 			return(result);
 		}
-
-		new (this) MouseClass(NoInitClass());
-
-		for (i = 0; i < SidebarClass::COLUMNS; i++) {
-			for (int j = 0; j < SidebarClass::StripClass::MAX_BUILDABLES; j++) {
-				Swizzle_Pointer(&Column[i].Buildables[j].Factory);
-			}
-		}
-
-		Swizzle_Pointer(&PendingObjectPtr);
-		Swizzle_Pointer(&PendingObject);
-		Swizzle_Pointer(&FollowingObjectPtr);
 
 		/*
 		**	Reallocate the cell array
@@ -532,58 +515,6 @@ HRESULT MouseClass::Load(IStream * stream)
 			OleLoadFromStream(stream, IID_IUnknown, &ptr);
 		}
 
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			TaggedCells.Add(cell);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			DirtyIceCells.Add(cell);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			CrackedIceStruct ice;
-			result = stream->Read(&ice, sizeof(ice), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			CrackedIce.Add(ice);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			PendingBridgeCells.Add(cell);
-		}
-
 		TerrainTypeClass::Init(Scen->Theater);
 		if (Scen->Theater != LastTheater) {
 			IsometricTileTypeClass::Read_Control_File(Scen->Theater, true);
@@ -606,8 +537,8 @@ HRESULT MouseClass::Load(IStream * stream)
 
 /// <summary>
 /// Saves the map layer to a save game stream.
-/// This routine writes the theater, the raw state of this class, the zone tables and
-/// zone connections, and then every valid cell, in the order that Load expects to find
+/// This routine writes the theater, the members of the whole display chain, the zone tables
+/// and zone connections, and then every valid cell, in the order that Load expects to find
 /// them. The cells persist themselves through OLE, so each one writes its own contents.
 /// </summary>
 /// <returns>Returns with S_OK if the map was written, otherwise the stream error.</returns>
@@ -624,7 +555,9 @@ HRESULT MouseClass::Save(IStream * stream)
 			return(result);
 		}
 
-		result = stream->Write(this, sizeof(*this), NULL);
+		SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+		Serialize(savestream);
+		result = savestream.Result();
 		if (FAILED(result)) {
 			return(result);
 		}
@@ -682,57 +615,28 @@ HRESULT MouseClass::Save(IStream * stream)
 			return(result);
 		}
 
-		count = TaggedCells.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&TaggedCells[i], sizeof(TaggedCells[i]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = DirtyIceCells.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&DirtyIceCells[i], sizeof(DirtyIceCells[i]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = CrackedIce.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&CrackedIce[i], sizeof(CrackedIce[0]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = PendingBridgeCells.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&PendingBridgeCells[i], sizeof(PendingBridgeCells[0]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
 		result = S_OK;
 	}
 	return(result);
+}
+
+
+/// <summary>
+/// Lists the members the mouse handler holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void MouseClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+	// MouseShapes -- the cursor artwork and the table that drives it, both established by
+	// One_Time.
+	// MouseControl
+	// IsSmall -- the cursor the player is looking at, which the input pass chooses again from
+	// whatever lies beneath it.
+	// CurrentMouseShape
+	// NormalMouseShape
+	// Timer
+	// Frame
 }
 
 

@@ -88,6 +88,14 @@ class TPoint2D {
 		// Find distance between points.
 		T Distance_To(TPoint2D<T> const & point) const {return((*this - point).Length());}
 
+		/// Carries the point to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(X);
+			stream.Serialize(Y);
+		}
+
 	public:
 		T X;
 		T Y;
@@ -186,6 +194,14 @@ class TPoint3D : public TPoint2D<T> {
 		T Distance_To(TPoint2D<T> const & point) const {return(BASECLASS::Distance_To(point));}
 
 	public:
+
+		/// Carries the point to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			BASECLASS::Serialize(stream);
+			stream.Serialize(Z);
+		}
 
 		/*
 		**	The Z component of this point.

@@ -43,12 +43,12 @@ class FoggedObjectClass : public AbstractClass
 		virtual ~FoggedObjectClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
 
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		Cell const *Get_Head_Record_Occupy_List(void);
@@ -116,6 +116,15 @@ class FoggedObjectClass : public AbstractClass
 			bool operator == (DrawRecord const & that) { return(TypeClass == that.TypeClass && FrameNumber == that.FrameNumber); }
 			bool operator != (DrawRecord const & that) { return(TypeClass != that.TypeClass || FrameNumber != that.FrameNumber); }
 
+			/// Carries the recorded shape to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(TypeClass);
+				stream.Serialize(FrameNumber);
+				stream.Serialize(HeightAdjust);
+				stream.Serialize(ZAdjust);
+			}
 		};
 
 	public:

@@ -21,7 +21,8 @@ class TeleportLocomotionClass : public LocomotionClass
 		TeleportLocomotionClass(const NoInitClass & x) : BASECLASS(x) {}
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
@@ -29,8 +30,6 @@ class TeleportLocomotionClass : public LocomotionClass
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override;
 
 		virtual boolean Is_Stationary(void);
 

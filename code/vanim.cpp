@@ -31,9 +31,9 @@
 #include "partsys.h"
 #include "rect.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tiberium.h"
@@ -504,33 +504,21 @@ LayerType VoxelAnimClass::In_Which_Layer(void) const
 
 
 /// <summary>
-/// Loads this animation from the save game stream.
-/// The object is rebuilt in place and the pointers it recorded are handed to the
-/// swizzler so that they refer to the newly loaded objects.
+/// Lists the members this animation carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE VoxelAnimClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void VoxelAnimClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) VoxelAnimClass(NoInitClass());
+	BASECLASS::Serialize(stream);
+	BounceClass::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&AttachedParticleSys);
-		Swizzle_Pointer(&House);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this animation to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE VoxelAnimClass::Save(IStream * stream, BOOL cleardirty)
-{
-	return(BASECLASS::Save(stream, cleardirty));
+	stream.Serialize(Unused1);
+	stream.Serialize(Class);
+	stream.Serialize(AttachedParticleSys);
+	stream.Serialize(House);
+	stream.Serialize(IsToDie);
+	stream.Serialize(IsInvisible);
+	stream.Serialize(ECCounter);
 }
 
 
@@ -567,18 +555,6 @@ HRESULT STDMETHODCALLTYPE VoxelAnimClass::GetClassID(CLSID * retval)
 	if (retval == NULL) return(E_POINTER);
 	*retval = CLSID_VoxelAnimClass;
 	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the size of this object in bytes.
-/// This routine is used by the save system to determine how much of the object must be
-/// committed to the save stream.
-/// </summary>
-/// <returns>Returns with the byte size of this object.</returns>
-int VoxelAnimClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

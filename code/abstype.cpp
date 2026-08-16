@@ -18,6 +18,7 @@
 #include "ccini.h"
 #include "crc.h"
 #include "globals.h"
+#include "savestream.h"
 #include "vector.h"
 
 #include <cstdio>
@@ -148,4 +149,17 @@ void AbstractTypeClass::Compute_CRC(CRCEngine & crc) const
 	BASECLASS::Compute_CRC(crc);
 	crc((const char *)IniName);
 	crc((const char *)GivenName);
+}
+
+
+/// <summary>
+/// Lists the members every object type carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void AbstractTypeClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(IniName);
+	stream.Serialize(GivenName);
 }

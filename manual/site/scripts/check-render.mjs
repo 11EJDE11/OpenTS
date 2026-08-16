@@ -190,8 +190,8 @@ const indexContracts = [
 		['>Changes</h1>', 'Versioned behavior and compatibility changes, newest release first.', 'ots-release-badge', 'sl-badge', '0.1.0', 'Upgrade to 0.1.0', 'data-change-list'],
 		["What's new", 'A permanent, versioned record of deliberate OpenTS changes.']],
 	['changes/0.1.0/index.html',
-		['Upgrade to 0.1.0', 'In development', 'no recorded migration steps', 'View all changes for 0.1.0'],
-		[]],
+		['Upgrade to 0.1.0', 'In development', 'migration before existing content is used with this version.', 'Serialize save games member by member', 'View all changes for 0.1.0'],
+		['no recorded migration steps']],
 ];
 
 for (const [relative, expected, retired] of indexContracts) {

@@ -19,6 +19,7 @@
 #include "crc.h"
 #include "globals.h"
 #include "inline.h"
+#include "savestream.h"
 #include "tracker.h"
 
 #include <cstdio>
@@ -77,36 +78,19 @@ TubeClass::~TubeClass(void)
 
 
 /// <summary>
-/// Loads this tunnel from the save game stream.
-/// The object is rebuilt in place once the base class has read the raw image back over
-/// it, so that the tunnel has a working virtual table again.
+/// Lists the members this tunnel carries.
 /// </summary>
-/// <returns>Returns with S_OK if the tunnel was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE TubeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TubeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TubeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this tunnel to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the tunnel was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE TubeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Enter);
+	stream.Serialize(Exit);
+	stream.Serialize(EnterDir);
+	stream.Serialize(Dirs);
+	stream.Serialize(Count);
+	// INI_NAME -- a map file section name shared by every tunnel.
 }
 
 
@@ -269,16 +253,6 @@ void TubeClass::Compute_CRC(CRCEngine & crc) const
 		crc(Dirs[i]);
 	}
 	crc(Count);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it is written to a save game.
-/// </summary>
-/// <returns>Returns with the size of the tunnel record in bytes.</returns>
-int TubeClass::Fetch_Object_Size(bool) const
-{
-	return(sizeof(*this));
 }
 
 

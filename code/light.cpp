@@ -21,6 +21,7 @@
 #include "lightcon.h"
 #include "map.h"
 #include "milsectmr.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 #include "vector.h"
@@ -301,48 +302,22 @@ HRESULT STDMETHODCALLTYPE LightSourceClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this light source from the stream specified.
-/// The object is re-created in place over the bytes that were read back, so that its
-/// virtual table pointer refers to this session rather than the saved one.
+/// Lists the members this light source carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE LightSourceClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void LightSourceClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) LightSourceClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this light source to the stream specified.
-/// This routine is reached by way of the persist interface when the save game system
-/// walks the object heap.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE LightSourceClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it appears in a save file.
-/// </summary>
-/// <returns>Returns with the number of bytes this object occupies when saved.</returns>
-int LightSourceClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
+	stream.Serialize(Intensity);
+	stream.Serialize(RedTint);
+	stream.Serialize(GreenTint);
+	stream.Serialize(BlueTint);
+	stream.Serialize(Position);
+	stream.Serialize(Visibility);
+	stream.Serialize(IsEnabled);
+	// PendingCells -- the relighting queue and its gate, shared by every light.
+	// Recalc
 }
 
 

@@ -17,6 +17,7 @@
 #include "crc.h"
 #include "globals.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 #include "vector.h"
@@ -158,47 +159,18 @@ void CampaignClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads this campaign back in from a save game stream.
-/// The object is reconstructed in place so that its virtual table pointer is valid
-/// again before the game resumes using it.
+/// Lists the members this campaign carries.
 /// </summary>
-/// <returns>Returns with S_OK if the campaign was read, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE CampaignClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void CampaignClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) CampaignClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this campaign out to a save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once written?</param>
-/// <returns>Returns with S_OK if the campaign was written, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE CampaignClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it appears in a save file.
-/// This routine is used by the persistence code to reserve room for the campaign
-/// when it is written to, or read back from, a save game stream.
-/// </summary>
-/// <returns>Returns with the byte size of this object.</returns>
-int CampaignClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
+	stream.Serialize(CDNumber);
+	stream.Serialize(ScenarioName);
+	stream.Serialize(FinalMovie);
+	stream.Serialize(Description);
+	stream.Serialize(RequiredAddon);
 }
 
 

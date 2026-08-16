@@ -122,6 +122,7 @@
 #include "mono.h"
 #include "objtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "session.h"
 #include "shapeset.h"
 #include "swizzle.h"
@@ -2053,21 +2054,30 @@ void ObjectClass::Set_Health_Ratio(double health)
 
 
 /// <summary>
-/// Loads this object from the specified stream.
-/// This routine remaps the object's list link and attached tag once the base class data has
-/// been read back in.
+/// Lists the members every game object carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE ObjectClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ObjectClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		Swizzle_Pointer(&Next);
-		Swizzle_Pointer(&Tag);
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Riser);
+	stream.Serialize(Next);
+	stream.Serialize(Tag);
+	stream.Serialize(Strength);
+	stream.Serialize(IsDown);
+	stream.Serialize(IsToDamage);
+	stream.Serialize(IsToDisplay);
+	stream.Serialize(IsInLimbo);
+	stream.Serialize(IsSelected);
+	stream.Serialize(IsAnimAttached);
+	stream.Serialize(IsOnBridge);
+	stream.Serialize(IsFalling);
+	stream.Serialize(IsToExplode);
+	stream.Serialize(IsActive);
+	stream.Serialize(Layer);
+	stream.Serialize(IsSubmittedToLayer);
+	stream.Serialize(Position);
 }
 
 

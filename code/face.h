@@ -251,6 +251,16 @@ class DirType
 			return(false);
 		}
 
+		/*
+		 * Carries the direction to or from a save game. The whole storage travels rather than
+		 * the 16 bit angle alone, since the rounding conversions read the padding with it.
+		 */
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Raw);
+		}
+
 	/// probably should be private.
 	public:
 		union {

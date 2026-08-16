@@ -106,6 +106,7 @@
 #include "queue.h"
 #include "rect.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
@@ -214,30 +215,6 @@ SidebarClass::SidebarClass(void) :
 	Column[1].X = COLUMN_TWO_X;
 	Column[1].Y = COLUMN_TWO_Y;
 	Column[1].ObjectRect = Rect(Column[1].X, Column[1].Y, StripClass::OBJECT_WIDTH, StripClass::OBJECT_HEIGHT * Max_Visible());
-}
-
-
-/***********************************************************************************************
- * SidebarClass::SidebarClass -- This is the no initialization constructor for the sidebar.    *
- *                                                                                             *
- *    Unlike the normal constructor, this one doesn't do any initialization. There is one      *
- *    exception to this. The stip classes can't call an explicit NoInitClass constructor       *
- *    since they are an array. Since the default constructor is called for these strips, we    *
- *    must reset the X and Y location to what we know they should be.                          *
- *                                                                                             *
- * INPUT:   flag to indicate that this is a no initialization constructor.                     *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   08/06/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-SidebarClass::SidebarClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
 }
 
 
@@ -2763,24 +2740,64 @@ void Print_Cameo_Text(char const * string, Point2D const & point, Rect const & c
 
 
 /// <summary>
-/// Loads the sidebar from the save game stream.
-/// There is nothing of the sidebar's own to read back, so the stream is simply passed down
-/// to the map layers underneath it.
+/// Lists the members the sidebar holds.
 /// </summary>
-/// <returns>Returns with S_OK if the load succeeded.</returns>
-HRESULT SidebarClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void SidebarClass::Serialize(SaveStreamClass & stream)
 {
-	return(BASECLASS::Load(stream));
+	BASECLASS::Serialize(stream);
+
+	// SidebarShape -- backdrop artwork, fetched for the player's house by Init_For_House.
+	// SidebarMiddleShape
+	// SidebarBottomShape
+	// SidebarAddonShape
+	stream.Serialize(Column);
+	// IsToRedraw -- a redraw flag; the load asks for a complete draw anyway.
+	stream.Serialize(IsCameoText);
+	stream.Serialize(IsSidebarActive);
+
+	// IsForceCompleteRedraw -- likewise redraw flags.
+	// IsToRedrawCredits
+	// Repair -- the sidebar buttons and their blit flag, all set up again by Init_IO.
+	// Upgrade
+	// Power
+	// Waypoint
+	// Background
+	// IsToBlitSidebar
+	stream.Serialize(IsRepairActive);
+	stream.Serialize(IsUpgradeActive);
+	stream.Serialize(IsDemolishActive);
 }
 
 
 /// <summary>
-/// Saves the sidebar to the save game stream.
-/// The sidebar keeps nothing of its own that must survive a save, so the real work falls to
-/// the map layers underneath it.
+/// Lists the members one side strip holds.
 /// </summary>
-/// <returns>Returns with S_OK if the save succeeded.</returns>
-HRESULT SidebarClass::Save(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void SidebarClass::StripClass::Serialize(SaveStreamClass & stream)
 {
-	return(BASECLASS::Save(stream));
+	StageClass::Serialize(stream);
+
+	/*
+	 * not saved: X, Y, ObjectRect, ID -- where the strip sits on the sidebar and which strip it
+	 * is, both established by the sidebar constructor and Init_IO for the current screen.
+	 *
+	 * not saved: IsToRedraw -- a redraw flag; the load asks for a complete draw anyway.
+	 */
+	stream.Serialize(IsBuilding);
+	stream.Serialize(IsScrollingDown);
+	stream.Serialize(IsScrolling);
+	stream.Serialize(Flasher);
+	stream.Serialize(TopIndex);
+	stream.Serialize(Scroller);
+	stream.Serialize(Slid);
+	stream.Serialize(LastSlid);
+	stream.Serialize(BuildableCount);
+	stream.Serialize(Buildables);
+
+	/*
+	 * not saved: LogoShapes, ClockShapes, RechargeClockShapes, DarkenShapes, UpButton,
+	 * DownButton, SelectButton -- cameo artwork and the strip's buttons, all set up again by
+	 * One_Time, Init_For_House and Init_IO.
+	 */
 }

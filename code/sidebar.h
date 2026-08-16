@@ -50,8 +50,7 @@ class SidebarClass : public PowerClass
 		typedef PowerClass BASECLASS;
 
 	public:
-		virtual HRESULT Load(IStream * stream) override;
-		virtual HRESULT Save(IStream * stream) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 	public:
 		/*
@@ -100,7 +99,6 @@ class SidebarClass : public PowerClass
 		static ShapeSet const * SidebarAddonShape;
 
 		SidebarClass(void);
-		SidebarClass(NoInitClass const & x);
 
 		/*
 		**	Initialization
@@ -157,6 +155,8 @@ class SidebarClass : public PowerClass
 				StripClass(void) {}
 				StripClass(InitClass const &);
 				StripClass(NoInitClass const & ) {};
+
+				void Serialize(SaveStreamClass & stream);
 
 				bool Add(RTTIType type, int ID);
 				bool Abandon_Production(FactoryClass const * factory);
@@ -297,7 +297,11 @@ class SidebarClass : public PowerClass
 				**	construction of the same object type.
 				*/
 				struct BuildType {
-					BuildType(void) {}
+					BuildType(void) :
+						BuildableID(0),
+						BuildableType(RTTI_NONE),
+						Factory(NULL)
+					{}
 					BuildType(int id, RTTIType type, FactoryClass *factory=NULL) :
 						BuildableID(id),
 						BuildableType(type),
@@ -310,6 +314,15 @@ class SidebarClass : public PowerClass
 
 					bool operator!=(const BuildType & other) const {
 						return(BuildableID != other.BuildableID || BuildableType != other.BuildableType);
+					}
+
+					/// Carries the sidebar slot to or from a save game.
+					template<typename S>
+					void Serialize(S & stream)
+					{
+						stream.Serialize(BuildableID);
+						stream.Serialize(BuildableType);
+						stream.Serialize(Factory);
 					}
 
 					int BuildableID;

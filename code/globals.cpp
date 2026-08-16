@@ -529,7 +529,6 @@ char BuildDate   [64] = {"Insert1Build2Date3Here4     " "\x00" "\xD9" "\xC7" "\x
 **	Win32 specific globals
 */
 int ReadyToQuit = 0;
-bool IsOldSaveGame = false;
 
 bool TacticalActive;
 

@@ -62,11 +62,11 @@
 #include "lightcon.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
 #include "surface.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "tiberium.h"
 #include "tracker.h"
@@ -520,31 +520,14 @@ void OverlayClass::Write_INI(CCINIClass & ini)
 
 
 /// <summary>
-/// Loads this overlay from the supplied stream.
-/// The overlay is rebuilt in place and its type class pointer is remapped so that it
-/// refers to the running game's overlay type heap rather than the saved one.
+/// Lists the members this overlay carries.
 /// </summary>
-/// <returns>Returns with S_OK if the overlay was read, otherwise an error code.</returns>
-HRESULT STDMETHODCALLTYPE OverlayClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void OverlayClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) OverlayClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this overlay to the supplied stream.
-/// </summary>
-/// <returns>Returns with S_OK if the overlay was written, otherwise an error code.</returns>
-HRESULT STDMETHODCALLTYPE OverlayClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	return(result);
+	stream.Serialize(Class);
 }
 
 

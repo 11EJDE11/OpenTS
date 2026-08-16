@@ -63,6 +63,7 @@
 #include "progress.h"
 #include "queue.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "special.h"
 #include "wonline.h"
@@ -1332,51 +1333,63 @@ void SessionClass::Init_Fixed_Alliances(void)
 
 /// <summary>
 /// Saves the game options to a save game.
-/// The block is written with its own size in front of it, so that a later version of the
-/// game can recognize an incompatible save rather than misread it.
 /// </summary>
 /// <returns>bool; Were the options written successfully?</returns>
-bool GameOptionsType::Save(IStream * stream) const
+bool GameOptionsType::Save(IStream * stream)
 {
-	if (stream != NULL) {
-		unsigned int size = sizeof(*this);
-		HRESULT res = stream->Write(&size, sizeof(size), NULL);
-		if (SUCCEEDED(res)) {
-			res = stream->Write(this, size, NULL);
-			if (SUCCEEDED(res)) {
-				return(true);
-			}
-		}
+	if (stream == NULL) {
+		return(false);
 	}
 
-	return(false);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+	return(SUCCEEDED(savestream.Result()));
 }
 
 
 /// <summary>
 /// Loads the game options from a save game.
-/// A block of a different size belongs to another version of the game and is refused
-/// rather than read. The scenario index is invalidated on the way in, since the saved game
-/// brings its own scenario with it.
+/// The scenario index is invalidated on the way in, since the saved game brings its own
+/// scenario with it.
 /// </summary>
 /// <returns>bool; Were the options read back successfully?</returns>
 bool GameOptionsType::Load(IStream * stream)
 {
-	if (stream != NULL) {
-		unsigned int size;
-		HRESULT res = stream->Read(&size, sizeof(size), NULL);
-		if (SUCCEEDED(res)) {
-			if (size == sizeof(*this)) {
-				res = stream->Read(this, size, NULL);
-				ScenarioIndex = -1;
-				if (SUCCEEDED(res)) {
-					return(true);
-				}
-			}
-		}
+	if (stream == NULL) {
+		return(false);
 	}
 
-	return(false);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+	ScenarioIndex = -1;
+	return(SUCCEEDED(savestream.Result()));
+}
+
+
+/// <summary>
+/// Lists the members the game options carry.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void GameOptionsType::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(ScenarioIndex);
+	stream.Serialize(Bases);
+	stream.Serialize(Credits);
+	stream.Serialize(BridgeDestruction);
+	stream.Serialize(Goodies);
+	stream.Serialize(ShortGame);
+	stream.Serialize(GameSpeed);
+	stream.Serialize(CrapEngineers);
+	stream.Serialize(Ghosts);
+	stream.Serialize(UnitCount);
+	stream.Serialize(AIPlayers);
+	stream.Serialize(AIDifficulty);
+	stream.Serialize(AlliesAllowed);
+	stream.Serialize(HarvTruce);
+	stream.Serialize(CTF);
+	stream.Serialize(FogOfWar);
+	stream.Serialize(MCVRedeploy);
+	stream.Serialize(ScenarioDescription);
 }
 
 /************************** end of session.cpp *****************************/

@@ -23,7 +23,7 @@ class CRCEngine;
 class EnlistedMemberClass
 {
 	public:
-		EnlistedMemberClass(void) {}
+		EnlistedMemberClass(void) : Quantity(0), Class(NULL) {}
 		EnlistedMemberClass(int quantity, TechnoTypeClass const *type) : Quantity(quantity), Class(type) {}
 		EnlistedMemberClass(char const * entry);
 
@@ -31,6 +31,14 @@ class EnlistedMemberClass
 		char const * Build_INI_Entry(void) const;
 
 		void Compute_CRC(CRCEngine & crc) const;
+
+		/// Carries the member entry to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Quantity);
+			stream.Serialize(Class);
+		}
 
 		int Quantity;					// Number of objects desired for this type.
 		TechnoTypeClass const * Class;	// The type of object desired.

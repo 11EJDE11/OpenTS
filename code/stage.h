@@ -76,6 +76,17 @@ class StageClass {
 		void Adjust_Rate(int rate) {if (rate != Rate) Rate = rate;}
 		void Just_Set_Rate(int rate) {Rate = rate;}
 		void AI(void) {};
+
+		/// Carries the animation stage to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Stage);
+			stream.Serialize(Timer);
+			stream.Serialize(Rate);
+			stream.Serialize(Step);
+		}
+
 		bool About_To_Change(void) const {return(Timer == 0 && Rate != 0);}
 		bool Graphic_Logic(void) {
 			if (About_To_Change()) {

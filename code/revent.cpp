@@ -19,6 +19,7 @@
 #include "matrix3d.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "vector.h"
 
 DynamicVectorClass<RadarEventClass *> RadarEventClass::RadarEvents;
@@ -365,24 +366,18 @@ void RadarEventClass::Get_Event_Rect(Point2D (& event_rect)[4]) const
 /// <returns>bool; Were the events written successfully?</returns>
 bool RadarEventClass::Save(IStream * stream)
 {
-	int count = RadarEvents.Count();
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
 
-	if (FAILED(stream->Write(&count, sizeof(count), NULL))) {
-		return(S_OK);
-	}
+	int count = RadarEvents.Count();
+	savestream.Serialize(count);
 
 	for (int index = 0; index < count; index++) {
-		HRESULT hr = stream->Write(RadarEvents[index], sizeof(*RadarEvents[index]), NULL);
-		if (FAILED(hr)) {
-			return(S_OK);
-		}
+		RadarEvents[index]->Serialize(savestream);
 	}
 
-	if (SUCCEEDED(stream->Write(&LastRadarEventCell, sizeof(LastRadarEventCell), NULL))) {
-		return(true);
-	}
+	savestream.Serialize(LastRadarEventCell);
 
-	return(false);
+	return(SUCCEEDED(savestream.Result()));
 }
 
 
@@ -400,26 +395,43 @@ bool RadarEventClass::Load(IStream * stream)
 		RadarEvents.Delete_Index(i);
 	}
 
-	int count;
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
 
-	if (FAILED(stream->Read(&count, sizeof(count), NULL))) {
-		return(false);
-	}
+	int count = 0;
+	savestream.Serialize(count);
 
 	for (int index = 0; index < count; index++) {
 		RadarEventClass * event = new RadarEventClass(RADAREVENT_NONE, Cell(0, 0));
-		HRESULT hr = stream->Read(event, sizeof(*event), NULL);
-		if (FAILED(hr)) {
-			return(S_OK);
-		}
+		event->Serialize(savestream);
 	}
 
-	if (SUCCEEDED(stream->Read(&LastRadarEventCell, sizeof(LastRadarEventCell), NULL))) {
-		return(true);
-	}
+	savestream.Serialize(LastRadarEventCell);
 
-	return(false);
+	return(SUCCEEDED(savestream.Result()));
 }
+
+
+/// <summary>
+/// Lists the members this radar event carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void RadarEventClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(Type);
+	stream.Serialize(Offset);
+	stream.Serialize(Radius);
+	stream.Serialize(RotationAngle);
+	stream.Serialize(RotationSpeed);
+	stream.Serialize(ColorFactor);
+	stream.Serialize(ColorSpeed);
+	stream.Serialize(Location);
+	stream.Serialize(DurationTimer);
+	stream.Serialize(VisibilityTimer);
+	stream.Serialize(IsRotating);
+	stream.Serialize(IsVisible);
+
+}
+	// RadarEvents -- the master list, rebuilt as the events are constructed.
 
 
 /// <summary>

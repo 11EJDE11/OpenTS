@@ -46,7 +46,6 @@ class FileEntryClass {
 		int Num;            // save file number (from the extension)
 		FILETIME DateTime;  // date/time stamp of file
 		bool Valid;         // Is the scenario valid?
-		bool Old;
 		GameType Type;
 
 		FileEntryClass(void) :
@@ -54,7 +53,6 @@ class FileEntryClass {
 			House(HOUSE_NONE),
 			Num(-1),
 			Valid(true),
-			Old(false),
 			Type(GAME_NORMAL)
 		{
 			Descr[0] = '\0';
@@ -78,9 +76,13 @@ class LoadOptionsClass
 			WWDELETE
 		};
 
+		/*
+		 * Save games carry this in their version header. Only a save stamped with the
+		 * current value loads; the per-member save format has no reader for anything
+		 * else, so every earlier stamp is refused outright.
+		 */
 		enum {
-			GAMEVER_TS = 114465,
-			GAMEVER_FS = 114849
+			GAMEVER_OPENTS = 200000
 		};
 
 		LoadOptionsClass (void);

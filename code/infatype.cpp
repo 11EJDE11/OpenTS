@@ -58,6 +58,7 @@
 #include "infantry.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 
@@ -470,52 +471,58 @@ void InfantryTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this infantry type from the stream specified.
-/// The shape images are re-fetched and the voice comment list and animation sequence
-/// controls are rebuilt, since none of those survive a raw read of the object.
+/// Re-attaches the artwork this infantry type names.
+/// Artwork is never written to a save game, so the shape images the soldier draws with are
+/// fetched again once the members have been read.
 /// </summary>
-/// <returns>Returns with S_OK if the infantry type was read, otherwise a failure code.</returns>
-HRESULT STDMETHODCALLTYPE InfantryTypeClass::Load(IStream * stream)
+void InfantryTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			IsWebImmune = false;
-		}
+	BASECLASS::Post_Load();
 
-		new (this) InfantryTypeClass(NoInitClass());
-
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
-
-		VoiceComment.Load(stream);
-
-		DoControls = new DoInfoStruct[DO_COUNT];
-		int dosize = sizeof(*DoControls) * DO_COUNT;
-		if (IsOldSaveGame) {
-			dosize = sizeof(*DoControls) * (DO_COUNT - 1);
-		}
-		stream->Read((void *)DoControls, dosize, NULL);
-	}
-	return(result);
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 }
 
 
 /// <summary>
-/// Saves this infantry type to the stream specified.
-/// The voice comment list and the animation sequence controls hang off this object rather
-/// than living inside it, so they are written out after the object itself.
+/// Lists the members this infantry type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the infantry type was written, otherwise a failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE InfantryTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void InfantryTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		VoiceComment.Save(stream);
-		stream->Write((void *)DoControls, sizeof(*DoControls) * DO_COUNT, NULL);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(HeapID);
+	stream.Serialize(Pip);
+
+	/*
+	 * The animation sequence data hangs off the type rather than living inside it, so the
+	 * pointer means nothing to a save game and the block it names travels instead.
+	 */
+	if (stream.Is_Loading()) {
+		DoControls = new DoInfoStruct[DO_COUNT];
 	}
-	return(result);
+	stream.Serialize_Bytes((void *)DoControls, sizeof(*DoControls) * DO_COUNT);
+
+	stream.Serialize(FireLaunch);
+	stream.Serialize(ProneLaunch);
+	stream.Serialize(VoiceComment);
+	stream.Serialize(IsCyborg);
+	stream.Serialize(IsFearless);
+	stream.Serialize(IsCrawling);
+	stream.Serialize(IsCapture);
+	stream.Serialize(IsFraidyCat);
+	stream.Serialize(IsTiberiumProof);
+	stream.Serialize(IsCivilian);
+	stream.Serialize(IsBomber);
+	stream.Serialize(IsEngineer);
+	stream.Serialize(IsDisguised);
+	stream.Serialize(IsAgent);
+	stream.Serialize(IsThief);
+	stream.Serialize(IsVehicleThief);
+	stream.Serialize(IsDoggie);
+	stream.Serialize(IsJumpJet);
+	stream.Serialize(IsWebImmune);
 }
 
 
@@ -553,20 +560,6 @@ InfantryTypeClass * InfantryTypeClass::Find_Or_Make(char const * name)
 RTTIType InfantryTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_INFANTRYTYPE);
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this infantry type occupies when saved.
-/// Save games written by an earlier version of the game store a shorter record, so the size
-/// is trimmed accordingly when such a save is being processed.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an older format save game?</param>
-/// <returns>Returns with the size, in bytes, of this infantry type.</returns>
-int InfantryTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int delta = oldsave ? Get_Object_Size_Delta() : 0;
-	return(sizeof(*this) - delta);
 }
 
 

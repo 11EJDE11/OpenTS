@@ -40,6 +40,7 @@
 #include "theater.hh"
 
 class GadgetClass;
+class SaveStreamClass;
 class Surface;
 class Point2D;
 template<class T> class TRect;
@@ -70,12 +71,13 @@ class GScreenClass : public IGameMap
 	public:
 
 		GScreenClass(void);
-		GScreenClass(NoInitClass const &) {};
 		virtual ~GScreenClass(void) {}
 
 		virtual LONG STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override { return(1); }
 		virtual ULONG STDMETHODCALLTYPE Release(void) override { return(1); }
+
+		virtual void Serialize(SaveStreamClass & stream);
 
 		/*
 		**	Initialization

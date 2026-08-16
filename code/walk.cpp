@@ -28,6 +28,7 @@
 #include "noinit.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "tactical.h"
 #include "tube.h"
 #include "unit.h"
@@ -626,52 +627,33 @@ HRESULT STDMETHODCALLTYPE WalkLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this locomotor from the data stream specified.
-/// Any piggybacking locomotor that was saved along with it is restored as well.
+/// Lists the members this walk locomotor carries.
+/// The locomotor this one was stacked on top of is a separate persistent object rather
+/// than a member, so it still travels framed by OLE and is recreated as the class it was
+/// saved as.
 /// </summary>
-/// <param name="stream">The stream to read from.</param>
-/// <returns>Returns with S_OK if the locomotor was read, otherwise an error code.</returns>
-HRESULT STDMETHODCALLTYPE WalkLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void WalkLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) WalkLocomotionClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		bool haspiggy;
-		stream->Read(&haspiggy, sizeof(haspiggy), NULL);
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(IsMoving);
+	stream.Serialize(IsProcessingMovement);
+	stream.Serialize(IsReallyMoving);
 
-		if (haspiggy) {
-			result = OleLoadFromStream(stream, IID_ILocomotion, (void**)&Piggybacker);
-		}
-	}
-	return(result);
-}
+	bool haspiggy = (Piggybacker != NULL);
+	stream.Serialize(haspiggy);
 
-
-/// <summary>
-/// Saves this locomotor to the data stream specified.
-/// Any piggybacking locomotor is written along with it so that the pair can be
-/// restored together.
-/// </summary>
-/// <param name="stream">The stream to write to.</param>
-/// <param name="cleardirty">Should the dirty flag be cleared once written?</param>
-/// <returns>Returns with S_OK if the locomotor was written, otherwise an error code.</returns>
-HRESULT STDMETHODCALLTYPE WalkLocomotionClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		bool haspiggy;
-		if (Piggybacker != NULL) {
-			haspiggy = true;
-			stream->Write(&haspiggy, sizeof(haspiggy), NULL);
-			IPersistStreamPtr ptr(Piggybacker);
-			result = OleSaveToStream(ptr, stream);
+	if (haspiggy) {
+		if (stream.Is_Saving()) {
+			IPersistStreamPtr persist(Piggybacker);
+			OleSaveToStream(persist, stream.Get_Stream());
 		} else {
-			haspiggy = false;
-			stream->Write(&haspiggy, sizeof(haspiggy), NULL);
+			OleLoadFromStream(stream.Get_Stream(), IID_ILocomotion, (LPVOID *)&Piggybacker);
 		}
 	}
-	return(result);
 }
 
 

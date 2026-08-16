@@ -58,6 +58,7 @@
 #include "incdec.h"
 #include "mixfile.h"
 #include "rules.h"
+#include "savestream.h"
 #include "shapeset.h"
 #include "sun.h"
 #include "terrain.h"
@@ -402,48 +403,43 @@ void TerrainTypeClass::Compute_CRC(CRCEngine &crc) const
 
 
 /// <summary>
-/// Loads this terrain type from the stream specified.
-/// Save games written by an older version of the game lack a couple of the members, so
-/// their data is shuffled into place before the artwork is fetched again.
+/// Re-attaches the artwork and occupy list this terrain type names.
+/// The artwork is fetched again once the members have been read, and the occupy list is
+/// picked back out of the static table that the restored foundation selects.
 /// </summary>
-/// <returns>Returns with S_OK if the terrain type was read.</returns>
-HRESULT STDMETHODCALLTYPE TerrainTypeClass::Load(IStream * stream)
+void TerrainTypeClass::Post_Load(void)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&TiberiumToSpawn, &YDrawFudge, size - offsetof(TerrainTypeClass, TiberiumToSpawn));
-			memmove(&TemperateOccupationBits, &TiberiumToSpawn, size - offsetof(TerrainTypeClass, TemperateOccupationBits));
-			TiberiumToSpawn = 0;
-			YDrawFudge = 0;
-		}
-
-		new (this) TerrainTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
 		Fetch_Voxel_Image();
 		Fetch_Normal_Image();
 		Occupy = _OccupyLists[Foundation];
-
-		result = S_OK;
-	}
-	return(result);
 }
 
 
 /// <summary>
-/// Saves this terrain type to the stream specified.
+/// Lists the members this terrain type carries.
 /// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared by this save?</param>
-/// <returns>Returns with S_OK if the terrain type was written.</returns>
-HRESULT STDMETHODCALLTYPE TerrainTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void TerrainTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Foundation);
+	stream.Serialize(RadarColor);
+	stream.Serialize(AnimationRate);
+	stream.Serialize(AnimationProbability);
+	stream.Serialize(YDrawFudge);
+	stream.Serialize(TiberiumToSpawn);
+	stream.Serialize(TemperateOccupationBits);
+	stream.Serialize(SnowOccupationBits);
+	stream.Serialize(IsWaterBased);
+	stream.Serialize(IsTiberiumSpawn);
+	stream.Serialize(IsFlammable);
+	stream.Serialize(IsAnimated);
+	stream.Serialize(IsVeinhole);
+	// Occupy -- points into a static table, picked again from Foundation as this loads.
 }
 
 
@@ -481,24 +477,6 @@ TerrainTypeClass * TerrainTypeClass::Find_Or_Make(const char *name)
 RTTIType TerrainTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_TERRAINTYPE);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it appears in a save file.
-/// This routine is used by the load and save logic. Save games written by an older
-/// version of the game predate a couple of the members and are that much smaller.
-/// </summary>
-/// <param name="oldsave">Should the older save game layout be measured?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int TerrainTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta =
-		sizeof(TiberiumToSpawn) +
-		sizeof(YDrawFudge);
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

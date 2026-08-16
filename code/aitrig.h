@@ -63,14 +63,13 @@ class AITriggerTypeClass : public AbstractTypeClass
 		~AITriggerTypeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		static AITriggerTypeClass * Find_Or_Make(char const * ininame);
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_AITRIGGERTYPE);}
-		virtual int Fetch_Object_Size(bool) const override {return(sizeof(*this));}
 
 		virtual bool Read_INI(CCINIClass const & ini) override;
 		virtual bool Write_INI(CCINIClass & ini) const override;

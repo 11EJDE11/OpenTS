@@ -26,9 +26,9 @@
 #include "particle.h"
 #include "psystype.h"
 #include "ptype.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "techno.h"
 #include "tracker.h"
 #include "vector.h"
@@ -825,74 +825,25 @@ void ParticleSystemClass::Detach(AbstractClass const * target, bool all)
 
 
 /// <summary>
-/// Loads this particle system from the data stream.
-/// Every pointer read back is handed to the swizzle manager, which remaps it once
-/// all of the objects in the save file have been reconstructed.
+/// Lists the members this particle system carries.
 /// </summary>
-/// <param name="stream">The stream to read this object's data from.</param>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE ParticleSystemClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ParticleSystemClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ParticleSystemClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&Target);
-		Swizzle_Pointer(&Source);
-
-		int count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			ULONG pcbRead;
-			ParticleClass *pptr = NULL;
-			result = stream->Read(&pptr, sizeof(pptr), &pcbRead);
-			if (FAILED(result)) {
-				return(result);
-			}
-			SystemParticles.Add(pptr);
-		}
-
-		for (int index = 0; index < SystemParticles.Count(); index++) {
-			Swizzle_Pointer(&SystemParticles[index]);
-		}
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this particle system to the data stream.
-/// The particles the system holds are written out as raw pointers; they are
-/// remapped by the swizzle manager when the system is read back in.
-/// </summary>
-/// <param name="stream">The stream to write this object's data to.</param>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE ParticleSystemClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int count = SystemParticles.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (int index = 0; index < count; index++) {
-			result = stream->Write(&SystemParticles[index], sizeof(SystemParticles[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(CoordOffset);
+	stream.Serialize(SystemParticles);
+	stream.Serialize(SpawnCoord);
+	stream.Serialize(Source);
+	stream.Serialize(Target);
+	stream.Serialize(SpawnFrames);
+	stream.Serialize(Lifetime);
+	stream.Serialize(SparkSpawnFrames);
+	stream.Serialize(SparkRadius);
+	stream.Serialize(IsMarkedForDeletion);
+	stream.Serialize(IsRandomSparkDirection);
 }
 
 
@@ -931,18 +882,6 @@ HRESULT STDMETHODCALLTYPE ParticleSystemClass::GetClassID(CLSID * retval)
 	if (retval == NULL) return(E_POINTER);
 	*retval = CLSID_ParticleSystemClass;
 	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the size of this object.
-/// This routine is used by the save process to know how many bytes of this object
-/// must be written out.
-/// </summary>
-/// <returns>Returns with the number of bytes this object occupies.</returns>
-int ParticleSystemClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

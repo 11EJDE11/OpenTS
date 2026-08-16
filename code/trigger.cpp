@@ -52,6 +52,7 @@
 #include "globals.h"
 #include "house.h"
 #include "houstype.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -503,40 +504,19 @@ HRESULT STDMETHODCALLTYPE TriggerClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads this trigger back in from the save game stream.
-/// The virtual table is rebuilt in place and the trigger type and linked trigger
-/// references are swizzled back into live pointers.
+/// Lists the members this trigger carries.
 /// </summary>
-/// <returns>Returns with the result code of the load attempt.</returns>
-HRESULT STDMETHODCALLTYPE TriggerClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TriggerClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TriggerClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&LinkedTo);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this trigger out to the save game stream.
-/// This routine is part of the persistence chain the save game system walks. The trigger
-/// keeps nothing beyond its own members, so the base class does all of the real work.
-/// </summary>
-/// <returns>Returns with the result code of the save attempt.</returns>
-HRESULT STDMETHODCALLTYPE TriggerClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(LinkedTo);
+	stream.Serialize(IsToDelete);
+	stream.Serialize(Timer);
+	stream.Serialize(IsTripped);
+	stream.Serialize(IsActive);
 }
 
 

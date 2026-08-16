@@ -17,6 +17,7 @@
 
 #include "foot.h"
 #include "globals.h"
+#include "savestream.h"
 
 
 /// <summary>
@@ -131,18 +132,14 @@ HRESULT STDMETHODCALLTYPE TeleportLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this locomotor from the persist stream.
-/// The base class reads the raw data back, and the locomotor is then reconstructed in
-/// place so that it regains a usable virtual function table.
+/// Lists the members this teleport locomotor carries.
 /// </summary>
-/// <returns>Returns with the HRESULT of the load. S_OK if the locomotor was rebuilt.</returns>
-HRESULT STDMETHODCALLTYPE TeleportLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TeleportLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TeleportLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(DestinationCoord);
 }
 
 
@@ -155,14 +152,4 @@ HRESULT STDMETHODCALLTYPE TeleportLocomotionClass::Load(IStream * stream)
 LayerType STDMETHODCALLTYPE TeleportLocomotionClass::In_Which_Layer(void)
 {
 	return(LAYER_GROUND);
-}
-
-
-/// <summary>
-/// Fetches the size of this locomotor for the save game file.
-/// </summary>
-/// <returns>Returns with the number of bytes this locomotor occupies.</returns>
-int TeleportLocomotionClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }

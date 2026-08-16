@@ -27,14 +27,13 @@ class LightSourceClass : public AbstractClass
 		virtual ~LightSourceClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		static void Reset(void);
 		static void Process_Lighting(int time_budget_ms, bool force = false);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		bool Is_Enabled(void) const {return(IsEnabled);};

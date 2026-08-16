@@ -28,7 +28,6 @@ class DropshipLoadoutClass
 		bool Add(TechnoTypeClass * ttype);
 		bool Remove(int index);
 		void Clear(void);
-		void Swizzle(void);
 		TechnoTypeClass * Fetch(int index);
 
 	private:
@@ -50,12 +49,26 @@ class DropshipLoadoutClass
 		/*
 		 * These are the units the player has loaded aboard the dropship, in the order they
 		 * were added. The list is kept gapless -- removing a unit closes up the slots behind
-		 * it -- so the loadout screen can walk it straight through.
+		 * it -- so the loadout screen can walk it straight through, and every slot from the
+		 * count onwards is null, which is what lets the whole array travel to a save game.
 		 */
 		TechnoTypeClass * Entries[MAX_ENTRIES];
 
 		/// Unused
 		int TotalCost;
+
+		/// Carries this loadout to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(CreationFrame);
+			stream.Serialize(Unused1);
+			stream.Serialize(Unused2);
+			stream.Serialize(UnusedBool1);
+			stream.Serialize(EntryCount);
+			stream.Serialize(Entries);
+			stream.Serialize(TotalCost);
+		}
 };
 
 void Dropship_Screen(void);

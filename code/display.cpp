@@ -131,6 +131,7 @@
 #include "palette.h"
 #include "queue.h"
 #include "rules.h"
+#include "savestream.h"
 #include "session.h"
 #include "smudtype.h"
 #include "sidebar.h"
@@ -3819,6 +3820,52 @@ HRESULT DisplayClass::Save(IStream * stream)
 		if (FAILED(result)) break;
 	}
 	return(result);
+}
+
+
+/// <summary>
+/// Lists the members the display holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void DisplayClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	// Layer -- the display layers are shared, and Load and Save carry them through their own
+	// persistence.
+	stream.Serialize(ZoneCell);
+	stream.Serialize(ZoneOffset);
+
+	// CursorSize -- it names a scratch list local to Set_Cursor_Shape whose address means nothing
+	// in a fresh process, and the placement cursor is laid down again the moment the pending
+	// object is next moved.
+	stream.Serialize(ProximityCheck);
+	stream.Serialize(ShroudCheck);
+	stream.Serialize(FollowingObject);
+	stream.Serialize(FollowingObjectPtr);
+	stream.Serialize(PendingObjectPtr);
+	stream.Serialize(PendingObject);
+	stream.Serialize(PendingHouse);
+	stream.Serialize(IsRepairMode);
+	stream.Serialize(IsSellMode);
+	stream.Serialize(IsPowerMode);
+	stream.Serialize(IsWaypointMode);
+	stream.Serialize(IsTargettingMode);
+	// DraggedWaypoint -- a waypoint drag cannot outlive the button that started it, and the load
+	// abandons it outright.
+	// DraggedWaypointCoord
+	// WaypointColor
+	// IsRubberBand -- likewise the rubber band selection, which no held button survives to
+	// continue.
+	// IsTentative
+	// BandX
+	// BandY
+	// NewX
+	// NewY
+	// TacButton -- the tactical input gadget is reattached by Init_IO.
+	// IsShadowPresent -- set afresh by each icon draw.
+	// ShadowShapes -- artwork fetched by One_Time.
+	// PlacementShapes
 }
 
 

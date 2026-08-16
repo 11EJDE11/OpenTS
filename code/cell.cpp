@@ -114,6 +114,7 @@
 #include "overlay.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
@@ -121,7 +122,6 @@
 #include "sun.h"
 #include "super.h"
 #include "suprtype.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "tag.h"
 #include "terrain.h"
@@ -137,7 +137,6 @@
 #include "bench.hh"
 #include "ramp.hh"
 #include "tube.hh"
-
 
 
 /// <summary>
@@ -4346,87 +4345,124 @@ bool CellClass::Can_Tiberium_Germinate(TiberiumClass const * tiberium) const
 
 
 /// <summary>
-/// Loads the cell from the supplied stream.
-/// This routine is the persistence hook the save game system calls. It reinstates the fogged
-/// object list, hands the cell back to the map's cell array, and remaps the pointers the cell
-/// holds to other saved objects.
+/// Lists the members this cell carries.
 /// </summary>
-/// <returns>Returns with the result code of the load. S_OK if the cell was read.</returns>
-HRESULT STDMETHODCALLTYPE CellClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void CellClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) CellClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		if (FoggedObjects != NULL) {
+	stream.Serialize(CellID);
+
+	/*
+	 * The snapshot list is built only once something standing here has been fogged over,
+	 * so whether the cell has one at all travels ahead of its contents.
+	 */
+	bool hasfogged = (FoggedObjects != NULL);
+	stream.Serialize(hasfogged);
+	if (stream.Is_Loading() && hasfogged) {
 			FoggedObjects = new FOGGED_OBJECT_LIST;
-
-			int count;
-			result = stream->Read(&count, sizeof(count), NULL);
-			if (FAILED(result)) {
-				return(result);
+	}
+	if (hasfogged) {
+		stream.Serialize(*FoggedObjects);
 			}
 
-			for (int i = 0; i < count; i++) {
-				FoggedObjectClass * fogged = NULL;
-				if (FAILED(stream->Read(&fogged, sizeof(fogged), NULL))) {
-					return(S_OK);
-				}
-				FoggedObjects->Add(fogged);
-			}
+	stream.Serialize(BridgeDeckCell);
+	stream.Serialize(UnusedCell);
+	// Drawer -- no save has ever carried it; a shared object the cell picks again when it is lit.
+	stream.Serialize(ITType);
+	stream.Serialize(Tag);
+	stream.Serialize(Overlay);
+	stream.Serialize(Smudge);
+	// Passability -- no save has ever carried it either; derived from the terrain and whatever is
+	// standing here.
+	stream.Serialize(Owner);
+	stream.Serialize(InfType);
+	stream.Serialize(BridgeInfType);
+	stream.Serialize(LastRedrawFrame);
+	stream.Serialize(LastUnknownDrawFrame);
+	stream.Serialize(LastBridgeDrawFrame);
+	stream.Serialize(LastBridgeDrawRect);
+	stream.Serialize(CloakedBy);
+	stream.Serialize(SensedBy);
+	stream.Serialize(OccupiedBy);
+	stream.Serialize(OccupierPtr);
+	stream.Serialize(BridgeOccupierPtr);
+	stream.Serialize(Land);
+	stream.Serialize(Intensity);
+	stream.Serialize(Ambient);
+	stream.Serialize(Brightness);
+	stream.Serialize(TileBrightness);
+	stream.Serialize(AltBrightness);
+	stream.Serialize(RedTint);
+	stream.Serialize(GreenTint);
+	stream.Serialize(BlueTint);
+	stream.Serialize(Tube);
+	stream.Serialize(LastBridgeDrawRedraws);
+	stream.Serialize(IsIceGrowthAllowed);
+	stream.Serialize(SubTile);
+	stream.Serialize(Height);
+	stream.Serialize(Ramp);
+	stream.Serialize(Elevation);
+	stream.Serialize(OverlayData);
+	stream.Serialize(SmudgeData);
+	stream.Serialize(ShadowFrame);
+	stream.Serialize(FogFrame);
+	stream.Serialize(AdjacentObjectCount);
 
-			for (int j = 0; j < FoggedObjects->Count(); j++) {
-				Swizzle_Pointer(&(*FoggedObjects)[j]);
-			}
-		}
+	/*
+	 * Each set of sub position flags is carried as the composite byte it shares storage
+	 * with, which is every one of its eight bits in a single trip.
+	 */
+	stream.Serialize(Flag.Composite);
+	stream.Serialize(BridgeFlag.Composite);
 
-		int id = CellID.X + CellID.Y * MAP_CELL_W;
+	SERIALIZE_BIT(stream, IsPlot);
+	SERIALIZE_BIT(stream, IsCursorHere);
+	SERIALIZE_BIT(stream, IsMapped);
+	SERIALIZE_BIT(stream, IsVisible);
+	SERIALIZE_BIT(stream, IsFogVisible);
+	SERIALIZE_BIT(stream, IsFogMapped);
+	SERIALIZE_BIT(stream, IsWaypoint);
+	SERIALIZE_BIT(stream, IsRadarCursor);
+	SERIALIZE_BIT(stream, IsFlagged);
+	SERIALIZE_BIT(stream, IsToShroud);
+	SERIALIZE_BIT(stream, IsToFog);
+	SERIALIZE_BIT(stream, IsBridgeDeck);
+	SERIALIZE_BIT(stream, IsUnderBridge);
+	SERIALIZE_BIT(stream, IsBridgeTraversable);
+	SERIALIZE_BIT(stream, WasUnderBridge);
+	SERIALIZE_BIT(stream, IsBridgeEastWest);
+	SERIALIZE_BIT(stream, IsBridgeSurface);
+	SERIALIZE_BIT(stream, IsBridgeDamaged);
+	SERIALIZE_BIT(stream, IsToGrowIce);
+	SERIALIZE_BIT(stream, IsToGrowVeins);
+	SERIALIZE_BIT(stream, IsOvershadowed);
+	SERIALIZE_BIT(stream, IsAnimAttached);
+	SERIALIZE_BIT(stream, IsPredictedPath);
+	SERIALIZE_BIT(stream, IsAffectedByEMP);
+	SERIALIZE_BIT(stream, IsHorizontalLine);
+	SERIALIZE_BIT(stream, IsVerticalLine);
+	SERIALIZE_BIT(stream, IsFogged);
+}
+
+
+/// <summary>
+/// Hands the cell back to the map's cell array.
+/// A cell is loaded as a free standing object, so the array slot its own coordinate names
+/// has to be pointed at it -- and whatever placeholder was there thrown away -- before
+/// anything can reach the cell by position.
+/// </summary>
+void CellClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	int id = CellID.X + (CellID.Y << 9);
 		if (Map.Array[id] != NULL) {
 			delete Map.Array[id];
 			Map.Array[id] = NULL;
 		}
 		Map.Array[id] = this;
-
-		Swizzle_Pointer(&BridgeDeckCell);
-		Swizzle_Pointer(&UnusedCell);
-		Swizzle_Pointer(&Tag);
-		Swizzle_Pointer(&OccupierPtr);
-		Swizzle_Pointer(&BridgeOccupierPtr);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves the cell to the supplied stream.
-/// This routine is the persistence hook the save game system calls. Over and above the base
-/// class data, it writes out the objects this cell has fogged over.
-/// </summary>
-/// <returns>Returns with the result code of the save. S_OK if the cell was written.</returns>
-HRESULT STDMETHODCALLTYPE CellClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		if (FoggedObjects != NULL) {
-			int count = FoggedObjects->Count();
-			result = stream->Write(&count, sizeof(count), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-
-			for (int i = 0; i < count; i++) {
-				result = stream->Write(&(*FoggedObjects)[i], sizeof((*FoggedObjects)[i]), NULL);
-				if (FAILED(result)) {
-					return(S_OK);
-				}
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
 }
 
 
@@ -6240,14 +6276,4 @@ int STDMETHODCALLTYPE CellClass::What_Am_I(void) const
 RTTIType CellClass::Fetch_RTTI(void) const
 {
 	return(RTTI_CELL);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as the save game writer sees it.
-/// </summary>
-/// <returns>Returns with the number of bytes this cell occupies when written out.</returns>
-int CellClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }

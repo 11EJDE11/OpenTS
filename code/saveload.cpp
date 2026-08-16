@@ -92,6 +92,7 @@
 #include "ptype.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "savever.h"
 #include "scenario.h"
 #include "script.h"
@@ -135,10 +136,7 @@
 /*
 ********************************** Defines **********************************
 */
-#define	SAVEGAME_VERSION		(DESCRIP_MAX + 0x01000006)
-
-
-unsigned int ExpectedGameVersion = LoadOptionsClass::GAMEVER_FS;
+unsigned int ExpectedGameVersion = LoadOptionsClass::GAMEVER_OPENTS;
 
 
 static int Reconcile_Players(void);
@@ -1058,6 +1056,15 @@ bool Load_Game(const char *file_name)
 		return(false);
 	}
 
+	/*
+	 * The load dialog screens the saves it lists, but a network save reaches this routine
+	 * without passing through it, so the stamp is checked here as well.
+	 */
+	if (info.Get_Internal_Version() != ExpectedGameVersion) {
+		return(false);
+	}
+	LoadedSaveVersion = info.Get_Internal_Version();
+
 	Session.Type = (GameType)info.Get_Game_Type();
 	Swizzler.Reset();
 
@@ -1087,6 +1094,10 @@ bool Load_Game(const char *file_name)
 	bool res = Get_All(stream, false);
 
 	link->Unlink_Stream(NULL);
+
+	if (!res) {
+		return(false);
+	}
 
 	Swizzler.Reset();
 
@@ -1125,115 +1136,40 @@ bool Load_Game(const char *file_name)
  *   12/29/1994 BR : Created.                                              *
  *   03/12/1996 JLB : Simplified.                                          *
  *=========================================================================*/
+static void Serialize_Misc_Values(SaveStreamClass & stream)
+{
+	stream.Serialize(GasSystem);
+	stream.Serialize(PlayerPtr);
+	stream.Serialize(Frame);
+	stream.Serialize(CurrentObject);
+	stream.Serialize(Ground);
+
+	IonStormClass::Serialize(stream);
+
+	stream.Serialize(LogicTags);
+	stream.Serialize(MapTags);
+	stream.Serialize(CrateShares);
+	stream.Serialize(CrateAnims);
+	stream.Serialize(CrateData);
+	stream.Serialize(MissionControl);
+
+	/*
+	 * Speech is reached through a pair of accessors rather than a variable of its own,
+	 * so it travels through a local either way.
+	 */
+	int state = Get_Speech_State();
+	stream.Serialize(state);
+	if (stream.Is_Loading()) {
+		Set_Speech_State(state != 0);
+	}
+}
+
+
 int Save_Misc_Values(IStream * stream)
 {
-	int i;
-	int count;          // # ptrs in 'CurrentObject'
-	//ObjectClass * ptr;  // for saving 'CurrentObject' ptrs
-	HRESULT res;
-
-	res = stream->Write(&GasSystem, sizeof(GasSystem), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Player's House.
-	*/
-	res = stream->Write(&PlayerPtr, sizeof(PlayerPtr), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Save frame #.
-	*/
-	res = stream->Write(&Frame, sizeof(Frame), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Save currently-selected objects list.
-	**	Save the # of ptrs in the list.
-	*/
-	count = CurrentObject.Count();
-	res = stream->Write(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Save the pointers.
-	*/
-	for (i = 0; i < count; i++) {
-		//ptr = CurrentObject[i];
-		res = stream->Write(&CurrentObject[i], sizeof(CurrentObject[i]), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-	}
-
-	res = stream->Write(&Ground, sizeof(Ground), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	IonStormClass::Save(stream);
-
-	count = LogicTags.Count();
-	res = stream->Write(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	for (i = 0; i < count; i++) {
-		res = stream->Write(&LogicTags[i], sizeof(LogicTags[i]), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-	}
-
-	count = MapTags.Count();
-	res = stream->Write(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	for (i = 0; i < count; i++) {
-		res = stream->Write(&MapTags[i], sizeof(MapTags[i]), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-	}
-
-	res = stream->Write(&CrateShares, sizeof(CrateShares), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Write(&CrateAnims, sizeof(CrateAnims), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Write(&CrateData, sizeof(CrateData), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Write(&MissionControl, sizeof(MissionControl), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	int state = Get_Speech_State();
-	res = stream->Write(&state, sizeof(state), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	return(S_OK);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize_Misc_Values(savestream);
+	return(savestream.Result());
 }
 
 
@@ -1252,134 +1188,9 @@ int Save_Misc_Values(IStream * stream)
  *=============================================================================================*/
 int Load_Misc_Values(IStream * stream)
 {
-	int i;
-	int count;					// # ptrs in 'CurrentObject'
-	void * ptr;					// for loading ptrs
-	HRESULT res;
-
-	res = stream->Read(&GasSystem, sizeof(GasSystem), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-	Swizzle_Pointer(&GasSystem);
-
-	/*
-	**	Player's House.
-	*/
-	res = stream->Read(&PlayerPtr, sizeof(PlayerPtr), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-	Swizzle_Pointer(&PlayerPtr);
-
-	/*
-	**	Load frame #.
-	*/
-	res = stream->Read(&Frame, sizeof(Frame), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Load currently-selected objects list.
-	**	Load the # of ptrs in the list.
-	*/
-	res = stream->Read(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	/*
-	**	Load the pointers.
-	*/
-	for (i = 0; i < count; i++) {
-		res = stream->Read(&ptr, sizeof(ptr), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-		CurrentObject.Add(*(ObjectClass **)&ptr);
-	}
-	for (i = 0; i < CurrentObject.Count(); i++) {
-		Swizzle_Pointer(&CurrentObject[i]);
-	}
-
-
-	for (i = 0; i < ARRAY_SIZE(Ground); i++) {
-		int grnd_size = sizeof(GroundType);
-		int grnd_delta = sizeof(float);
-		res = stream->Read(&Ground[i], grnd_size - (IsOldSaveGame ? grnd_delta : 0), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-		if (IsOldSaveGame) {
-			memmove(&Ground[i].Build, &Ground[i].Cost[7], grnd_delta);
-			Ground[i].Cost[SPEED_CREEP] = 0.0;
-		}
-	}
-
-	IonStormClass::Load(stream);
-
-	res = stream->Read(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	for (i = 0; i < count; i++) {
-		res = stream->Read(&ptr, sizeof(ptr), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-		LogicTags.Add(*(TagClass **)&ptr);
-	}
-	for (i = 0; i < LogicTags.Count(); i++) {
-		Swizzle_Pointer(&LogicTags[i]);
-	}
-
-	res = stream->Read(&count, sizeof(count), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	for (i = 0; i < count; i++) {
-		res = stream->Read(&ptr, sizeof(ptr), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-		MapTags.Add(*(TagClass **)&ptr);
-	}
-	for (i = 0; i < MapTags.Count(); i++) {
-		Swizzle_Pointer(&MapTags[i]);
-	}
-
-	res = stream->Read(&CrateShares, sizeof(CrateShares), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Read(&CrateAnims, sizeof(CrateAnims), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Read(&CrateData, sizeof(CrateData), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	res = stream->Read(&MissionControl, sizeof(MissionControl), NULL);
-	if (FAILED(res)) {
-		return(res);
-	}
-
-	if (!IsOldSaveGame) {
-		HRESULT res = stream->Read(&ptr, sizeof(ptr), NULL);
-		if (FAILED(res)) {
-			return(res);
-		}
-		Set_Speech_State(((int)ptr != 0) ? true : false);
-	}
-
-	return(S_OK);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize_Misc_Values(savestream);
+	return(savestream.Result());
 }
 
 

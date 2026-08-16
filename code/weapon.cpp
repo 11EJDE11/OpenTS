@@ -54,6 +54,7 @@
 #include "incdec.h"
 #include "psystype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "session.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -392,63 +393,44 @@ HRESULT STDMETHODCALLTYPE WeaponTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this weapon type from the save game stream.
-/// A weapon type saved by an older version of the game lacks the projectile range and
-/// burst delay data, so such a save is patched up to the current layout as it is read. The
-/// object is then rebuilt in place, its sound and animation lists are read back, and the
-/// saved pointers are remapped to the objects of this session.
+/// Lists the members this weapon type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the weapon type was loaded, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE WeaponTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void WeaponTypeClass::Serialize(SaveStreamClass & stream)
 {
-	Sound.Clear();
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&MinimumRange, &ProjectileRange, size - offsetof(WeaponTypeClass, MinimumRange));
-			ProjectileRange = 100000;
-			for (int i = 0; i < ARRAY_SIZE(BurstDelay); i++) {
-				BurstDelay[i] = -1;
-			}
-		}
+	BASECLASS::Serialize(stream);
 
-		new (this) WeaponTypeClass(NoInitClass());
-
-		Anim.Load(stream);
-		Sound.Load(stream);
-
-		Swizzle_Pointer(&WarheadPtr);
-		Swizzle_Pointer(&Bullet);
-		Swizzle_Pointer(&AttachedParticleSystem);
-
-		for (int i = 0; i < Anim.Count(); i++) {
-			Swizzle_Pointer(&Anim[i]);
-		}
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this weapon type out to the save game stream.
-/// The base class writes the raw object image, and this routine then writes out the
-/// report sound and firing animation lists that hang off it.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been written?</param>
-/// <returns>Returns with S_OK if the weapon type was written, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE WeaponTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		Anim.Save(stream);
-		Sound.Save(stream);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(AmbientDamage);
+	stream.Serialize(Burst);
+	stream.Serialize(Bullet);
+	stream.Serialize(Attack);
+	stream.Serialize(MaxSpeed);
+	stream.Serialize(WarheadPtr);
+	stream.Serialize(ROF);
+	stream.Serialize(Range);
+	stream.Serialize(ProjectileRange);
+	stream.Serialize(BurstDelay);
+	stream.Serialize(MinimumRange);
+	stream.Serialize(Sound);
+	stream.Serialize(Anim);
+	stream.Serialize(AttachedParticleSystem);
+	stream.Serialize(LaserInnerColor);
+	stream.Serialize(LaserOuterColor);
+	stream.Serialize(LaserOuterSpread);
+	stream.Serialize(UseFireParticles);
+	stream.Serialize(UseSparkParticles);
+	stream.Serialize(IsRailgun);
+	stream.Serialize(IsLobber);
+	stream.Serialize(IsBright);
+	stream.Serialize(LaserDuration);
+	stream.Serialize(IsBigLaser);
+	stream.Serialize(IsSonic);
+	stream.Serialize(IsTurboBoosted);
+	stream.Serialize(IsSupressed);
+	stream.Serialize(IsCamera);
+	stream.Serialize(IsElectric);
+	stream.Serialize(IsLaser);
+	stream.Serialize(IsIonSensitive);
 }
 
 
@@ -489,22 +471,4 @@ WeaponType WeaponTypeClass::From_Name(char const * name)
 		}
 	}
 	return(WEAPON_NONE);
-}
-
-
-/// <summary>
-/// Fetches the size this object occupies in a save game file.
-/// This routine is used by the load process, which must know how much smaller a weapon type
-/// was in save games written before the projectile range and burst delay data was added.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for the older save game layout?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int WeaponTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta =
-		sizeof(ProjectileRange) +
-		sizeof(BurstDelay);
-
-	return(size - (oldsave ? delta : 0));
 }

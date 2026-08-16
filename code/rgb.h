@@ -74,6 +74,15 @@ class RGBClass
 		RGBClass & Set(RGBClass const & rgb, float value);
 		void Adjust(int ratio, RGBClass const & rgb);
 		int Difference(RGBClass const & rgb) const;
+		/// Carries the color to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Red);
+			stream.Serialize(Green);
+			stream.Serialize(Blue);
+		}
+
 		int Get_Red(void) const {return(Red);}
 		int Get_Green(void) const {return(Green);}
 		int Get_Blue(void) const {return(Blue);}

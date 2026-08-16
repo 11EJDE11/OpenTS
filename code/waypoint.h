@@ -25,6 +25,13 @@ public:
 	bool operator==(const WaypointClass &that) const { return(Location == that.Location); }
 	bool operator!=(const WaypointClass &that) const { return(Location != that.Location); }
 
+	/// Carries the waypoint to or from a save game.
+	template<typename S>
+	void Serialize(S & stream)
+	{
+		stream.Serialize(Location);
+	}
+
 	/*
 	 * This is the map coordinate this waypoint marks. It is snapped to the center of its
 	 * cell as the waypoint is laid down, but it keeps the height it was placed at.
@@ -44,11 +51,10 @@ class WaypointPathClass : public AbstractClass
 		virtual ~WaypointPathClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		int Current_Waypoint(void) const {return(CurrentWaypoint);}

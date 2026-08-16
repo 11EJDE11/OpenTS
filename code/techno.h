@@ -480,7 +480,7 @@ class TechnoClass :	public RadioClass,
 		TechnoClass(NoInitClass const & x);
 		virtual ~TechnoClass(void) override;
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*
 		**	Query functions.

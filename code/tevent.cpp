@@ -49,6 +49,7 @@
 #include "globals.h"
 #include "house.h"
 #include "incdec.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -848,42 +849,23 @@ HRESULT STDMETHODCALLTYPE TEventClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this event from the supplied stream.
-/// This routine will rebuild the object in place so that its virtual table is valid, then
-/// remap the saved pointers so that the event's list link and team refer to the objects of
-/// this session.
+/// Lists the members this event carries.
 /// </summary>
-/// <returns>Returns with S_OK if the event was loaded, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TEventClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TEventClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TEventClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Next);
-		Swizzle_Pointer(&Team);
+	stream.Serialize(HeapID);
+	stream.Serialize(Next);
+	stream.Serialize(Event);
+	stream.Serialize(Team);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this event to the supplied stream.
-/// The base class writes the raw member data out, so this routine has nothing of its own
-/// to add to the save game.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been written?</param>
-/// <returns>Returns with S_OK if the event was written, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TEventClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	/*
+	 * Which alternative of the data is live depends on the event, but every one of them is
+	 * a plain scalar and none holds a pointer, so the union travels as its raw image.
+	 */
+	stream.Serialize_Bytes(&Data, sizeof(Data));
 }
 
 

@@ -1,10 +1,11 @@
 ---
 title: Compatibility and save games
-summary: How OpenTS lists and loads save games stamped by the vanilla game or the current build.
+summary: How OpenTS lists and loads save games, and which save games a build accepts.
 category: compatibility-migration
 source_files:
   - README.md
   - code/loaddlg.cpp
+  - code/saveload.cpp
   - code/savever.cpp
 related:
   - type: using
@@ -13,12 +14,8 @@ related:
 
 OpenTS uses the English Tiberian Sun 2.03 release as its inherited data and behavior baseline.
 
-Every save file's header carries an internal version stamp. The load dialog lists a file when all of these hold, tested in this order:
+Every save file's header carries an internal version stamp. The load dialog lists a save only when its stamp matches the version the current build expects; files with any other stamp do not appear, and the multiplayer network save file is never listed. A save that reaches the engine without passing through the dialog is checked the same way and refused if its stamp does not match. A listed save that was not made in a campaign is marked with a `*` before its description.
 
-- it is not the multiplayer network save file, which never appears in the list;
-- its header record can be opened and read;
-- **Any of:** its stamp is the one vanilla Tiberian Sun writes, or its stamp is the one the current build writes.
+OpenTS no longer reads save games written by the vanilla game or by any earlier OpenTS build, and no converter is provided. Finish or abandon a game in progress before updating.
 
-The stamp the current build writes is fixed in the executable, and it is not the vanilla one, so a vanilla-stamped save is always listed with a `*` before its description and a save this build made never carries one.
-
-Loading a `*` entry switches the engine to its old-save path: the save header is parsed in the older layout when needed, and objects are read using the older layouts that vanilla saves store.
+A save game stores each object member by member rather than as a copy of its memory.

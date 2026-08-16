@@ -22,12 +22,11 @@
 #include "noinit.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "tactical.h"
 #include "tube.h"
 
 #include "layer.hh"
-
-#include <new.h>
 
 
 /// <summary>
@@ -671,20 +670,16 @@ HRESULT STDMETHODCALLTYPE MechLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the mech locomotor from a save game stream.
-/// The base class reads the raw member data back and this routine then reconstructs the
-/// object in place so that its virtual table pointer is valid once more.
+/// Lists the members this mech locomotor carries.
 /// </summary>
-/// <param name="stream">The stream to load the locomotor from.</param>
-/// <returns>Returns with S_OK if the locomotor was loaded, otherwise the failure code
-/// reported by the base class.</returns>
-HRESULT STDMETHODCALLTYPE MechLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void MechLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) MechLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(IsMoving);
 }
 
 

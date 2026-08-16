@@ -28,14 +28,13 @@ class EMPulseClass : public AbstractClass
 		EMPulseClass(NoInitClass const & x);
 		virtual ~EMPulseClass(void) override;
 
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(EMPulseClass));}
 		virtual void Compute_CRC(CRCEngine &crc) const override;
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_EMPULSE);}
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		static void Update_All(void);
 		static void Reset(void);

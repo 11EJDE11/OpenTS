@@ -51,6 +51,7 @@
 #include "mixfile.h"
 #include "queue.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "shapeset.h"
@@ -78,6 +79,23 @@ TabClass::TabClass(void) :
 	IsToRedraw(false),
 	MoneyFlashTimer(0)
 {
+}
+
+
+/// <summary>
+/// Lists the members the tab bar holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void TabClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(Credits);
+	stream.Serialize(FlasherTimer);
+
+	// IsToRedraw -- a redraw flag; the load asks for a complete draw anyway.
+	stream.Serialize(MoneyFlashTimer);
+	// TabShape -- artwork fetched by One_Time.
 }
 
 

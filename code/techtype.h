@@ -678,11 +678,9 @@ class TechnoTypeClass : public ObjectTypeClass
 		TechnoTypeClass(char const * ininame, SpeedType speed);
 		virtual ~TechnoTypeClass() override;
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
-		virtual int Get_Object_Size_Delta(void) const override {return(sizeof(CollateralDamageCoefficient) + sizeof(Unused1));};
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		bool Is_Two_Shooter(void) const;
 		virtual bool Legal_Placement(Cell const & pos, HouseClass * house) const;

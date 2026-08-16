@@ -29,6 +29,7 @@
 #include "house.h"
 #include "mixfile.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "unittype.h"
@@ -739,17 +740,54 @@ void ObjectTypeClass::Theater_Naming_Convention(char * name, TheaterType theater
 
 
 /// <summary>
-/// Loads the object type from a save game stream.
-/// This routine will discard whatever artwork this type was holding, read the persistent
-/// members back through the base class, and then re-attach the artwork that the restored
-/// data calls for. The voxel libraries are deliberately left empty here, since they are
-/// fetched again on demand.
+/// Lists the members every object type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object type was restored, otherwise the error
-/// result from the base class.</returns>
-HRESULT STDMETHODCALLTYPE ObjectTypeClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ObjectTypeClass::Serialize(SaveStreamClass & stream)
 {
-	char filename[260];
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(RadialColor);
+	stream.Serialize(Armor);
+	stream.Serialize(MaxStrength);
+	// ImageData -- artwork, loaded on demand.
+	// AlphaImageData -- artwork, fetched again by name in Post_Load.
+	// Voxel -- the voxel model and its motion data, loaded on demand.
+	// AuxVoxel
+	// AuxVoxel2
+	stream.Serialize(MaxSize);
+	stream.Serialize(CrushSound);
+	stream.Serialize(GraphicName);
+	stream.Serialize(AlphaGraphicName);
+	stream.Serialize(IsTheater);
+	stream.Serialize(IsCrushable);
+	stream.Serialize(IsStealthy);
+	stream.Serialize(IsSelectable);
+	stream.Serialize(IsLegalTarget);
+	stream.Serialize(IsInsignificant);
+	stream.Serialize(IsImmune);
+	stream.Serialize(IsSentient);
+	stream.Serialize(IsFootprint);
+	stream.Serialize(IsVoxel);
+	stream.Serialize(IsNewTheater);
+	stream.Serialize(IsHasRadialIndicator);
+	stream.Serialize(IsIgnoresFirestorm);
+	// VoxelIndex -- caches rendered from the voxel artwork, built again as it is drawn.
+	// AuxVoxelIndex
+	// ShadowVoxelIndex
+	// AuxVoxel2Index
+}
+
+
+/// <summary>
+/// Re-attaches the artwork this object type names.
+/// Whatever artwork the type was holding is discarded first, and then the alpha shape
+/// is fetched again by name. The voxel libraries are deliberately left empty, since
+/// they are fetched again on demand.
+/// </summary>
+void ObjectTypeClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
 
 	Clear_Voxel_Index();
 
@@ -771,64 +809,11 @@ HRESULT STDMETHODCALLTYPE ObjectTypeClass::Load(IStream *stream)
 	delete AuxVoxel2.MotLib;
 	AuxVoxel2.MotLib = NULL;
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		ImageData = NULL;
-		AlphaImageData = NULL;
-
-		new (&VoxelIndex) VoxelIndexClass;
-		new (&AuxVoxelIndex) VoxelIndexClass;
-		new (&ShadowVoxelIndex) VoxelIndexClass;
-		new (&AuxVoxel2Index) VoxelIndexClass;
-
-		Voxel.VoxLib = NULL;
-		Voxel.MotLib = NULL;
-		AuxVoxel.VoxLib = NULL;
-		AuxVoxel.MotLib = NULL;
-		AuxVoxel2.VoxLib = NULL;
-		AuxVoxel2.MotLib = NULL;
-
-		if (*AlphaGraphicName != NULL) {
-			_makepath(filename, NULL, NULL, AlphaGraphicName, ".SHP");
-			AlphaImageData = MFCD::Retrieve(filename);
-		}
-
-		result = S_OK;
+	if (*AlphaGraphicName != NULL) {
+		char filename[_MAX_FNAME + _MAX_EXT];
+		_makepath(filename, NULL, NULL, AlphaGraphicName, ".SHP");
+		AlphaImageData = MFCD::Retrieve(filename);
 	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves the object type to a save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the object type be marked clean once it is written?</param>
-/// <returns>Returns with S_OK if the object type was written, otherwise the error result
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE ObjectTypeClass::Save(IStream *stream, int cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Fetches the largest size this object type could need in a save game stream.
-/// </summary>
-/// <param name="pcbSize">Pointer to the value to fill in with the size required.</param>
-/// <returns>Returns with S_OK if the size was reported, otherwise the error result from
-/// the base class.</returns>
-HRESULT STDMETHODCALLTYPE ObjectTypeClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
-{
-	HRESULT res = BASECLASS::GetSizeMax(pcbSize);
-	if (SUCCEEDED(res)) {
-		res = S_OK;
-	}
-	return(res);
 }
 
 

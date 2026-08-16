@@ -81,6 +81,16 @@ class BasicTimerClass {
 		// Function operator to allow timer object definition to be cascaded.
 		int operator () (void) const;
 
+		/*
+		 * Carries the timer to or from a save game. Only the start reading travels; the
+		 * regulator reads a clock the whole game shares and holds nothing of its own.
+		 */
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Started);
+		}
+
 	protected:
 		int Started;    // Time started.
 		T Timer;        // Timer regulator (ticks at constant rate).
@@ -229,6 +239,14 @@ class TTimerClass : public BasicTimerClass<T> {
 
 		// Queries whether the timer is currently active.
 		bool Is_Active(void) const;
+
+		/// Carries the counting up timer to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			BASECLASS::Serialize(stream);
+			stream.Serialize(Accumulated);
+		}
 
 	private:
 		int Accumulated;				// Total accumulated ticks.
@@ -458,6 +476,14 @@ class CDTimerClass : public BasicTimerClass<T> {
 
 		// Queries whether the timer is currently active.
 		bool Is_Active(void) const;
+
+		/// Carries the countdown timer to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			BASECLASS::Serialize(stream);
+			stream.Serialize(DelayTime);
+		}
 
 	protected:
 		int DelayTime;			// Ticks remaining before countdown timer expires.
@@ -706,6 +732,14 @@ class ProgressTimerClass : protected CDTimerClass<T>
 		bool Has_Completed2(void) const;
 
 		void Reverse(void) { DelayTime = Time_Spent(); }
+
+		/// Carries the progress timer to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			BASECLASS::Serialize(stream);
+			stream.Serialize(TotalTime);
+		}
 
 	protected:
 		/*

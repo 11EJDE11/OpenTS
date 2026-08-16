@@ -27,7 +27,8 @@ class JumpjetLocomotionClass : public LocomotionClass
 		virtual ~JumpjetLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
@@ -39,8 +40,6 @@ class JumpjetLocomotionClass : public LocomotionClass
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

@@ -50,13 +50,12 @@ class SuperClass : public AbstractClass
 		virtual ~SuperClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual int STDMETHODCALLTYPE What_Am_I(void) const override {return(SuperClass::Fetch_RTTI());};
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_SUPERWEAPON);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 

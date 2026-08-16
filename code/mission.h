@@ -87,6 +87,7 @@ class MissionClass : public ObjectClass
 		virtual bool Commence(void);
 		virtual bool Ready_To_Commence(void) {return(true);};
 		virtual void AI(void) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		/*
@@ -206,4 +207,19 @@ class MissionControlClass
 		**	delay interval instead of the normal "Rate" value.
 		*/
 		double AARate;
+
+		/// Carries the mission controls to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Mission);
+			stream.Serialize(IsNoThreat);
+			stream.Serialize(IsZombie);
+			stream.Serialize(IsRecruitable);
+			stream.Serialize(IsParalyzed);
+			stream.Serialize(IsRetaliate);
+			stream.Serialize(IsScatter);
+			stream.Serialize(Rate);
+			stream.Serialize(AARate);
+		}
 };

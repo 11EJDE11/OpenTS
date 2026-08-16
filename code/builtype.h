@@ -204,6 +204,15 @@ class BuildingTypeClass : public TechnoTypeClass
 			int	Start;			// Starting frame of animation.
 			int	Count;			// Number of frames in this animation.
 			int	Rate;			// Number of ticks to delay between each frame.
+
+			/// Carries the animation control to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(Start);
+				stream.Serialize(Count);
+				stream.Serialize(Rate);
+			}
 		};
 		AnimControlType Anims[BSTATE_COUNT];
 
@@ -249,6 +258,19 @@ class BuildingTypeClass : public TechnoTypeClass
 			 * this flag will be true. It is not merely paused the way a Powered one is.
 			 */
 			bool PoweredLight;
+
+			/// Carries the animation entry to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(Anim);
+				stream.Serialize(AnimDamaged);
+				stream.Serialize(Location);
+				stream.Serialize(ZAdjust);
+				stream.Serialize(YSort);
+				stream.Serialize(Powered);
+				stream.Serialize(PoweredLight);
+			}
 		};
 
 		/*
@@ -807,8 +829,9 @@ class BuildingTypeClass : public TechnoTypeClass
 		virtual ~BuildingTypeClass() override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		static StructType From_Name(char const * name);
 		static StructType From_Given_Name(char const * name);
@@ -822,8 +845,6 @@ class BuildingTypeClass : public TechnoTypeClass
 		int Height(bool bib=false) const;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
-		virtual int Get_Object_Size_Delta(void) const override;
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override;
 

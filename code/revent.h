@@ -19,6 +19,7 @@
 #include "revent.hh"
 
 struct IStream;
+class SaveStreamClass;
 template<class T> class DynamicVectorClass;
 
 class RadarEventClass
@@ -30,6 +31,8 @@ class RadarEventClass
 	public:
 		RadarEventClass(RadarEventType event, Cell cell);
 		~RadarEventClass(void);
+
+		void Serialize(SaveStreamClass & stream);
 
 		void Process(void);
 		void Draw(void);

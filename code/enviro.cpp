@@ -17,6 +17,7 @@
 
 #include "globals.h"
 #include "house.h"
+#include "savestream.h"
 #include "scenario.h"
 
 EnvironmentClass Environment;
@@ -110,17 +111,33 @@ void EnvironmentClass::Restore(void)
 /// <returns>Returns with the result reported by the stream read.</returns>
 HRESULT EnvironmentClass::Load(IStream * stream)
 {
-	return(stream->Read(this, sizeof(*this), NULL));
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+	return(savestream.Result());
 }
 
 
 /// <summary>
 /// Writes the carry over environment out to a save game.
-/// This routine is called by the save game code and simply dumps the object wholesale,
-/// since the carry over data is plain values with no pointers in it.
 /// </summary>
 /// <returns>Returns with the result reported by the stream write.</returns>
 HRESULT EnvironmentClass::Save(IStream * stream)
 {
-	return(stream->Write(this, sizeof(*this), NULL));
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+	return(savestream.Result());
+}
+
+
+/// <summary>
+/// Lists the members the carry over environment holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void EnvironmentClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(Globals);
+	stream.Serialize(CarryOverMoney);
+	stream.Serialize(MissionTimer);
+	stream.Serialize(Difficulty);
+	stream.Serialize(Stage);
 }

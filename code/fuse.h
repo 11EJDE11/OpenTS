@@ -68,6 +68,16 @@ class FuseClass {
 		*/
 		CDTimerClass<FrameTimerClass> Timer;
 
+		/// Carries the fuse to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Timer);
+			stream.Serialize(Arming);
+			stream.Serialize(HeadTo);
+			stream.Serialize(Proximity);
+		}
+
 	private:
 
 		/*

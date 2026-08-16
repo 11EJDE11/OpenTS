@@ -80,6 +80,7 @@
 #include "mixfile.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "sun.h"
@@ -1735,71 +1736,156 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this building type from the stream specified.
-/// This routine will bring an object written by an older version of the game up to the
-/// current layout, then reacquire the art and pointers that are never saved.
+/// Re-attaches the artwork and shared tables this building type names.
+/// The art is fetched again once the members have been read, and the footprint and exit
+/// lists are re-attached from the shared tables that match this building's size.
 /// </summary>
-/// <param name="stream">The stream to read this object from.</param>
-/// <returns>Returns with S_OK if the object was read.</returns>
-HRESULT STDMETHODCALLTYPE BuildingTypeClass::Load(IStream *stream)
+void BuildingTypeClass::Post_Load(void)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&IsDamagedDoor, &VoxelBarrelFile, size - offsetof(BuildingTypeClass, IsDamagedDoor));
-			VoxelBarrelFile[0] = '\0';
-			VoxelBarrelScale = 1.0;
-			VoxelBarrelOffsetToPitchPivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToRotatePivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToBuildingPivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToBarrelEnd = Point3D(0, 0, 0);
-			IsLimpetMine = false;
-			IsMobileWar = false;
-			IsMobileStealth = false;
-			IsJuggernaut = false;
-			IsCoreDefender = false;
-			IsBarrelAnimAVoxel = false;
-			StartPitch = DIR_E;
-			TurretChargeAnimRate = 3;
-			IsTurretAnimExclusive = false;
-		}
+	BASECLASS::Post_Load();
 
-		new (this) BuildingTypeClass(NoInitClass());
+	Fetch_Building_Voxel_Image();
+	Fetch_Normal_Image();
 
-		Fetch_Building_Voxel_Image();
-		Fetch_Normal_Image();
+	ToTile = NULL;
+	OccupyList = OccupyLists[Size];
+	ExitList = ExitLists[Size];
 
-		ToTile = NULL;
-		OccupyList = OccupyLists[Size];
-		ExitList = ExitLists[Size];
-
-		Swizzle_Pointer(&ToOverlay);
-		Swizzle_Pointer(&FreeUnit);
-
-		Fetch_Building_Voxel_Image();
-		Fetch_Building_Normal_Image(Scen->Theater);
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Building_Voxel_Image();
+	Fetch_Building_Normal_Image(Scen->Theater);
 }
 
 
 /// <summary>
-/// Saves this building type to the stream specified.
+/// Lists the members this building type carries.
 /// </summary>
-/// <param name="stream">The stream to write this object to.</param>
-/// <param name="cleardirty">Should the dirty flag be cleared by this save?</param>
-/// <returns>Returns with S_OK if the object was written.</returns>
-HRESULT STDMETHODCALLTYPE BuildingTypeClass::Save(IStream * stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void BuildingTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	// OccupyList -- a shared footprint table, re-attached by size as this loads.
+	// BuildupData -- artwork, fetched from the mix files again as this loads.
+	stream.Serialize(HalfDamageSmokeLocation1);
+	stream.Serialize(HalfDamageSmokeLocation2);
+	stream.Serialize(GateCloseDelay);
+	stream.Serialize(LightVisibility);
+	stream.Serialize(LightIntensity);
+	stream.Serialize(LightRedTint);
+	stream.Serialize(LightGreenTint);
+	stream.Serialize(LightBlueTint);
+	stream.Serialize(PrimaryFirePixelOffset);
+	stream.Serialize(SecondaryFirePixelOffset);
+	stream.Serialize(ToOverlay);
+	// ToTile -- named by the rules, and resolved once the tile types are in place.
+	stream.Serialize(BuildupFilename);
+	stream.Serialize(PowersUpBuilding);
+	stream.Serialize(FreeUnit);
+	stream.Serialize(FoundationFace);
+	stream.Serialize(Adjacent);
+	stream.Serialize(ToBuild);
+	stream.Serialize(ExitCoordinate);
+	// ExitList -- a shared exit table, re-attached by size as this loads.
+	stream.Serialize(StartFace);
+	stream.Serialize(Power);
+	stream.Serialize(Drain);
+	stream.Serialize(Size);
+	stream.Serialize(ZHeight);
+	stream.Serialize(MidPoint);
+	stream.Serialize(DoorStages);
+	stream.Serialize(Anims);
+	stream.Serialize(AnimData);
+	stream.Serialize(Upgrades);
+	// DeployingAnim -- artwork, fetched from the mix files again as this loads.
+	// UnderDoorAnim
+	// DoorAnim
+	// SpecialZOverlay
+	stream.Serialize(SpecialZOverlayZAdjust);
+	// BibShape -- artwork, fetched from the mix files again as this loads.
+	stream.Serialize(NormalZAdjust);
+	stream.Serialize(AntiAirValue);
+	stream.Serialize(AntiArmorValue);
+	stream.Serialize(AntiInfantryValue);
+	stream.Serialize(ZShapePointMove);
+	stream.Serialize(DrawRect);
+	stream.Serialize(ExtraLight);
+	stream.Serialize(IsCanTogglePower);
+	stream.Serialize(HasSpotlight);
+	stream.Serialize(IsTemple);
+	stream.Serialize(IsPlug);
+	stream.Serialize(IsHoverPad);
+	stream.Serialize(IsBase);
+	stream.Serialize(IsBibbed);
+	stream.Serialize(IsWall);
+	stream.Serialize(IsCaptureable);
+	stream.Serialize(IsPowered);
+	stream.Serialize(IsUnsellable);
+	stream.Serialize(IsRadar);
+	stream.Serialize(IsHasChargeAnim);
+	stream.Serialize(IsSiloDamage);
+	stream.Serialize(IsCanUnitRepair);
+	stream.Serialize(IsCanUnitReload);
+	stream.Serialize(IsFlat);
+	stream.Serialize(IsDockUnload);
+	stream.Serialize(IsRecoilless);
+	stream.Serialize(IsHasStupidGuardMode);
+	stream.Serialize(IsBridgeRepairHut);
+	stream.Serialize(IsGate);
+	stream.Serialize(IsSAM);
+	stream.Serialize(IsConstructionYard);
+	stream.Serialize(IsNukeSilo);
+	stream.Serialize(IsRefinery);
+	stream.Serialize(IsWeeder);
+	stream.Serialize(IsWeaponsFactory);
+	stream.Serialize(IsLaserFencePost);
+	stream.Serialize(IsLaserFence);
+	stream.Serialize(IsFirestormWall);
+	stream.Serialize(IsHospital);
+	stream.Serialize(IsArmory);
+	stream.Serialize(IsEMPulseCannon);
+	stream.Serialize(IsTickTank);
+	stream.Serialize(IsTurretAnimAVoxel);
+	stream.Serialize(IsCloakGenerator);
+	stream.Serialize(IsSensorArray);
+	stream.Serialize(IsICBMLauncher);
+	stream.Serialize(IsArtillary);
+	stream.Serialize(IsHelipad);
+	stream.Serialize(IsGDIBarracks);
+	stream.Serialize(IsNODBarracks);
+	stream.Serialize(SuperWeapon);
+	stream.Serialize(SuperWeapon2);
+	stream.Serialize(GateStages);
+	stream.Serialize(PowersUpToLevel);
+	stream.Serialize(VoxelBarrelFile);
+	stream.Serialize(VoxelBarrelScale);
+	stream.Serialize(VoxelBarrelOffsetToPitchPivotPoint);
+	stream.Serialize(VoxelBarrelOffsetToRotatePivotPoint);
+	stream.Serialize(VoxelBarrelOffsetToBuildingPivotPoint);
+	stream.Serialize(VoxelBarrelOffsetToBarrelEnd);
+	stream.Serialize(TurretChargeAnimRate);
+	stream.Serialize(StartPitch);
+	stream.Serialize(IsLimpetMine);
+	stream.Serialize(IsMobileWar);
+	stream.Serialize(IsMobileStealth);
+	stream.Serialize(IsJuggernaut);
+	stream.Serialize(IsCoreDefender);
+	stream.Serialize(IsBarrelAnimAVoxel);
+	stream.Serialize(IsTurretAnimExclusive);
+	stream.Serialize(UnusedBTypeBool1);
+	stream.Serialize(IsDamagedDoor);
+	stream.Serialize(IsInvisibleInGame);
+	stream.Serialize(IsTerrainPalette);
+	stream.Serialize(IsCanPlaceAnywhere);
+	stream.Serialize(IsExtraDamageStage);
+	stream.Serialize(CanAIBuildThis);
+	stream.Serialize(IsBaseDefense);
+	stream.Serialize(CloakRadiusInCells);
+	stream.Serialize(IsDemandLoad);
+	stream.Serialize(IsDemandLoadBuildup);
+	stream.Serialize(IsFreeBuildup);
+	stream.Serialize(IsThreatRatingNode);
+	stream.Serialize(TheaterImageFile);
 }
 
 
@@ -2090,46 +2176,6 @@ Dir256 BuildingTypeClass::Deploy_Facing(void) const
 RTTIType BuildingTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_BUILDINGTYPE);
-}
-
-
-/// <summary>
-/// Fetches the size of this object for save game purposes.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an old format save game?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int BuildingTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int delta = oldsave ? Get_Object_Size_Delta() : 0;
-	return(sizeof(*this) - delta);
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this type has grown by since the old save format.
-/// This routine is used by the load logic to work out how much smaller the object was
-/// when an older version of the game wrote it out.
-/// </summary>
-/// <returns>Returns with the combined size of the members added since then.</returns>
-int BuildingTypeClass::Get_Object_Size_Delta(void) const
-{
-	return	(BASECLASS::Get_Object_Size_Delta() +
-			sizeof(VoxelBarrelFile) +
-			sizeof(VoxelBarrelScale) +
-			sizeof(VoxelBarrelOffsetToPitchPivotPoint) +
-			sizeof(VoxelBarrelOffsetToRotatePivotPoint) +
-			sizeof(VoxelBarrelOffsetToBuildingPivotPoint) +
-			sizeof(VoxelBarrelOffsetToBarrelEnd) +
-			sizeof(TurretChargeAnimRate) +
-			sizeof(StartPitch) +
-			sizeof(IsLimpetMine) +
-			sizeof(IsMobileWar) +
-			sizeof(IsMobileStealth) +
-			sizeof(IsJuggernaut) +
-			sizeof(IsCoreDefender) +
-			sizeof(IsBarrelAnimAVoxel) +
-			sizeof(IsTurretAnimExclusive) +
-			sizeof(UnusedBTypeBool1));
 }
 
 

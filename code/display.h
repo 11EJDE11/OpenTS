@@ -68,6 +68,8 @@ class DisplayClass: public MapClass
 		virtual HRESULT Load(IStream * stream);
 		virtual HRESULT Save(IStream * stream);
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 	public:
 		/*
 		**	These layer control elements are used to group the displayable objects
@@ -106,7 +108,6 @@ class DisplayClass: public MapClass
 
 		//-------------------------------------------------------------------------
 		DisplayClass(void);
-		DisplayClass(NoInitClass const & x) : BASECLASS(x) {};
 
 		virtual void Read_INI(CCINIClass const & ini);
 		void Write_INI(CCINIClass & ini);

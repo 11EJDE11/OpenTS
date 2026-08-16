@@ -55,6 +55,7 @@
 #include "mixfile.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "sun.h"
@@ -474,57 +475,99 @@ bool AnimTypeClass::Read_INI(CCINIClass const & ini)
 
 
 /// <summary>
-/// Reads this animation type back in from a save game stream.
-/// This routine restores the pointers that were converted for saving and then reacquires
-/// the artwork appropriate for the theater the scenario is being restored into.
+/// Re-attaches the artwork this animation type names.
+/// This routine reacquires the artwork appropriate for the theater the scenario is
+/// being restored into.
 /// </summary>
-/// <returns>Returns with S_OK if the animation type was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE AnimTypeClass::Load(IStream *stream)
+void AnimTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) AnimTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 
-		Swizzle_Pointer(&ChainTo);
-		Swizzle_Pointer(&ExpireAnim);
-		Swizzle_Pointer(&TrailerAnim);
-		Swizzle_Pointer(&BounceAnim);
-		Swizzle_Pointer(&Spawns);
-		Swizzle_Pointer(&Warhead);
-		Swizzle_Pointer(&TiberiumSpawnType);
-
-		if (!IsDemandLoad) {
-			if (IsTheater) {
-				char fullname[_MAX_FNAME+_MAX_EXT];	// Fully constructed iconset name.
-				_makepath(fullname, NULL, NULL, Name(), Theaters[Scen->Theater].Suffix);
-				ImageData = MFCD::Retrieve(fullname);
-			} else if (IsNewTheater) {
-				Load_Image(Scen->Theater);
-			}
+	if (!IsDemandLoad) {
+		if (IsTheater) {
+			char fullname[_MAX_FNAME+_MAX_EXT];	// Fully constructed iconset name.
+			_makepath(fullname, NULL, NULL, Name(), Theaters[Scen->Theater].Suffix);
+			ImageData = MFCD::Retrieve(fullname);
+		} else if (IsNewTheater) {
+			Load_Image(Scen->Theater);
 		}
-
-		result = S_OK;
 	}
-	return(result);
 }
 
 
 /// <summary>
-/// Writes this animation type out to a save game stream.
+/// Lists the members this animation type carries.
 /// </summary>
-/// <param name="cleardirty">Should the object be considered unmodified afterward?</param>
-/// <returns>Returns with S_OK if the animation type was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE AnimTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void AnimTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Biggest);
+	stream.Serialize(Damage);
+	stream.Serialize(Delay);
+	stream.Serialize(Start);
+	stream.Serialize(LoopStart);
+	stream.Serialize(LoopEnd);
+	stream.Serialize(Stages);
+	stream.Serialize(Loops);
+	stream.Serialize(Sound);
+	stream.Serialize(ChainTo);
+	stream.Serialize(DetailLevel);
+	stream.Serialize(TranslucencyDetailLevel);
+	stream.Serialize(RandomLoopDelayMin);
+	stream.Serialize(RandomLoopDelayMax);
+	stream.Serialize(RandomRateMin);
+	stream.Serialize(RandomRateMax);
+	stream.Serialize(Translucency);
+	stream.Serialize(Spawns);
+	stream.Serialize(SpawnCount);
+	stream.Serialize(StartSound);
+	stream.Serialize(BounceSound);
+	stream.Serialize(ExpireSound);
+	stream.Serialize(BounceAnim);
+	stream.Serialize(ExpireAnim);
+	stream.Serialize(TrailerAnim);
+	stream.Serialize(TrailerSeperation);
+	stream.Serialize(Elasticity);
+	stream.Serialize(MinZVel);
+	stream.Serialize(MaxZVel);
+	stream.Serialize(MaxXYVel);
+	stream.Serialize(Warhead);
+	stream.Serialize(DamageRadius);
+	stream.Serialize(TiberiumSpawnType);
+	stream.Serialize(TiberiumSpreadRadius);
+	stream.Serialize(YSortAdjust);
+	stream.Serialize(YDrawOffset);
+	stream.Serialize(RunningFrames);
+	stream.Serialize(IsFlamingGuy);
+	stream.Serialize(IsVeins);
+	stream.Serialize(IsMeteor);
+	stream.Serialize(IsTiberiumChainReaction);
+	stream.Serialize(IsTiberium);
+	stream.Serialize(IsBouncer);
+	stream.Serialize(IsTiled);
+	stream.Serialize(IsShouldUseCellDrawer);
+	stream.Serialize(IsUseNormalLight);
+	stream.Serialize(IsDemandLoad);
+	stream.Serialize(IsFreeAfterPlaying);
+	stream.Serialize(IsAnimatedTiberium);
+	stream.Serialize(IsAltPalette);
+	stream.Serialize(IsNormalized);
+	stream.Serialize(IsGroundLayer);
+	stream.Serialize(IsFlat);
+	stream.Serialize(IsTranslucent);
+	stream.Serialize(IsScorcher);
+	stream.Serialize(IsFlameThrower);
+	stream.Serialize(IsCraterForming);
+	stream.Serialize(IsSticky);
+	stream.Serialize(IsPingPong);
+	stream.Serialize(IsReverse);
+	stream.Serialize(IsShouldFogRemove);
 }
 
 

@@ -98,6 +98,7 @@
 #include "movies.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "tactical.h"
 #include "voc.h"
@@ -1497,17 +1498,13 @@ void RadarClass::Clear_Radar(void)
 
 /// <summary>
 /// Handles the radar repairs needed after a save game is loaded.
-/// The radar's surfaces and object tracking table are never saved, so this routine discards
-/// the stale pointers and builds fresh ones from the loaded map. Every object is marked as
-/// untracked so that it registers itself again as the game resumes.
+/// The radar's surfaces and object tracking table are never saved, so this routine releases
+/// the ones the previous scenario left behind and builds fresh ones from the loaded map.
+/// Every object is marked as untracked so that it registers itself again as the game resumes.
 /// </summary>
 void RadarClass::Post_Load_Radar_Fixup(void)
 {
-	RadarSurface = NULL;
-	BackgroundSurface = NULL;
-	BackgroundColors = NULL;
-	RadarTrackingTable = NULL;
-	PixelFlags = NULL;
+	Clear_Radar();
 
 	Init_Radar();
 
@@ -1851,103 +1848,66 @@ void RadarClass::Resolve_Radar_Point(Point2D const & point, Cell & cell, ObjectC
 
 
 /// <summary>
-/// Loads the radar map from the save game stream.
-/// The pending update lists are constructed in place as they are read back. Everything else
-/// the radar owns is rebuilt afterwards by Post_Load_Radar_Fixup.
+/// Lists the members the radar map holds.
+/// Only the pending update lists and the state of the radar display itself travel. The radar
+/// surfaces, the object tracking table and the picture geometry are all rebuilt from the
+/// loaded map by Post_Load_Radar_Fixup.
 /// </summary>
-/// <returns>Returns with S_OK if the radar was read back, otherwise the failing stream
-/// result.</returns>
-HRESULT RadarClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void RadarClass::Serialize(SaveStreamClass & stream)
 {
-	int i;
+	BASECLASS::Serialize(stream);
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		int count;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
+	// RadX -- the radar pane's place on the screen, which One_Time measures from the sidebar of
+	// the display the game is running on now.
+	// RadY
+	// RadWidth
+	// RadHeight
+	// RadOffX
+	// RadOffY
+	// RadIWidth
+	// RadIHeight
+	// RadPWidth
+	// RadPHeight
+	// LastDrawRect -- the region still owed to the visible page by the last render.
+	// RadarSurface -- the radar pictures, thrown away and built again by Post_Load_Radar_Fixup.
+	// BackgroundSurface
+	stream.Serialize(BackgroundStack);
 
-		new (&PixelStack) FOUNDATION_LIST;
+	// BackgroundColors -- part of the same radar picture, rebuilt by Post_Load_Radar_Fixup.
+	// RadarButton -- the radar input gadget is reattached by Init_IO.
+	// RadarCellWidth -- measured again while the radar background is resampled.
+	// RadarCellHeight
+	// CellRedrawRect
+	// RadarTrackingTable -- rebuilt by Post_Load_Radar_Fixup, which also marks every object
+	// untracked so that it registers itself again.
+	stream.Serialize(PixelStack);
 
-		for (i = 0; i < count; i++) {
-			Point2D point;
-			result = stream->Read(&point, sizeof(point), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			PixelStack.Add(point);
-		}
+	// PixelFlags -- all derived from the radar picture that Compute_Radar_Image builds after the
+	// load.
+	// Foundation
+	// ZoomFactor
+	stream.Serialize(RadarScale);
 
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
+	// RadarX -- the radar picture's origin and extent, recomputed by Set_Local_Dimensions and
+	// Compute_Radar_Image.
+	// field_149C
+	// RadarY
+	// RadarRect
+	stream.Serialize(RadarState);
+	stream.Serialize(RadarMode);
+	stream.Serialize(SuspendedRadarMode);
+	stream.Serialize(DoesRadarExist);
 
-		new (&BackgroundStack) DynamicVectorClass<Cell>;
-
-		for (i = 0; i < count; i++) {
-			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			BackgroundStack.Add(cell);
-		}
-
-		for (i = 0; i < BSIZE_COUNT; i++) {
-			new (&Foundation[i]) FOUNDATION_LIST;
-		}
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves the radar map to the save game stream.
-/// Only the pending update lists are written out. The radar surfaces and the object tracking
-/// table are rebuilt from the map when the game is loaded again.
-/// </summary>
-/// <returns>Returns with S_OK if the radar was written, otherwise the failing stream
-/// result.</returns>
-HRESULT RadarClass::Save(IStream *stream)
-{
-	int i;
-
-	HRESULT result = BASECLASS::Save(stream);
-	if (SUCCEEDED(result)) {
-		int count = PixelStack.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&PixelStack[i], sizeof(PixelStack[i]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = BackgroundStack.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&BackgroundStack[i], sizeof(BackgroundStack[i]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	// IsToRedraw -- redraw flags; Complete_Radar_Refresh asks for a complete one after the load.
+	// FullRedraw
+	// RadarViewRect -- the tactical view outline, recomputed from the tactical position every
+	// render.
+	// OldRadarViewRect
+	stream.Serialize(RadarAnimFrame);
+	// RadarAnimTimer -- it paces the activation animation off the system clock, so a saved value
+	// would carry the time of the save into the loaded game.
+	// RadarAnim -- artwork fetched by Init_For_House.
 }
 
 

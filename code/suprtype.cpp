@@ -22,6 +22,7 @@
 #include "mixfile.h"
 #include "mouse.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "weapon.h"
@@ -125,47 +126,46 @@ HRESULT STDMETHODCALLTYPE SuperWeaponTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads this super weapon type back from the save game stream.
-/// The weapon and auxiliary building references are remapped to their new addresses, and
-/// the sidebar cameo is fetched from the mix files again since artwork is never written
-/// to a save game.
+/// Re-attaches the artwork this super weapon type names.
+/// The sidebar cameo is fetched from the mix files again once the members have been
+/// read, since artwork is never written to a save game.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE SuperWeaponTypeClass::Load(IStream *stream)
+void SuperWeaponTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) SuperWeaponTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Swizzle_Pointer(&Weapon);
-		Swizzle_Pointer(&AuxBuilding);
-
-		char fullname[_MAX_FNAME+_MAX_EXT];
-		_makepath(fullname, NULL, NULL, SidebarImage, ".SHP");
-		CameoData = (ShapeSet *)MFCD::Retrieve(fullname);
-		if (CameoData == NULL) {
-			CameoData = (ShapeSet *)MFCD::Retrieve("XXICON.SHP");
-		}
-
-		result = S_OK;
+	char fullname[_MAX_FNAME+_MAX_EXT];
+	_makepath(fullname, NULL, NULL, SidebarImage, ".SHP");
+	CameoData = (ShapeSet *)MFCD::Retrieve(fullname);
+	if (CameoData == NULL) {
+		CameoData = (ShapeSet *)MFCD::Retrieve("XXICON.SHP");
 	}
-	return(result);
 }
 
 
 /// <summary>
-/// Writes this super weapon type to the save game stream.
+/// Lists the members this super weapon type carries.
 /// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE SuperWeaponTypeClass::Save(IStream *stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void SuperWeaponTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Weapon);
+	stream.Serialize(VoxRecharge);
+	stream.Serialize(VoxCharging);
+	stream.Serialize(VoxImpatient);
+	stream.Serialize(VoxSuspend);
+	stream.Serialize(RechargeTime);
+	stream.Serialize(Type);
+	// CameoData -- artwork, fetched from the mix files again as this loads.
+	stream.Serialize(Action);
+	stream.Serialize(AuxBuilding);
+	stream.Serialize(SidebarImage);
+	stream.Serialize(UseChargeDrain);
+	stream.Serialize(IsPowered);
+	stream.Serialize(IsManualControl);
 }
 
 
@@ -176,16 +176,6 @@ HRESULT STDMETHODCALLTYPE SuperWeaponTypeClass::Save(IStream *stream, int cleard
 RTTIType SuperWeaponTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_SUPERWEAPONTYPE);
-}
-
-
-/// <summary>
-/// Fetches the size of this object for the save game system.
-/// </summary>
-/// <returns>Returns with the number of bytes this object occupies.</returns>
-int SuperWeaponTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

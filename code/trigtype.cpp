@@ -59,6 +59,7 @@
 #include "house.h"
 #include "houstype.h"
 #include "incdec.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "taction.h"
@@ -797,43 +798,21 @@ HRESULT STDMETHODCALLTYPE TriggerTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads this trigger type in from the save game stream.
-/// The object is rebuilt in place and its owning house, its linked trigger, and the
-/// heads of its event and action lists are swizzled back into real pointers.
+/// Lists the members this trigger type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the trigger type was read, otherwise a failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE TriggerTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TriggerTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TriggerTypeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&LinkedTo);
-		Swizzle_Pointer(&FirstEvent);
-		Swizzle_Pointer(&FirstAction);
-		Swizzle_Pointer(&House);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this trigger type out to the save game stream.
-/// A trigger's events and actions are separate objects that are saved in their own
-/// right, so nothing beyond the raw object image needs to be appended here.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the trigger type was written, otherwise a failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE TriggerTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(_IsEnabled);
+	stream.Serialize(IsEnabledOnEasy);
+	stream.Serialize(IsEnabledOnMedium);
+	stream.Serialize(IsEnabledOnHard);
+	stream.Serialize(IsToInherit);
+	stream.Serialize(House);
+	stream.Serialize(LinkedTo);
+	stream.Serialize(FirstEvent);
+	stream.Serialize(FirstAction);
 }

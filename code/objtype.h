@@ -190,9 +190,8 @@ class ObjectTypeClass : public AbstractTypeClass
 		ObjectTypeClass(char const * ininame = NULL);
 		virtual ~ObjectTypeClass() override;
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		static void One_Time(void);
 

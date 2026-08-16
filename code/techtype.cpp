@@ -32,8 +32,8 @@
 #include "mixfile.h"
 #include "psystype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "session.h"
-#include "swizzle.h"
 #include "tracker.h"
 #include "unittype.h"
 #include "vanimtype.h"
@@ -869,69 +869,13 @@ bool TechnoTypeClass::In_Range(Coord const & coord, AbstractClass * target, Weap
 
 
 /// <summary>
-/// Loads this object type from a save game stream.
-/// The variable length lists are read back behind the flat data and every pointer is
-/// swizzled to its new home. Artwork is never written to a save game, so the shape and
-/// cameo images are re-fetched from the mix files here. Save games written by an older
-/// version are shifted into the current member layout as they arrive.
+/// Re-attaches the artwork this techno type names.
+/// Artwork is never written to a save game, so the shape and the sidebar cameo are
+/// re-fetched from the mix files once the members have been read.
 /// </summary>
-/// <returns>Returns with S_OK if the object type was restored, otherwise the failure
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE TechnoTypeClass::Load(IStream *stream)
+void TechnoTypeClass::Post_Load(void)
 {
-	int i;
-
-	int size = Fetch_Object_Size(false);
-
-	Dock.Clear();
-	DebrisTypes.Clear();
-	VoiceSelect.Clear();
-	VoiceMove.Clear();
-	VoiceAttack.Clear();
-	VoiceDie.Clear();
-	VoiceFeedback.Clear();
-	Explosion.Clear();
-	Prerequisite.Clear();
-	DebrisMaximums.Clear();
-
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&WalkRate, &CollateralDamageCoefficient, size - offsetof(TechnoTypeClass, WalkRate));
-			CollateralDamageCoefficient = 0.0;
-		}
-
-		Swizzle_Pointer(&DeploysInto);
-		Swizzle_Pointer(&UndeploysInto);
-		Swizzle_Pointer(&NaturalParticleSystem);
-
-		Dock.Load(stream);
-		DebrisTypes.Load(stream);
-		VoiceSelect.Load(stream);
-		VoiceMove.Load(stream);
-		VoiceAttack.Load(stream);
-		VoiceDie.Load(stream);
-		VoiceFeedback.Load(stream);
-		Explosion.Load(stream);
-		DebrisMaximums.Load(stream);
-		Prerequisite.Load(stream);
-		DamageParticleSystems.Load(stream);
-
-		for (i = 0; i < Dock.Count(); i++) {
-			Swizzle_Pointer(&Dock[i]);
-		}
-		for (i = 0; i < Explosion.Count(); i++) {
-			Swizzle_Pointer(&Explosion[i]);
-		}
-		for (i = 0; i < DebrisTypes.Count(); i++) {
-			Swizzle_Pointer(&DebrisTypes[i]);
-		}
-		for (i = 0; i < WEAPON_SLOT_COUNT; i++) {
-			Swizzle_Pointer(&Weapons[i].Weapon);
-		}
-		for (i = 0; i < DamageParticleSystems.Count(); i++) {
-			Swizzle_Pointer(&DamageParticleSystems[i]);
-		}
+	BASECLASS::Post_Load();
 
 		char buffer[256];
 		char fname[_MAX_PATH];
@@ -945,65 +889,139 @@ HRESULT STDMETHODCALLTYPE TechnoTypeClass::Load(IStream *stream)
 		}
 		_makepath(fname, NULL, NULL, buffer, ".SHP");
 		CameoData = (const ShapeSet *)MFCD::Retrieve(fname);
-
-		result = S_OK;
-	}
-	return(result);
 }
 
 
 /// <summary>
-/// Saves this object type to a save game stream.
-/// The base class writes the flat member data, then the variable length lists this object
-/// type carries are written out behind it.
+/// Lists the members every techno type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object type was written, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TechnoTypeClass::Save(IStream *stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void TechnoTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		Dock.Save(stream);
-		DebrisTypes.Save(stream);
-		VoiceSelect.Save(stream);
-		VoiceMove.Save(stream);
-		VoiceAttack.Save(stream);
-		VoiceDie.Save(stream);
-		VoiceFeedback.Save(stream);
-		Explosion.Save(stream);
-		DebrisMaximums.Save(stream);
-		Prerequisite.Save(stream);
-		DamageParticleSystems.Save(stream);
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
+	stream.Serialize(CollateralDamageCoefficient);
+	stream.Serialize(Unused1);
+	stream.Serialize(WalkRate);
+	stream.Serialize(VeteranAbilities);
+	stream.Serialize(EliteAbilities);
+	stream.Serialize(SpecialThreatValue);
+	stream.Serialize(MyEffectivenessCoefficient);
+	stream.Serialize(TargetEffectivenessCoefficient);
+	stream.Serialize(TargetSpecialThreatCoefficient);
+	stream.Serialize(TargetStrengthCoefficient);
+	stream.Serialize(TargetDistanceCoefficient);
+	stream.Serialize(ThreatAvoidanceCoefficient);
+	stream.Serialize(SlowdownDistance);
+	stream.Serialize(DeaccelerationFactor);
+	stream.Serialize(AccelerationFactor);
+	stream.Serialize(CloakingSpeed);
+	stream.Serialize(DebrisTypes);
+	stream.Serialize(DebrisMaximums);
 
+	/*
+	 * A class identifier is a plain sixteen byte value from the Windows SDK with no member
+	 * of its own to describe, so it travels as its raw image.
+	 */
+	stream.Serialize_Bytes(&Locomotor, sizeof(Locomotor));
 
-/// <summary>
-/// Fetches the largest number of bytes this object type could occupy in a stream.
-/// The variable length lists this object type carries are added on top of whatever the
-/// base class asks for, so the persistence layer can size its buffer up front.
-/// </summary>
-/// <param name="pcbSize">The running size total to add this object type's needs to.</param>
-/// <returns>Returns with S_OK, or the failure code reported by the base class.</returns>
-HRESULT STDMETHODCALLTYPE TechnoTypeClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
-{
-	HRESULT res = BASECLASS::GetSizeMax(pcbSize);
-	if (SUCCEEDED(res)) {
-		pcbSize->LowPart += sizeof(int) + (sizeof(VoiceSelect[0]) * VoiceSelect.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(VoiceMove[0]) * VoiceMove.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(VoiceAttack[0]) * VoiceAttack.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(VoiceDie[0]) * VoiceDie.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(VoiceFeedback[0]) * VoiceFeedback.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(Explosion[0]) * Explosion.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(DebrisTypes[0]) * DebrisTypes.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(Dock[0]) * Dock.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(DebrisMaximums[0]) * DebrisMaximums.Count());
-		pcbSize->LowPart += sizeof(int) + (sizeof(DamageParticleSystems[0]) * DamageParticleSystems.Count());
-		res = S_OK;
-	}
-	return(res);
+	stream.Serialize(VoxelCenterY);
+	stream.Serialize(VoxelCenterX);
+	stream.Serialize(Weight);
+	stream.Serialize(PhysicalSize);
+	stream.Serialize(InitialMission);
+	stream.Serialize(RollAngle);
+	stream.Serialize(PitchSpeed);
+	stream.Serialize(PitchAngle);
+	stream.Serialize(BuildLimit);
+	stream.Serialize(Category);
+	stream.Serialize(Unused2);
+	stream.Serialize(DeployTime);
+	stream.Serialize(FireAngle);
+	stream.Serialize(PipScale);
+	stream.Serialize(Dock);
+	stream.Serialize(DeploysInto);
+	stream.Serialize(UndeploysInto);
+	stream.Serialize(VoiceSelect);
+	stream.Serialize(VoiceMove);
+	stream.Serialize(VoiceAttack);
+	stream.Serialize(VoiceDie);
+	stream.Serialize(VoiceFeedback);
+	stream.Serialize(AuxSound1);
+	stream.Serialize(AuxSound2);
+	stream.Serialize(MZone);
+	stream.Serialize(ThreatRange);
+	stream.Serialize(MaxDebris);
+	stream.Serialize(MaxPassengers);
+	stream.Serialize(SightRange);
+	stream.Serialize(Cost);
+	stream.Serialize(FlightLevel);
+	stream.Serialize(Level);
+	stream.Serialize(Prerequisite);
+	stream.Serialize(Risk);
+	stream.Serialize(Reward);
+	stream.Serialize(MaxSpeed);
+	stream.Serialize(Speed);
+	stream.Serialize(MaxAmmo);
+	stream.Serialize(Ownable);
+	stream.Serialize(IsAllowedToStartInMultiplayer);
+	stream.Serialize(CameoFilename);
+	// CameoData -- artwork, fetched from the mix files again as this loads.
+	stream.Serialize(Rotation);
+	stream.Serialize(ROT);
+	stream.Serialize(TurretOffset);
+	stream.Serialize(Points);
+	stream.Serialize(Explosion);
+	stream.Serialize(NaturalParticleSystem);
+	stream.Serialize(NaturalParticleLocation);
+	stream.Serialize(DamageParticleSystems);
+	stream.Serialize(DamageSmokeOffset);
+	stream.Serialize(ShadowIndex);
+	stream.Serialize(Capacity);
+	stream.Serialize(TurretNotExportedOnGround);
+	stream.Serialize(Weapons);
+	stream.Serialize(IsTypeImmune);
+	stream.Serialize(IsMoveToShroud);
+	stream.Serialize(IsTrainable);
+	stream.Serialize(IsDamageSparks);
+	stream.Serialize(IsTargetLaser);
+	stream.Serialize(IsImmuneToVeins);
+	stream.Serialize(IsTiberiumHeal);
+	stream.Serialize(IsCloakStop);
+	stream.Serialize(IsTrain);
+	stream.Serialize(IsDropship);
+	stream.Serialize(IsToProtect);
+	stream.Serialize(IsDisableable);
+	stream.Serialize(IsUnbuildable);
+	stream.Serialize(IsDoubleOwned);
+	stream.Serialize(IsInvisible);
+	stream.Serialize(IsRadarVisible);
+	stream.Serialize(IsLeader);
+	stream.Serialize(IsScanner);
+	stream.Serialize(IsNominal);
+	stream.Serialize(IsTurretEquipped);
+	stream.Serialize(IsRepairable);
+	stream.Serialize(IsCrew);
+	stream.Serialize(IsRemappable);
+	stream.Serialize(IsCloakable);
+	stream.Serialize(IsSelfHealing);
+	stream.Serialize(IsExploding);
+	stream.Serialize(IsNoAutoFire);
+	stream.Serialize(IsRadarEquipped);
+	stream.Serialize(IsRegulated);
+	stream.Serialize(IsManualReload);
+	stream.Serialize(IsVisibleLoad);
+	stream.Serialize(IsLightningRod);
+	stream.Serialize(IsHunterSeeker);
+	stream.Serialize(IsCrusher);
+	stream.Serialize(IsTiltsWhenCrushes);
+	stream.Serialize(IsSubterranean);
+	stream.Serialize(IsAutoCrush);
+	stream.Serialize(IsAccelerates);
+	stream.Serialize(ZFudgeCliff);
+	stream.Serialize(ZFudgeColumn);
+	stream.Serialize(ZFudgeTunnel);
+	stream.Serialize(ZFudgeBridge);
 }
 
 

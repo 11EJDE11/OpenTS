@@ -66,6 +66,14 @@ class TVelocity2D
 			}
 		}
 
+		/// Carries the velocity to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(X);
+			stream.Serialize(Y);
+		}
+
 	public:
 		T X;
 		T Y;
@@ -176,6 +184,14 @@ class TVelocity3D : public TVelocity2D<T>
 			Y *= scale;
 			Z *= scale;
 			return(*this);
+		}
+
+		/// Carries the velocity to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			BASECLASS::Serialize(stream);
+			stream.Serialize(Z);
 		}
 
 	public:

@@ -31,8 +31,8 @@ class DropPodLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual ~DropPodLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override {return(BASECLASS::AddRef());}
@@ -51,8 +51,6 @@ class DropPodLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual boolean STDMETHODCALLTYPE Is_Ok_To_End(void) override;
 		virtual HRESULT STDMETHODCALLTYPE Piggyback_CLSID(GUID * classid) override;
 		virtual boolean STDMETHODCALLTYPE Is_Piggybacking(void) override {return(Piggybacker != NULL);}
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 	private:
 		enum DropPodDirType {

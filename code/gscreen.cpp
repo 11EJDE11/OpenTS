@@ -59,6 +59,7 @@
 #include "gadget.h"
 #include "goptions.h"
 #include "keyboard.h"
+#include "savestream.h"
 #include "session.h"
 #include "surface.h"
 #include "tactical.h"
@@ -89,6 +90,19 @@ GScreenClass::GScreenClass(void) :
 	ScreenY(0),
 	DrawFlags(GS_REDRAW_ALL)
 {
+}
+
+
+/// <summary>
+/// Lists the members the game screen holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void GScreenClass::Serialize(SaveStreamClass & stream)
+{
+	// Buttons -- the input button list, rebuilt from scratch by Init_IO.
+	stream.Serialize(ScreenX);
+	stream.Serialize(ScreenY);
+	// DrawFlags -- a redraw request covers a single frame, and the load asks for a full one.
 }
 
 

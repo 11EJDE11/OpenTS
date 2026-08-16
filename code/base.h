@@ -44,6 +44,7 @@ class CCINIClass;
 class CRCEngine;
 class BuildingClass;
 class HouseClass;
+class SaveStreamClass;
 
 /****************************************************************************
 **	This class defines one "node" in the pre-built base list.  Each node
@@ -66,6 +67,14 @@ class BaseNodeClass
 		 * time comes to build it.
 		 */
 		Cell CellID;
+
+		/// Carries this base node to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Type);
+			stream.Serialize(CellID);
+		}
 };
 
 
@@ -97,6 +106,7 @@ class BaseClass
 		void Write_INI(CCINIClass & ini, char const * hname);
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream);
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream);
+		void Serialize(SaveStreamClass & stream);
 		virtual void Compute_CRC(CRCEngine &) const;
 
 		/*

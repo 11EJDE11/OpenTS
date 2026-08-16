@@ -48,6 +48,14 @@ class PriorityQueueClass
 		bool Load(IStream * stream, T * nodes);
 		bool Save(IStream * stream, T * nodes);
 
+		/*
+		 * Carries the queue to or from a save game. The heap holds pointers into the caller's
+		 * node array, so each slot travels as its index into that array rather than as an
+		 * address, and the array has to be handed back in on the way in.
+		 */
+		template<typename S>
+		void Serialize(S & stream, T * nodes);
+
 	private:
 		/*
 		 * This is the number of nodes currently in the queue, which is also the index of the
@@ -291,6 +299,31 @@ bool PriorityQueueClass<T>::Save(IStream * stream, T * nodes)
 	}
 
 	return(true);
+}
+
+
+template<typename T>
+template<typename S>
+void PriorityQueueClass<T>::Serialize(S & stream, T * nodes)
+{
+	stream.Serialize(ActiveCount);
+	stream.Serialize(Size);
+
+	for (int slot = 0; slot < Size; slot++) {
+		int index = stream.Is_Saving() ? (int)(Heap[slot] - nodes) : 0;
+		stream.Serialize(index);
+
+		if (stream.Is_Loading()) {
+			Heap[slot] = &nodes[index];
+
+			if ((unsigned)Heap[slot] > MaxNodePointer) {
+				MaxNodePointer = (unsigned)Heap[slot];
+			}
+			if ((unsigned)Heap[slot] < MinNodePointer) {
+				MinNodePointer = (unsigned)Heap[slot];
+			}
+		}
+	}
 }
 
 #undef PARENT

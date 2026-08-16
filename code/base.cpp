@@ -52,7 +52,7 @@
 #include "builtype.h"
 #include "cell.h"
 #include "overtype.h"
-#include "swizzle.h"
+#include "savestream.h"
 #include "vector.h"
 
 #include <cstdio>
@@ -544,119 +544,44 @@ void BaseClass::Write_INI(CCINIClass & ini, char const * hname)
 }
 
 /// <summary>
-/// Loads the base from a save game stream.
-/// This routine reads the base object back, then rebuilds the node list and the inner and
-/// outer cell rings that were written after it. The owning house is submitted for pointer
-/// swizzling so it can be remapped once every object has been loaded.
+/// Reads the base back in from a save game.
 /// </summary>
-/// <returns>Returns with S_OK. A stream failure leaves the base partly restored.</returns>
+/// <returns>Returns with the result reported by the stream read.</returns>
 HRESULT STDMETHODCALLTYPE BaseClass::Load(IStream *stream)
 {
-	if (SUCCEEDED(stream->Read(this, sizeof(*this), NULL))) {
-
-		new (this) BaseClass(NoInitClass());
-
-		int index;
-		int count = 0;
-
-		if (FAILED(stream->Read(&count, sizeof(count), NULL))) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			BaseNodeClass obj;
-			if (FAILED(stream->Read(&obj, sizeof(obj), NULL))) {
-				return(S_OK);
-			}
-			Nodes.Add(obj);
-		}
-
-		if (FAILED(stream->Read(&count, sizeof(count), NULL))) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			Cell obj;
-			if (FAILED(stream->Read(&obj, sizeof(obj), NULL))) {
-				return(S_OK);
-			}
-			InnerCells.Add(obj);
-		}
-
-		if (FAILED(stream->Read(&count, sizeof(count), NULL))) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			Cell obj;
-			if (FAILED(stream->Read(&obj, sizeof(obj), NULL))) {
-				return(S_OK);
-			}
-			OuterCells.Add(obj);
-		}
-
-		Swizzle_Pointer(&House);
-	}
-	return(S_OK);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+	return(savestream.Result());
 }
 
 
 /// <summary>
-/// Saves the base to a save game stream.
-/// This routine writes the base object itself and then the variable length data that
-/// hangs off it -- the node list and the inner and outer cell rings.
+/// Writes the base out to a save game.
 /// </summary>
-/// <returns>Returns with S_OK. A stream failure abandons the remaining data quietly.</returns>
+/// <returns>Returns with the result reported by the stream write.</returns>
 HRESULT STDMETHODCALLTYPE BaseClass::Save(IStream * stream)
 {
-	HRESULT hr;
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+	return(savestream.Result());
+}
 
-	if (SUCCEEDED(stream->Write(this, sizeof(*this), NULL))) {
 
-		int index;
-
-		int count = Nodes.Count();
-		hr = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(hr)) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			hr = stream->Write(&Nodes[index], sizeof(Nodes[index]), NULL);
-			if (FAILED(hr)) {
-				return(S_OK);
-			}
-		}
-
-		count = InnerCells.Count();
-		hr = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(hr)) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			hr = stream->Write(&InnerCells[index], sizeof(InnerCells[index]), NULL);
-			if (FAILED(hr)) {
-				return(S_OK);
-			}
-		}
-
-		count = OuterCells.Count();
-		hr = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(hr)) {
-			return(S_OK);
-		}
-
-		for (index = 0; index < count; index++) {
-			hr = stream->Write(&OuterCells[index], sizeof(OuterCells[index]), NULL);
-			if (FAILED(hr)) {
-				return(S_OK);
-			}
-		}
-
-		return(hr);
-	}
-	return(S_OK);
+/// <summary>
+/// Lists the members the base plan holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void BaseClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(Nodes);
+	stream.Serialize(PercentBuilt);
+	stream.Serialize(InnerCells);
+	stream.Serialize(OuterCells);
+	stream.Serialize(PlacementCenter);
+	stream.Serialize(BaseAreaRect);
+	stream.Serialize(LastBaseAreaRect);
+	stream.Serialize(House);
+	// INI_NAME -- a constant shared by every base rather than owned by one.
 }
 
 

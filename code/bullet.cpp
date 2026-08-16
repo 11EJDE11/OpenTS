@@ -78,10 +78,10 @@
 #include "overtype.h"
 #include "partsys.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "stimer.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tracker.h"
@@ -1430,34 +1430,30 @@ void BulletClass::Detonate(Coord const & coord)
 
 
 /// <summary>
-/// Reads this projectile back in from a save game stream.
-/// This routine restores the virtual table and then swizzles the saved pointers so that they
-/// refer to the objects they pointed at when the game was saved.
+/// Lists the members this projectile carries.
 /// </summary>
-/// <returns>Returns with S_OK if the projectile was loaded successfully.</returns>
-HRESULT STDMETHODCALLTYPE BulletClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void BulletClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) BulletClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&Payback);
-		Swizzle_Pointer(&Warhead);
-		Swizzle_Pointer(&TarCom);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this projectile out to a save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been written?</param>
-/// <returns>Returns with S_OK if the projectile was saved successfully.</returns>
-HRESULT STDMETHODCALLTYPE BulletClass::Save(IStream * stream, BOOL cleardirty)
-{
-	return(BASECLASS::Save(stream, cleardirty));
+	stream.Serialize(Class);
+	stream.Serialize(Payback);
+	stream.Serialize(IsInaccurate);
+	stream.Serialize(Fuse);
+	stream.Serialize(IsBright);
+	stream.Serialize(Velocity);
+	stream.Serialize(BounceCount);
+	stream.Serialize(field_A4);
+	stream.Serialize(IsLaunching);
+	stream.Serialize(TarCom);
+	stream.Serialize(MaxSpeed);
+	stream.Serialize(ClosureSamples);
+	stream.Serialize(SmoothedClosure);
+	stream.Serialize(Warhead);
+	stream.Serialize(AnimFrame);
+	stream.Serialize(AnimRate);
+	stream.Serialize(Range);
 }
 
 
@@ -1558,18 +1554,6 @@ void BulletClass::Draw_Voxel(VoxelDataStruct const & voxeldata, Matrix3D const &
 	SurfaceRegion region = VoxelDrawSystem::Render();
 	flags = ShapeFlags_Type(flags & ~SHAPE_REMAP);
 	Blit_Block(*LogicalSurface, *ColorSchemes[Class->Color]->Converter, *VoxelDrawSystem::Get_Surface(), region.Bounds, region.Point + drawpoint, cliprect, NULL, ColorSchemes[Class->Color]->Converter->Blitter_From_Flags(ShapeFlags_Type(flags)), 0, ZGRAD_90DEG, brightness);
-}
-
-
-/// <summary>
-/// Fetches the storage size of this object.
-/// This routine is used by the save game machinery to know how many bytes of the object
-/// must be written out.
-/// </summary>
-/// <returns>Returns with the number of bytes this projectile occupies.</returns>
-int BulletClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

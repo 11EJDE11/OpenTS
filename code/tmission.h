@@ -38,6 +38,18 @@ class TeamMissionClass
 		void Fill_In(char const * entry);
 		int Build_INI_Entry(char * ptr) const;
 
+		/*
+		 * Carries the mission entry to or from a save game. Which alternative of the data
+		 * is live depends on the mission, but every one of them is a plain scalar and none
+		 * holds a pointer, so the whole union travels as its raw image.
+		 */
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Mission);
+			stream.Serialize_Bytes(&Data, sizeof(Data));
+		}
+
 		TeamMissionType Mission;		// Mission type.
 		union {
 			QuarryType		Quarry;			// Combat quarry type.

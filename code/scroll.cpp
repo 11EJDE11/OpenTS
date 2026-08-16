@@ -55,6 +55,7 @@
 #include "misc.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "suprtype.h"
 #include "surface.h"
 #include "tactical.h"
@@ -97,6 +98,26 @@ ScrollClass::ScrollClass(void) :
 	IsMouseDown(false)
 {
 	//Counter = SCROLL_DELAY;
+}
+
+
+/// <summary>
+/// Lists the members the scroll handler holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void ScrollClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	// Counter -- it paces the scroll off the system clock, so a saved value would carry the time
+	// of the save into the loaded game.
+	// Inertia -- the state of a drag on the tactical map, which no held button survives to
+	// continue.
+	// IsCoastScrollAllowed
+	// RightPressPoint
+	// IsDragOperation
+	stream.Serialize(IsEdgeScrollAllowed);
+	// IsMouseDown -- likewise the drag state, which no held button survives to continue.
 }
 
 

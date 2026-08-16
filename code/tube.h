@@ -23,8 +23,8 @@ class TubeClass : public AbstractClass
 		typedef AbstractClass BASECLASS;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 	public:
 		TubeClass(Cell const &cell = CELL_NONE, FacingType dir = FACING_N);
@@ -33,7 +33,6 @@ class TubeClass : public AbstractClass
 
 		virtual ~TubeClass(void) override;
 
-		virtual int Fetch_Object_Size(bool) const override;
 		virtual RTTIType Fetch_RTTI(void) const override;
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 

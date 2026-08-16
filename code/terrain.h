@@ -62,7 +62,9 @@ class TerrainClass : public ObjectClass, public StageClass
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		/*
 		**	Terrain specific support functions.
@@ -76,7 +78,6 @@ class TerrainClass : public ObjectClass, public StageClass
 		virtual ObjectTypeClass const * Class_Of(void) const override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		/*

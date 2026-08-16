@@ -17,6 +17,7 @@
 #include "findmake.h"
 #include "globals.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "tag.h"
@@ -405,39 +406,14 @@ void TagTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this tag type from the data stream.
-/// This routine will rebuild the object in place so that its virtual table is valid,
-/// then remap the saved trigger pointer so that the tag's trigger list refers to the
-/// trigger types of this session.
+/// Lists the members this tag type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the tag type was loaded, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TagTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TagTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TagTypeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&FirstTrigger);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this tag type to the data stream.
-/// The base class performs the actual write; this routine exists so that the tag type
-/// takes part in the object persistence chain.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the tag type was saved, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TagTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Persistence);
+	stream.Serialize(FirstTrigger);
 }

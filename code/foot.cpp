@@ -113,6 +113,7 @@
 #include "partsys.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "session.h"
 #include "swizzle.h"
 #include "tactical.h"
@@ -3462,119 +3463,73 @@ bool FootClass::Limbo(void)
 
 
 /// <summary>
-/// Loads this object from the specified stream.
-/// This routine reads back the pending route and navigation orders after the base class
-/// data, lets OLE recreate the locomotor, and then remaps every pointer the object holds.
+/// Lists the members every moving object carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE FootClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void FootClass::Serialize(SaveStreamClass & stream)
 {
-	if (Locomotion) {
-		((ILocomotion*)Locomotion)->Release();
-	}
-	Locomotion.Detach();
+	BASECLASS::Serialize(stream);
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		int index;
-		int count;
+	stream.Serialize(CurrentPath);
+	stream.Serialize(WaypointOffsetCell);
+	stream.Serialize(WaypointTargetCell);
+	stream.Serialize(ThreatAvoidanceCoefficient);
+	stream.Serialize(TotalFramesWalked);
+	stream.Serialize(LastPathingCell);
+	stream.Serialize(LastAdjacencyCell);
+	stream.Serialize(LastTubeCoord);
+	stream.Serialize(Speed);
+	stream.Serialize(SpeedBias);
+	stream.Serialize(RouteQueue);
+	stream.Serialize(NavCom);
+	stream.Serialize(SuspendedNavCom);
+	stream.Serialize(NavQueue);
+	stream.Serialize(Team);
+	stream.Serialize(Member);
+	stream.Serialize(PatrolCell);
+	stream.Serialize(Path);
+	stream.Serialize(PathDelay);
+	stream.Serialize(TryTryAgain);
+	stream.Serialize(BaseAttackTimer);
+	stream.Serialize(BlockagePathDelay);
 
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		new (&RouteQueue) DynamicVectorClass<AbstractClass *>;
-
-		for (index = 0; index < count; index++) {
-			AbstractClass * obj = NULL;
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			RouteQueue.Add(obj);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		new (&NavQueue) DynamicVectorClass<AbstractClass *>;
-
-		for (index = 0; index < count; index++) {
-			AbstractClass * obj = NULL;
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			NavQueue.Add(obj);
-		}
-
-		Locomotion.Detach();
-		OleLoadFromStream(stream, IID_ILocomotion, (LPVOID *)&Locomotion);
-		Swizzle_Pointer(&Team);
-		Swizzle_Pointer(&Member);
-		Swizzle_Pointer(&NavCom);
-		Swizzle_Pointer(&SuspendedNavCom);
-		Swizzle_Pointer(&PatrolCell);
-		for (index = 0; index < NavQueue.Count(); index++) {
-			Swizzle_Pointer(&NavQueue[index]);
-		}
-		for (index = 0; index < RouteQueue.Count(); index++) {
-			Swizzle_Pointer(&RouteQueue[index]);
-		}
-		return(S_OK);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this object to the specified stream.
-/// This routine writes out the object's pending route and navigation orders after the base
-/// class data, then hands the locomotor over to OLE so that it can persist itself.
-/// </summary>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE FootClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int index;
-		int count = RouteQueue.Count();
-
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&RouteQueue[index], sizeof(RouteQueue[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = NavQueue.Count();
-
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&NavQueue[index], sizeof(NavQueue[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
+	/*
+	 * The locomotor is a COM sub-object rather than a member, so it persists itself onto
+	 * the raw stream through OLE. The one being replaced is released first, since loading
+	 * hands back a fresh interface pointer rather than filling this one in.
+	 */
+	if (stream.Is_Saving()) {
 		IPersistStreamPtr persist(Locomotion);
-		OleSaveToStream(persist, stream);
-
-		result = S_OK;
+		OleSaveToStream(persist, stream.Get_Stream());
+	} else {
+		if (Locomotion != NULL) {
+			((ILocomotion *)Locomotion)->Release();
+		}
+		Locomotion.Detach();
+		OleLoadFromStream(stream.Get_Stream(), IID_ILocomotion, (LPVOID *)&Locomotion);
 	}
-	return(result);
+
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(CurrentTube);
+	stream.Serialize(CurrentTubeDir);
+	stream.Serialize(NextWaypoint);
+	stream.Serialize(IsToScatter);
+	stream.Serialize(IsScanLimited);
+	stream.Serialize(IsInitiated);
+	stream.Serialize(IsNewNavCom);
+	stream.Serialize(IsPlanningToLook);
+	stream.Serialize(IsDeploying);
+	stream.Serialize(IsFiring);
+	stream.Serialize(IsRotating);
+	stream.Serialize(IsUnloading);
+	stream.Serialize(IsNavQueueLoop);
+	stream.Serialize(IsScattering);
+	stream.Serialize(IsIdle);
+	stream.Serialize(IonBlastYDrawOffset);
+	stream.Serialize(IsCrushing);
+	stream.Serialize(IsOccupyingCell);
+	stream.Serialize(IsToPathAroundBlockage);
+	stream.Serialize(IsDroppedFromTeam);
 }
 
 

@@ -17,6 +17,7 @@
 #include "globals.h"
 #include "incdec.h"
 #include "ptype.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 #include "warhead.h"
@@ -209,30 +210,36 @@ HRESULT STDMETHODCALLTYPE ParticleSystemTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this particle system type from the stream specified.
-/// The object is re-constructed in place once the persisted data has been read, so that
-/// its virtual table pointer is valid for the run it has been loaded into.
+/// Lists the members this particle system type carries.
 /// </summary>
-/// <returns>Returns with the result code of the load operation.</returns>
-HRESULT STDMETHODCALLTYPE ParticleSystemTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ParticleSystemTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ParticleSystemTypeClass(NoInitClass());
-	}
-	return(S_OK);
-}
+	BASECLASS::Serialize(stream);
 
-
-/// <summary>
-/// Saves this particle system type to the stream specified.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been saved?</param>
-/// <returns>Returns with the result code of the save operation.</returns>
-HRESULT STDMETHODCALLTYPE ParticleSystemTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	return(S_OK);
+	stream.Serialize(HoldsWhat);
+	stream.Serialize(Spawns);
+	stream.Serialize(SpawnFrames);
+	stream.Serialize(Slowdown);
+	stream.Serialize(ParticleCap);
+	stream.Serialize(SpawnRadius);
+	stream.Serialize(SpawnCutoff);
+	stream.Serialize(SpawnTranslucencyCutoff);
+	stream.Serialize(BehavesLike);
+	stream.Serialize(Lifetime);
+	stream.Serialize(SpawnDirection);
+	stream.Serialize(ParticlesPerCoord);
+	stream.Serialize(SpiralDeltaPerCoord);
+	stream.Serialize(SpiralRadius);
+	stream.Serialize(PositionPerturbationCoefficient);
+	stream.Serialize(MovementPerturbationCoefficient);
+	stream.Serialize(VelocityPerturbationCoefficient);
+	stream.Serialize(SpawnSparkPercentage);
+	stream.Serialize(SparkSpawnFrames);
+	stream.Serialize(LightSize);
+	stream.Serialize(LaserColor);
+	stream.Serialize(IsLaser);
+	stream.Serialize(OneFrameLight);
 }
 
 
@@ -274,18 +281,6 @@ ParticleSystemBehaviorType Particle_System_Behavior_From_Name(char const * name)
 ParticleSystemTypeClass * ParticleSystemTypeClass::Find_Or_Make(char const * name)
 {
 	return(TFind_Or_Make<ParticleSystemTypeClass>(name, ParticleSystemTypes));
-}
-
-
-/// <summary>
-/// Fetches the size of this object.
-/// This routine is used by the save and load system to decide how large a block of
-/// memory it must transfer for this object.
-/// </summary>
-/// <returns>Returns with the size of the object in bytes.</returns>
-int ParticleSystemTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

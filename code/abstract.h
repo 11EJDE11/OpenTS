@@ -43,6 +43,7 @@
 
 class AbstractTypeClass;
 class CRCEngine;
+class SaveStreamClass;
 class HouseClass;
 class UnitClass;
 class TagClass;
@@ -67,12 +68,14 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 
 	protected:
 		/*
-		 * Making these const is abusing bad undefined behavior or a compiler bug,
-		 * makes it not use the interface Load Save for calls to AbstractClass
-		 * FUNCTIONS IN CPP MUST NOT BE CONST FOR IT TO LINK
+		 * These carry the record a class describes through Serialize; the record is the
+		 * swizzle identity followed by whatever members the class names. Load and Save
+		 * call them, so a class only overrides those when something must happen before
+		 * the members are read -- dropping a registration keyed by the identity the read
+		 * is about to replace, say.
 		 */
-		HRESULT STDMETHODCALLTYPE Load(IStream * stream) const;
-		HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) const;
+		HRESULT Save_Members(IStream * stream, BOOL cleardirty);
+		HRESULT Load_Members(IStream * stream);
 
 	public:
 
@@ -109,8 +112,8 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE IsDirty(void) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override = 0;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override = 0;
+		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
 		virtual int STDMETHODCALLTYPE What_Am_I(void) const override;
@@ -125,6 +128,22 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 			return(*this);
 		}
 
+		/*
+		 * Lists this object's members for the save game. An implementation serializes its
+		 * base class first and then names every member it owns in the order the header
+		 * declares them, so that the same description serves saving and loading.
+		 */
+		virtual void Serialize(SaveStreamClass & stream);
+
+		/*
+		 * Restores whatever the record could not carry -- artwork fetched by name, tables
+		 * shared with other objects, registrations that depend on the loaded identity.
+		 * Load_Members calls this once the members are in place, so a base class fixup
+		 * runs even when the load was entered through a derived class. An implementation
+		 * chains to its base first and never touches the stream.
+		 */
+		virtual void Post_Load(void);
+
 		virtual void Init(void);
 		virtual void Detach(AbstractClass const * target, bool all = true);
 
@@ -132,8 +151,6 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		**	Query functions.
 		*/
 		virtual RTTIType Fetch_RTTI(void) const = 0;
-		virtual int Fetch_Object_Size(bool oldsave) const = 0;
-		virtual int Get_Object_Size_Delta(void) const;
 		virtual void Compute_CRC(CRCEngine &) const;
 
 		virtual HousesType Owner(void) const;

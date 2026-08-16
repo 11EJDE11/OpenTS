@@ -70,6 +70,7 @@
 #include "noinit.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "tube.h"
 #include "unit.h"
 #include "unittype.h"
@@ -77,8 +78,6 @@
 
 #include "layer.hh"
 #include "tube.hh"
-
-#include <new.h>
 
 static const double _deaccel = 0.3f;
 static const double _sinking = 0.1f;
@@ -190,53 +189,45 @@ HRESULT STDMETHODCALLTYPE DriveLocomotionClass::QueryInterface(REFIID riid, LPVO
 
 
 /// <summary>
-/// Loads the driver from the supplied stream.
-/// The driver is rebuilt in place, and any locomotor that was riding along on it when the
-/// game was saved is recreated and reattached.
+/// Lists the members this driver carries.
+/// A locomotor riding along on this one is a separate persistent object rather than a
+/// member, so it still travels framed by OLE and is recreated as the class it was saved as.
 /// </summary>
-/// <param name="stream">The stream to read from.</param>
-/// <returns>Returns with S_OK if the driver was read back successfully.</returns>
-HRESULT STDMETHODCALLTYPE DriveLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void DriveLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) DriveLocomotionClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		bool haspiggy;
-		stream->Read(&haspiggy, sizeof(haspiggy), NULL);
+	stream.Serialize(CurrentRamp);
+	stream.Serialize(PreviousRamp);
+	stream.Serialize(RampTimer);
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(SpeedAccum);
+	stream.Serialize(TargetSpeed);
+	stream.Serialize(TrackNumber);
+	stream.Serialize(TrackIndex);
+	stream.Serialize(IsOnShortTrack);
+	stream.Serialize(IsTurretLockedDown);
+	stream.Serialize(IsRotating);
+	stream.Serialize(IsDriving);
+	stream.Serialize(IsRocking);
+	stream.Serialize(IsLocomotorUnlocked);
 
-		if (haspiggy) {
-			result = OleLoadFromStream(stream, IID_ILocomotion, (void**)&Piggybacker);
-		}
-	}
-	return(result);
-}
+	bool haspiggy = (Piggybacker != NULL);
+	stream.Serialize(haspiggy);
 
-
-/// <summary>
-/// Saves the driver to the supplied stream.
-/// Any locomotor riding along on this driver is written out with it, so that the unit
-/// comes back in the same state it was saved in.
-/// </summary>
-/// <param name="stream">The stream to write to.</param>
-/// <param name="cleardirty">Should the dirty flag be cleared once written?</param>
-/// <returns>Returns with S_OK if the driver was written out successfully.</returns>
-HRESULT STDMETHODCALLTYPE DriveLocomotionClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		bool haspiggy;
-		if (Piggybacker != NULL) {
-			haspiggy = true;
-			stream->Write(&haspiggy, sizeof(haspiggy), NULL);
-			IPersistStreamPtr ptr(Piggybacker);
-			result = OleSaveToStream(ptr, stream);
+	if (haspiggy) {
+		if (stream.Is_Saving()) {
+			IPersistStreamPtr persist(Piggybacker);
+			OleSaveToStream(persist, stream.Get_Stream());
 		} else {
-			haspiggy = false;
-			stream->Write(&haspiggy, sizeof(haspiggy), NULL);
+			OleLoadFromStream(stream.Get_Stream(), IID_ILocomotion, (LPVOID *)&Piggybacker);
 		}
 	}
-	return(result);
+	// TrackControl -- constant tables shared by every driver.
+	// RawTracks
+	// Track1 - Track13
 }
 
 

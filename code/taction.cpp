@@ -73,6 +73,7 @@
 #include "reinf.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "session.h"
 #include "sun.h"
@@ -2659,43 +2660,27 @@ HRESULT STDMETHODCALLTYPE TActionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this action from the supplied stream.
-/// The base class reads the raw member data back, and this routine then remaps the saved
-/// pointers to the objects they refer to in this session.
+/// Lists the members this action carries.
 /// </summary>
-/// <returns>Returns with S_OK if the action was loaded, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TActionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TActionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TActionClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Next);
-		Swizzle_Pointer(&Team);
-		Swizzle_Pointer(&Tag);
-		Swizzle_Pointer(&Trigger);
+	stream.Serialize(HeapID);
+	stream.Serialize(Next);
+	stream.Serialize(Action);
+	stream.Serialize(Team);
+	stream.Serialize(TriggerRect);
+	stream.Serialize(EffectLocation);
+	stream.Serialize(Tag);
+	stream.Serialize(Trigger);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this action to the supplied stream.
-/// The base class writes the raw member data, so this routine only has to deal with
-/// anything that cannot be stored verbatim.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been saved?</param>
-/// <returns>Returns with S_OK if the action was saved, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE TActionClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	/*
+	 * Which alternative of the data is live depends on the action, but every one of them
+	 * is a plain scalar and none holds a pointer, so the union travels as its raw image.
+	 */
+	stream.Serialize_Bytes(&Data, sizeof(Data));
 }
 
 

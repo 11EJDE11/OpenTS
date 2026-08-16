@@ -316,7 +316,6 @@ extern char BuildDate[64];
 **	Win32 specific externs
 */
 extern int ReadyToQuit;							//Are we about to exit cleanly
-extern bool IsOldSaveGame;
 void Memory_Error_Handler(void);				//Memory error handler function
 
 extern bool TacticalActive;

@@ -129,7 +129,8 @@ class InfantryClass : public FootClass
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
@@ -142,7 +143,6 @@ class InfantryClass : public FootClass
 		**	Query functions.
 		*/
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual bool Is_Ready_To_Random_Animate(void) const override;
 		virtual void const * Get_Image_Data(void) const override;

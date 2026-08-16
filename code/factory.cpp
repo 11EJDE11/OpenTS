@@ -59,6 +59,7 @@
 #include "globals.h"
 #include "house.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "tracker.h"
@@ -646,75 +647,23 @@ HRESULT STDMETHODCALLTYPE FactoryClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this factory from the save game stream.
-/// The production queue is read back and then the queued types, the owning house, and
-/// the object under construction are remapped to their new addresses.
+/// Lists the members this factory carries.
 /// </summary>
-/// <returns>Returns with S_OK if the factory was read, otherwise the stream error.</returns>
-HRESULT STDMETHODCALLTYPE FactoryClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void FactoryClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) FactoryClass(NoInitClass());
+	BASECLASS::Serialize(stream);
+	StageClass::Serialize(stream);
 
-		int index;
-		int count = 0;
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			TechnoTypeClass const * obj = NULL;
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			QueuedObjects.Add(obj);
-		}
-
-		for (index = 0; index < count; index++) {
-			Swizzle_Pointer(&QueuedObjects[index]);
-		}
-
-		Swizzle_Pointer(&House);
-		Swizzle_Pointer(&Object);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this factory to the save game stream.
-/// The base class writes the factory itself; this routine appends the production queue
-/// so that pending orders survive the save.
-/// </summary>
-/// <returns>Returns with S_OK if the factory was written, otherwise the stream error.</returns>
-HRESULT STDMETHODCALLTYPE FactoryClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int index;
-
-		int count = QueuedObjects.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&QueuedObjects[index], sizeof(QueuedObjects[index]), NULL);
-			if (FAILED(result)) {
-				return(S_OK);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(QueuedObjects);
+	stream.Serialize(Object);
+	stream.Serialize(IsDifferent);
+	stream.Serialize(Balance);
+	stream.Serialize(OriginalBalance);
+	stream.Serialize(SpecialItem);
+	stream.Serialize(House);
+	stream.Serialize(IsSuspended);
+	stream.Serialize(IsOnHold);
 }
 
 

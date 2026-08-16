@@ -14,6 +14,7 @@
 
 #include "crc.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 #include "vector.h"
@@ -307,83 +308,15 @@ HRESULT STDMETHODCALLTYPE WaypointPathClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this waypoint path from the save game stream.
-/// The base object is read first and then the waypoints are rebuilt from the stream, so
-/// whatever the path held before the call is discarded.
+/// Lists the members this waypoint path carries.
 /// </summary>
-/// <returns>Returns with S_OK if the path was read, otherwise the failure code that the
-/// stream reported.</returns>
-HRESULT STDMETHODCALLTYPE WaypointPathClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void WaypointPathClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) WaypointPathClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		int count;
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		new (&Waypoints) DynamicVectorClass<WaypointClass>;
-
-		for (int index = 0; index < count; index++) {
-			WaypointClass obj;
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			Waypoints.Add(obj);
-		}
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this waypoint path to the save game stream.
-/// The base object is written first, then the waypoints that make up the path follow it.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been
-/// written?</param>
-/// <returns>Returns with S_OK if the path was written, otherwise the failure code that the
-/// stream reported.</returns>
-HRESULT STDMETHODCALLTYPE WaypointPathClass::Save(IStream *stream, int cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int index;
-
-		int count = Waypoints.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&Waypoints[index], sizeof(Waypoints[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Fetches the memory footprint of this object.
-/// This routine is used by the save process to know how many bytes the object occupies.
-/// </summary>
-/// <returns>Returns with the size of this object, in bytes.</returns>
-int WaypointPathClass::Fetch_Object_Size(bool) const
-{
-	return(sizeof(*this));
+	stream.Serialize(CurrentWaypoint);
+	stream.Serialize(Waypoints);
 }
 
 

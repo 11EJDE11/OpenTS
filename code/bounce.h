@@ -48,6 +48,19 @@ class BounceClass
 		double Get_Remaining_Motion(void) const;
 		BounceResultType AI(void);
 
+		/// Carries the physics state to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Elasticity);
+			stream.Serialize(Gravity);
+			stream.Serialize(MaxVelocity);
+			stream.Serialize(MyCoord);
+			stream.Serialize(Velocity);
+			stream.Serialize(Rotation);
+			stream.Serialize(AngularVelocity);
+		}
+
 	public:
 		/*
 		 * This is the fraction of its speed that the object keeps when it strikes a surface.

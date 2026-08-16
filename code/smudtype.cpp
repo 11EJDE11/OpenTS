@@ -64,6 +64,7 @@
 #include "lightcon.h"
 #include "mixfile.h"
 #include "mouse.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "smudge.h"
 #include "sun.h"
@@ -319,41 +320,32 @@ void SmudgeTypeClass::Compute_CRC(CRCEngine &crc) const
 
 
 /// <summary>
-/// Reads this smudge type back in from a save game.
-/// The object is reconstructed in place so that it regains its virtual function table, and
-/// its artwork is fetched again, since pointers into the mix files do not survive a save.
+/// Re-attaches the artwork this smudge type names.
+/// The artwork is fetched again once the members have been read, since pointers into the
+/// mix files do not survive a save.
 /// </summary>
-/// <returns>Returns with S_OK once the object has been rebuilt, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE SmudgeTypeClass::Load(IStream * stream)
+void SmudgeTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) SmudgeTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 }
 
 
 /// <summary>
-/// Writes this smudge type out to a save game.
-/// The smudge type adds nothing of its own beyond what the object type layer records.
+/// Lists the members this smudge type carries.
 /// </summary>
-/// <returns>Returns with S_OK once the object has been written, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE SmudgeTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void SmudgeTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Width);
+	stream.Serialize(Height);
+	stream.Serialize(IsCrater);
+	stream.Serialize(IsScorch);
 }
 
 

@@ -432,8 +432,9 @@ class AnimTypeClass : public ObjectTypeClass
 		virtual ~AnimTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		static void Init(TheaterType theater);
 		static char const * Name_From(AnimType anim);
@@ -446,7 +447,6 @@ class AnimTypeClass : public ObjectTypeClass
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_ANIMTYPE);}
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));};
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 
 		virtual void Init_Theater(TheaterType theater) override;

@@ -54,6 +54,7 @@
 #include "globals.h"
 #include "incdec.h"
 #include "mono.h"
+#include "savestream.h"
 
 #include "bench.hh"
 
@@ -543,6 +544,23 @@ MissionType MissionClass::Mission_From_Name(char const * name)
 char const * MissionClass::Mission_Name(MissionType mission)
 {
 	return(mission != MISSION_NONE ? Missions[mission] : "<none>");
+}
+
+
+/// <summary>
+/// Lists the members this mission handler carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void MissionClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(CurrentMission);
+	stream.Serialize(SuspendedMission);
+	stream.Serialize(MissionQueue);
+	stream.Serialize(Status);
+	stream.Serialize(IsMissionUnloadStandby);
+	stream.Serialize(Timer);
 }
 
 

@@ -66,6 +66,13 @@ struct AbilityFlagsType {
 		bool const & operator[](AbilityType type) const { return(AbilitiesFlag[type]); }
 		bool & operator[](AbilityType type) { return(AbilitiesFlag[type]); }
 
+		/// Carries the ability set to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(AbilitiesFlag);
+		}
+
 	private:
 		/*
 		 * These are the abilities present in this set, one flag per AbilityType. A unit type

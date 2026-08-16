@@ -36,6 +36,7 @@
 #include "partsys.h"
 #include "ptype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "stimer.h"
@@ -61,10 +62,22 @@ static bool * GlobalGrowthState = NULL;
 /// The monster's own state arrives from the save game stream, but the growth records
 /// are allocated fresh here since the pointers that were saved are meaningless now.
 /// </summary>
-VeinholeMonsterClass::VeinholeMonsterClass(NoInitClass const & x) :
-	BASECLASS(x),
-	Control(x),
-	LogicTimer(x)
+VeinholeMonsterClass::VeinholeMonsterClass(void) :
+	BASECLASS(),
+	GrowthCount(0),
+	GrowthQueue(NULL),
+	GrowthNodes(NULL),
+	GrowthTimer(0),
+	GrowthState(NULL),
+	CurrentState(IDLE),
+	DesiredState(IDLE),
+	Control(),
+	LogicTimer(0),
+	CellID(0, 0),
+	ShapeFrame(0),
+	IsDead(false),
+	IsToPuffGas(false),
+	VeinCount(0)
 {
 	VeinholeMonsters.Add(this);
 	GrowthNodes = new CellNode[Rule->MaxVeinholeGrowth];
@@ -885,7 +898,12 @@ bool VeinholeMonsterClass::Load_All(IStream * stream)
 	}
 
 	for (int i = 0; i < monster_count; i++) {
-		VeinholeMonsterClass * monster = (VeinholeMonsterClass *)new char[sizeof(VeinholeMonsterClass)];
+
+		/*
+		 * The constructor allocates this monster's vein records and adds it to the list;
+		 * the members that describe its state arrive from the stream afterwards.
+		 */
+		VeinholeMonsterClass * monster = new VeinholeMonsterClass();
 
 		LONG id;
 		if (FAILED(stream->Read(&id, sizeof(id), NULL))) {
@@ -893,37 +911,56 @@ bool VeinholeMonsterClass::Load_All(IStream * stream)
 		}
 
 		Swizzler.Here_I_Am(id, monster);
-		if (FAILED(stream->Read(monster, sizeof(VeinholeMonsterClass), NULL))) {
+
+		SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+		monster->Serialize(savestream);
+		if (FAILED(savestream.Result())) {
 			return(false);
 		}
 
-		if (monster != NULL) {
-			new (monster) VeinholeMonsterClass(NoInitClass());
-		}
-
-		bool * state = monster->GrowthState;
-		PriorityQueueClass<CellNode> * queue = monster->GrowthQueue;
-		CellNode * nodes = monster->GrowthNodes;
-
-		if (FAILED(stream->Read(state, cell_count, NULL))) {
+		if (FAILED(stream->Read(monster->GrowthState, cell_count, NULL))) {
 			return(false);
 		}
-		monster->GrowthState = state;
 
-		if (FAILED(stream->Read(nodes, sizeof(CellNode) * Rule->MaxVeinholeGrowth, NULL))) {
+		if (FAILED(stream->Read(monster->GrowthNodes, sizeof(CellNode) * Rule->MaxVeinholeGrowth, NULL))) {
 			return(false);
 		}
-		monster->GrowthNodes = nodes;
 
-		if (!queue->Load(stream, nodes)) {
+		if (!monster->GrowthQueue->Load(stream, monster->GrowthNodes)) {
 			return(false);
 		}
-		monster->GrowthQueue = queue;
 
 		TargetTracker.Add_Index(monster->Fetch_ID(), monster);
 	}
 
 	return(true);
+}
+
+
+/// <summary>
+/// Lists the members this veinhole monster carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void VeinholeMonsterClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(GrowthCount);
+	// GrowthQueue -- pools sized to the map and the growth limit in the rules. The monster
+	// allocates them for itself, and Load_All and Save_All carry their contents alongside this
+	// record.
+	// GrowthNodes
+	stream.Serialize(GrowthTimer);
+	// GrowthState -- part of the same set of pools.
+	stream.Serialize(CurrentState);
+	stream.Serialize(DesiredState);
+	stream.Serialize(Control);
+	stream.Serialize(LogicTimer);
+	stream.Serialize(CellID);
+	stream.Serialize(ShapeFrame);
+	stream.Serialize(IsDead);
+	stream.Serialize(IsToPuffGas);
+	stream.Serialize(VeinCount);
 }
 
 
@@ -951,7 +988,9 @@ bool VeinholeMonsterClass::Save_All(IStream * stream)
 			return(false);
 		}
 
-		if (FAILED(stream->Write(VeinholeMonsters[i], sizeof(VeinholeMonsterClass), NULL))) {
+		SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+		VeinholeMonsters[i]->Serialize(savestream);
+		if (FAILED(savestream.Result())) {
 			return(false);
 		}
 
@@ -969,17 +1008,6 @@ bool VeinholeMonsterClass::Save_All(IStream * stream)
 	}
 
 	return(true);
-}
-
-
-/// <summary>
-/// Saves this veinhole monster to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been written?</param>
-/// <returns>Returns with S_OK if the monster was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE VeinholeMonsterClass::Save(IStream * stream, BOOL cleardirty)
-{
-	return(BASECLASS::Save(stream, cleardirty));
 }
 
 

@@ -128,6 +128,7 @@
 #include "queue.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "score.h"
 #include "script.h"
@@ -2895,11 +2896,13 @@ void ScenarioClass::Save(IStream * stream) const
 	DebugString("Scenario Save: ElapsedTimer = %ld\n", ElapsedTimer);
 	ElapsedTimer.Stop();
 
-	stream->Write(this, sizeof(*this), NULL);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
 
-	AllowableUnits.Save(stream);
-	AllowableUnitMaximums.Save(stream);
-	AllowableUnitCounts.Save(stream);
+	/*
+	 * One member list serves both directions, so it cannot be declared const even though
+	 * writing changes nothing.
+	 */
+	const_cast<ScenarioClass *>(this)->Serialize(savestream);
 
 	ElapsedTimer.Start();
 }
@@ -2907,38 +2910,112 @@ void ScenarioClass::Save(IStream * stream) const
 
 /// <summary>
 /// Reads the scenario object back from the save game stream.
-/// Save games written by an older version of the game were laid out differently, so this
-/// routine shuffles their contents into the current arrangement and supplies defaults for
-/// the members those saves never carried.
+/// The elapsed mission clock is halted across the read for the same reason it is halted
+/// across the write, so that it does not advance over the value coming back in.
 /// </summary>
 void ScenarioClass::Load(IStream * stream)
 {
 	ElapsedTimer.Stop();
 
-	int size = sizeof(*this);
-	int delta = sizeof(RequiredAddOn) + sizeof(SpeechSide);
-
-	stream->Read(this, (size - (IsOldSaveGame ? delta : 0)), NULL);
-
-	if (IsOldSaveGame) {
-		memmove(&SpeechSide, &RequiredAddOn, sizeof(SpeechSide) + sizeof(Stage) + sizeof(IsInputLocked) + 5 /*padding*/);
-		RequiredAddOn = ADDON_BASE_GAME;
-		memmove(&Stage, &SpeechSide, sizeof(Stage) + sizeof(IsInputLocked) + 5 /*padding*/);
-		SpeechSide = SIDE_GDI;
-	}
-
-	new (this) ScenarioClass(NoInitClass());
-
-	AllowableUnits.Load(stream);
-	AllowableUnitMaximums.Load(stream);
-	AllowableUnitCounts.Load(stream);
-
-	for (int i = 0; i < AllowableUnits.Count(); i++) {
-		Swizzle_Pointer(&AllowableUnits[i]);
-	}
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
 
 	ElapsedTimer.Start();
 	DebugString("Scenario Load: ElapsedTimer = %ld\n", ElapsedTimer);
+}
+
+
+/// <summary>
+/// Lists the members the scenario holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void ScenarioClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(Special);
+	stream.Serialize(NextScenarioName);
+	stream.Serialize(AltNextScenarioName);
+	stream.Serialize(Home);
+	stream.Serialize(AltHome);
+	stream.Serialize(UniqueID);
+	stream.Serialize(RandomNumber);
+	stream.Serialize(Difficulty);
+	stream.Serialize(CDifficulty);
+	stream.Serialize(ElapsedTimer);
+	stream.Serialize(Waypoint);
+	stream.Serialize(MissionTimer);
+	stream.Serialize(ShroudTimer);
+	stream.Serialize(FogTimer);
+	stream.Serialize(IceGrowthTimer);
+	stream.Serialize(VeinGrowthTimer);
+	stream.Serialize(AmbientChangeTimer);
+	stream.Serialize(Scenario);
+	stream.Serialize(Theater);
+	stream.Serialize(ScenarioName);
+	stream.Serialize(Description);
+	stream.Serialize(IntroMovie);
+	stream.Serialize(BriefMovie);
+	stream.Serialize(WinMovie);
+	stream.Serialize(LoseMovie);
+	stream.Serialize(ActionMovie);
+	stream.Serialize(PostScoreMovie);
+	stream.Serialize(PreMapSelectMovie);
+	stream.Serialize(BriefingText);
+	stream.Serialize(TransitTheme);
+	stream.Serialize(PlayerHouse);
+	stream.Serialize(CarryOverPercent);
+	stream.Serialize(CarryOverCap);
+	stream.Serialize(Percent);
+	stream.Serialize(GlobalFlags);
+	stream.Serialize(LocalFlags);
+	stream.Serialize(Views);
+	stream.Serialize(BridgeCount);
+	stream.Serialize(IsFreeRadar);
+	stream.Serialize(IsTrainCargo);
+	stream.Serialize(IsTibGrowth);
+	stream.Serialize(IsVeinGrowth);
+	stream.Serialize(IsIceGrowth);
+	stream.Serialize(IsBridgeChanged);
+	stream.Serialize(IsGlobalChanged);
+	stream.Serialize(IsAmbientLightChanged);
+	stream.Serialize(IsEndOfGame);
+	stream.Serialize(IsInheritTimer);
+	stream.Serialize(IsSkipScore);
+	stream.Serialize(IsOneTimeOnly);
+	stream.Serialize(IsNoMapSel);
+	stream.Serialize(IsTruckCrate);
+	stream.Serialize(IsMoneyTiberium);
+	stream.Serialize(IsTiberiumDeathToVisceroid);
+	stream.Serialize(IsIgnoreGlobalAITriggers);
+	stream.Serialize(IsGDI);
+	stream.Serialize(IsMultiplayerOnly);
+	stream.Serialize(IsRandom);
+	stream.Serialize(IsCrateBeenPickedUp);
+	stream.Serialize(FadeTimer);
+	stream.Serialize(Campaign);
+	stream.Serialize(StartingDropships);
+	stream.Serialize(AllowableUnits);
+	stream.Serialize(AllowableUnitMaximums);
+	stream.Serialize(AllowableUnitCounts);
+	stream.Serialize(AmbientLight);
+	stream.Serialize(CurrentAmbientLight);
+	stream.Serialize(DesiredAmbientLight);
+	stream.Serialize(RedTint);
+	stream.Serialize(GreenTint);
+	stream.Serialize(BlueTint);
+	stream.Serialize(GroundLight);
+	stream.Serialize(LevelLight);
+	stream.Serialize(IonAmbientLight);
+	stream.Serialize(IonRedTint);
+	stream.Serialize(IonGreenTint);
+	stream.Serialize(IonBlueTint);
+	stream.Serialize(IonGroundLight);
+	stream.Serialize(IonLevelLight);
+	stream.Serialize(IsReadingScenario);
+	stream.Serialize(InitTime);
+	stream.Serialize(RequiredAddOn);
+	stream.Serialize(SpeechSide);
+	stream.Serialize(Stage);
+	stream.Serialize(IsInputLocked);
 }
 
 

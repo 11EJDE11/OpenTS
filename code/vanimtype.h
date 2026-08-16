@@ -34,8 +34,9 @@ class VoxelAnimTypeClass : public ObjectTypeClass
 		~VoxelAnimTypeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		static VoxelAnimTypeClass * Find_Or_Make(char const * name);
 		static VoxelAnimType From_Name(char const * name);
@@ -45,7 +46,6 @@ class VoxelAnimTypeClass : public ObjectTypeClass
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_VOXELANIMTYPE);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
 
 		virtual bool Read_INI(CCINIClass const & ini) override;
 

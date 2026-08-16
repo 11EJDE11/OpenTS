@@ -380,8 +380,7 @@ class FootClass : public TechnoClass
 		FootClass(HouseClass * house);
 		virtual ~FootClass(void) override;
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

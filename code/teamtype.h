@@ -70,14 +70,13 @@ class TeamTypeClass : public AbstractTypeClass
 		virtual ~TeamTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		static TeamTypeClass * Find_Or_Make(char const * ininame = NULL);
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_TEAMTYPE);}
-		virtual int Fetch_Object_Size(bool) const override {return(sizeof(*this));}
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);};
 
 		/*

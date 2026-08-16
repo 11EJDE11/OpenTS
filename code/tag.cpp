@@ -19,6 +19,7 @@
 #include "house.h"
 #include "houstype.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "tagtype.h"
@@ -454,43 +455,19 @@ void TagClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this tag from the save game stream.
-/// The virtual table is rebuilt in place and the tag type and trigger references are
-/// swizzled back into live pointers.
+/// Lists the members this tag carries.
 /// </summary>
-/// <param name="stream">The stream to read this tag from.</param>
-/// <returns>Returns with the result code of the load attempt.</returns>
-HRESULT STDMETHODCALLTYPE TagClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TagClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TagClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&Trigger);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this tag to the save game stream.
-/// The base class writes the raw object out; this routine exists so that the tag layer
-/// gets its chance at the stream.
-/// </summary>
-/// <param name="stream">The stream to write this tag to.</param>
-/// <param name="cleardirty">Should the object be considered clean after being written?</param>
-/// <returns>Returns with the result code of the save attempt.</returns>
-HRESULT STDMETHODCALLTYPE TagClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(Trigger);
+	stream.Serialize(AttachCount);
+	stream.Serialize(CellID);
+	stream.Serialize(IsToDie);
+	stream.Serialize(IsCurrentlySprung);
 }
 
 

@@ -36,6 +36,7 @@
 #include "mixfile.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
@@ -76,42 +77,41 @@ void IonStormClass::Init(void)
 /// <summary>
 /// Saves the ion storm state to the save game stream.
 /// </summary>
-/// <returns>Returns with the result of the last stream operation attempted.</returns>
+/// <returns>Returns with the result reported by the stream write.</returns>
 HRESULT IonStormClass::Save(IStream * stream)
 {
-	HRESULT hr = stream->Write(&IsActive, sizeof(IsActive), NULL);
-	if (FAILED(hr)) return(hr);
-
-	hr = stream->Write(&StartFrame, sizeof(StartFrame), NULL);
-	if (FAILED(hr)) return(hr);
-
-	hr = stream->Write(&Duration, sizeof(Duration), NULL);
-	if (FAILED(hr)) return(hr);
-
-	hr = stream->Write(&Deferment, sizeof(Deferment), NULL);
-	return(hr);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+	return(savestream.Result());
 }
 
 
 /// <summary>
 /// Loads the ion storm state from the save game stream.
 /// </summary>
-/// <returns>Returns with the result of the last stream operation attempted.</returns>
+/// <returns>Returns with the result reported by the stream read.</returns>
 /// <remarks>Only the bookkeeping is restored here. Post_Load_Game must still call
 /// Apply_Secondary_Effect to put the world back into its storm bound state.</remarks>
 HRESULT IonStormClass::Load(IStream * stream)
 {
-	HRESULT hr = stream->Read(&IsActive, sizeof(IsActive), NULL);
-	if (FAILED(hr)) return(hr);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+	return(savestream.Result());
+}
 
-	hr = stream->Read(&StartFrame, sizeof(StartFrame), NULL);
-	if (FAILED(hr)) return(hr);
 
-	hr = stream->Read(&Duration, sizeof(Duration), NULL);
-	if (FAILED(hr)) return(hr);
-
-	hr = stream->Read(&Deferment, sizeof(Deferment), NULL);
-	return(hr);
+/// <summary>
+/// Lists the ion storm bookkeeping the save game carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void IonStormClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(IsActive);
+	stream.Serialize(StartFrame);
+	stream.Serialize(Duration);
+	stream.Serialize(Deferment);
+	// StaticShape -- artwork fetched by name when it is first needed.
+	// PreviousTheme -- the score resumed after a storm is picked afresh.
 }
 
 

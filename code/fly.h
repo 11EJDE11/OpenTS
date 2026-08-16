@@ -60,7 +60,8 @@ class FlyLocomotionClass : public LocomotionClass
 		virtual ~FlyLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
@@ -80,8 +81,6 @@ class FlyLocomotionClass : public LocomotionClass
 		virtual int STDMETHODCALLTYPE Apparent_Speed(void) override;
 		virtual int STDMETHODCALLTYPE Get_Status(void) override;
 		virtual void STDMETHODCALLTYPE Acquire_Hunter_Seeker_Target(void) override;
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

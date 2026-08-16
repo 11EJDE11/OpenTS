@@ -120,6 +120,7 @@
 #include "overlay.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "sun.h"
@@ -3968,45 +3969,49 @@ void InfantryClass::Clear_Occupy_Bit(Coord const & coord)
 
 /// <summary>
 /// Reads this infantry back in from the save game stream.
-/// The object is re-registered with the target tracker, its virtual table pointers are
-/// rebuilt, and its class pointer is swizzled back into a live one. Save games written
-/// by older versions are shifted to make room for members that did not exist then.
+/// The soldier is withdrawn from the target tracker under the identity it is carrying now,
+/// since the one it is about to be given is the one it was saved with. Post_Load enters it
+/// again once that identity has arrived.
 /// </summary>
 /// <returns>Returns with S_OK if the object was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE InfantryClass::Load(IStream * stream)
 {
-	int size = Fetch_Object_Size(false);
 	TargetTracker.Remove_Index(Fetch_ID());
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&LookTimer, &ProneStruggleTimer, size - offsetof(InfantryClass, LookTimer));
-			ProneStruggleTimer = 0;
-		}
-
-		ILocomotion * locomotion = Locomotion;
-
-		new (this) InfantryClass(NoInitClass());
-
-		Locomotion = locomotion;
-		locomotion->Release();
-
-		TargetTracker.Add_Index(Fetch_ID(), this);
-		Swizzle_Pointer(&Class);
-
-		result = S_OK;
-	}
-	return(result);
+	return(BASECLASS::Load(stream));
 }
 
 
 /// <summary>
-/// Writes this infantry out to the save game stream.
+/// Lists the members this infantry carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE InfantryClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void InfantryClass::Serialize(SaveStreamClass & stream)
 {
-	return(BASECLASS::Save(stream, cleardirty));
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(Class);
+	stream.Serialize(Doing);
+	stream.Serialize(Comment);
+	stream.Serialize(Fear);
+	stream.Serialize(IsBerzerk);
+	stream.Serialize(IsTechnician);
+	stream.Serialize(IsStoked);
+	stream.Serialize(IsProne);
+	stream.Serialize(IsZoneCheat);
+	stream.Serialize(WasSelected);
+	stream.Serialize(ProneStruggleTimer);
+	stream.Serialize(LookTimer);
+}
+
+
+/// <summary>
+/// Enters this infantry in the target tracker under the identity it was saved with.
+/// </summary>
+void InfantryClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	TargetTracker.Add_Index(Fetch_ID(), this);
 }
 
 
@@ -4325,22 +4330,6 @@ int InfantryClass::Do_MISSION_GUARD(void)
 	}
 
 	return(BASECLASS::Do_MISSION_GUARD());
-}
-
-
-/// <summary>
-/// Fetches the byte size of this object as it appears in a save game.
-/// Save games written by earlier versions of the game predate a couple of the members,
-/// so the loader asks for the legacy size when it has to interpret one of those files.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an old format save game?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int InfantryClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta = sizeof(ProneStruggleTimer) + sizeof(TechnoClass::LimpetSpeedFactor);
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

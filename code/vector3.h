@@ -112,6 +112,15 @@ public:
 	inline friend Vector3 operator + (const Vector3 &a,const Vector3 &b);
 	inline friend Vector3 operator - (const Vector3 &a,const Vector3 &b);
 
+	/// Carries the vector to or from a save game.
+	template<typename S>
+	void Serialize(S & stream)
+	{
+		stream.Serialize(X);
+		stream.Serialize(Y);
+		stream.Serialize(Z);
+	}
+
 	// cross product / outer product
 	static inline Vector3 Cross_Product(const Vector3 &a,const Vector3 &b);
 	static inline void Cross_Product(const Vector3 &a,const Vector3 &b,Vector3 * result);

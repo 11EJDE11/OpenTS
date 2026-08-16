@@ -94,6 +94,7 @@
 #include "partsys.h"
 #include "psystype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "smartdeform.h"
 #include "tactical.h"
 #include "tag.h"
@@ -207,11 +208,9 @@ FacingType BridgeSideFacings[BRIDGE_COUNT] = {
 };
 
 
-
 int SubzoneHash(unsigned int const & key);
 unsigned int Pick_Random_UInt(unsigned int start, unsigned int end);
 double Random_Fraction(void);
-
 
 
 #define IS_TILE_IN_SET(setname, setsize) (tile >= IsometricTileTypeClass::setname && tile < IsometricTileTypeClass::setname + setsize)
@@ -225,40 +224,6 @@ double Random_Fraction(void);
 MapClass::MapClass(void)
 {
 	//nothing
-}
-
-
-/// <summary>
-/// Constructs the map object without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the map with
-/// the contents of the save game file. Only the pointers that must not be left dangling
-/// are cleared.
-/// </summary>
-MapClass::MapClass(NoInitClass const & x) :
-	BASECLASS(x),
-	ZoneAdjacency(NULL),
-	ZoneConnections(),
-	PendingBridgeCells(),
-	DirtyIceCells(),
-	Array(x),
-	CrackedIce(),
-	Crates(),
-	TaggedCells()
-{
-	int i;
-
-	for (i = 0; i < MZONE_COUNT; i++) {
-		Zones[i] = NULL;
-	}
-	for (i = 0; i < SUBZONE_COUNT; i++) {
-		SubzoneConnectionHashTable[i] = NULL;
-	}
-
-	for (i = 0; i < SUBZONE_COUNT; i++) {
-		SubzoneTracking[i].Clear();
-		SubzoneConnectionHashTable[i] = NULL;
-	}
-	ZoneAdjacency = NULL;
 }
 
 
@@ -296,6 +261,60 @@ MapClass::~MapClass(void)
 			SubzoneConnectionHashTable[i] = NULL;
 		}
 	}
+}
+
+
+/// <summary>
+/// Lists the members the map holds.
+/// The zone and subzone tables are raw blocks whose size the archive itself establishes, so
+/// MouseClass::Load and MouseClass::Save carry them separately once the counts have arrived.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void MapClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	// ZoneAdjacency -- the zone graph. These tables are raw heap blocks that MouseClass::Load
+	// allocates and reads outside the archive.
+	// Zones
+	stream.Serialize(ZoneCount);
+	// ZoneConnections -- likewise part of the zone graph, read outside the archive.
+	// CellZones
+	stream.Serialize(CellZoneCount);
+	// CellSubzones -- the subzone graph, grown again from the loaded terrain.
+	// SubzoneTrackingEntryCount
+	// SubzoneConnectionHashTable
+	// SubzoneTracking
+	stream.Serialize(PendingBridgeCells);
+	stream.Serialize(DirtyIceCells);
+	stream.Serialize(PlayRect);
+	stream.Serialize(LocalRect);
+
+	// IterX -- the cell iterators, which name a slot of a cell array that the load throws away.
+	// Reset_Iterator establishes them before any walk.
+	// IterY
+	// IterColumn
+	// IterCell
+	// LocalIterX
+	// LocalIterY
+	stream.Serialize(MapRect);
+	stream.Serialize(TotalValue);
+	stream.Serialize(DeformMask);
+	stream.Serialize(DeformCell);
+	stream.Serialize(DeformFrame);
+	stream.Serialize(CrackedIce);
+
+	// Array -- the cell array is reallocated by the load, and each cell reinstalls itself in
+	// CellClass::Post_Load.
+	// RadiusCount -- constant scan tables.
+	// RadiusOffset
+	// OcclusionOffset
+	stream.Serialize(XSize);
+	stream.Serialize(YSize);
+	stream.Serialize(Size);
+	stream.Serialize(Crates);
+	stream.Serialize(Redraws);
+	stream.Serialize(TaggedCells);
 }
 
 

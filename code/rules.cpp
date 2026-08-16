@@ -77,6 +77,7 @@
 #include "overtype.h"
 #include "psystype.h"
 #include "ptype.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "script.h"
 #include "side.h"
@@ -84,7 +85,6 @@
 #include "stimer.h"
 #include "sun.h"
 #include "suprtype.h"
-#include "swizzle.h"
 #include "taskforc.h"
 #include "teamtype.h"
 #include "terrtype.h"
@@ -2011,423 +2011,479 @@ bool RulesClass::Do_Movies(CCINIClass const & ini)
 
 /// <summary>
 /// Writes the rule data out to a save game stream.
-/// The rules are stored as a raw copy of the object followed by each of the variable
-/// length lists in turn. Load will expect them back in exactly this order.
 /// </summary>
 void RulesClass::Save(IStream * stream)
 {
-	stream->Write(this, sizeof(*this), NULL);
-
-	AIIonCannonConYardValue.Save(stream);
-	AIIonCannonWarFactoryValue.Save(stream);
-	AIIonCannonPowerValue.Save(stream);
-	AIIonCannonEngineerValue.Save(stream);
-	AIIonCannonThiefValue.Save(stream);
-	AIIonCannonHarvesterValue.Save(stream);
-	AIIonCannonMCVValue.Save(stream);
-	AIIonCannonAPCValue.Save(stream);
-	AIIonCannonBaseDefenseValue.Save(stream);
-	AIIonCannonPlugValue.Save(stream);
-	AIIonCannonHelipadValue.Save(stream);
-	AIIonCannonTempleValue.Save(stream);
-	FillEarliestTeamProbability.Save(stream);
-	TeamDelays.Save(stream);
-	MinimumAIDefensiveTeams.Save(stream);
-	MaximumAIDefensiveTeams.Save(stream);
-	MultiplayerAICreditMultipliers.Save(stream);
-	TotalAITeamCap.Save(stream);
-	AIHateDelays.Save(stream);
-	RadarEventSuppressionDistances.Save(stream);
-	RadarEventVisibilityDurations.Save(stream);
-	RadarEventDurations.Save(stream);
-	BarrelDebris.Save(stream);
-	ExplosiveVoxelDebris.Save(stream);
-	PrerequisitePower.Save(stream);
-	PrerequisiteFactory.Save(stream);
-	PrerequisiteBarracks.Save(stream);
-	PrerequisiteRadar.Save(stream);
-	PrerequisiteTech.Save(stream);
-	CreditTicks.Save(stream);
-	Scorches.Save(stream);
-	Scorches1.Save(stream);
-	Scorches2.Save(stream);
-	Scorches3.Save(stream);
-	Scorches4.Save(stream);
-	Craters.Save(stream);
-	BuildConst.Save(stream);
-	BuildPower.Save(stream);
-	BuildRefinery.Save(stream);
-	BuildBarracks.Save(stream);
-	BuildTech.Save(stream);
-	BuildWeapons.Save(stream);
-	BuildDefense.Save(stream);
-	BuildPDefense.Save(stream);
-	BuildAA.Save(stream);
-	BuildHelipad.Save(stream);
-	BuildRadar.Save(stream);
-	ConcreteWalls.Save(stream);
-	EWGates.Save(stream);
-	NSGates.Save(stream);
-	PadAircraft.Save(stream);
-	OnFire.Save(stream);
-	TreeFire.Save(stream);
-	SplashList.Save(stream);
-	HarvesterUnit.Save(stream);
-	DeadBodies.Save(stream);
-	DropPod.Save(stream);
-	MetallicDebris.Save(stream);
-	BridgeExplosions.Save(stream);
-	IceCrackSounds.Save(stream);
-	HSBuilding.Save(stream);
-	PrerequisiteGDIFactory.Save(stream);
-	PrerequisiteNodFactory.Save(stream);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
 }
 
 
 /// <summary>
 /// Reads the rule data back from a save game stream.
-/// This routine restores the rules that were in force when the game was saved, then
-/// swizzles every object pointer the rules hold so that it refers to the freshly loaded
-/// objects. Save games written before the Firestorm additions existed are recognized and
-/// the missing values are given their default settings.
 /// </summary>
 /// <remarks>Be sure the object heaps have been loaded before calling this routine, since
 /// the pointer swizzle needs them.</remarks>
 void RulesClass::Load(IStream * stream)
 {
-	AIIonCannonConYardValue.Clear();
-	AIIonCannonWarFactoryValue.Clear();
-	AIIonCannonPowerValue.Clear();
-	AIIonCannonEngineerValue.Clear();
-	AIIonCannonThiefValue.Clear();
-	AIIonCannonHarvesterValue.Clear();
-	AIIonCannonMCVValue.Clear();
-	AIIonCannonAPCValue.Clear();
-	AIIonCannonBaseDefenseValue.Clear();
-	AIIonCannonPlugValue.Clear();
-	AIIonCannonHelipadValue.Clear();
-	AIIonCannonTempleValue.Clear();
-	FillEarliestTeamProbability.Clear();
-	TeamDelays.Clear();
-	MinimumAIDefensiveTeams.Clear();
-	MaximumAIDefensiveTeams.Clear();
-	MultiplayerAICreditMultipliers.Clear();
-	TotalAITeamCap.Clear();
-	AIHateDelays.Clear();
-	RadarEventSuppressionDistances.Clear();
-	RadarEventVisibilityDurations.Clear();
-	RadarEventDurations.Clear();
-	ExplosiveVoxelDebris.Clear();
-	PrerequisitePower.Clear();
-	PrerequisiteFactory.Clear();
-	PrerequisiteBarracks.Clear();
-	PrerequisiteRadar.Clear();
-	PrerequisiteTech.Clear();
-	CreditTicks.Clear();
-	Scorches.Clear();
-	Scorches1.Clear();
-	Scorches2.Clear();
-	Scorches3.Clear();
-	Scorches4.Clear();
-	Craters.Clear();
-	BuildConst.Clear();
-	BuildPower.Clear();
-	BuildRefinery.Clear();
-	BuildBarracks.Clear();
-	BuildTech.Clear();
-	BuildWeapons.Clear();
-	BuildDefense.Clear();
-	BuildPDefense.Clear();
-	BuildAA.Clear();
-	BuildHelipad.Clear();
-	BuildRadar.Clear();
-	ConcreteWalls.Clear();
-	NSGates.Clear();
-	EWGates.Clear();
-	PadAircraft.Clear();
-	OnFire.Clear();
-	TreeFire.Clear();
-	SplashList.Clear();
-	HarvesterUnit.Clear();
-	IceCrackSounds.Clear();
-	HSBuilding.Clear();
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+}
 
-	PrerequisiteGDIFactory.Clear();
-	PrerequisiteNodFactory.Clear();
 
-	int size = sizeof(RulesClass);
-	int delta = sizeof(WebbedInfantry) +
-				sizeof(PrerequisiteGDIFactory) +
-				sizeof(PrerequisiteNodFactory) +
-				sizeof(EngineerCaptureLevel) +
-				sizeof(JumpjetCloakDetectionRadius) +
-				sizeof(DropPodInfantryMinimum) +
-				sizeof(DropPodInfantryMaximum) +
-				sizeof(EngineerDamage) +
-				sizeof(TalkBubbleTime) +
-				sizeof(int); /// padding after EngineerDamage
-
-	stream->Read(this, size - (IsOldSaveGame ? delta : 0), NULL);
-
-	if (IsOldSaveGame) {
-		DebugString("RulesClass: Oldsize %ld, Newsize %ld\n", size - delta, size);
-
-		WebbedInfantry = NULL;
-
-		new (&PrerequisiteGDIFactory) TypeList<int>;
-		new (&PrerequisiteNodFactory) TypeList<int>;
-
-		EngineerCaptureLevel = 1.0;
-		JumpjetCloakDetectionRadius = 0;
-		DropPodInfantryMinimum = 0;
-		DropPodInfantryMaximum = 0;
-		EngineerDamage = 0;
-		TalkBubbleTime = 5 * TIMER_SECOND;
-	}
-
-	new(this) RulesClass(NoInitClass());
-
-	AIIonCannonConYardValue.Load(stream);
-	AIIonCannonWarFactoryValue.Load(stream);
-	AIIonCannonPowerValue.Load(stream);
-	AIIonCannonEngineerValue.Load(stream);
-	AIIonCannonThiefValue.Load(stream);
-	AIIonCannonHarvesterValue.Load(stream);
-	AIIonCannonMCVValue.Load(stream);
-	AIIonCannonAPCValue.Load(stream);
-	AIIonCannonBaseDefenseValue.Load(stream);
-	AIIonCannonPlugValue.Load(stream);
-	AIIonCannonHelipadValue.Load(stream);
-	AIIonCannonTempleValue.Load(stream);
-	FillEarliestTeamProbability.Load(stream);
-	TeamDelays.Load(stream);
-	MinimumAIDefensiveTeams.Load(stream);
-	MaximumAIDefensiveTeams.Load(stream);
-	MultiplayerAICreditMultipliers.Load(stream);
-	TotalAITeamCap.Load(stream);
-	AIHateDelays.Load(stream);
-	RadarEventSuppressionDistances.Load(stream);
-	RadarEventVisibilityDurations.Load(stream);
-	RadarEventDurations.Load(stream);
-	BarrelDebris.Load(stream);
-	ExplosiveVoxelDebris.Load(stream);
-	PrerequisitePower.Load(stream);
-	PrerequisiteFactory.Load(stream);
-	PrerequisiteBarracks.Load(stream);
-	PrerequisiteRadar.Load(stream);
-	PrerequisiteTech.Load(stream);
-	CreditTicks.Load(stream);
-	Scorches.Load(stream);
-	Scorches1.Load(stream);
-	Scorches2.Load(stream);
-	Scorches3.Load(stream);
-	Scorches4.Load(stream);
-	Craters.Load(stream);
-	BuildConst.Load(stream);
-	BuildPower.Load(stream);
-	BuildRefinery.Load(stream);
-	BuildBarracks.Load(stream);
-	BuildTech.Load(stream);
-	BuildWeapons.Load(stream);
-	BuildDefense.Load(stream);
-	BuildPDefense.Load(stream);
-	BuildAA.Load(stream);
-	BuildHelipad.Load(stream);
-	BuildRadar.Load(stream);
-	ConcreteWalls.Load(stream);
-	NSGates.Load(stream);
-	EWGates.Load(stream);
-	PadAircraft.Load(stream);
-	OnFire.Load(stream);
-	TreeFire.Load(stream);
-	SplashList.Load(stream);
-	HarvesterUnit.Load(stream);
-	DeadBodies.Load(stream);
-	DropPod.Load(stream);
-	MetallicDebris.Load(stream);
-	BridgeExplosions.Load(stream);
-	IceCrackSounds.Load(stream);
-	HSBuilding.Load(stream);
-	if (!IsOldSaveGame) {
-		PrerequisiteGDIFactory.Load(stream);
-		PrerequisiteNodFactory.Load(stream);
-	}
-
-	Swizzle_Pointer(&NukeWarhead);
-	Swizzle_Pointer(&FlameDamage);
-	Swizzle_Pointer(&FlameDamage2);
-	Swizzle_Pointer(&LargeVisceroid);
-	Swizzle_Pointer(&SmallVisceroid);
-	Swizzle_Pointer(&UnloadingHarvester);
-	Swizzle_Pointer(&DropPodWeapon);
-	Swizzle_Pointer(&EMPulseWarhead);
-	Swizzle_Pointer(&C4Warhead);
-	Swizzle_Pointer(&IonCannonWarhead);
-	Swizzle_Pointer(&FirestormWarhead);
-	Swizzle_Pointer(&VeinholeWarhead);
-	Swizzle_Pointer(&DefaultFirestormExplosionSystem);
-	Swizzle_Pointer(&DefaultLargeGreySmokeSystem);
-	Swizzle_Pointer(&DefaultSmallGreySmokeSystem);
-	Swizzle_Pointer(&DefaultSparkSystem);
-	Swizzle_Pointer(&DefaultLargeRedSmokeSystem);
-	Swizzle_Pointer(&DefaultSmallRedSmokeSystem);
-	Swizzle_Pointer(&DefaultDebrisSmokeSystem);
-	Swizzle_Pointer(&DefaultFireStreamSystem);
-	Swizzle_Pointer(&DefaultTestParticleSystem);
-	Swizzle_Pointer(&DefaultRepairParticleSystem);
-	Swizzle_Pointer(&VeinholeTypeClass);
-	Swizzle_Pointer(&Smoke1);
-	Swizzle_Pointer(&Smoke2);
-	Swizzle_Pointer(&MoveFlash);
-	Swizzle_Pointer(&BombParachute);
-	Swizzle_Pointer(&Parachute);
-	Swizzle_Pointer(&SmallFire);
-	Swizzle_Pointer(&LargeFire);
-	Swizzle_Pointer(&FlareAnim);
-	Swizzle_Pointer(&BaseUnit);
-	Swizzle_Pointer(&UnitCrateType);
-	Swizzle_Pointer(&Paratrooper);
-	Swizzle_Pointer(&Disguise);
-	Swizzle_Pointer(&Technician);
-	Swizzle_Pointer(&Engineer);
-	Swizzle_Pointer(&Pilot);
-	Swizzle_Pointer(&Crew);
-	Swizzle_Pointer(&RepairBay);
-	Swizzle_Pointer(&GDIGateOne);
-	Swizzle_Pointer(&GDIGateTwo);
-	Swizzle_Pointer(&NodGateOne);
-	Swizzle_Pointer(&NodGateTwo);
-	Swizzle_Pointer(&WallTower);
-	Swizzle_Pointer(&GDIPowerPlant);
-	Swizzle_Pointer(&GDIPowerTurbine);
-	Swizzle_Pointer(&NodRegularPower);
-	Swizzle_Pointer(&NodAdvancedPower);
-	Swizzle_Pointer(&GDIFirestormGenerator);
-	Swizzle_Pointer(&GDIHunterSeeker);
-	Swizzle_Pointer(&NodHunterSeeker);
-	Swizzle_Pointer(&NukeProjectile);
-	Swizzle_Pointer(&NukeDown);
-	Swizzle_Pointer(&EMPulseProjectile);
-	Swizzle_Pointer(&TireVoxelDebris);
-	Swizzle_Pointer(&ScrapVoxelDebris);
-	Swizzle_Pointer(&AtmosphereEntry);
-	Swizzle_Pointer(&InfantryExplode);
-	Swizzle_Pointer(&IonBlast);
-	Swizzle_Pointer(&IonBeam);
-	Swizzle_Pointer(&Dig);
-	Swizzle_Pointer(&FirestormIdleAnim);
-	Swizzle_Pointer(&FirestormAirAnim);
-	Swizzle_Pointer(&FirestormGroundAnim);
-	Swizzle_Pointer(&FirestormActiveAnim);
-	Swizzle_Pointer(&EMPulseSparkles);
-	Swizzle_Pointer(&Wake);
-	Swizzle_Pointer(&FlamingInfantry);
-	Swizzle_Pointer(&VeinAttack);
-	Swizzle_Pointer(&BarrelExplode);
-	Swizzle_Pointer(&BarrelParticle);
-	Swizzle_Pointer(&DropPodPuff);
-	Swizzle_Pointer(&IonStormWarhead);
-	Swizzle_Pointer(&WoodCrateImg);
-	Swizzle_Pointer(&CrateImg);
-	Swizzle_Pointer(&WebbedInfantry);
-
-	int index;
-	for (index = 0; index < BarrelDebris.Count(); index++) {
-		Swizzle_Pointer(&BarrelDebris[index]);
-	}
-	for (index = 0; index < OnFire.Count(); index++) {
-		Swizzle_Pointer(&OnFire[index]);
-	}
-	for (index = 0; index < TreeFire.Count(); index++) {
-		Swizzle_Pointer(&TreeFire[index]);
-	}
-	for (index = 0; index < SplashList.Count(); index++) {
-		Swizzle_Pointer(&SplashList[index]);
-	}
-	for (index = 0; index < Scorches.Count(); index++) {
-		Swizzle_Pointer(&Scorches[index]);
-	}
-	for (index = 0; index < Scorches1.Count(); index++) {
-		Swizzle_Pointer(&Scorches1[index]);
-	}
-	for (index = 0; index < Scorches2.Count(); index++) {
-		Swizzle_Pointer(&Scorches2[index]);
-	}
-	for (index = 0; index < Scorches3.Count(); index++) {
-		Swizzle_Pointer(&Scorches3[index]);
-	}
-	for (index = 0; index < Scorches4.Count(); index++) {
-		Swizzle_Pointer(&Scorches4[index]);
-	}
-	for (index = 0; index < Craters.Count(); index++) {
-		Swizzle_Pointer(&Craters[index]);
-	}
-	for (index = 0; index < HarvesterUnit.Count(); index++) {
-		Swizzle_Pointer(&HarvesterUnit[index]);
-	}
-	for (index = 0; index < BuildConst.Count(); index++) {
-		Swizzle_Pointer(&BuildConst[index]);
-	}
-	for (index = 0; index < BuildPower.Count(); index++) {
-		Swizzle_Pointer(&BuildPower[index]);
-	}
-	for (index = 0; index < BuildRefinery.Count(); index++) {
-		Swizzle_Pointer(&BuildRefinery[index]);
-	}
-	for (index = 0; index < BuildBarracks.Count(); index++) {
-		Swizzle_Pointer(&BuildBarracks[index]);
-	}
-	for (index = 0; index < BuildTech.Count(); index++) {
-		Swizzle_Pointer(&BuildTech[index]);
-	}
-	for (index = 0; index < BuildWeapons.Count(); index++) {
-		Swizzle_Pointer(&BuildWeapons[index]);
-	}
-	for (index = 0; index < BuildDefense.Count(); index++) {
-		Swizzle_Pointer(&BuildDefense[index]);
-	}
-	for (index = 0; index < BuildPDefense.Count(); index++) {
-		Swizzle_Pointer(&BuildPDefense[index]);
-	}
-	for (index = 0; index < BuildAA.Count(); index++) {
-		Swizzle_Pointer(&BuildAA[index]);
-	}
-	for (index = 0; index < BuildHelipad.Count(); index++) {
-		Swizzle_Pointer(&BuildHelipad[index]);
-	}
-	for (index = 0; index < BuildRadar.Count(); index++) {
-		Swizzle_Pointer(&BuildRadar[index]);
-	}
-	for (index = 0; index < ConcreteWalls.Count(); index++) {
-		Swizzle_Pointer(&ConcreteWalls[index]);
-	}
-	for (index = 0; index < NSGates.Count(); index++) {
-		Swizzle_Pointer(&NSGates[index]);
-	}
-	for (index = 0; index < EWGates.Count(); index++) {
-		Swizzle_Pointer(&EWGates[index]);
-	}
-	for (index = 0; index < PadAircraft.Count(); index++) {
-		Swizzle_Pointer(&PadAircraft[index]);
-	}
-	for (index = 0; index < ExplosiveVoxelDebris.Count(); index++) {
-		Swizzle_Pointer(&ExplosiveVoxelDebris[index]);
-	}
-	for (index = 0; index < DeadBodies.Count(); index++) {
-		Swizzle_Pointer(&DeadBodies[index]);
-	}
-	for (index = 0; index < DropPod.Count(); index++) {
-		Swizzle_Pointer(&DropPod[index]);
-	}
-	for (index = 0; index < MetallicDebris.Count(); index++) {
-		Swizzle_Pointer(&MetallicDebris[index]);
-	}
-	for (index = 0; index < BridgeExplosions.Count(); index++) {
-		Swizzle_Pointer(&BridgeExplosions[index]);
-	}
-	for (index = 0; index < HSBuilding.Count(); index++) {
-		Swizzle_Pointer(&HSBuilding[index]);
-	}
+/// <summary>
+/// Lists the members the rules hold.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void RulesClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(AmmoCrateDamage);
+	stream.Serialize(LargeVisceroid);
+	stream.Serialize(SmallVisceroid);
+	stream.Serialize(UnloadingHarvester);
+	stream.Serialize(AttackingAircraftSightRange);
+	stream.Serialize(TunnelSpeed);
+	stream.Serialize(TiberiumHeal);
+	stream.Serialize(HSBuilding);
+	stream.Serialize(IsFreeMCV);
+	stream.Serialize(IsBerzerkAllowed);
+	stream.Serialize(PoseDir);
+	stream.Serialize(DropPodPuff);
+	stream.Serialize(WaypointAnimationSpeed);
+	stream.Serialize(BarrelExplode);
+	stream.Serialize(BarrelDebris);
+	stream.Serialize(BarrelParticle);
+	stream.Serialize(RadarEventColorSpeed);
+	stream.Serialize(RadarEventMinRadius);
+	stream.Serialize(RadarEventSpeed);
+	stream.Serialize(RadarEventRotationSpeed);
+	stream.Serialize(FlashFrameTime);
+	stream.Serialize(RadarCombatFlashTime);
+	stream.Serialize(MaxWaypointPathLength);
+	stream.Serialize(Wake);
+	stream.Serialize(FlamingInfantry);
+	stream.Serialize(AITriggerSuccessWeightDelta);
+	stream.Serialize(AITriggerFailureWeightDelta);
+	stream.Serialize(AITriggerTrackRecordCoefficient);
+	stream.Serialize(VeinholeMonsterStrength);
+	stream.Serialize(MaxVeinholeGrowth);
+	stream.Serialize(VeinholeGrowthRate);
+	stream.Serialize(VeinholeShrinkRate);
+	stream.Serialize(VeinAttack);
+	stream.Serialize(VeinDamage);
+	stream.Serialize(MaximumQueuedObjects);
+	stream.Serialize(AircraftFogReveal);
+	stream.Serialize(WoodCrateImg);
+	stream.Serialize(CrateImg);
+	stream.Serialize(DropPod);
+	stream.Serialize(DeadBodies);
+	stream.Serialize(MetallicDebris);
+	stream.Serialize(BridgeExplosions);
+	stream.Serialize(DigSound);
+	stream.Serialize(Dig);
+	stream.Serialize(IonBlast);
+	stream.Serialize(IonBeam);
+	stream.Serialize(InfantryExplode);
+	stream.Serialize(AtmosphereEntry);
+	stream.Serialize(PrerequisitePower);
+	stream.Serialize(PrerequisiteFactory);
+	stream.Serialize(PrerequisiteBarracks);
+	stream.Serialize(PrerequisiteRadar);
+	stream.Serialize(PrerequisiteTech);
+	stream.Serialize(GateUpSound);
+	stream.Serialize(GateDownSound);
+	stream.Serialize(JumpjetTurnRate);
+	stream.Serialize(JumpjetSpeed);
+	stream.Serialize(JumpjetClimb);
+	stream.Serialize(JumpjetCruiseHeight);
+	stream.Serialize(JumpjetAcceleration);
+	stream.Serialize(JumpjetWobblesPerSecond);
+	stream.Serialize(JumpjetWobbleDeviation);
+	stream.Serialize(RadarEventSuppressionDistances);
+	stream.Serialize(RadarEventVisibilityDurations);
+	stream.Serialize(RadarEventDurations);
+	stream.Serialize(IonCannonDamage);
+	stream.Serialize(RailgunDamageRadius);
+	stream.Serialize(ZoomInFactor);
+	stream.Serialize(ConditionRedSparkingProbability);
+	stream.Serialize(ConditionYellowSparkingProbability);
+	stream.Serialize(TiberiumExplosionDamage);
+	stream.Serialize(TiberiumStrength);
+	stream.Serialize(MinLowPowerProductionSpeed);
+	stream.Serialize(MultipleFactory);
+	stream.Serialize(CraterLevel);
+	stream.Serialize(TreeFlammability);
+	stream.Serialize(MissileSpeedVar);
+	stream.Serialize(MissileROTVar);
+	stream.Serialize(DropPodWeapon);
+	stream.Serialize(DropPodHeight);
+	stream.Serialize(DropPodSpeed);
+	stream.Serialize(DropPodAngle);
+	stream.Serialize(ScrollMultiplier);
+	stream.Serialize(CrewEscape);
+	stream.Serialize(ShakeScreen);
+	stream.Serialize(HoverHeight);
+	stream.Serialize(HoverBob);
+	stream.Serialize(HoverBoost);
+	stream.Serialize(HoverAcceleration);
+	stream.Serialize(HoverBrake);
+	stream.Serialize(HoverDampen);
+	stream.Serialize(PlacementDelay);
+	stream.Serialize(ExplosiveVoxelDebris);
+	stream.Serialize(TireVoxelDebris);
+	stream.Serialize(ScrapVoxelDebris);
+	stream.Serialize(BridgeVoxelMax);
+	stream.Serialize(CloakingStages);
+	stream.Serialize(RevealTriggerRadius);
+	stream.Serialize(IceCrackingWeight);
+	stream.Serialize(IceBreakingWeight);
+	stream.Serialize(IceCrackSounds);
+	stream.Serialize(CliffBackImpassability);
+	stream.Serialize(VeteranRatio);
+	stream.Serialize(VeteranCombat);
+	stream.Serialize(VeteranSpeed);
+	stream.Serialize(VeteranSight);
+	stream.Serialize(VeteranArmor);
+	stream.Serialize(VeteranROF);
+	stream.Serialize(VeteranCap);
+	stream.Serialize(CloakSound);
+	stream.Serialize(SellSound);
+	stream.Serialize(GameClosed);
+	stream.Serialize(IncomingMessage);
+	stream.Serialize(SystemError);
+	stream.Serialize(OptionsChanged);
+	stream.Serialize(GameForming);
+	stream.Serialize(PlayerLeft);
+	stream.Serialize(PlayerJoined);
+	stream.Serialize(Construction);
+	stream.Serialize(CreditTicks);
+	stream.Serialize(CrumbleSound);
+	stream.Serialize(BuildingSlam);
+	stream.Serialize(RadarOn);
+	stream.Serialize(RadarOff);
+	stream.Serialize(ScoldSound);
+	stream.Serialize(TeslaCharge);
+	stream.Serialize(TeslaZap);
+	stream.Serialize(GenericClick);
+	stream.Serialize(GenericBeep);
+	stream.Serialize(BlowupSound);
+	stream.Serialize(HealCrateSound);
+	stream.Serialize(ChuteSound);
+	stream.Serialize(StopSound);
+	stream.Serialize(GuardSound);
+	stream.Serialize(ScatterSound);
+	stream.Serialize(DeploySound);
+	stream.Serialize(LightningSound);
+	stream.Serialize(WorstLowPowerBuildRateCoefficient);
+	stream.Serialize(BestLowPowerBuildRateCoefficient);
+	stream.Serialize(WallBuildSpeedCoefficient);
+	stream.Serialize(ChargeToDrainRatio);
+	stream.Serialize(DamageToFirestormDamageCoefficient);
+	stream.Serialize(TrackedUphill);
+	stream.Serialize(TrackedDownhill);
+	stream.Serialize(WheeledUphill);
+	stream.Serialize(WheeledDownhill);
+	stream.Serialize(SpotlightMovementRadius);
+	stream.Serialize(SpotlightLocationRadius);
+	stream.Serialize(SpotlightSpeed);
+	stream.Serialize(SpotlightAcceleration);
+	stream.Serialize(SpotlightAngle);
+	stream.Serialize(SpotlightRadius);
+	stream.Serialize(WindDirection);
+	stream.Serialize(CameraRange);
+	stream.Serialize(FlightLevel);
+	stream.Serialize(BuildingDrop);
+	stream.Serialize(Scorches);
+	stream.Serialize(Scorches1);
+	stream.Serialize(Scorches2);
+	stream.Serialize(Scorches3);
+	stream.Serialize(Scorches4);
+	stream.Serialize(Craters);
+	stream.Serialize(RepairBay);
+	stream.Serialize(GDIGateOne);
+	stream.Serialize(GDIGateTwo);
+	stream.Serialize(NodGateOne);
+	stream.Serialize(NodGateTwo);
+	stream.Serialize(WallTower);
+	stream.Serialize(GDIPowerPlant);
+	stream.Serialize(GDIPowerTurbine);
+	stream.Serialize(NodRegularPower);
+	stream.Serialize(NodAdvancedPower);
+	stream.Serialize(GDIFirestormGenerator);
+	stream.Serialize(GDIHunterSeeker);
+	stream.Serialize(NodHunterSeeker);
+	stream.Serialize(BuildConst);
+	stream.Serialize(BuildPower);
+	stream.Serialize(BuildRefinery);
+	stream.Serialize(BuildBarracks);
+	stream.Serialize(BuildTech);
+	stream.Serialize(BuildWeapons);
+	stream.Serialize(BuildDefense);
+	stream.Serialize(BuildPDefense);
+	stream.Serialize(BuildAA);
+	stream.Serialize(BuildHelipad);
+	stream.Serialize(BuildRadar);
+	stream.Serialize(ConcreteWalls);
+	stream.Serialize(NSGates);
+	stream.Serialize(EWGates);
+	stream.Serialize(GDIWallDefense);
+	stream.Serialize(GDIWallDefenseCoefficient);
+	stream.Serialize(NodBaseDefenseCoefficient);
+	stream.Serialize(GDIBaseDefenseCoefficient);
+	stream.Serialize(ComputerBaseDefenseResponse);
+	stream.Serialize(MaximumBaseDefenseValue);
+	stream.Serialize(BaseUnit);
+	stream.Serialize(HarvesterUnit);
+	stream.Serialize(PadAircraft);
+	stream.Serialize(OnFire);
+	stream.Serialize(TreeFire);
+	stream.Serialize(Smoke1);
+	stream.Serialize(Smoke2);
+	stream.Serialize(FirestormActiveAnim);
+	stream.Serialize(FirestormIdleAnim);
+	stream.Serialize(FirestormAirAnim);
+	stream.Serialize(FirestormGroundAnim);
+	stream.Serialize(MoveFlash);
+	stream.Serialize(BombParachute);
+	stream.Serialize(Parachute);
+	stream.Serialize(SplashList);
+	stream.Serialize(SmallFire);
+	stream.Serialize(LargeFire);
+	stream.Serialize(Paratrooper);
+	stream.Serialize(Disguise);
+	stream.Serialize(Technician);
+	stream.Serialize(Engineer);
+	stream.Serialize(Pilot);
+	stream.Serialize(Crew);
+	stream.Serialize(FlameDamage);
+	stream.Serialize(FlameDamage2);
+	stream.Serialize(NukeWarhead);
+	stream.Serialize(NukeProjectile);
+	stream.Serialize(NukeDown);
+	stream.Serialize(EMPulseWarhead);
+	stream.Serialize(EMPulseProjectile);
+	stream.Serialize(C4Warhead);
+	stream.Serialize(IonCannonWarhead);
+	stream.Serialize(FirestormWarhead);
+	stream.Serialize(VeinholeWarhead);
+	stream.Serialize(IonStormWarhead);
+	stream.Serialize(VeinholeTypeClass);
+	stream.Serialize(DefaultLargeGreySmokeSystem);
+	stream.Serialize(DefaultSmallGreySmokeSystem);
+	stream.Serialize(DefaultSparkSystem);
+	stream.Serialize(DefaultLargeRedSmokeSystem);
+	stream.Serialize(DefaultSmallRedSmokeSystem);
+	stream.Serialize(DefaultDebrisSmokeSystem);
+	stream.Serialize(DefaultFireStreamSystem);
+	stream.Serialize(DefaultFirestormExplosionSystem);
+	stream.Serialize(DefaultTestParticleSystem);
+	stream.Serialize(DefaultRepairParticleSystem);
+	stream.Serialize(MyEffectivenessCoefficientDefault);
+	stream.Serialize(TargetEffectivenessCoefficientDefault);
+	stream.Serialize(TargetSpecialThreatCoefficientDefault);
+	stream.Serialize(TargetStrengthCoefficientDefault);
+	stream.Serialize(TargetDistanceCoefficientDefault);
+	stream.Serialize(DumbMyEffectivenessCoefficient);
+	stream.Serialize(DumbTargetEffectivenessCoefficient);
+	stream.Serialize(DumbTargetSpecialThreatCoefficient);
+	stream.Serialize(DumbTargetStrengthCoefficient);
+	stream.Serialize(DumbTargetDistanceCoefficient);
+	stream.Serialize(EnemyHouseThreatBonus);
+	stream.Serialize(HunterSeekerDetonateProximity);
+	stream.Serialize(HunterSeekerDescendProximity);
+	stream.Serialize(HunterSeekerDescentSpeed);
+	stream.Serialize(HunterSeekerAscentSpeed);
+	stream.Serialize(HunterSeekerEmergeSpeed);
+	stream.Serialize(TurboBoost);
+	stream.Serialize(AttackInterval);
+	stream.Serialize(AttackDelay);
+	stream.Serialize(PowerEmergencyFraction);
+	stream.Serialize(AirstripRatio);
+	stream.Serialize(AirstripLimit);
+	stream.Serialize(HelipadRatio);
+	stream.Serialize(HelipadLimit);
+	stream.Serialize(TeslaRatio);
+	stream.Serialize(TeslaLimit);
+	stream.Serialize(AARatio);
+	stream.Serialize(AALimit);
+	stream.Serialize(DefenseRatio);
+	stream.Serialize(DefenseLimit);
+	stream.Serialize(WarRatio);
+	stream.Serialize(WarLimit);
+	stream.Serialize(BarracksRatio);
+	stream.Serialize(BarracksLimit);
+	stream.Serialize(RefineryLimit);
+	stream.Serialize(RefineryRatio);
+	stream.Serialize(BaseSizeAdd);
+	stream.Serialize(PowerSurplus);
+	stream.Serialize(InfantryReserve);
+	stream.Serialize(InfantryBaseMult);
+	stream.Serialize(SoloCrateMoney);
+	stream.Serialize(TreeStrength);
+	stream.Serialize(UnitCrateType);
+	stream.Serialize(PatrolTime);
+	stream.Serialize(TeamDelays);
+	stream.Serialize(AIHateDelays);
+	stream.Serialize(DissolveUnfilledTeamDelay);
+	stream.Serialize(AIIonCannonConYardValue);
+	stream.Serialize(AIIonCannonWarFactoryValue);
+	stream.Serialize(AIIonCannonPowerValue);
+	stream.Serialize(AIIonCannonEngineerValue);
+	stream.Serialize(AIIonCannonThiefValue);
+	stream.Serialize(AIIonCannonHarvesterValue);
+	stream.Serialize(AIIonCannonMCVValue);
+	stream.Serialize(AIIonCannonAPCValue);
+	stream.Serialize(AIIonCannonBaseDefenseValue);
+	stream.Serialize(AIIonCannonPlugValue);
+	stream.Serialize(AIIonCannonHelipadValue);
+	stream.Serialize(AIIonCannonTempleValue);
+	stream.Serialize(AIAlternateProductionCreditCutoff);
+	stream.Serialize(MultiplayerAICreditMultipliers);
+	stream.Serialize(MinimumAIDefensiveTeams);
+	stream.Serialize(MaximumAIDefensiveTeams);
+	stream.Serialize(TotalAITeamCap);
+	stream.Serialize(AIUseTurbineUpgradeChance);
+	stream.Serialize(FillEarliestTeamProbability);
+	stream.Serialize(CloakDelay);
+	stream.Serialize(GameSpeedBias);
+	stream.Serialize(NervousBias);
+	stream.Serialize(ExplosionSpread);
+	stream.Serialize(SupressRadius);
+	stream.Serialize(MaxIQ);
+	stream.Serialize(IQSuperWeapons);
+	stream.Serialize(IQProduction);
+	stream.Serialize(IQGuardArea);
+	stream.Serialize(IQRepairSell);
+	stream.Serialize(IQCrush);
+	stream.Serialize(IQScatter);
+	stream.Serialize(IQContentScan);
+	stream.Serialize(IQAircraft);
+	stream.Serialize(IQHarvester);
+	stream.Serialize(IQSellBack);
+	stream.Serialize(AIBaseSpacing);
+	stream.Serialize(SilverCrate);
+	stream.Serialize(WoodCrate);
+	stream.Serialize(CrateMinimum);
+	stream.Serialize(CrateMaximum);
+	stream.Serialize(LZScanRadius);
+	stream.Serialize(FlareAnim);
+	stream.Serialize(MPMoney);
+	stream.Serialize(MPMaxMoney);
+	stream.Serialize(MPUnitCount);
+	stream.Serialize(MPBuildLevel);
+	stream.Serialize(DropZoneRadius);
+	stream.Serialize(MessageDelay);
+	stream.Serialize(SavourDelay);
+	stream.Serialize(MaxPlayers);
+	stream.Serialize(BaseDefenseDelay);
+	stream.Serialize(SuspendPriority);
+	stream.Serialize(SuspendDelay);
+	stream.Serialize(SurvivorFraction);
+	stream.Serialize(SurvivorDivisor);
+	stream.Serialize(ReloadRate);
+	stream.Serialize(AutocreateTime);
+	stream.Serialize(BuildupTime);
+	stream.Serialize(HarvesterLoadRate);
+	stream.Serialize(HarvesterDumpRate);
+	stream.Serialize(AtomDamage);
+	stream.Serialize(Diff);
+	stream.Serialize(QuakeDamagePercent);
+	stream.Serialize(QuakeChance);
+	stream.Serialize(GrowthRate);
+	stream.Serialize(ShroudRate);
+	stream.Serialize(FogRate);
+	stream.Serialize(IceGrowthRate);
+	stream.Serialize(VeinGrowthRate);
+	stream.Serialize(IceSolidifyDelay);
+	stream.Serialize(AmbientLightChangeRate);
+	stream.Serialize(AmbientLightChangeStep);
+	stream.Serialize(CrateTime);
+	stream.Serialize(TimerWarning);
+	stream.Serialize(TiberiumTransmogrify);
+	stream.Serialize(NukeTime);
+	stream.Serialize(EMPulseTime);
+	stream.Serialize(IonCannonTime);
+	stream.Serialize(FirestormTime);
+	stream.Serialize(SpeakDelay);
+	stream.Serialize(DamageDelay);
+	stream.Serialize(Gravity);
+	stream.Serialize(LeptonsPerSightIncrease);
+	stream.Serialize(Incoming);
+	stream.Serialize(MinDamage);
+	stream.Serialize(MaxDamage);
+	stream.Serialize(RepairStep);
+	stream.Serialize(RepairPercent);
+	stream.Serialize(IRepairStep);
+	stream.Serialize(RepairRate);
+	stream.Serialize(URepairRate);
+	stream.Serialize(IRepairRate);
+	stream.Serialize(ConditionGreen);
+	stream.Serialize(ConditionYellow);
+	stream.Serialize(ConditionRed);
+	stream.Serialize(RandomAnimateTime);
+	stream.Serialize(CloseEnoughDistance);
+	stream.Serialize(StrayDistance);
+	stream.Serialize(CrushDistance);
+	stream.Serialize(CrateRadius);
+	stream.Serialize(HomingScatter);
+	stream.Serialize(BallisticScatter);
+	stream.Serialize(RefundPercent);
+	stream.Serialize(BridgeStrength);
+	stream.Serialize(BuildSpeedBias);
+	stream.Serialize(C4Delay);
+	stream.Serialize(RepairThreshhold);
+	stream.Serialize(PathDelay);
+	stream.Serialize(BlockagePathDelay);
+	stream.Serialize(MovieTime);
+	stream.Serialize(TiberiumShortScan);
+	stream.Serialize(TiberiumLongScan);
+	stream.Serialize(LightningFrequency);
+	stream.Serialize(LightningRandomness);
+	stream.Serialize(LightningDamage);
+	stream.Serialize(LightningDuration);
+	stream.Serialize(LightningDeferment);
+	stream.Serialize(CollapseChance);
+	stream.Serialize(WeedCapacity);
+	stream.Serialize(ExtraUnitLight);
+	stream.Serialize(ExtraInfantryLight);
+	stream.Serialize(ExtraAircraftLight);
+	stream.Serialize(IsComputerParanoid);
+	stream.Serialize(IsCurleyShuffle);
+	stream.Serialize(IsBlendedFog);
+	stream.Serialize(IsCompEasyBonus);
+	stream.Serialize(IsFineDifficulty);
+	stream.Serialize(IsExplosiveHarvester);
+	stream.Serialize(IsHealthBar);
+	stream.Serialize(IsAllyReveal);
+	stream.Serialize(IsSeparate);
+	stream.Serialize(IsTreeTarget);
+	stream.Serialize(IsNamed);
+	stream.Serialize(IsAutoCrush);
+	stream.Serialize(IsSmartDefense);
+	stream.Serialize(IsScatter);
+	stream.Serialize(IsRevealByHeight);
+	stream.Serialize(IsShroudedSubteranneanMovesAllowed);
+	stream.Serialize(IsShroudGrow);
+	stream.Serialize(IsMPShadowGrow);
+	stream.Serialize(IsMPBasesOn);
+	stream.Serialize(IsMPTiberiumGrow);
+	stream.Serialize(IsMPCrates);
+	stream.Serialize(IsMPAIPlayers);
+	stream.Serialize(IsMPCaptureTheFlag);
+	stream.Serialize(IsMPBridgeDestruction);
+	stream.Serialize(NodAIBuildsWalls);
+	stream.Serialize(AIBuildsWalls);
+	stream.Serialize(UseMinDefenseRule);
+	stream.Serialize(EMPulseSparkles);
+	stream.Serialize(WebbedInfantry);
+	stream.Serialize(JumpjetCloakDetectionRadius);
+	stream.Serialize(DropPodInfantryMinimum);
+	stream.Serialize(DropPodInfantryMaximum);
+	stream.Serialize(TalkBubbleTime);
+	stream.Serialize(PrerequisiteGDIFactory);
+	stream.Serialize(PrerequisiteNodFactory);
+	stream.Serialize(EngineerCaptureLevel);
+	stream.Serialize(EngineerDamage);
 }
 
 

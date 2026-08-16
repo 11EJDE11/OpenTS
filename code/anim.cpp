@@ -80,13 +80,13 @@
 #include "overlay.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
 #include "smudtype.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tiberium.h"
@@ -1310,34 +1310,53 @@ void AnimClass::Enable(void)
 
 
 /// <summary>
-/// Reads this animation back from the save game stream.
-/// The type and attached object pointers are remapped as part of the load. The
-/// alternative drawer cannot be recovered here, so Post_Load_Game attends to it later.
+/// Lists the members this animation carries.
 /// </summary>
-/// <returns>Returns with S_OK if the animation was read, otherwise an error code.</returns>
-HRESULT STDMETHODCALLTYPE AnimClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void AnimClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) AnimClass(NoInitClass());
+	BASECLASS::Serialize(stream);
+	StageClass::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&xObject);
-
-		AlternativeDrawer = NULL; /// restored in Post_Load_Game()
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(xObject);
+	stream.Serialize(OwnerHouse);
+	// AlternativeDrawer -- a palette converter of the running session.
+	stream.Serialize(AlternativeBrightness);
+	stream.Serialize(ZAdjust);
+	stream.Serialize(YSortAdjust);
+	stream.Serialize(FlamingGuyCoords);
+	stream.Serialize(FlamingGuyRetries);
+	stream.Serialize(IsBuildingAnim);
+	stream.Serialize(Bounce);
+	stream.Serialize(TranslucencyLevel);
+	stream.Serialize(Delay);
+	stream.Serialize(Accum);
+	stream.Serialize(ShapeFlags);
+	stream.Serialize(IsBouncing);
+	stream.Serialize(Loops);
+	stream.Serialize(IsAttachedToCell);
+	stream.Serialize(IsToDeleteOnOverpass);
+	stream.Serialize(IsInert);
+	stream.Serialize(IsFogged);
+	stream.Serialize(IsFlamingGuyEnd);
+	stream.Serialize(IsToDelete);
+	stream.Serialize(IsBrandNew);
+	stream.Serialize(IsInvisible);
+	stream.Serialize(IsDisabled);
 }
 
 
 /// <summary>
-/// Writes this animation to the save game stream.
+/// Restores what the animation record could not carry.
+/// The alternative drawer names a converter belonging to the running session, so it is
+/// cleared here and picked up again by Post_Load_Game once the whole game is in place.
 /// </summary>
-/// <returns>Returns with S_OK if the animation was written, otherwise an error
-/// code.</returns>
-HRESULT STDMETHODCALLTYPE AnimClass::Save(IStream * stream, BOOL cleardirty)
+void AnimClass::Post_Load(void)
 {
-	return(BASECLASS::Save(stream, cleardirty));
+	BASECLASS::Post_Load();
+
+	AlternativeDrawer = NULL;
 }
 
 
@@ -1702,17 +1721,6 @@ void AnimClass::Post_Load_Game(void)
 			anim->AlternativeDrawer = ColorSchemes[PlayerPtr->Scheme]->Converter;
 		}
 	}
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this animation occupies in a save game.
-/// </summary>
-/// <param name="oldsave">Is the size being figured for an older save game format?</param>
-/// <returns>Returns with the size of the animation object, in bytes.</returns>
-int AnimClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

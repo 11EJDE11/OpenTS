@@ -27,12 +27,11 @@ class IsometricTileClass : public ObjectClass
 		IsometricTileClass(NoInitClass const &x) : BASECLASS(x) {}
 		virtual ~IsometricTileClass() override;
 
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool = false) const override;
 
 		virtual ObjectTypeClass const * Class_Of(void) const override;
 		virtual bool Limbo() override;

@@ -64,11 +64,9 @@ class OverlayClass : public ObjectClass
 		OverlayClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~OverlayClass(void) override;
 
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
-
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override {if (retval == NULL) return(E_POINTER);*retval = CLSID_OverlayClass;return(S_OK);}
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*
 		**	File I/O.

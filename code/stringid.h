@@ -64,6 +64,13 @@ struct TStringID
 			return(strlen(StringBuffer));
 		}
 
+		/// Carries the string to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(StringBuffer);
+		}
+
 	private:
 		/*
 		 * This is the string storage, embedded in the object rather than allocated -- SIZE

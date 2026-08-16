@@ -31,7 +31,8 @@ class TunnelLocomotionClass : public LocomotionClass
 		TunnelLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
@@ -49,8 +50,6 @@ class TunnelLocomotionClass : public LocomotionClass
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual FireErrorType STDMETHODCALLTYPE Can_Fire(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Surfacing(void) override;
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 		void Process_Turning(void);
 		void Process_Digging_In(void);

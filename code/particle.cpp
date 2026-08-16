@@ -37,10 +37,10 @@
 #include "ptype.h"
 #include "rgb.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
 #include "surface.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "tracker.h"
 #include "unit.h"
@@ -890,24 +890,35 @@ int Approximate_Distance(Point2D & pt)
 
 
 /// <summary>
-/// Reads this particle back in from the save game stream.
-/// This routine restores the virtual table and hands the saved pointers to the
-/// swizzler so they can be remapped to the objects of the loaded game.
+/// Lists the members this particle carries.
 /// </summary>
-/// <param name="stream">The stream to read this particle from.</param>
-/// <returns>Returns with S_OK if the particle was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE ParticleClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ParticleClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ParticleClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&System);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(Color);
+	stream.Serialize(ColorIndex);
+	stream.Serialize(ColorAccum);
+	stream.Serialize(GasDrift);
+	stream.Serialize(GasVelocity);
+	stream.Serialize(UnusedCoord1);
+	stream.Serialize(Speed);
+	stream.Serialize(FireTarget);
+	stream.Serialize(FireOrigin);
+	stream.Serialize(FireMoveDelta);
+	stream.Serialize(MovementDirection);
+	stream.Serialize(PrecisePosition);
+	stream.Serialize(System);
+	stream.Serialize(RemainingEC);
+	stream.Serialize(RemainingDC);
+	stream.Serialize(StateAIAdvance);
+	stream.Serialize(IsFireBelowGround);
+	stream.Serialize(StateAI);
+	stream.Serialize(Translucency);
+	stream.Serialize(WasSaved);
+	stream.Serialize(IsToDie);
 }
 
 
@@ -992,18 +1003,6 @@ HRESULT STDMETHODCALLTYPE ParticleClass::GetClassID(CLSID * retval)
 	if (retval == NULL) return(E_POINTER);
 	*retval = CLSID_ParticleClass;
 	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the size of this object for the save file writer.
-/// This routine is used by the persistence code to decide how many bytes of this
-/// object to stream out.
-/// </summary>
-/// <returns>Returns with the byte size of this particle.</returns>
-int ParticleClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

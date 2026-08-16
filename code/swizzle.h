@@ -79,12 +79,6 @@ class SwizzleManagerClass : public ISwizzle
 extern SwizzleManagerClass Swizzler;
 
 template<class T>
-inline void Swizzle_Pointer(T **ptr)
-{
-	Swizzler.Swizzle((void**)ptr);
-}
-
-template<class T>
 inline void Swizzle_Here_I_Am(LONG id, T *ptr)
 {
 	Swizzler.Here_I_Am(id, (void*)ptr);

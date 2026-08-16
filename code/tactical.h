@@ -103,11 +103,10 @@ class Tactical : public AbstractClass
 		virtual ~Tactical(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_TACTICALMAP);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*
 		 * Per frame processing and teardown.

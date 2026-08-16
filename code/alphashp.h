@@ -36,11 +36,10 @@ class AlphaShapeClass : public AbstractClass
 		~AlphaShapeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 
@@ -48,7 +47,6 @@ class AlphaShapeClass : public AbstractClass
 		static void Draw_In_Area(Point2D const & point, Rect const & cliprect);
 		static void Draw_All(Rect const & rect);
 		static void Calculate_Brightness_Table(void);
-
 
 	public:
 		/*

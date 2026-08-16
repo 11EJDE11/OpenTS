@@ -63,6 +63,7 @@
 #include "mixfile.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 #include "unit.h"
@@ -535,72 +536,71 @@ void UnitTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads the unit type back in from the save game stream.
-/// This routine copes with save games written before the animation frame members were
-/// added, shuffling the older layout into place and inventing sensible values for the
-/// members that were missing. The artwork is then re-fetched, since image pointers
+/// Re-attaches the artwork this unit type names.
+/// The artwork is fetched again once the members have been read, since image pointers
 /// cannot survive a save game.
 /// </summary>
-/// <returns>Returns with S_OK if the unit type was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE UnitTypeClass::Load(IStream *stream)
+void UnitTypeClass::Post_Load(void)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&WalkFrames, &IsNonVehicle, size - offsetof(UnitTypeClass, WalkFrames));
-			int facings = 1;
-			IsNonVehicle = false;
-			IsJellyfish = false;
-			IsLimpetDrone = false;
-			IsCoreDefender = false;
-			IsMobileEMP = false;
-			MaxCharge = 0;
-			StartCharge = 0;
-			DeathFrames = 0;
-			DeathFrameRate = 1;
-			if (FiringFrames != 0 || IsTurretEquipped) {
-				facings = FACING_COUNT;
-			}
-			Facings = facings;
-			StartStandFrame = facings * WalkFrames;
-			StartWalkFrame = 0;
-			StartFiringFrame = facings * (WalkFrames + 1);
-			StartDeathFrame = facings * (WalkFrames + 1);
-			MaxDeathCounter = facings * (WalkFrames + 1);
-			FiringSyncFrame[0] = FiringSyncFrame[1] = -1;
-		}
-
-		new (this) UnitTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
 		Fetch_Voxel_Image();
 		Fetch_Normal_Image();
 
-		if (AltImageData != NULL) {
+	if (AltImageFile.Length() != 0) {
 			char filename[_MAX_PATH];
 			_makepath(filename, NULL, NULL, AltImageFile, ".SHP");
 			AltImageData = (ShapeSet const *)MFCD::Retrieve(filename);
 		}
-
-		result = S_OK;
-	}
-	return(result);
 }
 
 
 /// <summary>
-/// Writes the unit type out to the save game stream.
+/// Lists the members this unit type carries.
 /// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it is written?</param>
-/// <returns>Returns with S_OK if the unit type was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE UnitTypeClass::Save(IStream *stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void UnitTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(MovementRestrictedTo);
+	stream.Serialize(HalfDamageSmokeLocation);
+	stream.Serialize(IsPassive);
+	stream.Serialize(IsCrateGoodie);
+	stream.Serialize(IsToHarvest);
+	stream.Serialize(IsToVeinHarvest);
+	stream.Serialize(IsFireAnim);
+	stream.Serialize(IsLockTurret);
+	stream.Serialize(IsNoFireWhileMoving);
+	stream.Serialize(IsDeployToFire);
+	stream.Serialize(IsTilter);
+	stream.Serialize(IsUseTurretShadow);
+	stream.Serialize(IsTooBigToFitUnderBridge);
+	stream.Serialize(IsSmallVisceroid);
+	stream.Serialize(IsLargeVisceroid);
+	stream.Serialize(IsCarriesCrate);
+	// AltImageData -- artwork, fetched from the mix files again as this loads.
+	stream.Serialize(IsNonVehicle);
+	stream.Serialize(IsJellyfish);
+	stream.Serialize(IsLimpetDrone);
+	stream.Serialize(IsMobileEMP);
+	stream.Serialize(IsCoreDefender);
+	stream.Serialize(StandingFrames);
+	stream.Serialize(DeathFrames);
+	stream.Serialize(DeathFrameRate);
+	stream.Serialize(MaxCharge);
+	stream.Serialize(StartCharge);
+	stream.Serialize(FiringSyncFrame);
+	stream.Serialize(StartStandFrame);
+	stream.Serialize(StartWalkFrame);
+	stream.Serialize(StartFiringFrame);
+	stream.Serialize(StartDeathFrame);
+	stream.Serialize(MaxDeathCounter);
+	stream.Serialize(Facings);
+	stream.Serialize(WalkFrames);
+	stream.Serialize(FiringFrames);
+	stream.Serialize(AltImageFile);
 }
 
 
@@ -614,47 +614,6 @@ HRESULT STDMETHODCALLTYPE UnitTypeClass::Save(IStream *stream, int cleardirty)
 UnitTypeClass * UnitTypeClass::Find_Or_Make(char const * name)
 {
 	return(TFind_Or_Make<UnitTypeClass>(name, UnitTypes));
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it appears in a save game.
-/// </summary>
-/// <param name="oldsave">Is this for a save game written in the older format?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save game.</returns>
-int UnitTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int delta = oldsave ? Get_Object_Size_Delta() : 0;
-	return(sizeof(*this) - delta);
-}
-
-
-/// <summary>
-/// Determines how much this object has grown since the old save game format.
-/// This routine is used by the save game loader so that an object written before these
-/// members existed can still be read into the tail of the current object.
-/// </summary>
-/// <returns>Returns with the number of bytes by which this object has grown.</returns>
-int UnitTypeClass::Get_Object_Size_Delta(void) const
-{
-	return	(BASECLASS::Get_Object_Size_Delta() +
-			sizeof(IsNonVehicle) +
-			sizeof(IsJellyfish) +
-			sizeof(IsLimpetDrone) +
-			sizeof(IsMobileEMP) +
-			sizeof(IsCoreDefender) +
-			sizeof(StandingFrames) +
-			sizeof(DeathFrames) +
-			sizeof(DeathFrameRate) +
-			sizeof(MaxCharge) +
-			sizeof(StartCharge) +
-			sizeof(FiringSyncFrame) +
-			sizeof(StartStandFrame) +
-			sizeof(StartWalkFrame) +
-			sizeof(StartFiringFrame) +
-			sizeof(StartDeathFrame) +
-			sizeof(MaxDeathCounter) +
-			sizeof(Facings));
 }
 
 

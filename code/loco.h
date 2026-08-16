@@ -14,6 +14,7 @@
 #include "noinit.h"
 
 class FootClass;
+class SaveStreamClass;
 
 class LocomotionClass : public IPersistStream, public ILocomotion
 {
@@ -27,7 +28,7 @@ class LocomotionClass : public IPersistStream, public ILocomotion
 		virtual ULONG STDMETHODCALLTYPE Release() override;
 
 		virtual LONG STDMETHODCALLTYPE IsDirty(void) override {return(Dirty ? S_OK : S_FALSE);}
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override = 0;
+		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 		virtual LONG STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
@@ -77,16 +78,30 @@ class LocomotionClass : public IPersistStream, public ILocomotion
 		virtual int STDMETHODCALLTYPE Get_Track_Index(void) override {return(-1);}
 		virtual int STDMETHODCALLTYPE Get_Speed_Accum(void) override {return(-1);}
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const = 0;
+
+		/*
+		 * Lists this locomotor's members for the save game. An implementation serializes
+		 * its base class first and then names every member it owns in the order the header
+		 * declares them, so that the same description serves saving and loading.
+		 */
+		virtual void Serialize(SaveStreamClass & stream);
+
+		/*
+		 * Restores whatever the record could not carry. Load_Members calls this once the
+		 * members are in place, so a base class fixup runs even when the load was entered
+		 * through a derived class.
+		 */
+		virtual void Post_Load(void);
 
 	protected:
+
 		/*
-		 * Declaring this overload const keeps a call made through a LocomotionClass from
-		 * binding to the interface Load. The behavior it relies on is not guaranteed by the
-		 * language, and the definitions in the source file must not be const, or the module
-		 * will not link.
+		 * These carry the record a class describes through Serialize. A class calls these
+		 * from its Load and Save; the record is the swizzle identity followed by whatever
+		 * members the class names.
 		 */
-		HRESULT STDMETHODCALLTYPE Load(IStream * stream) const;
+		HRESULT Save_Members(IStream * stream, BOOL cleardirty);
+		HRESULT Load_Members(IStream * stream);
 
 	protected:
 		/*

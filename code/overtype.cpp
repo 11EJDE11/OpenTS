@@ -69,6 +69,7 @@
 #include "mixfile.h"
 #include "overlay.h"
 #include "resource.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "sun.h"
@@ -417,55 +418,59 @@ void OverlayTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads this overlay type back in from a save game.
-/// The object is reconstructed in place so that it regains its virtual function table, its
-/// cell animation pointer is swizzled back to the live object, and its artwork is fetched
-/// again, since pointers into the mix files do not survive a save.
+/// Re-attaches the artwork this overlay type names.
+/// The artwork is fetched again once the members have been read, since pointers into the
+/// mix files do not survive a save. An overlay left for demand loading is not fetched here;
+/// Get_Image_Data picks it up when something first asks to draw it.
 /// </summary>
-/// <returns>Returns with S_OK once the object has been rebuilt, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE OverlayTypeClass::Load(IStream * stream)
+void OverlayTypeClass::Post_Load(void)
 {
-	char fullname[_MAX_FNAME+_MAX_EXT];
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) OverlayTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 
-		Swizzle_Pointer(&CellAnim);
-
-		if (!DemandLoad) {
-			if (IsTheater) {
-				_makepath(fullname, NULL, NULL, GraphicName, Theaters[Scen->Theater].Suffix);
-			} else {
-				_makepath(fullname, NULL, NULL, GraphicName, ".SHP");
-				Theater_Naming_Convention(fullname, Scen->Theater);
-			}
-
-			ImageData = MFCD::Retrieve(fullname);
+	if (!DemandLoad) {
+		char fullname[_MAX_FNAME+_MAX_EXT];
+		if (IsTheater) {
+			_makepath(fullname, NULL, NULL, GraphicName, Theaters[Scen->Theater].Suffix);
+		} else {
+			_makepath(fullname, NULL, NULL, GraphicName, ".SHP");
+			Theater_Naming_Convention(fullname, Scen->Theater);
 		}
 
-		result = S_OK;
+		ImageData = MFCD::Retrieve(fullname);
 	}
-	return(result);
 }
 
 
 /// <summary>
-/// Writes this overlay type out to a save game.
-/// The overlay type adds nothing of its own beyond what the object type layer records.
+/// Lists the members this overlay type carries.
 /// </summary>
-/// <returns>Returns with S_OK once the object has been written, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE OverlayTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void OverlayTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		result = S_OK;
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(HeapID);
+	stream.Serialize(Land);
+	stream.Serialize(CellAnim);
+	stream.Serialize(DamageLevels);
+	stream.Serialize(DamagePoints);
+	stream.Serialize(IsWall);
+	stream.Serialize(IsHigh);
+	stream.Serialize(IsTiberium);
+	stream.Serialize(IsCrate);
+	stream.Serialize(IsCrateTrigger);
+	stream.Serialize(IsNoUseTileLandType);
+	stream.Serialize(IsVeinholeMonster);
+	stream.Serialize(IsVeins);
+	stream.Serialize(DemandLoad);
+	stream.Serialize(IsExplosive);
+	stream.Serialize(IsChainReaction);
+	stream.Serialize(IsOverrides);
+	stream.Serialize(IsDrawFlat);
+	stream.Serialize(IsARock);
 }
 
 

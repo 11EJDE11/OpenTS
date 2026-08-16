@@ -58,6 +58,7 @@
 #include "incdec.h"
 #include "mixfile.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 
@@ -308,43 +309,32 @@ void AircraftTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads the aircraft type back in from a save game stream.
-/// The saved bytes carry no artwork or virtual table, so this routine rebuilds the object
-/// in place and then re-fetches the voxel and shape images the aircraft draws with.
+/// Re-attaches the artwork this aircraft type names.
+/// Artwork is never written to a save game, so the voxel and shape images the aircraft
+/// draws with are fetched again once the members have been read.
 /// </summary>
-/// <param name="stream">The stream to read the aircraft type from.</param>
-/// <returns>Returns with S_OK, or the failure code reported by the base class.</returns>
-HRESULT STDMETHODCALLTYPE AircraftTypeClass::Load(IStream *stream)
+void AircraftTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) AircraftTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 }
 
 
 /// <summary>
-/// Writes the aircraft type out to a save game stream.
-/// This routine is called by the save game machinery. All of the work is done by the
-/// techno type layer; the aircraft type itself has nothing further to record.
+/// Lists the members this aircraft type carries.
 /// </summary>
-/// <param name="stream">The stream to write the aircraft type to.</param>
-/// <param name="cleardirty">Should the object be marked as saved once it is written?</param>
-/// <returns>Returns with S_OK, or the failure code reported by the base class.</returns>
-HRESULT STDMETHODCALLTYPE AircraftTypeClass::Save(IStream *stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void AircraftTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(IsCarryall);
+	stream.Serialize(IsRotorEquipped);
+	stream.Serialize(IsRotorCustom);
+	stream.Serialize(IsLandable);
 }
 
 

@@ -18,9 +18,9 @@
 #include "globals.h"
 #include "object.h"
 #include "objtype.h"
+#include "savestream.h"
 #include "shapeset.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "tracker.h"
 #include "vector.h"
@@ -128,18 +128,6 @@ RTTIType AlphaShapeClass::Fetch_RTTI(void) const
 
 
 /// <summary>
-/// Fetches the size of this object in bytes.
-/// This routine is used by the save system to determine how much of the object must be
-/// committed to the save stream.
-/// </summary>
-/// <returns>Returns with the byte size of this object.</returns>
-int AlphaShapeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
-}
-
-
-/// <summary>
 /// Adds the state of this alpha shape to the running game checksum.
 /// This routine is used by the multiplayer sync check to prove that every machine holds
 /// an identical copy of this object.
@@ -156,37 +144,18 @@ void AlphaShapeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Loads this alpha shape from the save game stream.
-/// The object is rebuilt in place and its owner pointer is handed to the swizzler. The
-/// shape image itself is dropped and fetched again from the owner's type data the next
-/// time the shape is drawn.
+/// Lists the members this alpha shape carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE AlphaShapeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void AlphaShapeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) AlphaShapeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Owner);
-		ImageData = NULL;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this alpha shape to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE AlphaShapeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		return(S_OK);
-	}
-	return(result);
+	stream.Serialize(Owner);
+	stream.Serialize(DrawRect);
+	// ImageData -- fetched again from the owner's type the next time the shape is drawn.
+	stream.Serialize(IsToDelete);
+	// BrightnessTable -- a blending table built once and shared by every shape.
 }
 
 

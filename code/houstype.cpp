@@ -48,6 +48,7 @@
 #include "crc.h"
 #include "findmake.h"
 #include "globals.h"
+#include "savestream.h"
 #include "side.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -250,77 +251,30 @@ HRESULT STDMETHODCALLTYPE HouseTypeClass::IsDirty(void)
 
 
 /// <summary>
-/// Loads this house type from the stream specified.
-/// The object is read back in raw form and then reconstructed in place, after which it
-/// announces itself to the swizzler so that saved references can be resolved to it.
+/// Lists the members this house type carries.
 /// </summary>
-/// <returns>Returns with S_OK if the house type was read, otherwise a failure code.</returns>
-HRESULT STDMETHODCALLTYPE HouseTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void HouseTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result;
+	BASECLASS::Serialize(stream);
 
-	if (stream == NULL) {
-		result = E_POINTER;
-	} else {
-		LONG id;
-
-		result = stream->Read(&id, sizeof(id), NULL);
-		if (SUCCEEDED(result)) {
-			result = stream->Read(this, sizeof(*this), NULL);
-			if (SUCCEEDED(result)) {
-
-				new (this) HouseTypeClass(NoInitClass());
-
-				Swizzle_Here_I_Am(id, this);
-				result = S_OK;
-			}
-		}
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this house type to the stream specified.
-/// The swizzle identifier is written ahead of the object itself so that the load process can
-/// repoint everything that referred to this house type.
-/// </summary>
-/// <returns>Returns with S_OK if the house type was written, otherwise a failure code.</returns>
-HRESULT STDMETHODCALLTYPE HouseTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result;
-
-	if (stream == NULL) {
-		result = E_POINTER;
-	} else {
-		LONG id;
-		Swizzler.Fetch_Swizzle_ID(this, &id);
-		void *ptr = (void *)id;
-		result = stream->Write(&ptr, sizeof(ptr), NULL);
-		if (SUCCEEDED(result)) {
-			result = stream->Write(this, sizeof(*this), NULL);
-		}
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Fetches the largest number of bytes this house type will need when saved.
-/// The save game system calls this routine to reserve room in the stream before asking the
-/// object to save itself.
-/// </summary>
-/// <returns>Returns with S_OK, or E_POINTER if no size pointer was supplied.</returns>
-HRESULT STDMETHODCALLTYPE HouseTypeClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
-{
-	if (pcbSize == NULL) {
-		return(E_POINTER);
-	}
-
-	pcbSize->HighPart = 0;
-	pcbSize->LowPart = sizeof(int) + sizeof(*this);
-
-	return(S_OK);
+	stream.Serialize(HeapID);
+	stream.Serialize(House);
+	stream.Serialize(Side);
+	stream.Serialize(Scheme);
+	stream.Serialize(FirepowerBias);
+	stream.Serialize(GroundspeedBias);
+	stream.Serialize(AirspeedBias);
+	stream.Serialize(ArmorBias);
+	stream.Serialize(ROFBias);
+	stream.Serialize(CostBias);
+	stream.Serialize(BuildSpeedBias);
+	stream.Serialize(Suffix);
+	stream.Serialize(Prefix);
+	stream.Serialize(IsMultiplay);
+	stream.Serialize(IsMultiplayPassive);
+	stream.Serialize(IsWallOwner);
+	stream.Serialize(IsSmartAI);
 }
 
 
@@ -393,18 +347,6 @@ HouseTypeClass * HouseTypeClass::Find_Or_Make(char const * ininame)
 RTTIType HouseTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_HOUSETYPE);
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this house type occupies when saved.
-/// The save game system uses this routine to size the block it reads or writes for this
-/// object.
-/// </summary>
-/// <returns>Returns with the size, in bytes, of this house type.</returns>
-int HouseTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

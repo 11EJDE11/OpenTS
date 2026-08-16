@@ -53,6 +53,7 @@ class Pipe;
 class CellClass;
 class BuildingTypeClass;
 class FootClass;
+class SaveStreamClass;
 template<typename K, typename V>
 class HashTableClass;
 
@@ -64,8 +65,9 @@ class MapClass: public GScreenClass
 	public:
 
 		MapClass(void);
-		MapClass(NoInitClass const & x);
 		virtual ~MapClass(void) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*
 		 * Isometric playfield <-> cell coordinate conversions
@@ -458,6 +460,14 @@ class MapClass: public GScreenClass
 
 			bool operator==(const CrackedIceStruct & that) const { return(that.CellID == CellID && that.SolidifyFrame == SolidifyFrame); }
 			bool operator!=(const CrackedIceStruct & that) const { return(that.CellID != CellID || that.SolidifyFrame != SolidifyFrame); }
+
+			/// Carries the cracked ice record to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(CellID);
+				stream.Serialize(SolidifyFrame);
+			}
 
 			/*
 			 * This is the cell whose ice was cracked by something crossing it.

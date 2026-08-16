@@ -45,9 +45,10 @@ class MouseClass: public ScrollClass
 		virtual HRESULT Load(IStream * stream) override;
 		virtual HRESULT Save(IStream * stream) override;
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 	public:
 		MouseClass(void);
-		MouseClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~MouseClass(void) override {}
 
 		/*

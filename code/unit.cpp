@@ -143,6 +143,7 @@
 #include "partsys.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
@@ -168,7 +169,6 @@
 char const * const UnitClass::INI_NAME = "Units";
 
 Rect UnitCompositeDirtyRect(RECT_NONE);
-
 
 
 int UnitClass::Visceroid_Fire_List[FACING_COUNT] = { 100, 105, 110, 115, 120, 125, 90, 95 };
@@ -6007,50 +6007,51 @@ bool UnitClass::Ready_To_Commence(void)
 
 /// <summary>
 /// Reads this unit back in from a save game stream.
-/// This routine restores the unit's entry in the target tracker and brings the members of
-/// an old format save game up to the layout the game expects today.
+/// The unit is withdrawn from the target tracker under the identity it is carrying now,
+/// since the one it is about to be given is the one it was saved with. Post_Load enters it
+/// again once that identity has arrived.
 /// </summary>
 /// <param name="stream">The stream to read this unit from.</param>
 /// <returns>Returns with S_OK if the unit was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE UnitClass::Load(IStream *stream)
 {
-	int size = Fetch_Object_Size(false);
 	TargetTracker.Remove_Index(Fetch_ID());
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		ILocomotion * locomotion = Locomotion;
-
-		if (IsOldSaveGame) {
-			memmove(&Unused1, &Charge, size - offsetof(UnitClass, Unused1));
-			Charge = 0;
-			DeathCounter = -1;
-		}
-
-		new (this) UnitClass(NoInitClass());
-
-		Locomotion = locomotion;
-		locomotion->Release();
-
-		TargetTracker.Add_Index(Fetch_ID(), this);
-
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&FollowingMe);
-
-		result = S_OK;
-	}
-	return(result);
+	return(BASECLASS::Load(stream));
 }
 
 
 /// <summary>
-/// Writes this unit out to the save game stream.
+/// Lists the members this unit carries.
 /// </summary>
-/// <param name="stream">The stream to write this unit to.</param>
-/// <param name="cleardirty">Should the unit be marked as no longer needing a save?</param>
-/// <returns>Returns with S_OK if the unit was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE UnitClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void UnitClass::Serialize(SaveStreamClass & stream)
 {
-	return(BASECLASS::Save(stream, cleardirty));
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(FiringSyncDelay);
+	stream.Serialize(Reload);
+	stream.Serialize(Class);
+	stream.Serialize(FollowingMe);
+	stream.Serialize(Flagged);
+	stream.Serialize(IsFollowing);
+	stream.Serialize(IsDumping);
+	stream.Serialize(IsHarvesting);
+	stream.Serialize(IsCompositingToEightBitSurface);
+	stream.Serialize(VisceroidFacing);
+	stream.Serialize(Charge);
+	stream.Serialize(DeathCounter);
+	stream.Serialize(Unused1);
+}
+
+
+/// <summary>
+/// Enters this unit in the target tracker under the identity it was saved with.
+/// </summary>
+void UnitClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	TargetTracker.Add_Index(Fetch_ID(), this);
 }
 
 
@@ -6618,22 +6619,6 @@ void UnitClass::Explode(void)
 bool UnitClass::Is_Immobilized(void) const
 {
 	return(DeathCounter != -1 || BASECLASS::Is_Immobilized());
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this unit occupies in a save game.
-/// This routine lets the load process cope with a save file written by an earlier version
-/// of the game, where the members added since then were not yet part of the object.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an old format save game?</param>
-/// <returns>Returns with the size of the unit, in bytes.</returns>
-int UnitClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta = sizeof(Charge) + sizeof(DeathCounter) + sizeof(Unused1) + sizeof(TechnoClass::LimpetSpeedFactor);
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

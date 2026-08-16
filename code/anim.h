@@ -66,8 +66,9 @@ class AnimClass : public ObjectClass, public StageClass
 		virtual ~AnimClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
@@ -80,7 +81,6 @@ class AnimClass : public ObjectClass, public StageClass
 		static void Do_Atom_Damage(HousesType ownerhouse, Cell const & cell);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual bool Limbo(void) override;
 		virtual void Delete_Me(void) override;

@@ -30,12 +30,11 @@ class VeinholeMonsterClass : public ObjectClass
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
-		VeinholeMonsterClass(NoInitClass const & x);
+		VeinholeMonsterClass(void);
 		VeinholeMonsterClass(Cell const & cell);
 		~VeinholeMonsterClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
@@ -66,8 +65,9 @@ class VeinholeMonsterClass : public ObjectClass
 		static bool Save_All(IStream * stream);
 		void Reduce_Veins_At(CellClass * cellptr);
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_VEINHOLEMONSTER);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
 		virtual LayerType In_Which_Layer(void) const override {return(LAYER_NONE);}
 
 		virtual ObjectTypeClass const * Class_Of(void) const override;

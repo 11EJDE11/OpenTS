@@ -22,6 +22,7 @@
 #include "houstype.h"
 #include "infatype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "session.h"
 #include "sun.h"
@@ -104,42 +105,40 @@ HRESULT STDMETHODCALLTYPE AITriggerTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this trigger from the stream specified.
-/// This routine is part of the persistence chain the save game system walks. The object
-/// is rebuilt in place and its condition object and team pointers are remapped to
-/// wherever those objects have landed in the restored game.
+/// Lists the members this trigger carries.
 /// </summary>
-/// <returns>Returns with the result of the load, which is S_OK if all went well.</returns>
-HRESULT STDMETHODCALLTYPE AITriggerTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void AITriggerTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) AITriggerTypeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&ConditionObject);
-		Swizzle_Pointer(&TeamTypeOne);
-		Swizzle_Pointer(&TeamTypeTwo);
+	stream.Serialize(Type);
+	stream.Serialize(Scope);
+	stream.Serialize(TrigHouse);
+	stream.Serialize(IsEnabled);
+	stream.Serialize(House);
+	stream.Serialize(MultiSide);
+	stream.Serialize(TechLevelNeeded);
+	stream.Serialize(CurWeight);
+	stream.Serialize(MinWeight);
+	stream.Serialize(MaxWeight);
+	stream.Serialize(IsAvailableInSkirmish);
+	stream.Serialize(IsForBaseDefense);
+	stream.Serialize(IsEnabledInEasy);
+	stream.Serialize(IsEnabledInMedium);
+	stream.Serialize(IsEnabledInHard);
+	stream.Serialize(ConditionObject);
+	stream.Serialize(TeamTypeOne);
+	stream.Serialize(TeamTypeTwo);
 
-		result = S_OK;
-	}
-	return(result);
-}
+	/*
+	 * Which alternative of the parameters is live depends on the condition, but both are
+	 * plain scalars and neither holds a pointer, so the union travels as its raw image.
+	 */
+	stream.Serialize_Bytes(&Params, sizeof(Params));
 
-
-/// <summary>
-/// Saves this trigger to the stream specified.
-/// This routine is part of the persistence chain the save game system walks.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it has been saved?</param>
-/// <returns>Returns with the result of the save, which is S_OK if all went well.</returns>
-HRESULT STDMETHODCALLTYPE AITriggerTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(TimesSucceded);
+	stream.Serialize(TimesExecuted);
 }
 
 

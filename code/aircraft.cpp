@@ -121,6 +121,7 @@
 #include "partsys.h"
 #include "queue.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "session.h"
 #include "stimer.h"
@@ -3878,43 +3879,47 @@ void AircraftClass::Read_INI(CCINIClass const & ini)
 
 /// <summary>
 /// Reads this aircraft back in from the save game stream.
-/// The virtual table pointers are rebuilt as part of the load, the locomotor is carried
-/// across intact, and the aircraft re-registers itself with the target tracker under the
-/// identifier it was saved with.
+/// The aircraft is withdrawn from the target tracker under the identity it is carrying now,
+/// since the one it is about to be given is the one it was saved with. Post_Load enters it
+/// again once that identity has arrived.
 /// </summary>
 /// <param name="stream">The stream to read this object from.</param>
 /// <returns>Returns with S_OK if the aircraft was loaded successfully.</returns>
 HRESULT STDMETHODCALLTYPE AircraftClass::Load(IStream * stream)
 {
 	TargetTracker.Remove_Index(Fetch_ID());
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		ILocomotion * locomotion = Locomotion;
-
-		new (this) AircraftClass(NoInitClass());
-
-		Locomotion = locomotion;
-		locomotion->Release();
-
-		TargetTracker.Add_Index(Fetch_ID(), this);
-
-		Swizzle_Pointer(&Class);
-
-		result = S_OK;
-	}
-	return(result);
+	return(BASECLASS::Load(stream));
 }
 
 
 /// <summary>
-/// Writes this aircraft out to the save game stream.
+/// Lists the members this aircraft carries.
 /// </summary>
-/// <param name="stream">The stream to write this object to.</param>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the aircraft was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE AircraftClass::Save(IStream * stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void AircraftClass::Serialize(SaveStreamClass & stream)
 {
-	return(BASECLASS::Save(stream, cleardirty));
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(Class);
+	stream.Serialize(IsToSpendAmmo);
+	stream.Serialize(Passenger);
+	stream.Serialize(IsKamikaze);
+	stream.Serialize(field_35B);
+	stream.Serialize(IsLockedStraight);
+	stream.Serialize(SightTimer);
+	stream.Serialize(AttacksRemaining);
+	stream.Serialize(IsReadyToCommence);
+}
+
+
+/// <summary>
+/// Enters this aircraft in the target tracker under the identity it was saved with.
+/// </summary>
+void AircraftClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	TargetTracker.Add_Index(Fetch_ID(), this);
 }
 
 
@@ -4167,25 +4172,6 @@ bool AircraftClass::Crash(TechnoClass * source)
 		return(true);
 	}
 	return(false);
-}
-
-
-/// <summary>
-/// Determines how much storage this object requires.
-/// This routine is used by the save/load system. Older save games were written before a
-/// couple of the TechnoClass members existed, so the reported size is trimmed back to
-/// what those files expect.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for the older save game format?</param>
-/// <returns>Returns with the number of bytes this object occupies.</returns>
-int AircraftClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta =
-		sizeof(TechnoClass::LimpetSpeedFactor) +
-		sizeof(TechnoClass::LimpetType);
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

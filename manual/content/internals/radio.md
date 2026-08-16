@@ -117,7 +117,7 @@ The cleanup paths are not interchangeable:
 | `Limbo()` | Sends `RADIO_OVER_OUT` before the base limbo transition when the object is not already in limbo. |
 | `Detach(target, all)` | Emergency pointer cleanup. It clears `Radio` only when it matches `target` and `all` is true; no message is sent. |
 | Destructor | Performs no contact negotiation. Earlier lifecycle paths must already have removed the reference. |
-| `Load()` | Registers `Radio` with the swizzle manager after base loading so the saved pointer is remapped. |
+| `Serialize()` | Serializes `Radio` as a swizzled pointer so the saved contact is remapped on load. |
 | `Compute_CRC()` | Adds the contact's engine ID and RTTI to the synchronization checksum. |
 
 A new exit path must either negotiate `RADIO_OVER_OUT` while both endpoints are valid or participate in the engine's detach sweep. A new persistent relationship also requires load swizzling and deterministic-state review.

@@ -80,13 +80,12 @@ class BulletClass : public ObjectClass
 		virtual ~BulletClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
 		*/
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual RTTIType Fetch_RTTI(void) const override;
 
 		void Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright);

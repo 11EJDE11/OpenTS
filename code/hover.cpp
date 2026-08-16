@@ -30,6 +30,7 @@
 #include "ion.h"
 #include "overtype.h"
 #include "rules.h"
+#include "savestream.h"
 #include "tube.h"
 #include "unit.h"
 
@@ -1082,20 +1083,23 @@ HRESULT STDMETHODCALLTYPE HoverLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the locomotor from a saved game.
-/// This routine is called by the persistence system as the game is restored. It re-runs
-/// the constructor over the loaded data so that anything which cannot be stored -- the
-/// virtual table pointer in particular -- is put back in place.
+/// Lists the members this hover locomotor carries.
 /// </summary>
-/// <param name="stream">The stream to load the locomotor from.</param>
-/// <returns>Returns with the result of the load operation.</returns>
-HRESULT STDMETHODCALLTYPE HoverLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void HoverLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) HoverLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(Facing);
+	stream.Serialize(Height);
+	stream.Serialize(Acceleration);
+	stream.Serialize(Boost);
+	stream.Serialize(Bounciness);
+	stream.Serialize(WasShoved);
+	stream.Serialize(ShoveAccum);
+	stream.Serialize(WasPushed);
 }
 
 

@@ -205,7 +205,7 @@ class ObjectClass : public AbstractClass
 		ObjectClass(NoInitClass const & x);
 		virtual ~ObjectClass(void) override;
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		bool operator < (ObjectClass const & object) const;
 		bool operator > (ObjectClass const & object) const;

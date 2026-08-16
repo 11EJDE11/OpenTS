@@ -38,7 +38,8 @@ class HoverLocomotionClass : public LocomotionClass
 		virtual ~HoverLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual HRESULT STDMETHODCALLTYPE Link_To_Object(void *pointer) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
@@ -58,8 +59,6 @@ class HoverLocomotionClass : public LocomotionClass
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) override;
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 	private:
 

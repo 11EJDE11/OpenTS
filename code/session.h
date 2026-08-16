@@ -58,6 +58,7 @@ class InfantryClass;
 class UnitClass;
 class CellClass;
 class INIClass;
+class SaveStreamClass;
 
 //---------------------------------------------------------------------------
 // Defines
@@ -407,9 +408,10 @@ struct GameOptionsType {
 	bool		MCVRedeploy;		/// A construction yard can be sold back into an MCV.
 	char		ScenarioDescription [DESCRIP_MAX];	//Used on client machines only
 
-	bool Save(IStream * stream) const;
+	bool Save(IStream * stream);
 	bool Load(IStream * stream);
 
+	void Serialize(SaveStreamClass & stream);
 };
 
 struct MPStatsType {

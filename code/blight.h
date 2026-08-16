@@ -27,14 +27,13 @@ class BuildingLightClass : public ObjectClass
 		virtual ~BuildingLightClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
 		*/
 		virtual ObjectTypeClass const * Class_Of(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_LIGHT);}

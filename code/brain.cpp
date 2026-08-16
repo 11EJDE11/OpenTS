@@ -16,8 +16,8 @@
 #include "ftimer.h"
 #include "globals.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tracker.h"
 #include "vector.h"
 
@@ -65,41 +65,19 @@ HRESULT STDMETHODCALLTYPE NeuronClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this neuron from the save game stream.
-/// The object is rebuilt in place once the base class has read the raw image back over
-/// it, and the pointers it carries are handed to the swizzler so that they can be
-/// remapped onto wherever those objects now live.
+/// Lists the members this neuron carries.
 /// </summary>
-/// <returns>Returns with S_OK if the neuron was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE NeuronClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void NeuronClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) NeuronClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Pointer2);
-		Swizzle_Pointer(&Pointer1);
-		Swizzle_Pointer(&MyBrain);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this neuron to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the neuron was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE NeuronClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	// Pointer1 -- untyped, so they carry no swizzle identity, and nothing reads them.
+	// Pointer2
+	// MyBrain -- a brain carries no swizzle identity of its own, and sets this again as it adopts
+	// the neuron on the way back in.
+	stream.Serialize(CreationFrame);
+	stream.Serialize(Unk1);
 }
 
 
@@ -176,13 +154,11 @@ bool BrainClass::Add_Neuron(NeuronClass *neuron)
 
 /// <summary>
 /// Saves this brain to the save game stream.
-/// The number of neurons goes out first so that the loader knows how many to expect,
-/// followed by each neuron in turn.
 /// </summary>
 /// <param name="cleardirty">Should the neurons be marked clean once they are written?</param>
 /// <returns>
 /// Returns with S_OK when the brain was written, E_POINTER when no stream was supplied,
-/// or the first failure code a neuron reported.
+/// or the stream's own failure code.
 /// </returns>
 HRESULT BrainClass::Save(IStream * stream, BOOL cleardirty)
 {
@@ -190,31 +166,20 @@ HRESULT BrainClass::Save(IStream * stream, BOOL cleardirty)
 		return(E_POINTER);
 	}
 
-	int count = Neurons.Count();
-
-	HRESULT result = stream->Write(&count, sizeof(count), NULL);
-	if (SUCCEEDED(result)) {
-		for (int i = 0; i < count; i++) {
-			result = Neurons[i]->Save(stream, cleardirty);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream, cleardirty);
+	return(savestream.Result());
 }
 
 
 /// <summary>
 /// Reads this brain back from the save game stream.
-/// A neuron is created and read back for each one the stream says was written, and each
-/// is handed to the brain as it arrives.
+/// Whatever neurons the brain was holding are destroyed first, so the stream's neurons
+/// entirely replace them.
 /// </summary>
 /// <returns>
-/// Returns with S_OK when the brain was read, E_POINTER when no stream was supplied,
-/// E_OUTOFMEMORY when a neuron could not be created, or the stream's own failure code.
+/// Returns with S_OK when the brain was read, E_POINTER when no stream was supplied, or
+/// the stream's own failure code.
 /// </returns>
 HRESULT BrainClass::Load(IStream * stream)
 {
@@ -222,25 +187,37 @@ HRESULT BrainClass::Load(IStream * stream)
 		return(E_POINTER);
 	}
 
-	int count = 0;
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+	return(savestream.Result());
+}
 
-	HRESULT result = stream->Read(&count, sizeof(count), NULL);
-	if (SUCCEEDED(result)) {
-		for (int i = 0; i < count; i++) {
-			NeuronClass * neuron = new NeuronClass;
-			if (neuron == NULL) {
-				return(E_OUTOFMEMORY);
-			}
 
-			result = neuron->Load(stream);
-			if (FAILED(result)) {
-				return(result);
-			}
+/// <summary>
+/// Lists the members this brain carries.
+/// The neurons are owned outright rather than shared, so each is written into the stream
+/// whole instead of travelling as a pointer.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+/// <param name="cleardirty">Should the neurons be marked clean once they are written?</param>
+void BrainClass::Serialize(SaveStreamClass & stream, BOOL cleardirty)
+{
+	int count = Neurons.Count();
+	stream.Serialize(count);
 
-			Add_Neuron(neuron);
-		}
-
-		result = S_OK;
+	if (stream.Is_Loading()) {
+		Deinit();
 	}
-	return(result);
+
+	for (int i = 0; i < count && !stream.Was_Error(); i++) {
+		if (stream.Is_Loading()) {
+			NeuronClass * neuron = new NeuronClass;
+			neuron->Load(stream.Get_Stream());
+			Add_Neuron(neuron);
+		} else {
+			Neurons[i]->Save(stream.Get_Stream(), cleardirty);
+		}
+	}
+	// MinCount -- the limits a brain was prepared with rather than anything it accumulated.
+	// MaxCount
 }

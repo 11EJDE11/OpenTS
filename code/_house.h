@@ -31,6 +31,14 @@ struct AngerStruct
 	 * becomes this house's Enemy, and every level decays slowly as time passes.
 	 */
 	int Level;
+
+	/// Carries this anger record to or from a save game.
+	template<typename S>
+	void Serialize(S & stream)
+	{
+		stream.Serialize(House);
+		stream.Serialize(Level);
+	}
 };
 
 
@@ -52,4 +60,12 @@ struct ScoutStruct
 	 * houses that have not been laid eyes on yet.
 	 */
 	bool IsScouted;
+
+	/// Carries this scouting record to or from a save game.
+	template<typename S>
+	void Serialize(S & stream)
+	{
+		stream.Serialize(House);
+		stream.Serialize(IsScouted);
+	}
 };

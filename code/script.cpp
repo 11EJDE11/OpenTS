@@ -17,6 +17,7 @@
 #include "crc.h"
 #include "findmake.h"
 #include "globals.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "tracker.h"
@@ -166,42 +167,16 @@ HRESULT STDMETHODCALLTYPE ScriptClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the script from a save game stream.
-/// This routine will rebuild the virtual table pointers and remap the script type
-/// reference onto whatever address that type occupies in the freshly loaded game.
+/// Lists the members this script carries.
 /// </summary>
-/// <param name="stream">The stream to read the script from.</param>
-/// <returns>Returns with S_OK if the script was loaded, otherwise the failure code from
-/// the base class.</returns>
-HRESULT STDMETHODCALLTYPE ScriptClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ScriptClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ScriptClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves the script to a save game stream.
-/// </summary>
-/// <param name="stream">The stream to write the script to.</param>
-/// <param name="cleardirty">Should the object be marked as unmodified afterward?</param>
-/// <returns>Returns with S_OK if the script was written, otherwise the failure code from
-/// the base class.</returns>
-HRESULT STDMETHODCALLTYPE ScriptClass::Save(IStream *stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(Unused1);
+	stream.Serialize(CurrentLineNumber);
 }
 
 
@@ -409,40 +384,17 @@ HRESULT STDMETHODCALLTYPE ScriptTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the script type from a save game stream.
-/// This routine will rebuild the virtual table pointers of the script type as it comes
-/// back off the stream.
+/// Lists the members this script type carries.
 /// </summary>
-/// <param name="stream">The stream to read the script type from.</param>
-/// <returns>Returns with S_OK if the script type was loaded, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE ScriptTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void ScriptTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) ScriptTypeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves the script type to a save game stream.
-/// </summary>
-/// <param name="stream">The stream to write the script type to.</param>
-/// <param name="cleardirty">Should the object be marked as unmodified afterward?</param>
-/// <returns>Returns with S_OK if the script type was written, otherwise the failure code
-/// from the base class.</returns>
-HRESULT STDMETHODCALLTYPE ScriptTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Scope);
+	stream.Serialize(MissionCount);
+	stream.Serialize(MissionList);
 }
 
 

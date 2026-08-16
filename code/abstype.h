@@ -53,6 +53,8 @@ class AbstractTypeClass : public AbstractClass
 		bool operator == (char const * string) const { return(IniName == string); }
 		bool operator != (char const * string) const { return(IniName != string); }
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 
 		virtual void Init_Theater(TheaterType theater) {}

@@ -20,6 +20,7 @@
 #include "ccini.h"
 #include "findmake.h"
 #include "globals.h"
+#include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "techtype.h"
@@ -313,40 +314,17 @@ TaskForceClass * TaskForceClass::Find_Or_Make(char const * name)
 
 
 /// <summary>
-/// Saves this task force to the save game stream.
+/// Lists the members this task force carries.
 /// </summary>
-/// <returns>Returns with the result code of the save operation.</returns>
-HRESULT STDMETHODCALLTYPE TaskForceClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void TaskForceClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Loads this task force from the save game stream.
-/// The member object types are remembered as raw identifiers in the save file, so they
-/// are handed to the swizzler to be turned back into pointers once the rest of the file
-/// has been read in.
-/// </summary>
-/// <returns>Returns with the result code of the load operation.</returns>
-HRESULT STDMETHODCALLTYPE TaskForceClass::Load(IStream * stream)
-{
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TaskForceClass(NoInitClass());
-
-		for (int i = 0; i < MAX_TEAM_CLASSCOUNT; i++) {
-			Swizzle_Pointer(&Members[i].Class);
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Group);
+	stream.Serialize(ClassCount);
+	stream.Serialize(Scope);
+	stream.Serialize(Members);
 }
 
 

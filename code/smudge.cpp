@@ -47,8 +47,8 @@
 #include "ccini.h"
 #include "cell.h"
 #include "globals.h"
+#include "savestream.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tracker.h"
 #include "vector.h"
 
@@ -270,34 +270,14 @@ void SmudgeClass::Write_INI(CCINIClass & ini)
 
 
 /// <summary>
-/// Loads this smudge from a save game stream.
-/// This routine is part of the IPersistStream interface. Once the base class data has been
-/// read, the smudge type reference is remapped to the matching type object in this session.
+/// Lists the members this smudge carries.
 /// </summary>
-/// <returns>Returns with S_OK if the smudge was loaded, otherwise the failure code that the
-/// base class reported.</returns>
-HRESULT STDMETHODCALLTYPE SmudgeClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void SmudgeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) SmudgeClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this smudge to a save game stream.
-/// This routine is part of the IPersistStream interface. A smudge carries nothing of its
-/// own that must be recorded, so the base class does all of the work.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared as a result of saving?</param>
-/// <returns>Returns with the result code that the base class reported.</returns>
-HRESULT STDMETHODCALLTYPE SmudgeClass::Save(IStream *stream, int cleardirty)
-{
-	return(BASECLASS::Save(stream, cleardirty));
+	stream.Serialize(Class);
 }
 
 
@@ -308,18 +288,6 @@ HRESULT STDMETHODCALLTYPE SmudgeClass::Save(IStream *stream, int cleardirty)
 ObjectTypeClass const * SmudgeClass::Class_Of(void) const
 {
 	return(Class);
-}
-
-
-/// <summary>
-/// Fetches the memory footprint of this object.
-/// This routine is used by the save and load system when it must know how much storage
-/// the object requires.
-/// </summary>
-/// <returns>Returns with the number of bytes this smudge occupies.</returns>
-int SmudgeClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

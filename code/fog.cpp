@@ -33,11 +33,11 @@
 #include "lightcon.h"
 #include "objtype.h"
 #include "rect.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "shapeset.h"
 #include "smudtype.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "terrain.h"
 #include "vector.h"
@@ -533,79 +533,41 @@ void Update_Fogged_Objects(void)
 
 
 /// <summary>
-/// Saves this fogged object to a stream.
-/// The recorded appearance is written out after the base object, so that whatever the
-/// player last saw under the fog survives a save and load.
+/// Lists the members this fogged object carries.
 /// </summary>
-/// <param name="stream">The stream to write this object to.</param>
-/// <param name="cleardirty">Should the object be marked as no longer dirty?</param>
-/// <returns>Returns with S_OK if the object was saved, otherwise the error reported
-/// by the stream.</returns>
-HRESULT STDMETHODCALLTYPE FoggedObjectClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void FoggedObjectClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		int index;
+	BASECLASS::Serialize(stream);
 
-		int count = Records.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&Records[index], sizeof(Records[index]), NULL);
-			if (FAILED(result)) {
-				return(S_OK);
-			}
-		}
-
-		result = S_OK;
-	}
-	return(result);
+	// FoggyObjects -- the master list, which each record joins as it is constructed.
+	// FoggedObjectIndex -- the cell keyed index, re-registered by Post_Load.
+	stream.Serialize(Overlay);
+	stream.Serialize(House);
+	stream.Serialize(OverlayData);
+	stream.Serialize(RTTI);
+	stream.Serialize(Position);
+	stream.Serialize(BoundingRect);
+	stream.Serialize(CellHeight);
+	stream.Serialize(Smudge);
+	stream.Serialize(SmudgeData);
+	stream.Serialize(Records);
+	stream.Serialize(CanDraw);
 }
 
 
 /// <summary>
-/// Loads this fogged object from a stream.
-/// The recorded appearance is read back and its type pointers are swizzled, and the
-/// object re-registers itself with the fogged object index so that the fog looks the
-/// same after a load as it did when the game was saved.
+/// Re-registers this fogged object with the index that the fog is drawn from.
+/// The index is keyed by the cell the record lies in, which is only known once the
+/// record's own members are back in place.
 /// </summary>
-/// <param name="stream">The stream to read this object from.</param>
-/// <returns>Returns with S_OK if the object was loaded, otherwise the error reported
-/// by the stream.</returns>
-HRESULT STDMETHODCALLTYPE FoggedObjectClass::Load(IStream * stream)
+void FoggedObjectClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) FoggedObjectClass(NoInitClass());
-
-		Swizzle_Pointer(&House);
-
-		int count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (int i = 0; i < count; i++) {
-			DrawRecord record;
-
-			result = stream->Read(&record, sizeof(record), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-
-			Records.Add(record);
-			Swizzle_Pointer(&Records[Records.Count()-1].TypeClass);
-		}
+	BASECLASS::Post_Load();
 
 		Cell cell = Get_Cell();
 		int id = cell.As_Int() - RTTI + INT_MAX;
 		FoggedObjectIndex.Add_Index(id, this);
-	}
-	return(result);
 }
 
 
@@ -634,17 +596,6 @@ Cell const * FoggedObjectClass::Get_Head_Record_Occupy_List(void)
 RTTIType FoggedObjectClass::Fetch_RTTI(void) const
 {
 	return(RTTI_FOGGEDOBJECT);
-}
-
-
-/// <summary>
-/// Fetches the memory size of this object.
-/// The save game system uses this to know how much of the object to write out.
-/// </summary>
-/// <returns>Returns with the size of this object in bytes.</returns>
-int FoggedObjectClass::Fetch_Object_Size(bool) const
-{
-	return(sizeof((*this)));
 }
 
 

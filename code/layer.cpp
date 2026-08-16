@@ -37,7 +37,7 @@
 
 #include "layer.h"
 
-#include "swizzle.h"
+#include "savestream.h"
 
 
 /***********************************************************************************************
@@ -159,28 +159,17 @@ HRESULT LayerClass::Save(IStream * stream)
 		return(E_POINTER);
 	}
 
-	int count = Count();
-
-	HRESULT result = stream->Write(&count, sizeof(count), NULL);
-	if (SUCCEEDED(result)) {
-		for (int index = 0; index < count; index++) {
-			result = stream->Write(&Vector[index], sizeof(int), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-		return(S_OK);
-	}
-	return(result);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	DynamicVectorClass<ObjectClass *>::Serialize(savestream);
+	return(savestream.Result());
 }
 
 
 /// <summary>
 /// Loads the layer from the data stream.
 /// This routine is the counterpart to Save and is called while the save game is being
-/// reconstructed. The object pointers are read back exactly as they were written and then
-/// handed to the pointer swizzler, so they do not become usable until the remap pass has
-/// run.
+/// reconstructed. Whatever the layer was holding is discarded and the object pointers are
+/// read back, so they do not become usable until the swizzle pass has run.
 /// </summary>
 /// <returns>Returns with S_OK if the layer was read. Otherwise, the failure code from the
 /// stream is returned.</returns>
@@ -190,25 +179,7 @@ HRESULT LayerClass::Load(IStream * stream)
 		return(E_POINTER);
 	}
 
-	int count = 0;
-	ObjectClass *obj;
-
-	HRESULT result = stream->Read(&count, sizeof(count), NULL);
-	if (SUCCEEDED(result)) {
-		int index;
-		for (index = 0; index < count; index++) {
-			result = stream->Read(&obj, sizeof(obj), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			Add(obj);
-		}
-
-		for (index = 0; index < count; index++) {
-			Swizzle_Pointer(&Vector[index]);
-		}
-
-		return(S_OK);
-	}
-	return(result);
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	DynamicVectorClass<ObjectClass *>::Serialize(savestream);
+	return(savestream.Result());
 }

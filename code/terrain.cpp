@@ -74,10 +74,10 @@
 #include "lightcon.h"
 #include "rect.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "terrtype.h"
 #include "tracker.h"
@@ -896,39 +896,45 @@ bool TerrainClass::Render(Rect & cliprect, bool forced, bool extras_only) const
 
 /// <summary>
 /// Loads this terrain object from the specified stream.
-/// This routine is part of the IPersistStream implementation used by the save game
-/// system. After the base class reads the raw object back, the virtual table pointer is
-/// restored, the object is re-registered with the target tracker, and its type class
-/// pointer is remapped.
+/// The object carries a different identity once it has been read, so its registration
+/// under the identity it was constructed with is dropped before the members arrive.
 /// </summary>
 /// <param name="stream">The stream to read the object from.</param>
 /// <returns>Returns with S_OK if the object was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE TerrainClass::Load(IStream * stream)
 {
 	TargetTracker.Remove_Index(Fetch_ID());
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TerrainClass(NoInitClass());
 
-		TargetTracker.Add_Index(Fetch_ID(), this);
-		Swizzle_Pointer(&Class);
-	}
-	return(result);
+	return(BASECLASS::Load(stream));
 }
 
 
 /// <summary>
-/// Saves this terrain object to the specified stream.
-/// This routine is part of the IPersistStream implementation used by the save game
-/// system. A terrain object carries no separate allocations, so the base class writing
-/// out the raw object is all that is needed.
+/// Re-registers this terrain object under its loaded identity.
 /// </summary>
-/// <param name="stream">The stream to write the object to.</param>
-/// <param name="cleardirty">Should the object be marked as clean once it is written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE TerrainClass::Save(IStream * stream, BOOL cleardirty)
+void TerrainClass::Post_Load(void)
 {
-	return(BASECLASS::Save(stream, cleardirty));
+	BASECLASS::Post_Load();
+
+	TargetTracker.Add_Index(Fetch_ID(), this);
+}
+
+
+/// <summary>
+/// Lists the members this terrain object carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void TerrainClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+	StageClass::Serialize(stream);
+
+	stream.Serialize(Class);
+	stream.Serialize(IsOnFire);
+	stream.Serialize(IsCrumbling);
+	stream.Serialize(Unused1);
+	stream.Serialize(Unused2);
+	stream.Serialize(RenderPixelPos);
 }
 
 
@@ -1057,17 +1063,6 @@ Rect TerrainClass::Get_Render_Rect(void)
 
 	Rect a = Union(rect1, rect2);
 	return(Rect(drawpoint.X + a.X - width / 2, drawpoint.Y + a.Y - height / 2, a.Width, a.Height));
-}
-
-
-/// <summary>
-/// Fetches the size of this object in bytes.
-/// The save system uses this to know how much of the object it must write out.
-/// </summary>
-/// <returns>Returns with the byte size of the terrain object.</returns>
-int TerrainClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

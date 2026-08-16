@@ -97,6 +97,7 @@
 #include "mono.h"
 #include "movie.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "script.h"
 #include "session.h"
@@ -2251,47 +2252,46 @@ FootClass * TeamClass::Fetch_A_Leader(void) const
 
 
 /// <summary>
-/// Reads this team back in from the save game stream.
-/// Every pointer the team carries is remapped to the object it referred to at the time the
-/// game was saved.
+/// Lists the members this team carries.
 /// </summary>
-/// <returns>Returns with S_OK if the team was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE TeamClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TeamClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TeamClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&Script);
-		Swizzle_Pointer(&House);
-		Swizzle_Pointer(&Tag);
-		Swizzle_Pointer(&Member);
-		Swizzle_Pointer(&ClosestMember);
-		Swizzle_Pointer(&Target);
-		Swizzle_Pointer(&Zone);
-		Swizzle_Pointer(&MissionTarget);
-		Swizzle_Pointer(&HouseToScout);
-		Swizzle_Pointer(&UnusedPtr1);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this team out to the save game stream.
-/// </summary>
-/// <returns>Returns with S_OK if the team was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE TeamClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(Script);
+	stream.Serialize(House);
+	stream.Serialize(HouseToScout);
+	stream.Serialize(Zone);
+	stream.Serialize(ClosestMember);
+	stream.Serialize(MissionTarget);
+	stream.Serialize(Target);
+	// UnusedPtr1 -- untyped, so it carries no swizzle identity, and nothing reads it.
+	stream.Serialize(Total);
+	stream.Serialize(Risk);
+	stream.Serialize(CreationFrame);
+	stream.Serialize(Member);
+	stream.Serialize(TimeOut);
+	stream.Serialize(SuspendTimer);
+	stream.Serialize(Tag);
+	stream.Serialize(IsDeleteTypeWhenDone);
+	stream.Serialize(IsRegrouping);
+	stream.Serialize(NeedsReinforcement);
+	stream.Serialize(IsForcedActive);
+	stream.Serialize(IsHasBeen);
+	stream.Serialize(IsFullStrength);
+	stream.Serialize(IsUnderStrength);
+	stream.Serialize(IsReforming);
+	stream.Serialize(IsLagging);
+	stream.Serialize(IsAltered);
+	stream.Serialize(JustAltered);
+	stream.Serialize(IsMoving);
+	stream.Serialize(IsNextMission);
+	stream.Serialize(IsLeaveMap);
+	stream.Serialize(Suspended);
+	stream.Serialize(Succeeded);
+	stream.Serialize(Quantity);
 }
 
 
@@ -3878,19 +3878,6 @@ bool TeamClass::Ammo_Check(void) const
 		unit = unit->Member;
 	}
 	return(r);
-}
-
-
-/// <summary>
-/// Fetches the size of this object as it is written to a save game.
-/// This routine is used by the save and load system when reserving room for the team's
-/// persisted record.
-/// </summary>
-/// <param name="oldsave">Is the size being requested for an older save game format?</param>
-/// <returns>Returns with the size of the object in bytes.</returns>
-int TeamClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
 }
 
 

@@ -27,8 +27,8 @@
 #include "mouse.h"
 #include "ovrlight.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "techno.h"
 #include "wave.h"
@@ -283,18 +283,6 @@ void BuildingLightClass::AI(void)
 
 
 /// <summary>
-/// Fetches the size of this object.
-/// This routine is used by the save game code to know how much of the stream this
-/// object occupies.
-/// </summary>
-/// <returns>Returns with the size of the light object in bytes.</returns>
-int BuildingLightClass::Fetch_Object_Size(bool oldsave) const
-{
-	return(sizeof(*this));
-}
-
-
-/// <summary>
 /// Fetches the class identifier of this object.
 /// This routine is used by the save game code so that an object of the right kind can
 /// be created when the game is loaded back in.
@@ -309,32 +297,21 @@ HRESULT STDMETHODCALLTYPE BuildingLightClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this spotlight from the save game stream.
-/// The owner and target references are remembered as raw identifiers in the save file,
-/// so they are handed to the swizzler to be turned back into pointers once every object
-/// has been read in.
+/// Lists the members this spotlight carries.
 /// </summary>
-/// <returns>Returns with the result code of the load operation.</returns>
-HRESULT STDMETHODCALLTYPE BuildingLightClass::Load(IStream *stream)
+/// <param name="stream">The stream carrying the members.</param>
+void BuildingLightClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) BuildingLightClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Owner);
-		Swizzle_Pointer(&Target);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this spotlight to the save game stream.
-/// </summary>
-/// <returns>Returns with the result code of the save operation.</returns>
-HRESULT STDMETHODCALLTYPE BuildingLightClass::Save(IStream * stream, BOOL cleardirty)
-{
-	return(BASECLASS::Save(stream, cleardirty));
+	stream.Serialize(Speed);
+	stream.Serialize(RotationPivot);
+	stream.Serialize(RotationTarget);
+	stream.Serialize(Acceleration);
+	stream.Serialize(IsOppositeDirection);
+	stream.Serialize(Behavior);
+	stream.Serialize(Target);
+	stream.Serialize(Owner);
 }
 
 

@@ -44,6 +44,7 @@ class BulletTypeClass;
 class InfantryTypeClass;
 class OverlayTypeClass;
 class ParticleSystemTypeClass;
+class SaveStreamClass;
 class SmudgeTypeClass;
 class UnitTypeClass;
 class VoxelAnimTypeClass;
@@ -68,6 +69,24 @@ class DifficultyClass
 		bool IsBuildSlowdown;
 		bool IsWallDestroyer;
 		bool IsContentScan;
+
+		/// Carries one difficulty level's settings to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(FirepowerBias);
+			stream.Serialize(GroundspeedBias);
+			stream.Serialize(AirspeedBias);
+			stream.Serialize(ArmorBias);
+			stream.Serialize(ROFBias);
+			stream.Serialize(CostBias);
+			stream.Serialize(BuildSpeedBias);
+			stream.Serialize(RepairDelay);
+			stream.Serialize(BuildDelay);
+			stream.Serialize(IsBuildSlowdown);
+			stream.Serialize(IsWallDestroyer);
+			stream.Serialize(IsContentScan);
+		}
 };
 
 class RulesClass
@@ -120,6 +139,8 @@ class RulesClass
 
 		void Save(IStream * stream);
 		void Load(IStream * stream);
+
+		void Serialize(SaveStreamClass & stream);
 
 		void Detach(AbstractClass const * target, bool all = true);
 

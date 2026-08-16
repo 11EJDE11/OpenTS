@@ -54,11 +54,11 @@
 #include "overtype.h"
 #include "ovrlight.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "stimer.h"
 #include "sun.h"
-#include "swizzle.h"
 #include "terrain.h"
 #include "terrtype.h"
 #include "vector.h"
@@ -3709,43 +3709,55 @@ HRESULT STDMETHODCALLTYPE Tactical::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the tactical map from the save game stream.
-/// This routine is called by the save game system through the persistence interface. The
-/// selection list is discarded and the pending cell redraw pointers are remapped onto the
-/// freshly loaded map.
+/// Lists the members the tactical map carries.
 /// </summary>
-/// <returns>Returns with S_OK if the tactical map was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE Tactical::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void Tactical::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) Tactical(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		SelectableCount = 0;
-		for (int i = 0; i < CellRedrawCount; i++) {
-			Swizzle_Pointer(&CellRedraw[i]);
-		}
+	stream.Serialize(ScreenText);
+	stream.Serialize(LastAIFrame);
+	stream.Serialize(field_58);
+	stream.Serialize(field_59);
+	stream.Serialize(TacPixelX);
+	stream.Serialize(TacPixelY);
+	stream.Serialize(LastTacPixelX);
+	stream.Serialize(LastTacPixelY);
+	stream.Serialize(ZoomFactor);
+	// SelectableCount -- the click list is built afresh by the next render pass.
+	// SelectableObjects
+	stream.Serialize(MoveFrom);
+	stream.Serialize(MoveTo);
+	stream.Serialize(MoveSpeed);
+	stream.Serialize(MoveFactor);
 
-		result = S_OK;
+	/*
+	 * Only the cells actually flagged travel. The rest of the array is whatever the last
+	 * render left behind and is never looked at beyond the count.
+	 */
+	stream.Serialize(CellRedrawCount);
+	for (int index = 0; index < CellRedrawCount; index++) {
+		stream.Serialize(CellRedraw[index]);
 	}
-	return(result);
-}
 
-
-/// <summary>
-/// Saves the tactical map to the save game stream.
-/// This routine is called by the save game system through the persistence interface. The
-/// view state itself travels with the object, so there is nothing extra to write out.
-/// </summary>
-/// <returns>Returns with S_OK if the tactical map was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE Tactical::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(TacticalCoord);
+	stream.Serialize(LastTacticalCoord);
+	stream.Serialize(DesiredTacticalCoord);
+	stream.Serialize(IsFirstRender);
+	stream.Serialize(IsToRedraw);
+	stream.Serialize(UnusedBool);
+	stream.Serialize(VisibleCellRect);
+	stream.Serialize(RubberBandStart);
+	stream.Serialize(RubberBandEnd);
+	stream.Serialize(WaypointAnimCounter);
+	stream.Serialize(WaypointAnimTimer);
+	// CoordToPixelMatrix -- the isometric projections, built from constants as the map is
+	// constructed.
+	// PixelToCoordMatrix
+	// DirtyAreas -- redraw work outstanding for the running session rather than state the map
+	// owns.
+	// ShadowControls
 }
 
 

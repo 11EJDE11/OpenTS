@@ -14,6 +14,7 @@
 
 #include "crc.h"
 #include "globals.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
 
@@ -91,41 +92,12 @@ HRESULT STDMETHODCALLTYPE SideClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this side from a save game stream.
-/// This routine is part of the IPersistStream interface. The base class data is read first
-/// and then the list of houses that belong to this side is restored.
+/// Lists the members this side carries.
 /// </summary>
-/// <returns>Returns with S_OK if the side was loaded, otherwise the failure code that the
-/// base class reported.</returns>
-HRESULT STDMETHODCALLTYPE SideClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void SideClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) SideClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Houses.Load(stream);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this side to a save game stream.
-/// This routine is part of the IPersistStream interface. The base class data is written
-/// first and then the list of houses that belong to this side.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared as a result of saving?</param>
-/// <returns>Returns with S_OK if the side was saved, otherwise the failure code that the
-/// base class reported.</returns>
-HRESULT STDMETHODCALLTYPE SideClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		Houses.Save(stream);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Houses);
 }

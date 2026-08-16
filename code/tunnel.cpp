@@ -26,14 +26,13 @@
 #include "map.h"
 #include "noinit.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "sun.h"
 #include "tactical.h"
 
 #include "layer.hh"
 #include "visual.hh"
-
-#include <new.h>
 
 
 /// <summary>
@@ -650,19 +649,17 @@ HRESULT STDMETHODCALLTYPE TunnelLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this locomotor back from a save game stream.
-/// The base class restores the member data, and this routine then reconstructs the
-/// object in place so that its virtual table pointers refer to this class again.
+/// Lists the members this tunnel locomotor carries.
 /// </summary>
-/// <returns>Returns with the result of the load. The object is left untouched if the
-/// load failed.</returns>
-HRESULT STDMETHODCALLTYPE TunnelLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TunnelLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TunnelLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(State);
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(DigTimer);
+	stream.Serialize(IsUnderground);
 }
 
 

@@ -18,6 +18,7 @@
 #include "findmake.h"
 #include "globals.h"
 #include "psystype.h"
+#include "savestream.h"
 #include "stimer.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -262,46 +263,50 @@ HRESULT STDMETHODCALLTYPE VoxelAnimTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this voxel animation type from the persist stream.
-/// The base class reads the raw type data, then the pointers within are converted back
-/// from the identifiers they were saved as, and the voxel image is re-fetched.
+/// Re-attaches the artwork this voxel animation type names.
+/// The voxel image is fetched again once the members have been read.
 /// </summary>
-/// <returns>Returns with the HRESULT of the load. S_OK if the type was rebuilt.</returns>
-HRESULT STDMETHODCALLTYPE VoxelAnimTypeClass::Load(IStream *stream)
+void VoxelAnimTypeClass::Post_Load(void)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) VoxelAnimTypeClass(NoInitClass());
+	BASECLASS::Post_Load();
 
-		Swizzle_Pointer(&Warhead);
-		Swizzle_Pointer(&BounceAnim);
-		Swizzle_Pointer(&ExpireAnim);
-		Swizzle_Pointer(&TrailerAnim);
-		Swizzle_Pointer(&Spawns);
-		Swizzle_Pointer(&AttachedSystem);
-
-		Fetch_Voxel_Image();
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Voxel_Image();
 }
 
 
 /// <summary>
-/// Saves this voxel animation type to the persist stream.
-/// Everything a voxel animation type owns is written by the base class, so this routine
-/// merely passes the request along.
+/// Lists the members this voxel animation type carries.
 /// </summary>
-/// <returns>Returns with the HRESULT of the save. S_OK if the type was written.</returns>
-HRESULT STDMETHODCALLTYPE VoxelAnimTypeClass::Save(IStream *stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void VoxelAnimTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(IsNormalized);
+	stream.Serialize(IsTranslucent);
+	stream.Serialize(IsSharesSourceData);
+	stream.Serialize(VoxelIndex);
+	stream.Serialize(Duration);
+	stream.Serialize(Elasticity);
+	stream.Serialize(MinAngularVelocity);
+	stream.Serialize(MaxAngularVelocity);
+	stream.Serialize(MinZVel);
+	stream.Serialize(MaxZVel);
+	stream.Serialize(MaxXYVel);
+	stream.Serialize(IsMeteor);
+	stream.Serialize(Spawns);
+	stream.Serialize(SpawnCount);
+	stream.Serialize(StartSound);
+	stream.Serialize(BounceSound);
+	stream.Serialize(ExpireSound);
+	stream.Serialize(BounceAnim);
+	stream.Serialize(ExpireAnim);
+	stream.Serialize(TrailerAnim);
+	stream.Serialize(Damage);
+	stream.Serialize(DamageRadius);
+	stream.Serialize(Warhead);
+	stream.Serialize(AttachedSystem);
+	stream.Serialize(IsTiberium);
 }
 
 

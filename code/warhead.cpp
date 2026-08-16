@@ -47,6 +47,7 @@
 #include "globals.h"
 #include "partsys.h"
 #include "psystype.h"
+#include "savestream.h"
 #include "session.h"
 #include "stimer.h"
 #include "sun.h"
@@ -274,58 +275,37 @@ HRESULT STDMETHODCALLTYPE WarheadTypeClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads this warhead back in from the save game stream.
-/// This routine also copes with save games written before the web and limpet data existed,
-/// shifting the trailing values into the places they occupy today.
+/// Lists the members this warhead carries.
 /// </summary>
-/// <returns>Returns with S_OK if the warhead was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE WarheadTypeClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void WarheadTypeClass::Serialize(SaveStreamClass & stream)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&WebDurationVariation, &WebDuration, size - offsetof(WarheadTypeClass, WebDurationVariation));
-			WebDuration = 0;
-			memmove(&WebRadius, &WebDurationVariation, size - offsetof(WarheadTypeClass, WebRadius));
-			WebDurationVariation = 0;
-			memmove(&LimpetFactor, &WebRadius, size - offsetof(WarheadTypeClass, LimpetFactor));
-			WebRadius = 0;
-			memmove(&Particle, &LimpetFactor, size - offsetof(WarheadTypeClass, Particle));
-			LimpetFactor = 0;
-			memmove(&IsWoodDestroyer, &IsWebby, size - offsetof(WarheadTypeClass, IsWoodDestroyer));
-			IsWebby = false;
-		}
+	BASECLASS::Serialize(stream);
 
-		new (this) WarheadTypeClass(NoInitClass());
-
-		ExplosionSet.Load(stream);
-
-		for (int i = 0; i < ExplosionSet.Count(); i++) {
-			Swizzle_Pointer(&ExplosionSet[i]);
-		}
-		Swizzle_Pointer(&Particle);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes this warhead out to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the object be considered unmodified after it is written?</param>
-/// <returns>Returns with S_OK if the warhead was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE WarheadTypeClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		ExplosionSet.Save(stream);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Deform);
+	stream.Serialize(Modifier);
+	stream.Serialize(ProneDamage);
+	stream.Serialize(DeformThreshhold);
+	stream.Serialize(ExplosionSet);
+	stream.Serialize(InfantryDeath);
+	stream.Serialize(SpreadFactor);
+	stream.Serialize(WebDuration);
+	stream.Serialize(WebDurationVariation);
+	stream.Serialize(WebRadius);
+	stream.Serialize(LimpetFactor);
+	stream.Serialize(Particle);
+	stream.Serialize(IsWallDestroyer);
+	stream.Serialize(IsWebby);
+	stream.Serialize(IsWoodDestroyer);
+	stream.Serialize(IsTiberiumDestroyer);
+	stream.Serialize(IsOrganic);
+	stream.Serialize(IsSparky);
+	stream.Serialize(IsFire);
+	stream.Serialize(IsConventional);
+	stream.Serialize(IsRocker);
+	stream.Serialize(IsBright);
+	stream.Serialize(IsEMEffect);
+	stream.Serialize(IsVeinhole);
 }
 
 
@@ -370,28 +350,6 @@ WarheadTypeClass *WarheadTypeClass::From_Name(char const * name)
 		}
 	}
 	return(NULL);
-}
-
-
-/// <summary>
-/// Fetches the size this object occupies within a save game.
-/// This routine is used by the load code to cope with save games that were written before
-/// the web and limpet data was added to the warhead.
-/// </summary>
-/// <param name="oldsave">Is the size for the older save game layout wanted?</param>
-/// <returns>Returns with the number of bytes the object occupies in the save file.</returns>
-int WarheadTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta =
-		sizeof(WebDuration) +
-		sizeof(WebDurationVariation) +
-		sizeof(WebRadius) +
-		sizeof(LimpetFactor) +
-		sizeof(IsWebby)
-		- 1;
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

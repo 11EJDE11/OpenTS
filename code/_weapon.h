@@ -42,4 +42,14 @@ struct WeaponDataStruct {
 	 * lines up with the middle of the barrel artwork rather than with its base.
 	 */
 	int BarrelThickness;
+
+	/// Carries the weapon slot to or from a save game.
+	template<typename S>
+	void Serialize(S & stream)
+	{
+		stream.Serialize(Weapon);
+		stream.Serialize(FireFLH);
+		stream.Serialize(BarrelLength);
+		stream.Serialize(BarrelThickness);
+	}
 };

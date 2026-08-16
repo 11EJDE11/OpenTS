@@ -211,7 +211,7 @@ void LoadOptionsClass::Save_Dialog_On_WM_COMMAND(HWND window, WPARAM wparam, LPA
 					**	it is, set the edit buffer to empty.
 					*/
 					FileEntryClass * fdata = (FileEntryClass *)ListBox_GetItemData((HWND)lparam, row);
-					if (fdata->Valid && !fdata->Old) {
+					if (fdata->Valid) {
 						SetWindowText(GetDlgItem(window, IDC_MISSION_SAVE_DESC), fdata->Descr);
 					} else if (_this->Description != NULL) {
 						SetWindowText(GetDlgItem(window, IDC_MISSION_SAVE_DESC), _this->Description);
@@ -462,16 +462,14 @@ bool LoadOptionsClass::Dialog(void)
 								Init_Campaigns();
 							}
 
-								ShowWindow(dialog, SW_HIDE);
-								UpdateWindow(MainWindow);
-								IsOldSaveGame = entry->Old;
+							ShowWindow(dialog, SW_HIDE);
+							UpdateWindow(MainWindow);
 
-								if (!Load_File(entry->Filename)) {
-									WWMessageBox().Process(TXT_ERROR_LOADING_GAME, TXT_OK, TXT_NONE, TXT_NONE);
-									ShowWindow(dialog, SW_SHOW);
-									State = STATE_PENDING;
-								}
-								IsOldSaveGame = false;
+							if (!Load_File(entry->Filename)) {
+								WWMessageBox().Process(TXT_ERROR_LOADING_GAME, TXT_OK, TXT_NONE, TXT_NONE);
+								ShowWindow(dialog, SW_SHOW);
+								State = STATE_PENDING;
+							}
 							break;
 						}
 
@@ -917,18 +915,11 @@ bool LoadOptionsClass::Read_File(FileEntryClass * fdata, WIN32_FIND_DATAA * ff)
 			return(false);
 		}
 
-		unsigned int version = savever.Get_Internal_Version();
-		if (version != GAMEVER_TS && version != ExpectedGameVersion) {
+		if (savever.Get_Internal_Version() != ExpectedGameVersion) {
 			return(false);
 		}
 
-		if (version == GAMEVER_TS && ExpectedGameVersion != GAMEVER_TS) {
-			wsprintf(fdata->Descr, "*%s", savever.Get_Scenario_Description());
-			fdata->Old = true;
-		} else {
-			wsprintf(fdata->Descr, "%s", savever.Get_Scenario_Description());
-			fdata->Old = false;
-		}
+		wsprintf(fdata->Descr, "%s", savever.Get_Scenario_Description());
 
 		fdata->Valid = ok;
 		fdata->Scenario = savever.Get_Scenario_Number();

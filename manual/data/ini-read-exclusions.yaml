@@ -22,7 +22,7 @@ site_exclusions:
     reason: Preview dimensions describe generated compressed map artwork and are not an authored setting.
 
   - path: code/techtype.cpp
-    function: TechnoTypeClass::Load
+    function: TechnoTypeClass::Post_Load
     keys: [Cameo]
     classification: duplicate
     canonical_key: Cameo

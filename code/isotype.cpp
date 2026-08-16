@@ -41,6 +41,7 @@
 #include "mixfile.h"
 #include "palette.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "shapeset.h"
 #include "sun.h"
@@ -2763,50 +2764,57 @@ void IsometricTileTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads this tile type back in from the save game stream.
+/// Rebuilds the presentation state this tile type carries.
 /// The lighting converters and the preview colors do not survive a save game, so they are
 /// discarded here and rebuilt from the artwork once the object has been read.
 /// </summary>
-/// <param name="stream">The stream to read the tile type from.</param>
-/// <returns>Returns with S_OK if the tile type was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE IsometricTileTypeClass::Load(IStream * stream)
+void IsometricTileTypeClass::Post_Load(void)
 {
-	int i;
-	int j;
-	for (i = 0; i < TileDrawers.Count(); i++) {
+	BASECLASS::Post_Load();
+
+	for (int i = 0; i < TileDrawers.Count(); i++) {
 		delete TileDrawers[i];
 		TileDrawers[i] = NULL;
 	}
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) IsometricTileTypeClass(NoInitClass());
-
-		Swizzle_Pointer(&NextTileTypeInSet);
-		for (j = 0; j < TileDrawers.Count(); j++) {
-			TileDrawers[j] = NULL;
-		}
-		Build_Preview_Tiles();
-		return(S_OK);
-	}
-	return(result);
+	Build_Preview_Tiles();
 }
 
 
 /// <summary>
-/// Writes this tile type out to the save game stream.
+/// Lists the members this tile type carries.
 /// </summary>
-/// <param name="stream">The stream to write the tile type to.</param>
-/// <param name="cleardirty">Should the object be marked as clean once it has been written?</param>
-/// <returns>Returns with S_OK if the tile type was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE IsometricTileTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void IsometricTileTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(MarbleMadness);
+	stream.Serialize(NonMarbleMadness);
+	stream.Serialize(TileSetBaseID);
+	// PreviewTiles -- radar and preview colors, baked again as this loads.
+	stream.Serialize(NextTileTypeInSet);
+	stream.Serialize(ToSnowTheater);
+	stream.Serialize(ToTemperateTheater);
+	stream.Serialize(Anim);
+	stream.Serialize(Offset);
+	stream.Serialize(AttachesTo);
+	stream.Serialize(ZAdjust);
+	stream.Serialize(Unused1);
+	stream.Serialize(IsMorphable);
+	stream.Serialize(IsShadowCaster);
+	stream.Serialize(IsAllowToPlace);
+	stream.Serialize(IsRequiredForRMG);
+	stream.Serialize(Width);
+	stream.Serialize(Height);
+	stream.Serialize(Unused2);
+	stream.Serialize(NumTileTypesInSet);
+	stream.Serialize(IsFileLoaded);
+	stream.Serialize(Filename);
+	stream.Serialize(IsAllowBurrowing);
+	stream.Serialize(IsAllowTiberium);
+	stream.Serialize(UseCount);
 }
 
 

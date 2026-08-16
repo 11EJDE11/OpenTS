@@ -24,12 +24,11 @@
 #include "map.h"
 #include "noinit.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "weapon.h"
 
 #include "layer.hh"
-
-#include <new.h>
 
 
 /// <summary>
@@ -228,51 +227,30 @@ HRESULT STDMETHODCALLTYPE DropPodLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the drop pod locomotor from a stream.
-/// The pod is reconstructed in place and the locomotor it was carrying, if any, is
-/// restored along with it.
+/// Lists the members this drop pod locomotor carries.
+/// The locomotor set aside while the pod descends is a separate persistent object rather
+/// than a member, so it still travels framed by OLE and is recreated as the class it was
+/// saved as.
 /// </summary>
-/// <returns>Returns with S_OK, or the failure code reported by the stream.</returns>
-HRESULT STDMETHODCALLTYPE DropPodLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void DropPodLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) DropPodLocomotionClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		bool haspiggy;
-		stream->Read(&haspiggy, sizeof(haspiggy), NULL);
+	stream.Serialize(Direction);
+	stream.Serialize(DestinationCoord);
 
-		if (haspiggy) {
-			result = OleLoadFromStream(stream, IID_ILocomotion, (void**)&Piggybacker);
-		}
-	}
-	return(result);
-}
+	bool haspiggy = (Piggybacker != NULL);
+	stream.Serialize(haspiggy);
 
-
-/// <summary>
-/// Saves the drop pod locomotor to a stream.
-/// The carried locomotor is written out along with the pod itself, so that a saved game
-/// can restore an object that was still falling when the game was saved.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared after saving?</param>
-/// <returns>Returns with S_OK, or the failure code reported by the stream.</returns>
-HRESULT STDMETHODCALLTYPE DropPodLocomotionClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		bool haspiggy;
-		if (Piggybacker != NULL) {
-			haspiggy = true;
-			stream->Write(&haspiggy, sizeof(haspiggy), NULL);
-			IPersistStreamPtr ptr(Piggybacker);
-			result = OleSaveToStream(ptr, stream);
+	if (haspiggy) {
+		if (stream.Is_Saving()) {
+			IPersistStreamPtr persist(Piggybacker);
+			OleSaveToStream(persist, stream.Get_Stream());
 		} else {
-			haspiggy = false;
-			result = stream->Write(&haspiggy, sizeof(haspiggy), NULL);
+			OleLoadFromStream(stream.Get_Stream(), IID_ILocomotion, (LPVOID *)&Piggybacker);
 		}
 	}
-	return(result);
 }
 
 

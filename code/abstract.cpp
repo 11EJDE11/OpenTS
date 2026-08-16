@@ -46,6 +46,7 @@
 #include "crc.h"
 #include "globals.h"
 #include "noinit.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "swizzle.h"
 #include "vector.h"
@@ -184,16 +185,36 @@ ULONG STDMETHODCALLTYPE AbstractClass::Release(void)
 
 /// <summary>
 /// Writes this object to the save stream.
-/// The object's address goes out first as its swizzle identity, followed by the
-/// raw object image. Load reverses the process.
 /// </summary>
 /// <param name="stream">The stream to write to.</param>
 /// <param name="cleardirty">Should the object be marked clean once it has been written?</param>
-/// <returns>
-/// Returns with S_OK when the object was written, E_POINTER when no stream was
-/// supplied, or the stream's own failure code.
-/// </returns>
+/// <returns>Returns with S_OK when the object was written, otherwise a failure code.</returns>
 HRESULT STDMETHODCALLTYPE AbstractClass::Save(IStream * stream, BOOL cleardirty)
+{
+	return(Save_Members(stream, cleardirty));
+}
+
+
+/// <summary>
+/// Reads this object back from the save stream.
+/// </summary>
+/// <param name="stream">The stream to read from.</param>
+/// <returns>Returns with S_OK when the object was read, otherwise a failure code.</returns>
+HRESULT STDMETHODCALLTYPE AbstractClass::Load(IStream * stream)
+{
+	return(Load_Members(stream));
+}
+
+
+/// <summary>
+/// Writes the members this object describes out to the save stream.
+/// The object's address goes out first as its swizzle identity, and the members follow
+/// in the order Serialize names them.
+/// </summary>
+/// <param name="stream">The stream to write to.</param>
+/// <param name="cleardirty">Should the object be marked clean once it has been written?</param>
+/// <returns>Returns with S_OK when the record was written, otherwise a failure code.</returns>
+HRESULT AbstractClass::Save_Members(IStream * stream, BOOL cleardirty)
 {
 	if (stream == NULL) {
 		return(E_POINTER);
@@ -202,32 +223,29 @@ HRESULT STDMETHODCALLTYPE AbstractClass::Save(IStream * stream, BOOL cleardirty)
 	ULONG id = (ULONG)this;
 
 	HRESULT result = stream->Write(&id, sizeof(id), NULL);
-	if (SUCCEEDED(result)) {
-		result = stream->Write(this, Fetch_Object_Size(false), NULL);
-		if (SUCCEEDED(result)) {
-
-			if (cleardirty) {
-				Dirty = false;
-			}
-		}
+	if (FAILED(result)) {
 		return(result);
 	}
-	return(result);
+
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+
+	if (SUCCEEDED(savestream.Result()) && cleardirty) {
+				Dirty = false;
+			}
+
+	return(savestream.Result());
 }
 
 
 /// <summary>
-/// Reads this object back from the save stream.
-/// The saved address is handed to the swizzle system so that pointers elsewhere
-/// in the save game can be remapped onto this object's new location, and then the
-/// raw object image is read back over this one.
+/// Reads the members this object describes back from the save stream.
+/// The saved address is handed to the swizzle system so that pointers elsewhere in the
+/// save game can be remapped onto this object, and the members follow.
 /// </summary>
 /// <param name="stream">The stream to read from.</param>
-/// <returns>
-/// Returns with S_OK when the object was read, E_POINTER when no stream was
-/// supplied, or the stream's own failure code.
-/// </returns>
-HRESULT STDMETHODCALLTYPE AbstractClass::Load(IStream * stream)
+/// <returns>Returns with S_OK when the record was read, otherwise a failure code.</returns>
+HRESULT AbstractClass::Load_Members(IStream * stream)
 {
 	if (stream == NULL) {
 		return(E_POINTER);
@@ -236,31 +254,55 @@ HRESULT STDMETHODCALLTYPE AbstractClass::Load(IStream * stream)
 	ULONG id;
 
 	HRESULT result = stream->Read(&id, sizeof(id), NULL);
-	if (SUCCEEDED(result)) {
-		Swizzle_Here_I_Am(id, this);
-		int ref = RefCount;
-
-		result = stream->Read(this, Fetch_Object_Size(IsOldSaveGame), NULL);
-
-		RefCount = ref;
-	}
+	if (FAILED(result)) {
 	return(result);
+	}
+
+	Swizzle_Here_I_Am(id, this);
+
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+
+	if (SUCCEEDED(savestream.Result())) {
+		Post_Load();
+	}
+
+	return(savestream.Result());
+}
+
+
+/// <summary>
+/// Restores the state a game object could not carry in its record.
+/// The bare abstract object carries nothing of the sort, so there is nothing to do.
+/// </summary>
+void AbstractClass::Post_Load(void)
+{
+}
+
+
+/// <summary>
+/// Lists the members every game object carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void AbstractClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(ID);
+	// RefCount -- belongs to the running session rather than the record.
+	stream.Serialize(Dirty);
 }
 
 
 /// <summary>
 /// Fetches the number of bytes that Save will write.
+/// A record is now as long as the members a class names, and the count is not known
+/// before the members have been written. Nothing in the game asks for it, so rather than
+/// walk the object twice this reports that the size cannot be supplied.
 /// </summary>
 /// <param name="pcbSize">Receives the maximum size, in bytes.</param>
-/// <returns>Returns with S_OK, or E_POINTER when no output pointer was given.</returns>
+/// <returns>Returns with E_NOTIMPL.</returns>
 HRESULT STDMETHODCALLTYPE AbstractClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
 {
-	if (pcbSize == NULL) {
-		return(E_POINTER);
-	}
-
-	pcbSize->QuadPart = sizeof(int) + Fetch_Object_Size(false);
-	return(S_OK);
+	return(E_NOTIMPL);
 }
 
 
@@ -344,22 +386,6 @@ void AbstractClass::Detach(AbstractClass const * target, bool all)
 {
 	assert(this != NULL);
 
-}
-
-
-/// <summary>
-/// Fetches the save image size adjustment for this object.
-/// A save game written by an earlier version can store an object at a different
-/// size than the current build uses. Fetch_Object_Size adds this difference in when
-/// it is loading an old save, so the image is read back at the size it was written.
-/// </summary>
-/// <returns>Returns with the size difference in bytes; zero when the object has
-/// not changed size.</returns>
-int AbstractClass::Get_Object_Size_Delta(void) const
-{
-	assert(this != NULL);
-
-	return(0);
 }
 
 

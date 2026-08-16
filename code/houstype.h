@@ -105,16 +105,14 @@ class HouseTypeClass : public AbstractTypeClass
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE IsDirty(void) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
 		virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual int Fetch_Heap_ID(void) const override;
 

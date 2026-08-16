@@ -128,7 +128,6 @@ class UnitClass : public FootClass
 		/// Unused
 		int Unused1;
 
-
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
@@ -138,7 +137,8 @@ class UnitClass : public FootClass
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
@@ -147,7 +147,6 @@ class UnitClass : public FootClass
 		virtual char const * Full_Name(void) const override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		bool Goto_Clear_Spot(void);

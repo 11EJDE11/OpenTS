@@ -41,7 +41,8 @@ class PowerClass : public RadarClass
 
 	public:
 		PowerClass(void);
-		PowerClass(NoInitClass const & x) : BASECLASS(x), FlashTimer(x) {};
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*
 		**	Initialization

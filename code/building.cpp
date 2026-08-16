@@ -156,6 +156,7 @@
 #include "queue.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
@@ -8740,58 +8741,89 @@ void BuildingClass::Clear_Occupy_Bit(Coord const & coord)
 
 /// <summary>
 /// Reads this building back in from a save game stream.
-/// The building is rebuilt in place, re-registered with the target tracker, and every
-/// pointer it holds is remapped from the saved identifier to the object that now lives at
-/// that identity. Any light source it owned is dropped, since lights are not persisted.
+/// The building is withdrawn from the target tracker under the identity it is carrying now,
+/// since the one it is about to be given is the one it was saved with. Post_Load enters it
+/// again once that identity has arrived.
 /// </summary>
 /// <returns>Returns with S_OK if the building was read, or the failure code from the
 /// underlying stream.</returns>
 HRESULT STDMETHODCALLTYPE BuildingClass::Load(IStream *stream)
 {
 	TargetTracker.Remove_Index(Fetch_ID());
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) BuildingClass(NoInitClass());
-
-		TargetTracker.Add_Index(Fetch_ID(), this);
-
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&Factory);
-		Swizzle_Pointer(&WhomToRepay);
-		Swizzle_Pointer(&AnimToTrack);
-		Swizzle_Pointer(&BuildingLight);
-
-		for (int anim = 0; anim < BANIM_COUNT; anim++) {
-			Swizzle_Pointer(&Anims[anim]);
-		}
-
-		for (int upgrade = 0; upgrade < ARRAY_SIZE(Upgrades); upgrade++) {
-			Swizzle_Pointer(&Upgrades[upgrade]);
-		}
-
-		LightSource = NULL;
-
-		result = S_OK;
-	}
-	return(result);
+	return(BASECLASS::Load(stream));
 }
 
 
 /// <summary>
-/// Writes this building out to a save game stream.
-/// The base class does the actual work of committing the object; this routine exists so
-/// that the building layer has somewhere to hang any extra persistence of its own.
+/// Lists the members this building carries.
 /// </summary>
-/// <returns>Returns with S_OK if the building was written, or the failure code from the
-/// underlying stream.</returns>
-HRESULT STDMETHODCALLTYPE BuildingClass::Save(IStream *stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void BuildingClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(Factory);
+	stream.Serialize(CountDown);
+	stream.Serialize(BState);
+	stream.Serialize(QueueBState);
+	stream.Serialize(WhoLastHurtMe);
+	stream.Serialize(WhomToRepay);
+	stream.Serialize(LastStrength);
+	stream.Serialize(AnimToTrack);
+	stream.Serialize(PlacementDelay);
+	stream.Serialize(Anims);
+	stream.Serialize(Upgrades);
+	stream.Serialize(LastSuperWeaponIndex);
+	stream.Serialize(TurretIndex);
+	stream.Serialize(BuildingLight);
+	stream.Serialize(GateTimer);
+	// LightSource -- the lighting is rebuilt from scratch, so Post_Load drops it.
+	stream.Serialize(LaserFenceFrame);
+	stream.Serialize(FirestormWallFrame);
+	stream.Serialize(BuildingStage);
+	stream.Serialize(LastRenderRect);
+	stream.Serialize(LastRenderCoord);
+	stream.Serialize(LastRenderOffset);
+	stream.Serialize(IsOn);
+	stream.Serialize(IsNominal);
+	stream.Serialize(IsToRebuild);
+	stream.Serialize(IsToRepair);
+	stream.Serialize(IsAllowedToSell);
+	stream.Serialize(IsReadyToCommence);
+	stream.Serialize(IsWrenchVisible);
+	stream.Serialize(IsGoingToBlow);
+	stream.Serialize(IsSurvivorless);
+	stream.Serialize(IsCharging);
+	stream.Serialize(IsCharged);
+	stream.Serialize(IsCaptured);
+	stream.Serialize(HasOpened);
+	stream.Serialize(UnusedBuildingBool1);
+	stream.Serialize(IsDamagedAnims);
+	stream.Serialize(IsFogged);
+	stream.Serialize(IsRepairing);
+	stream.Serialize(HasBuildupData);
+	stream.Serialize(IsPoweredOn);
+	stream.Serialize(CloakGeneratorState);
+	stream.Serialize(CurrentCloakRadius);
+	stream.Serialize(TranslucencyLevel);
+	stream.Serialize(Brightness);
+	stream.Serialize(UpgradeLevel);
+	stream.Serialize(GateFrame);
+}
+
+
+/// <summary>
+/// Enters this building in the target tracker under the identity it was saved with, and
+/// lets go of the light source it was tinting the terrain with.
+/// </summary>
+void BuildingClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	TargetTracker.Add_Index(Fetch_ID(), this);
+
+	LightSource = NULL;
 }
 
 
@@ -10207,22 +10239,6 @@ void BuildingClass::Discharge_Turret(void)
 	} else {
 		Set_Turret_Frame();
 	}
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this building occupies in a save file.
-/// This routine is used by the load and save code so that save games written before the
-/// class last grew are still read back at the size they were stored with.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for an older save file layout?</param>
-/// <returns>Returns with the size, in bytes, of this object as it is stored.</returns>
-int BuildingClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta = sizeof(BASECLASS::LimpetSpeedFactor) + 4; /// padding
-
-	return(size - (oldsave ? delta : 0));
 }
 
 

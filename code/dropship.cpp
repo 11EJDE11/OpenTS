@@ -43,7 +43,6 @@
 #include "shapebtn.h"
 #include "shapeset.h"
 #include "stimer.h"
-#include "swizzle.h"
 #include "techtype.h"
 #include "unittype.h"
 #include "weapon.h"
@@ -61,9 +60,11 @@ void Draw_Unit_Info(Surface *surface, ConvertClass *drawer, TechnoTypeClass *tec
 /// </summary>
 DropshipLoadoutClass::DropshipLoadoutClass(void) :
 	CreationFrame(Frame),
+	Unused1(0),
 	Unused2(INT_MAX),
 	UnusedBool1(false),
 	EntryCount(0),
+	Entries{},
 	TotalCost(0)
 {
 
@@ -167,19 +168,6 @@ void DropshipLoadoutClass::Clear(void)
 	}
 	EntryCount = 0;
 	TotalCost = 0;
-}
-
-
-/// <summary>
-/// Converts the loadout's unit pointers after a load.
-/// This routine is called by the save game loader so that the units recorded in
-/// this loadout point at the real objects again.
-/// </summary>
-void DropshipLoadoutClass::Swizzle(void)
-{
-	for (int i = 0; i < EntryCount; i++) {
-		Swizzle_Pointer(&Entries[i]);
-	}
 }
 
 

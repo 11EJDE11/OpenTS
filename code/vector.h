@@ -464,6 +464,31 @@ class DynamicVectorClass : public VectorClass<T>
 		// Fetch number of "allocated" vector objects.
 		[[nodiscard]] int Count(void) const noexcept {return(ActiveCount);};
 
+		/*
+		 * Carries the active elements to or from a save game, the count first and then the
+		 * elements themselves. Loading sizes the vector before any element is read, because
+		 * an element holding a pointer registers the slot it occupies with the swizzle
+		 * manager and a later reallocation would leave that address behind.
+		 */
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			int count = ActiveCount;
+			stream.Serialize(count);
+
+			if (stream.Is_Loading()) {
+				Clear();
+				if (count > 0 && !Resize(count)) {
+					return;
+				}
+				ActiveCount = count;
+			}
+
+			for (int index = 0; index < count; index++) {
+				stream.Serialize((*this)[index]);
+			}
+		}
+
 		// Add object to vector (growing as necessary).
 		bool Add(T const & object);
 		bool Add_Head(T const & object);

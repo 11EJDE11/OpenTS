@@ -22,6 +22,7 @@
 #include "ion.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 
 #include "layer.hh"
 
@@ -244,18 +245,22 @@ HRESULT STDMETHODCALLTYPE JumpjetLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this locomotor from a save game stream.
-/// The base class reads the raw data back and this routine then re-establishes the object's
-/// virtual table pointer so that it is fit to be called again.
+/// Lists the members this jumpjet locomotor carries.
 /// </summary>
-/// <returns>Returns with the result of the load, as an HRESULT.</returns>
-HRESULT STDMETHODCALLTYPE JumpjetLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void JumpjetLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) JumpjetLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(IsMoving);
+	stream.Serialize(CurrentState);
+	stream.Serialize(Facing);
+	stream.Serialize(CurrentSpeed);
+	stream.Serialize(TargetSpeed);
+	stream.Serialize(FlightLevel);
+	stream.Serialize(CurrentWobble);
+	stream.Serialize(IsLanding);
 }
 
 

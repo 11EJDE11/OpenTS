@@ -31,11 +31,10 @@ class ScriptClass : public AbstractClass
 		virtual ~ScriptClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_SCRIPT); }
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(ScriptClass)); }
 
 		virtual void Compute_CRC(CRCEngine &) const override;
 
@@ -80,8 +79,6 @@ class ScriptTypeClass : public AbstractTypeClass
 		static ScriptTypeClass * Find_Or_Make(char const * ininame = NULL);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		static void Read_All(CCINIClass const & ini, INIScopeType scope);
 		static void Write_All(CCINIClass & ini, INIScopeType scope);
@@ -91,8 +88,9 @@ class ScriptTypeClass : public AbstractTypeClass
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 
+		virtual void Serialize(SaveStreamClass & stream) override;
+
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_SCRIPTTYPE);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);};
 
 		static ScriptTypeClass * From_Name(char const * name);

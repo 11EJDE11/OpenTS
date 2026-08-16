@@ -19,6 +19,7 @@
 #include "foot.h"
 #include "globals.h"
 #include "map.h"
+#include "savestream.h"
 #include "swizzle.h"
 #include "tactical.h"
 
@@ -264,19 +265,7 @@ HRESULT STDMETHODCALLTYPE LocomotionClass::Save(IStream * stream, BOOL cleardirt
 		return(E_POINTER); /// E_INVALIDARG
 	}
 
-	ULONG id = (ULONG)(this);
-
-	HRESULT result = stream->Write(&id, sizeof(id), NULL);
-	if (SUCCEEDED(result)) {
-		result = stream->Write(this, Fetch_Object_Size(), NULL);
-		if (SUCCEEDED(result)) {
-			if (cleardirty) {
-				Dirty = false;
-			}
-		}
-		return(result);
-	}
-	return(result);
+	return(Save_Members(stream, cleardirty));
 }
 
 
@@ -295,40 +284,110 @@ HRESULT STDMETHODCALLTYPE LocomotionClass::Load(IStream * stream)
 		return(E_POINTER); /// E_INVALIDARG
 	}
 
-	ULONG id;
-	HRESULT result = stream->Read(&id, sizeof(id), NULL);
-	if (SUCCEEDED(result)) {
-		assert(id != 0);
+	return(Load_Members(stream));
+}
 
-		Swizzle_Here_I_Am(id, this);
 
-		LONG prev_refcount = RefCount;
+/// <summary>
+/// Writes the members this locomotor describes out to the save stream.
+/// The locomotor's address goes out first as its swizzle identity, and the members follow
+/// in the order Serialize names them.
+/// </summary>
+/// <param name="stream">The stream to write to.</param>
+/// <param name="cleardirty">Should the locomotor be marked clean once it has been written?</param>
+/// <returns>Returns with S_OK when the record was written, otherwise a failure code.</returns>
+HRESULT LocomotionClass::Save_Members(IStream * stream, BOOL cleardirty)
+{
+	if (stream == NULL) {
+		return(E_POINTER);
+	}
 
-		result = stream->Read((void *)this, Fetch_Object_Size(), NULL);
-		assert(SUCCEEDED(result));
+	ULONG id = (ULONG)(this);
 
-		RefCount = prev_refcount;
-		Swizzle_Pointer(&LinkedTo);
+	HRESULT result = stream->Write(&id, sizeof(id), NULL);
+	if (FAILED(result)) {
 		return(result);
 	}
+
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
+	Serialize(savestream);
+
+	if (SUCCEEDED(savestream.Result()) && cleardirty) {
+		Dirty = false;
+	}
+
+	return(savestream.Result());
+}
+
+
+/// <summary>
+/// Reads the members this locomotor describes back from the save stream.
+/// The saved address is handed to the swizzle system so that pointers elsewhere in the
+/// save game can be remapped onto this locomotor, and the members follow.
+/// </summary>
+/// <param name="stream">The stream to read from.</param>
+/// <returns>Returns with S_OK when the record was read, otherwise a failure code.</returns>
+HRESULT LocomotionClass::Load_Members(IStream * stream)
+{
+	if (stream == NULL) {
+		return(E_POINTER);
+	}
+
+	ULONG id;
+
+	HRESULT result = stream->Read(&id, sizeof(id), NULL);
+	if (FAILED(result)) {
 	return(result);
+	}
+
+	assert(id != 0);
+	Swizzle_Here_I_Am(id, this);
+
+	SaveStreamClass savestream(stream, SaveStreamClass::MODE_LOAD);
+	Serialize(savestream);
+
+	if (SUCCEEDED(savestream.Result())) {
+		Post_Load();
+	}
+
+	return(savestream.Result());
+}
+
+
+/// <summary>
+/// Lists the members every locomotor carries.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void LocomotionClass::Serialize(SaveStreamClass & stream)
+{
+	stream.Serialize(LinkedTo);
+	stream.Serialize(IsPowered);
+	stream.Serialize(Dirty);
+
+}
+	// RefCount -- belongs to the running session rather than the record.
+
+
+/// <summary>
+/// Restores the state a locomotor could not carry in its record.
+/// The bare locomotor carries nothing of the sort, so there is nothing to do.
+/// </summary>
+void LocomotionClass::Post_Load(void)
+{
 }
 
 
 /// <summary>
 /// Fetches the number of bytes needed to save this locomotor.
-/// This is the IPersistStream service the save system uses to size the storage it must
-/// set aside before asking the locomotor to write itself out.
+/// A record is now as long as the members a class names, and the count is not known
+/// before the members have been written. Nothing in the game asks for it, so rather than
+/// walk the locomotor twice this reports that the size cannot be supplied.
 /// </summary>
 /// <param name="pcbSize">Pointer to the value to fill in with the required byte count.</param>
-/// <returns>Returns with S_OK, or E_POINTER if no destination was supplied.</returns>
+/// <returns>Returns with E_NOTIMPL.</returns>
 LONG STDMETHODCALLTYPE LocomotionClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
 {
-	if (pcbSize == NULL) {
-		return(E_POINTER);
-	}
-	pcbSize->QuadPart = Fetch_Object_Size() + sizeof(FootClass *);
-	return(S_OK);
+	return(E_NOTIMPL);
 }
 
 

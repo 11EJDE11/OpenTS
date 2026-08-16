@@ -15,6 +15,8 @@
 
 #include <comdef.h>
 
+class SaveStreamClass;
+
 class EnvironmentClass
 {
 	public:
@@ -26,6 +28,8 @@ class EnvironmentClass
 
 		HRESULT Load(IStream * stream);
 		HRESULT Save(IStream * stream);
+
+		void Serialize(SaveStreamClass & stream);
 
 	//private:
 	public:

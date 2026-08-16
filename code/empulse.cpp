@@ -26,6 +26,7 @@
 #include "infatype.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "tag.h"
 #include "tracker.h"
@@ -310,33 +311,16 @@ HRESULT STDMETHODCALLTYPE EMPulseClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads this pulse from the save game stream.
-/// The object is rebuilt in place over the state that was read back off the stream.
+/// Lists the members this pulse carries.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE EMPulseClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void EMPulseClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) EMPulseClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this pulse to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE EMPulseClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	// EMPulses -- the master list, which each pulse joins as it is constructed.
+	stream.Serialize(CellID);
+	stream.Serialize(Spread);
+	stream.Serialize(CreationFrame);
+	stream.Serialize(Duration);
 }

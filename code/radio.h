@@ -81,7 +81,8 @@ class RadioClass : public MissionClass
 		RadioClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~RadioClass(void) override {/*Radio=0;*/};
 
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

@@ -48,6 +48,14 @@ class CrateClass {
 		bool Is_Expired(void) const {return(Is_Valid() && Timer == 0);}
 		bool Is_Valid(void) const {return(Location != CELL_NONE);}
 
+		/// Carries the crate to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Timer);
+			stream.Serialize(Location);
+		}
+
 	private:
 		static bool Put_Crate(Cell & cell);
 		static bool Get_Crate(Cell const & cell);

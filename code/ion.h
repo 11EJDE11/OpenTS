@@ -15,6 +15,7 @@
 
 #include <unknwn.h>
 
+class SaveStreamClass;
 class ShapeSet;
 
 class IonStormClass
@@ -23,6 +24,8 @@ class IonStormClass
 		static void Init(void);
 		static HRESULT Save(IStream * stream);
 		static HRESULT Load(IStream * stream);
+
+		static void Serialize(SaveStreamClass & stream);
 
 		static void Do_Screen_Static(int shapenum);
 		static void Lightning_Bolt(Cell cell);

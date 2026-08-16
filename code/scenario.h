@@ -58,6 +58,7 @@
 
 class CRCEngine;
 class INIClass;
+class SaveStreamClass;
 class TechnoTypeClass;
 class AbstractClass;
 class CellClass;
@@ -67,8 +68,7 @@ class ObjectClass;
 /*
 **	This class holds the information about the current game being played. This information is
 **	global to the scenario and is generally of a similar nature to the information that was held
-**	in the controlling scenario INI file. It is safe to write this structure out as a whole since
-**	it doesn't contain any embedded pointers.
+**	in the controlling scenario INI file.
 */
 class ScenarioClass {
 	public:
@@ -103,6 +103,8 @@ class ScenarioClass {
 
 		void Save(IStream * stream) const;
 		void Load(IStream * stream);
+
+		void Serialize(SaveStreamClass & stream);
 
 		void Compute_CRC(CRCEngine & crc) const;
 
@@ -318,6 +320,14 @@ class ScenarioClass {
 			 */
 			char VariableName[40];
 			bool Value;
+
+			/// Carries the scenario flag to or from a save game.
+			template<typename S>
+			void Serialize(S & stream)
+			{
+				stream.Serialize(VariableName);
+				stream.Serialize(Value);
+			}
 		};
 
 		/*

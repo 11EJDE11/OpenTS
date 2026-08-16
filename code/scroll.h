@@ -94,7 +94,8 @@ class ScrollClass: public TabClass
 
 	public:
 		ScrollClass(void);
-		ScrollClass(NoInitClass const & x) : BASECLASS(x) {};
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		void Set_Scroll_Coasting_Allowed(bool coasting) { IsCoastScrollAllowed = coasting; }
 

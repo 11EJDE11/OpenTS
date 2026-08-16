@@ -172,6 +172,7 @@
 #include "quarry.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
@@ -179,7 +180,6 @@
 #include "super.h"
 #include "suprtype.h"
 #include "surface.h"
-#include "swizzle.h"
 #include "tactical.h"
 #include "tag.h"
 #include "taskforc.h"
@@ -6752,19 +6752,15 @@ void HouseClass::Compute_CRC(CRCEngine & crc) const
 
 /// <summary>
 /// Loads this house from the data stream.
-/// This routine reads back the parts of the house that Save wrote by hand, and submits every
-/// pointer it recovers to the swizzler so that they can be remapped once the whole save file
-/// has been read in.
+/// The super weapons and the published connection point belong to the session that created
+/// this house rather than to the record, so they are disposed of before the saved members
+/// are read over the top of them.
 /// </summary>
 /// <param name="stream">The stream to read the house from.</param>
 /// <returns>Returns with S_OK, or the failure code reported by the stream.</returns>
 HRESULT STDMETHODCALLTYPE HouseClass::Load(IStream *stream)
 {
-	int index;
-
-	ConYards.Clear();
-
-	for (index = 0; index < PowerEventConnectionPoints.Count(); index++) {
+	for (int index = 0; index < PowerEventConnectionPoints.Count(); index++) {
 		while (PowerEventConnectionPoints[index]->Release() > 0U) {
 			;
 		}
@@ -6777,255 +6773,225 @@ HRESULT STDMETHODCALLTYPE HouseClass::Load(IStream *stream)
 		SuperWeapon.Delete_Index(0);
 	}
 
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new(this) HouseClass(NoInitClass());
-
-		Base.Load(stream);
-
-		BQuantity.Load(stream);
-		UQuantity.Load(stream);
-		IQuantity.Load(stream);
-		AQuantity.Load(stream);
-
-		ABQuantity.Load(stream);
-		AUQuantity.Load(stream);
-		AIQuantity.Load(stream);
-		AAQuantity.Load(stream);
-
-		PBQuantity.Load(stream);
-		PUQuantity.Load(stream);
-		PIQuantity.Load(stream);
-		PAQuantity.Load(stream);
-
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&InfantryFactory);
-		Swizzle_Pointer(&UnitFactory);
-		Swizzle_Pointer(&AircraftFactory);
-		Swizzle_Pointer(&BuildingFactory);
-		Swizzle_Pointer(&ToCapture);
-
-		for (index = 0; index < PATH_COUNT; index++) {
-			Swizzle_Pointer(&Paths[index]);
-		}
-
-		for (index = 0; index < ARRAY_SIZE(DropshipLoadouts); index++) {
-			DropshipLoadouts[index].Swizzle();
-		}
-
-		int count;
-
-		count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			SuperClass *ptr = NULL;
-			result = stream->Read(&ptr, sizeof(ptr), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			SuperWeapon.Add(ptr);
-		}
-
-		count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			TagClass *ptr = NULL;
-			result = stream->Read(&ptr, sizeof(ptr), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			HouseTags.Add(ptr);
-		}
-
-		count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			AngerStruct node;
-			result = stream->Read(&node, sizeof(node), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			AngerNodes.Add(node);
-		}
-
-		for (index = 0; index < AngerNodes.Count(); index++) {
-			Swizzle_Pointer(&AngerNodes[index].House);
-		}
-
-		count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			ScoutStruct node;
-			result = stream->Read(&node, sizeof(node), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			ScoutNodes.Add(node);
-		}
-
-		for (index = 0; index < ScoutNodes.Count(); index++) {
-			Swizzle_Pointer(&ScoutNodes[ScoutNodes.Count() - 1].House);
-		}
-
-		count = 0;
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		while (count--) {
-			BuildingClass *ptr = NULL;
-			result = stream->Read(&ptr, sizeof(ptr), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			ConYards.Add(ptr);
-		}
-
-		for (index = 0; index < SuperWeapon.Count(); index++) {
-			Swizzle_Pointer(&SuperWeapon[index]);
-		}
-
-		for (index = 0; index < HouseTags.Count(); index++) {
-			Swizzle_Pointer(&HouseTags[index]);
-		}
-
-		for (index = 0; index < ConYards.Count(); index++) {
-			Swizzle_Pointer(&ConYards[index]);
-		}
-
-		int hasaigen = false;
-		result = stream->Read(&hasaigen, sizeof(hasaigen), NULL);
-		if (SUCCEEDED(result) && hasaigen) {
-			result = OleLoadFromStream(stream, IID_IAIHouse, (void**)&AIGeneral);
-		}
-	}
-	return(result);
+	return(Load_Members(stream));
 }
 
 
 /// <summary>
-/// Saves this house to the data stream.
-/// This routine writes out the parts of the house that the base persistence code cannot
-/// handle by itself -- the base, the quantity trackers, and the various lists of objects
-/// this house has a claim on.
+/// Lists the members this house carries.
 /// </summary>
-/// <param name="stream">The stream to write the house to.</param>
-/// <param name="cleardirty">Should the house be marked as clean afterward?</param>
-/// <returns>Returns with S_OK, or the failure code reported by the stream.</returns>
-HRESULT STDMETHODCALLTYPE HouseClass::Save(IStream *stream, int cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void HouseClass::Serialize(SaveStreamClass & stream)
 {
-	int index;
-	int count;
+	BASECLASS::Serialize(stream);
 
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-		Base.Save(stream);
+	stream.Serialize(HeapID);
+	stream.Serialize(Class);
+	stream.Serialize(HouseTags);
+	stream.Serialize(ConYards);
+	stream.Serialize(Difficulty);
+	stream.Serialize(FirepowerBias);
+	stream.Serialize(GroundspeedBias);
+	stream.Serialize(AirspeedBias);
+	stream.Serialize(ArmorBias);
+	stream.Serialize(ROFBias);
+	stream.Serialize(CostBias);
+	stream.Serialize(BuildSpeedBias);
+	stream.Serialize(RepairDelay);
+	stream.Serialize(BuildDelay);
+	stream.Serialize(Control);
+	stream.Serialize(ProductionMode);
+	stream.Serialize(ActLike);
+	stream.Serialize(IsHuman);
+	stream.Serialize(IsPlayerControl);
+	stream.Serialize(IsStarted);
+	stream.Serialize(IsAlerted);
+	stream.Serialize(IsAITriggersOn);
+	stream.Serialize(IsBaseBuilding);
+	stream.Serialize(IsDiscovered);
+	stream.Serialize(IsDefeated);
+	stream.Serialize(IsToDie);
+	stream.Serialize(IsToWin);
+	stream.Serialize(IsToLose);
+	stream.Serialize(IsCivEvacuated);
+	stream.Serialize(FirestormDefenseActivated);
+	stream.Serialize(IsThreatRatingNodeActive);
+	stream.Serialize(IsRecalcNeeded);
+	stream.Serialize(IPAddress);
+	stream.Serialize(SquadID);
+	stream.Serialize(LostConnection);
+	stream.Serialize(SelectedPath);
+	stream.Serialize(Paths);
+	stream.Serialize(IsVisionary);
+	stream.Serialize(IsTiberiumShort);
+	stream.Serialize(IsSpied);
+	stream.Serialize(IsThieved);
+	stream.Serialize(DidRepair);
+	stream.Serialize(IsBuiltSomething);
+	stream.Serialize(IsResigner);
+	stream.Serialize(IsGiverUpper);
+	stream.Serialize(IsAllToHunt);
+	stream.Serialize(IsParanoid);
+	stream.Serialize(IsToLook);
+	stream.Serialize(IQ);
+	stream.Serialize(State);
+	stream.Serialize(SuperWeapon);
+	stream.Serialize(JustBuiltStructure);
+	stream.Serialize(JustBuiltInfantry);
+	stream.Serialize(JustBuiltUnit);
+	stream.Serialize(JustBuiltAircraft);
+	stream.Serialize(Blockage);
+	stream.Serialize(RepairTimer);
+	stream.Serialize(AlertTime);
+	stream.Serialize(BorrowedTime);
+	stream.Serialize(CreditsSpent);
+	stream.Serialize(HarvestedCredits);
+	stream.Serialize(StolenBuildingsCredits);
+	stream.Serialize(CurUnits);
+	stream.Serialize(CurBuildings);
+	stream.Serialize(CurInfantry);
+	stream.Serialize(CurAircraft);
+	stream.Serialize(Tiberium);
+	stream.Serialize(Credits);
+	stream.Serialize(Capacity);
+	stream.Serialize(Weed);
+	stream.Serialize(field_1BC);
+	// AircraftTotals -- internet game tallies owned by this house, built by the constructor.
+	// InfantryTotals
+	// UnitTotals
+	// BuildingTotals
+	// DestroyedAircraft
+	// DestroyedInfantry
+	// DestroyedUnits
+	// DestroyedBuildings
+	// CapturedBuildings
+	// TotalCrates
+	stream.Serialize(AircraftFactories);
+	stream.Serialize(InfantryFactories);
+	stream.Serialize(UnitFactories);
+	stream.Serialize(BuildingFactories);
+	stream.Serialize(Power);
+	stream.Serialize(Drain);
+	stream.Serialize(AircraftFactory);
+	stream.Serialize(InfantryFactory);
+	stream.Serialize(UnitFactory);
+	stream.Serialize(BuildingFactory);
+	stream.Serialize(FlagLocation);
+	stream.Serialize(FlagHome);
+	stream.Serialize(UnitsKilled);
+	stream.Serialize(UnitsLost);
+	stream.Serialize(BuildingsKilled);
+	stream.Serialize(BuildingsLost);
+	stream.Serialize(WhoLastHurtMe);
+	stream.Serialize(Center);
+	stream.Serialize(Radius);
+	stream.Serialize(ZoneInfo);
+	stream.Serialize(LATime);
+	stream.Serialize(LAEnemy);
+	stream.Serialize(ToCapture);
+	stream.Serialize(RadarSpied);
+	stream.Serialize(PointTotal);
+	stream.Serialize(PreferredTarget);
+	stream.Serialize(BQuantity);
+	stream.Serialize(UQuantity);
+	stream.Serialize(IQuantity);
+	stream.Serialize(AQuantity);
+	stream.Serialize(ABQuantity);
+	stream.Serialize(AUQuantity);
+	stream.Serialize(AIQuantity);
+	stream.Serialize(AAQuantity);
+	stream.Serialize(PBQuantity);
+	stream.Serialize(PUQuantity);
+	stream.Serialize(PIQuantity);
+	stream.Serialize(PAQuantity);
+	stream.Serialize(Attack);
+	stream.Serialize(Enemy);
+	stream.Serialize(AngerNodes);
+	stream.Serialize(ScoutNodes);
+	stream.Serialize(AITimer);
+	stream.Serialize(PickEnemyTimer);
+	stream.Serialize(BuildStructure);
+	stream.Serialize(BuildUnit);
+	stream.Serialize(BuildInfantry);
+	stream.Serialize(BuildAircraft);
+	stream.Serialize(RatioAITriggerTeam);
+	stream.Serialize(RatioTeamAircraft);
+	stream.Serialize(RatioTeamInfantry);
+	stream.Serialize(RatioTeamUnits);
+	stream.Serialize(BaseDefenseTeamCount);
+	stream.Serialize(DropshipLoadouts);
+	stream.Serialize(CurrentDropship);
+	stream.Serialize(HasCloakGenerator);
+	stream.Serialize(RemapColorRGB);
+	stream.Serialize(Base);
+	stream.Serialize(RecalcPower);
+	stream.Serialize(RecalcRadar);
+	stream.Serialize(EMPDest);
+	stream.Serialize(NukeDest);
+	stream.Serialize(Allies);
+	stream.Serialize(DamageTime);
+	stream.Serialize(TeamTime);
+	stream.Serialize(TriggerTime);
+	stream.Serialize(SpeakAttackDelay);
+	stream.Serialize(SpeakPowerDelay);
+	stream.Serialize(SpeakMoneyDelay);
+	stream.Serialize(SpeakMaxedDelay);
 
-		BQuantity.Save(stream);
-		UQuantity.Save(stream);
-		IQuantity.Save(stream);
-		AQuantity.Save(stream);
+	/*
+	 * The strategy object is a COM sub-object rather than a member, so it persists itself
+	 * onto the raw stream through OLE. Loading hands back a fresh interface pointer instead
+	 * of filling this one in.
+	 */
+	bool hasaigen = (AIGeneral != NULL);
+	stream.Serialize(hasaigen);
 
-		ABQuantity.Save(stream);
-		AUQuantity.Save(stream);
-		AIQuantity.Save(stream);
-		AAQuantity.Save(stream);
-
-		PBQuantity.Save(stream);
-		PUQuantity.Save(stream);
-		PIQuantity.Save(stream);
-		PAQuantity.Save(stream);
-
-		count = SuperWeapon.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&SuperWeapon[index], sizeof(SuperWeapon[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = HouseTags.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&HouseTags[index], sizeof(HouseTags[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = AngerNodes.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&AngerNodes[index], sizeof(AngerNodes[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = ScoutNodes.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&ScoutNodes[index], sizeof(ScoutNodes[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = ConYards.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-
-		for (index = 0; index < count; index++) {
-			result = stream->Write(&ConYards[index], sizeof(ConYards[index]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		int hasaigen = AIGeneral != NULL;
-		result = stream->Write(&hasaigen, sizeof(hasaigen), NULL);
-		if (SUCCEEDED(result) && hasaigen) {
+	if (hasaigen) {
+		if (stream.Is_Saving()) {
 			IPersistStreamPtr ptr(AIGeneral);
-			result = OleSaveToStream(ptr, stream);
+			OleSaveToStream(ptr, stream.Get_Stream());
+		} else {
+			OleLoadFromStream(stream.Get_Stream(), IID_IAIHouse, (void **)&AIGeneral);
 		}
 	}
-	return(result);
+
+	// BuildChoice -- a scratch list shared by every house rather than owned by one.
+	stream.Serialize(Regions);
+	stream.Serialize(IniName);
+	stream.Serialize(Scheme);
+	// BaseAreaMap -- points at a defense grid that only exists while a base defense is being
+	// placed.
+	// PowerEventConnectionPoints -- the connection point this house publishes belongs to the
+	// running session, so Post_Load publishes a fresh one.
+	// PowerEvents
+	stream.Serialize(field_10E20);
+	stream.Serialize(field_10E28);
+	stream.Serialize(DefenseCostMultiplier);
+	stream.Serialize(field_10E38);
+	stream.Serialize(EnemyArmorForcePrediction);
+	stream.Serialize(EnemyAirForcePrediction);
+	stream.Serialize(EnemyInfantryForcePrediction);
+	stream.Serialize(PowerSurplus);
+}
+
+
+/// <summary>
+/// Publishes this house's connection point again once it has been loaded.
+/// The point the constructor published was released before the members were read, since a
+/// point advised by the previous session is of no use to this one.
+/// </summary>
+void HouseClass::Post_Load(void)
+{
+	BASECLASS::Post_Load();
+
+	IUnknown * unknown = NULL;
+	QueryInterface(IID_IUnknown, (void **)&unknown);
+	PowerEvents = new ConnectionPointClass(IID_IPowerEvents, unknown);
+
+	IConnectionPoint * cp;
+	PowerEvents->QueryInterface(IID_IConnectionPoint, (void **)&cp);
+	PowerEventConnectionPoints.Add(cp);
+
+	unknown->Release();
 }
 
 
@@ -7041,18 +7007,6 @@ HRESULT STDMETHODCALLTYPE HouseClass::GetClassID(CLSID * retval)
 	if (retval == NULL) return(E_POINTER);
 	*retval = CLSID_HouseClass;
 	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the byte size of this house object.
-/// This routine is used by the save and load system when it needs to know how much room a
-/// house occupies.
-/// </summary>
-/// <returns>Returns with the size of the house object in bytes.</returns>
-int HouseClass::Fetch_Object_Size(bool) const
-{
-	return(sizeof(*this));
 }
 
 

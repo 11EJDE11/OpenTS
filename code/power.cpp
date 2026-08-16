@@ -58,6 +58,7 @@
 #include "house.h"
 #include "language\language.h"
 #include "mixfile.h"
+#include "savestream.h"
 #include "surface.h"
 
 #include "bench.hh"
@@ -95,6 +96,30 @@ PowerClass::PowerClass(void) :
 	RecordedDrain(-1),
 	RecordedPower(-1)
 {
+}
+
+
+/// <summary>
+/// Lists the members the power bar holds.
+/// </summary>
+/// <param name="stream">The stream carrying the members.</param>
+void PowerClass::Serialize(SaveStreamClass & stream)
+{
+	BASECLASS::Serialize(stream);
+
+	// IsToRedraw -- a redraw flag; the load asks for a complete draw anyway.
+	// FlashTimer -- both run off the system clock, so a saved value would carry the time of the
+	// save into the loaded game.
+	// UpdateTimer
+	// FlashCount -- it counts the flashes still owed by a power level change, and the timer that
+	// would pace them is not saved either.
+	stream.Serialize(GreenPipCount);
+	stream.Serialize(YellowPipCount);
+	stream.Serialize(RedPipCount);
+	stream.Serialize(HasChanged);
+	stream.Serialize(RecordedDrain);
+	stream.Serialize(RecordedPower);
+	// PowerPipShape -- artwork fetched by One_Time.
 }
 
 

@@ -90,12 +90,10 @@ class RadarClass: public DisplayClass
 		friend class RadarEventClass;
 
 	public:
-		virtual HRESULT Load(IStream * stream) override;
-		virtual HRESULT Save(IStream * stream) override;
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 	public:
 		RadarClass(void);
-		RadarClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~RadarClass(void) override;
 
 		/*

@@ -56,6 +56,14 @@ class FlasherClass {
 		FlasherClass(NoInitClass const & ) {};
 		~FlasherClass(void) {};
 
+		/// Carries the flash state to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(FlashCount);
+			stream.Serialize(IsBlushing);
+		}
+
 #ifdef _DEBUG
 		void Debug_Dump(MonoClass *mono) const;
 #endif

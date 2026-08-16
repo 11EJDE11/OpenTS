@@ -41,7 +41,8 @@ class TabClass: public SidebarClass
 
 	public:
 		TabClass(void);
-		TabClass(NoInitClass const & x) : BASECLASS(x), Credits(x), FlasherTimer(x), MoneyFlashTimer(x) {};
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual void AI(KeyNumType &input, Point2D const & xy) override;
 		virtual void Draw_It(bool complete=false) override;

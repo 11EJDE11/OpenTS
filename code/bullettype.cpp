@@ -50,6 +50,7 @@
 #include "globals.h"
 #include "incdec.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -310,50 +311,59 @@ void BulletTypeClass::Compute_CRC(CRCEngine & crc) const
 
 
 /// <summary>
-/// Reads this bullet type back in from the save game stream.
-/// This routine copes with save games written before the later members existed, and then
-/// restores the parts of the object that a save file cannot carry -- the artwork and the
-/// pointers to other type objects.
+/// Re-attaches the artwork this bullet type names.
+/// The artwork is fetched again once the members have been read, since a pointer into the
+/// mix files does not survive a save.
 /// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE BulletTypeClass::Load(IStream * stream)
+void BulletTypeClass::Post_Load(void)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			IsSplits = false;
-			IsAntiVehicle = false;
-			memmove(&Arming, &RetargetAccuracy, size - offsetof(BulletTypeClass, Arming));
-			RetargetAccuracy = 0;
-		}
+	BASECLASS::Post_Load();
 
-		new (this) BulletTypeClass(NoInitClass());
-
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
-		Swizzle_Pointer(&Trailer);
-		Swizzle_Pointer(&AirburstWeapon);
-
-		result = S_OK;
-	}
-	return(result);
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 }
 
 
 /// <summary>
-/// Writes this bullet type out to the save game stream.
+/// Lists the members this bullet type carries.
 /// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE BulletTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void BulletTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(IsAirburst);
+	stream.Serialize(IsFloater);
+	stream.Serialize(IsHigh);
+	stream.Serialize(IsVeryHigh);
+	stream.Serialize(IsShadow);
+	stream.Serialize(IsArcing);
+	stream.Serialize(IsDropping);
+	stream.Serialize(IsInvisible);
+	stream.Serialize(IsProximityArmed);
+	stream.Serialize(IsFueled);
+	stream.Serialize(IsFaceless);
+	stream.Serialize(IsInaccurate);
+	stream.Serialize(IsAntiAircraft);
+	stream.Serialize(IsAntiGround);
+	stream.Serialize(IsDegenerate);
+	stream.Serialize(IsBouncy);
+	stream.Serialize(IsAnimPalette);
+	stream.Serialize(IsSplits);
+	stream.Serialize(IsAntiVehicle);
+	stream.Serialize(Cluster);
+	stream.Serialize(AirburstWeapon);
+	stream.Serialize(Elasticity);
+	stream.Serialize(Acceleration);
+	stream.Serialize(Color);
+	stream.Serialize(Trailer);
+	stream.Serialize(ROT);
+	stream.Serialize(RetargetAccuracy);
+	stream.Serialize(Arming);
+	stream.Serialize(AnimLow);
+	stream.Serialize(AnimHigh);
+	stream.Serialize(AnimRate);
+	stream.Serialize(Tumble);
 }
 
 
@@ -403,24 +413,4 @@ void BulletTypeClass::Detach(AbstractClass const * target, bool all)
 RTTIType BulletTypeClass::Fetch_RTTI(void) const
 {
 	return(RTTI_BULLETTYPE);
-}
-
-
-/// <summary>
-/// Fetches the size this object occupies in a save game file.
-/// This routine is used by the load process, which must know how much smaller a bullet
-/// type was in save games written before the later members were added.
-/// </summary>
-/// <param name="oldsave">Is the size wanted for the older save game layout?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int BulletTypeClass::Fetch_Object_Size(bool oldsave) const
-{
-	int size = sizeof(*this);
-	int delta =
-		sizeof(IsSplits) +
-		sizeof(IsAntiVehicle) +
-		sizeof(RetargetAccuracy) +
-		2; /// alignment padding
-
-	return(size - (oldsave ? delta : 0));
 }

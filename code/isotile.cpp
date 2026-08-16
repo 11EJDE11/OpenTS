@@ -19,7 +19,7 @@
 #include "globals.h"
 #include "isotype.h"
 #include "overtype.h"
-#include "swizzle.h"
+#include "savestream.h"
 #include "tracker.h"
 #include "vector.h"
 
@@ -171,37 +171,14 @@ IsometricTileClass::~IsometricTileClass(void)
 
 
 /// <summary>
-/// Loads this tile from the stream specified.
-/// The tile is rebuilt in place and its type pointer is put back through the swizzle
-/// manager so that it refers to the tile type as loaded by this session.
+/// Lists the members this tile carries.
 /// </summary>
-/// <returns>Returns with S_OK if the tile was read, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE IsometricTileClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void IsometricTileClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) IsometricTileClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Saves this tile to the stream specified.
-/// This routine is part of the persistence contract used by the game's save system.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the tile is written?</param>
-/// <returns>Returns with S_OK if the tile was written, otherwise the failure code.</returns>
-HRESULT STDMETHODCALLTYPE IsometricTileClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
 }
 
 
@@ -236,18 +213,6 @@ bool IsometricTileClass::Limbo(void)
 	IsInLimbo = true;
 	IsToDisplay = false;
 	return(true);
-}
-
-
-/// <summary>
-/// Fetches the memory size of this object.
-/// This routine is used by the save system when it needs to know how many bytes the
-/// object occupies.
-/// </summary>
-/// <returns>Returns with the size of this object in bytes.</returns>
-int IsometricTileClass::Fetch_Object_Size(bool) const
-{
-	return(sizeof(*this));
 }
 
 

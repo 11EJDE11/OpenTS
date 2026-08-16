@@ -31,8 +31,8 @@ class WalkLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual ~WalkLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override {return(BASECLASS::AddRef());}
@@ -58,8 +58,6 @@ class WalkLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) override;
 		virtual boolean STDMETHODCALLTYPE Is_Really_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Stop_Movement_Animation(void) override {IsReallyMoving = false;};
-
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 		void Movement_AI(bool first_pass);
 		bool Mark_Head_To(Coord const & coord);

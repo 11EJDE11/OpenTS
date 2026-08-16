@@ -179,6 +179,7 @@
 #include "queue.h"
 #include "revent.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scheme.h"
 #include "session.h"
 #include "shapeset.h"
@@ -8107,40 +8108,87 @@ bool TechnoClass::Should_Self_Heal_Now(void) const
 
 
 /// <summary>
-/// Loads this object back in from a save game.
-/// Once the raw data has been read, every pointer the object holds is still the value it
-/// had when the game was saved, so they are all swizzled back into live pointers here.
-/// Save games written by an older version have their layout patched up on the way through.
+/// Lists the members every techno object carries.
 /// </summary>
-/// <returns>Returns with S_OK, or with the failure code from the base class.</returns>
-HRESULT STDMETHODCALLTYPE TechnoClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void TechnoClass::Serialize(SaveStreamClass & stream)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&LimpetSpeedFactor, &LimpetType, size - offsetof(TechnoClass, LimpetSpeedFactor));
-			LimpetType = 0;
-			memmove(&LimpetSpeedFactor + 1, &LimpetSpeedFactor, size - offsetof(TechnoClass, LimpetSpeedFactor) - 4);
-			LimpetSpeedFactor = 1.0;
-		}
+	BASECLASS::Serialize(stream);
+	FlasherClass::Serialize(stream);
+	StageClass::Serialize(stream);
 
-		Swizzle_Pointer(&House);
-
-		for (int i = 0; i < ATTACHED_PARTICLE_COUNT; i++) {
-			Swizzle_Pointer(&ParticleSystems[i]);
-		}
-
-		Swizzle_Pointer(&ArchivedTarget);
-		Swizzle_Pointer(&NearbyObject);
-		Swizzle_Pointer(&TarCom);
-		Swizzle_Pointer(&SuspendedTarCom);
-		Swizzle_Pointer(&Cargo.CargoHold);
-		Swizzle_Pointer(&Wave);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(ActLike);
+	stream.Serialize(Cargo);
+	stream.Serialize(Veterancy);
+	stream.Serialize(ArmorBias);
+	stream.Serialize(FirepowerBias);
+	stream.Serialize(IdleTimer);
+	stream.Serialize(RadarFlashTimer);
+	stream.Serialize(RadarPos);
+	stream.Serialize(SpiedBy);
+	stream.Serialize(Group);
+	stream.Serialize(ArchivedTarget);
+	stream.Serialize(House);
+	stream.Serialize(Cloak);
+	stream.Serialize(CloakingDevice);
+	stream.Serialize(CloakDelay);
+	stream.Serialize(PredatorOffset);
+	stream.Serialize(TarCom);
+	stream.Serialize(SuspendedTarCom);
+	stream.Serialize(PitchAngle);
+	stream.Serialize(Arm);
+	stream.Serialize(Ammo);
+	stream.Serialize(PurchasePrice);
+	stream.Serialize(ParticleSystems);
+	stream.Serialize(Wave);
+	stream.Serialize(AngleRotatedSideways);
+	stream.Serialize(AngleRotatedForwards);
+	stream.Serialize(RockingSidewaysPerFrame);
+	stream.Serialize(RockingForwardsPerFrame);
+	stream.Serialize(EnteredByInfType);
+	stream.Serialize(Storage);
+	stream.Serialize(Door);
+	stream.Serialize(BarrelPitch);
+	stream.Serialize(PrimaryFacing);
+	stream.Serialize(SecondaryFacing);
+	stream.Serialize(BurstIndex);
+	stream.Serialize(TargetingLaserTimer);
+	stream.Serialize(SoundRandomSeed);
+	stream.Serialize(SinkingYOffset);
+	stream.Serialize(IsSinking);
+	stream.Serialize(IsNeedingRescue);
+	stream.Serialize(IsUseless);
+	stream.Serialize(IsTickedOff);
+	stream.Serialize(IsCloakable);
+	stream.Serialize(IsLeader);
+	stream.Serialize(IsALoaner);
+	stream.Serialize(IsLocked);
+	stream.Serialize(IsInRecoilState);
+	stream.Serialize(IsTethered);
+	stream.Serialize(IsOwnedByPlayer);
+	stream.Serialize(IsDiscoveredByPlayer);
+	stream.Serialize(IsDiscoveredByComputer);
+	stream.Serialize(IsALemon);
+	stream.Serialize(UnusedCooldown);
+	stream.Serialize(Unused1);
+	stream.Serialize(SightIncrease);
+	stream.Serialize(IsTeamRecruitable);
+	stream.Serialize(IsAutocreateRecruitable);
+	stream.Serialize(IsRadarTracked);
+	stream.Serialize(IsInTransport);
+	stream.Serialize(IsRocking);
+	stream.Serialize(IsOnPatrol);
+	stream.Serialize(IsOnWaypointPatrol);
+	stream.Serialize(NearbyObject);
+	stream.Serialize(StunDuration);
+	stream.Serialize(LimpetType);
+	stream.Serialize(LimpetSpeedFactor);
+	// ActionLineTimer -- static, shared by every object rather than owned by one.
+	// ActionLines
+	// TalkBubbleType
+	// TalkBubbleOwner
+	// TalkBubbleTimer
+	// BodyShape
 }
 
 

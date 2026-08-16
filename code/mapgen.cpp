@@ -4515,11 +4515,9 @@ bool MapSeedClass::Read_File(FileEntryClass * entry, WIN32_FIND_DATAA * ff)
 				if (ini.Get_String("RandomMap", "Description", 0, buffer, sizeof(buffer)) > 0 )
 				{
 					strncpy(entry->Descr, buffer, sizeof(buffer));
-					entry->Old = false;
 					entry->Valid = true;
 				} else {
 					entry->Descr[0] = 0;
-					entry->Old = true;
 					entry->Valid = false;
 				}
 				entry->Scenario = 0;

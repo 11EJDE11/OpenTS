@@ -60,6 +60,7 @@
 #include "map.h"
 #include "noinit.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "session.h"
 #include "sun.h"
@@ -69,8 +70,6 @@
 #include "weapon.h"
 
 #include "layer.hh"
-
-#include <new.h>
 
 static const int const1 = 16;
 static const int const2 = 16;
@@ -1531,18 +1530,26 @@ HRESULT STDMETHODCALLTYPE FlyLocomotionClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Loads the locomotor from a save game stream.
-/// This routine reconstructs the object in place once the base class has pulled the raw
-/// data off the stream, so that its virtual table pointer is valid again.
+/// Lists the members this flying locomotor carries.
 /// </summary>
-/// <returns>Returns with the result code of the load attempt.</returns>
-HRESULT STDMETHODCALLTYPE FlyLocomotionClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void FlyLocomotionClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) FlyLocomotionClass(NoInitClass());
-	}
-	return(result);
+	BASECLASS::Serialize(stream);
+
+	stream.Serialize(DestinationCoord);
+	stream.Serialize(HeadToCoord);
+	stream.Serialize(IsMoving);
+	stream.Serialize(FlightLevel);
+	stream.Serialize(TargetSpeed);
+	stream.Serialize(CurrentSpeed);
+	stream.Serialize(IsTakingOff);
+	stream.Serialize(IsLanding);
+	stream.Serialize(CommencedLanding);
+	stream.Serialize(IsTumbling);
+	stream.Serialize(CurrentROT);
+	stream.Serialize(Riser);
+	stream.Serialize(IsElevating);
 }
 
 

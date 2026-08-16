@@ -40,11 +40,10 @@ class TiberiumClass : public AbstractTypeClass
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(*this)); }
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_TIBERIUM); }
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override { return(HeapID); }

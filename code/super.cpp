@@ -65,6 +65,7 @@
 #include "language\language.h"
 #include "mouse.h"
 #include "rules.h"
+#include "savestream.h"
 #include "sun.h"
 #include "suprtype.h"
 #include "swizzle.h"
@@ -814,39 +815,23 @@ HRESULT STDMETHODCALLTYPE SuperClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
-/// Reads the super weapon back in from the save game stream.
-/// This routine rebuilds the object in place and then hands the weapon type and owning
-/// house pointers to the swizzler so they can be remapped to their new addresses.
+/// Lists the members this super weapon carries.
 /// </summary>
-/// <returns>Returns with S_OK if the super weapon was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE SuperClass::Load(IStream * stream)
+/// <param name="stream">The stream carrying the members.</param>
+void SuperClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) SuperClass(NoInitClass());
+	BASECLASS::Serialize(stream);
 
-		Swizzle_Pointer(&Class);
-		Swizzle_Pointer(&House);
-
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Writes the super weapon out to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the object be marked as clean once it is written?</param>
-/// <returns>Returns with S_OK if the super weapon was written successfully.</returns>
-HRESULT STDMETHODCALLTYPE SuperClass::Save(IStream * stream, BOOL cleardirty)
-{
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(Class);
+	stream.Serialize(House);
+	stream.Serialize(Control);
+	stream.Serialize(NeedsBuilding);
+	stream.Serialize(IsPresent);
+	stream.Serialize(IsOneTime);
+	stream.Serialize(IsReady);
+	stream.Serialize(IsSuspended);
+	stream.Serialize(OldStage);
+	stream.Serialize(ChargeDrainState);
 }
 
 

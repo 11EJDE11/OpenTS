@@ -97,6 +97,19 @@ class Random2Class {
 			SIGNIFICANT_BITS=32				// Random number bit significance.
 		};
 
+		/*
+		 * Carries the generator to or from a save game. The whole lagged Fibonacci table
+		 * travels, since a game resumed with a differently seeded generator would drift out
+		 * of step with the other machines in a network game.
+		 */
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			stream.Serialize(Index1);
+			stream.Serialize(Index2);
+			stream.Serialize(Table);
+		}
+
 	protected:
 		int Index1;
 		int Index2;

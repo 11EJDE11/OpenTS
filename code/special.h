@@ -156,4 +156,41 @@ class SpecialClass
 		 * will be true. Nothing in the game consults it.
 		 */
 		unsigned IsVisceroid:1;
+
+		/*
+		 * A bit field has no address to hand to the stream, so each option makes the trip
+		 * in an ordinary variable and is assigned back afterwards. The assignment is
+		 * harmless while saving.
+		 */
+		template<typename S>
+		static bool Serialize_Flag(S & stream, unsigned field)
+		{
+			bool flag = (field != 0);
+			stream.Serialize(flag);
+			return(flag);
+		}
+
+		/// Carries the option flags to or from a save game.
+		template<typename S>
+		void Serialize(S & stream)
+		{
+			IsShadowGrow = Serialize_Flag(stream, IsShadowGrow);
+			IsSpeedBuild = Serialize_Flag(stream, IsSpeedBuild);
+			IsFromInstall = Serialize_Flag(stream, IsFromInstall);
+			IsCaptureTheFlag = Serialize_Flag(stream, IsCaptureTheFlag);
+			IsInert = Serialize_Flag(stream, IsInert);
+			IsTGrowth = Serialize_Flag(stream, IsTGrowth);
+			IsTSpread = Serialize_Flag(stream, IsTSpread);
+			IsMCVDeploy = Serialize_Flag(stream, IsMCVDeploy);
+			IsInitialVeteran = Serialize_Flag(stream, IsInitialVeteran);
+			IsAllianceFixed = Serialize_Flag(stream, IsAllianceFixed);
+			IsHarvesterImmune = Serialize_Flag(stream, IsHarvesterImmune);
+			IsFogOfWar = Serialize_Flag(stream, IsFogOfWar);
+			Bit2_16 = Serialize_Flag(stream, Bit2_16);
+			IsTExplode = Serialize_Flag(stream, IsTExplode);
+			IsDestroyBridges = Serialize_Flag(stream, IsDestroyBridges);
+			IsTiberiumMeteorites = Serialize_Flag(stream, IsTiberiumMeteorites);
+			IsIonStorms = Serialize_Flag(stream, IsIonStorms);
+			IsVisceroid = Serialize_Flag(stream, IsVisceroid);
+		}
 };

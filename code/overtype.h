@@ -160,9 +160,10 @@ class OverlayTypeClass: public ObjectTypeClass
 		OverlayTypeClass(char const * ininame = NULL);
 		~OverlayTypeClass(void);
 
-		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
-		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
+
+		virtual void Serialize(SaveStreamClass & stream) override;
+		virtual void Post_Load(void) override;
 
 		static OverlayTypeClass * Find_Or_Make(char const * name);
 		static OverlayType From_Name(char const * name);
@@ -171,9 +172,6 @@ class OverlayTypeClass: public ObjectTypeClass
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_OVERLAYTYPE);}
 		virtual void Compute_CRC(CRCEngine & crc) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
-		virtual int Fetch_Heap_ID(void) const override {return(HeapID);};
-
 		virtual Coord const Coord_Fixup(Coord const & coord) const override;
 		virtual bool Create_And_Place(Cell const & cell, HouseClass * house) const override;
 		virtual ObjectClass * Create_One_Of(HouseClass *) const override;

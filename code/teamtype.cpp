@@ -72,6 +72,7 @@
 #include "houstype.h"
 #include "incdec.h"
 #include "rules.h"
+#include "savestream.h"
 #include "scenario.h"
 #include "script.h"
 #include "session.h"
@@ -838,44 +839,48 @@ void TeamTypeClass::Write_All(CCINIClass & ini, INIScopeType scope)
 
 
 /// <summary>
-/// Saves this team type out to a save game stream.
+/// Lists the members this team type carries.
 /// </summary>
-/// <param name="stream">The stream to save this team type to.</param>
-/// <param name="cleardirty">Should the object's dirty flag be cleared once it has been
-/// written?</param>
-/// <returns>Returns with S_OK if the team type was saved.</returns>
-HRESULT STDMETHODCALLTYPE TeamTypeClass::Save(IStream * stream, BOOL cleardirty)
+/// <param name="stream">The stream carrying the members.</param>
+void TeamTypeClass::Serialize(SaveStreamClass & stream)
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
+	BASECLASS::Serialize(stream);
 
-		result = S_OK;
-	}
-	return(result);
-}
-
-
-/// <summary>
-/// Loads this team type back from a save game stream.
-/// The object is reconstructed in place and every pointer it holds is swizzled from the
-/// identifier that was saved back into a live address.
-/// </summary>
-/// <param name="stream">The stream to load this team type from.</param>
-/// <returns>Returns with S_OK if the team type was loaded.</returns>
-HRESULT STDMETHODCALLTYPE TeamTypeClass::Load(IStream * stream)
-{
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		new (this) TeamTypeClass(NoInitClass());
-
-		Swizzle_Pointer(&House);
-		Swizzle_Pointer(&Tag);
-		Swizzle_Pointer(&Script);
-		Swizzle_Pointer(&TaskForce);
-
-		result = S_OK;
-	}
-	return(result);
+	stream.Serialize(HeapID);
+	stream.Serialize(Group);
+	stream.Serialize(VeteranLevel);
+	stream.Serialize(IsLoadable);
+	stream.Serialize(IsFull);
+	stream.Serialize(IsAnnoyance);
+	stream.Serialize(IsGuardSlower);
+	stream.Serialize(IsRecruiter);
+	stream.Serialize(IsAutocreate);
+	stream.Serialize(IsPrebuilt);
+	stream.Serialize(IsReinforcable);
+	stream.Serialize(IsWhiner);
+	stream.Serialize(IsAggressive);
+	stream.Serialize(IsLooseRecruit);
+	stream.Serialize(IsSuicide);
+	stream.Serialize(IsDroppod);
+	stream.Serialize(IsDropship);
+	stream.Serialize(OnTransOnly);
+	stream.Serialize(RecruitPriority);
+	stream.Serialize(MaxAllowed);
+	stream.Serialize(Fear);
+	stream.Serialize(House);
+	stream.Serialize(TechLevel);
+	stream.Serialize(Tag);
+	stream.Serialize(Origin);
+	stream.Serialize(Number);
+	stream.Serialize(Script);
+	stream.Serialize(TaskForce);
+	stream.Serialize(Scope);
+	stream.Serialize(AvoidThreats);
+	stream.Serialize(IsIonImmune);
+	stream.Serialize(TransportsReturnOnUnload);
+	stream.Serialize(AreTeamMembersRecruitable);
+	stream.Serialize(IsBaseDefense);
+	stream.Serialize(OnlyTargetHouseEnemy);
 }
 
 
