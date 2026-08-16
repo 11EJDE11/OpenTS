@@ -31,12 +31,7 @@ struct TStringID
 			}
 		}
 
-		TStringID(TStringID const & that)
-		{
-			//if (that.StringBuffer != StringBuffer) {
-				memcpy(StringBuffer, that.StringBuffer, SIZE + 1);
-			//}
-		}
+		TStringID(TStringID const & that) = default;
 
 		TStringID(NoInitClass const & x) {}
 
@@ -54,15 +49,7 @@ struct TStringID
 		bool operator!=(TStringID const & that) const { return (strcmp(that.StringBuffer, StringBuffer) != 0); }
 
 
-		TStringID operator=(TStringID const & that)
-		{
-			if (that.StringBuffer != StringBuffer) {
-				/// make a copy of the entire instance including extra byte
-				memcpy(StringBuffer, that.StringBuffer, SIZE + 1);
-			}
-			/// Returned by value rather than by reference, which costs a second copy.
-			return(*this);
-		}
+		TStringID & operator=(TStringID const & that) = default;
 
 
 		/// Returns the size of the buffer
