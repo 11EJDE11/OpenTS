@@ -4885,7 +4885,7 @@ static void Print_CRCs(EventClass *ev)
 		AnimClass *anim = Anims[j];
 		if (anim->Fetch_ID() != -2) {
 			anim->Compute_CRC(*crc);
-			fprintf(fp, "%05d      %08x\n", j, *crc);
+			fprintf(fp, "%05d      %08x\n", j, (*crc)());
 		}
 	}
 
