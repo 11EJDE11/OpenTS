@@ -1721,8 +1721,18 @@ bool Parse_Command_Line(int argc, char * argv[])
 #endif
 
 	for (int index = 1; index < argc; index++) {
-		char * string;		// Pointer to argument.
-		string = strupr(argv[index]);
+		char arg_string[512];
+		char * string = arg_string;		// Pointer to argument.
+
+		// Quotes are dropped on the way in so a quoted argument matches like an unquoted one.
+		char * dest = arg_string;
+		for (char * src = argv[index]; *src != '\0' && dest < &arg_string[sizeof(arg_string) - 1]; src++) {
+			if (*src != '"') {
+				*dest++ = *src;
+			}
+		}
+		*dest = '\0';
+		strupr(string);
 
 		/*
 		**	Print usage text only if requested.
