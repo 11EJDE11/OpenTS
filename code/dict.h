@@ -36,6 +36,9 @@ class Dictionary
 					Dictionary(unsigned int (* hashFn)(K &key));
 					~Dictionary(void);
 
+					Dictionary(Dictionary const &) = delete;
+	Dictionary &	operator = (Dictionary const &) = delete;
+
 	void			clear(void);
 	char			add(K &key,V &value);
 	char			getValue(K &key, V &value);
@@ -65,16 +68,13 @@ private:
 	unsigned int	(*hashFunc)(K & key);
 	unsigned int	keyHash(K & key);
 
-	const double	SHRINK_THRESHOLD;
-	const double	EXPAND_THRESHOLD;
-	const int		MIN_TABLE_SIZE;
+	static constexpr double	SHRINK_THRESHOLD = 0.20;
+	static constexpr double	EXPAND_THRESHOLD = 0.80;
+	static constexpr int	MIN_TABLE_SIZE = 32 * 4;
 };
 
 template <class K,class V>
-Dictionary<K,V>::Dictionary(unsigned int (*hashFn)(K &key)) :
-	SHRINK_THRESHOLD(0.20),
-	EXPAND_THRESHOLD(0.80),
-	MIN_TABLE_SIZE(32 * 4)
+Dictionary<K,V>::Dictionary(unsigned int (*hashFn)(K &key))
 {
 	log2Size=MIN_TABLE_SIZE;
 	size=MIN_TABLE_SIZE;
