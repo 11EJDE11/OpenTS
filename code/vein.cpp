@@ -1003,7 +1003,7 @@ bool VeinholeMonsterClass::Save_All(IStream * stream)
 			return(false);
 		}
 
-		if (FAILED(VeinholeMonsters[i]->GrowthQueue->Save(stream, VeinholeMonsters[i]->GrowthNodes))) {
+		if (!VeinholeMonsters[i]->GrowthQueue->Save(stream, VeinholeMonsters[i]->GrowthNodes)) {
 			return(false);
 		}
 	}

@@ -314,7 +314,10 @@ static bool Put_All(IStream *stream, int save_net)
 	**	Save the map.  The map must be saved first, since it saves the Theater.
 	*/
 	DebugString("Saving Map\n");
-	Map.Save(stream);
+	if (FAILED(Map.Save(stream))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
 
 	DebugString("Saving Tunnels\n");
 	if (FAILED(Save_Vector(stream, Tubes))) {
@@ -335,7 +338,10 @@ static bool Put_All(IStream *stream, int save_net)
 	**	Save the Logic & Map layers
 	*/
 	DebugString("Saving Logic\n");
-	Logic.Save(stream);
+	if (FAILED(Logic.Save(stream))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
 
 	DebugString("Saving TacticalMap\n");
 	if (FAILED(OleSaveToStream(TacticalMap, stream))) {
@@ -447,12 +453,12 @@ static bool Put_All(IStream *stream, int save_net)
 		DebugString("\t***** FAILED!\n");
 		return(false);
 	}
-	/// Nothing is tested here, so the failure message is printed whether the write
-	/// succeeded or not, and a genuine failure never aborts the save.
 	DebugString("Saving AITriggerTypes\n");
-	Save_Vector(stream, AITriggerTypes);
-	DebugString("\t***** FAILED!\n");
-	//return(false);
+	if (FAILED(Save_Vector(stream, AITriggerTypes))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
 	DebugString("Saving Actions\n");
 	if (FAILED(Save_Vector(stream, Actions))) {
 		DebugString("\t***** FAILED!\n");
@@ -1087,7 +1093,7 @@ bool Load_Game(const char *file_name)
 	ILinkStreamPtr link;
 	link.CreateInstance(CLSID_CompressStream, pUnknown,CLSCTX_INPROC|CLSCTX_LOCAL_SERVER);
 	if (FAILED(link->Link_Stream(content))) {
-		//return(false);
+		return(false);
 	}
 	IStreamPtr stream(link);
 

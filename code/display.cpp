@@ -3801,6 +3801,7 @@ HRESULT DisplayClass::Load(IStream * stream)
 	HRESULT result = S_OK;
 	for (LayerType layer = LAYER_FIRST; layer < LAYER_COUNT; layer++) {
 		result = Layer[layer].Load(stream);
+		if (FAILED(result)) break;
 	}
 	return(result);
 }
