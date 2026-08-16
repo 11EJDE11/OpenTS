@@ -341,7 +341,7 @@ int ConnectionClass::Receive_Packet (void * buf, int buflen)
 		Error if we can't queue the packet
 		.....................................................................*/
 		if (!Queue->Queue_Receive (buf, buflen, NULL, 0)) {
-			DebugString("Error - unable to queue incoming packet. %s %s\n", __FILE__, __LINE__);
+			DebugString("Error - unable to queue incoming packet. %s %d\n", __FILE__, __LINE__);
 			MissedOverall++;
 			return(0);
 		}

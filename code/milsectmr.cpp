@@ -45,7 +45,7 @@ MillisecondTimerClass::MillisecondTimerClass(void)
 		double dl = low;
 		double dh = high;
 
-		DebugString("MillisecondTimerClass low = %d, high = %d\n");
+		DebugString("MillisecondTimerClass low = %u, high = %u\n", low, high);
 
 		Frequency = LI_TO_DBL(dh, dl) / 1000; // 1000 = rate.
 

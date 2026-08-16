@@ -1003,7 +1003,7 @@ bool Save_Game(const char *file_name, char const * descr, bool )
 		return(false);
 	}
 
-	DebugString("SAVING GAME [%s] - Complete\n\n", file_name, descr);
+	DebugString("SAVING GAME [%s - %s] - Complete\n\n", file_name, descr);
 	return(res);
 }
 

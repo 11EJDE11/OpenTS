@@ -472,13 +472,13 @@ void MultiScore::Tally_Score(void)
 		DebugString(
 			"%s: %s\n Scheme: %d\n Lost = %d\n Kills = %d\n Economy = %d\n Score = %d\n",
 			Session.Score[score_index].Name,
-			Session.Score[score_index].Wins > 0 ? "Winner" : "Losser",
+			Session.Score[score_index].Wins > 0 ? "Winner" : "Loser",
 			Session.Score[score_index].Scheme,
 			Session.Score[score_index].Lost[0],
 			Session.Score[score_index].Kills[0],
 			Session.Score[score_index].Built[0],
 			Session.Score[score_index].Score[0]);
-		DebugString(" KillRatio = %f\n BuildEconomy = %f\n", Session.Score[score_index].Name, kill_ratio, build_economy);
+		DebugString(" KillRatio = %f\n BuildEconomy = %f\n", kill_ratio, build_economy);
 	}
 }
 

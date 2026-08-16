@@ -435,7 +435,7 @@ bool DSAudio::Init( HWND window , int bits_per_sample, bool stereo , int rate )
 		*/
 		res = PrimaryBufferPtr->Play(0,0,DSBPLAY_LOOPING);
 		if ( res != DS_OK ) {
-			DebugString("Failed to start primary sound buffer. Error code %d\n", 0);
+			DebugString("Failed to start primary sound buffer. Error code %d\n", res);
 			Print_Sound_Error(Fetch_String(TXT_DSOUND_ACCESS), window);
 			PrimaryBufferPtr->Release();
 			PrimaryBufferPtr = NULL;

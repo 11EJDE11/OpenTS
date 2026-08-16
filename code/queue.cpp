@@ -1609,7 +1609,7 @@ static void Generate_Real_Timing_Event(ConnManClass *net, int my_sent)
 	unsigned char frame_send_rate;
 
 	if (Session.PrecalcMaxAhead != 0 || Session.PrecalcDesiredFrameRate != 0) {
-		DebugString("Sending precalculated network timings on frame %d\n"/*, Frame*/);
+		DebugString("Sending precalculated network timings on frame %d\n", Frame);
 
 		ev.Type = EventClass::TIMING;
 		ev.Data.Timing.DesiredFrameRate = Session.PrecalcDesiredFrameRate;
@@ -4805,7 +4805,7 @@ static void Print_CRCs(EventClass *ev)
 	#define CRC_OBJECTS(_vector_) \
 	for (j = 0; j < _vector_.Count(); j++) { \
 		_vector_[j]->Compute_CRC(*crc); \
-		fprintf(fp, "%05d      %08x\n", j, *crc); \
+		fprintf(fp, "%05d      %08x\n", j, (*crc)()); \
 	}
 
 	fprintf(fp, "\n\n*************** House Type CRCs**************\n\n");
