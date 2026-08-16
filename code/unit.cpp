@@ -5952,7 +5952,7 @@ void UnitClass::Set_Occupy_Bit(Coord const & coord)
 void UnitClass::Clear_Occupy_Bit(Coord const & coord)
 {
 	CellClass &cell = Map[coord];
-	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z /*&& cell.IsUnderBridge*/) {
+	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z && cell.IsUnderBridge) {
 		cell.BridgeFlag.Occupy.Vehicle = false;
 	} else {
 		cell.Flag.Occupy.Vehicle = false;

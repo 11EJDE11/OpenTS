@@ -3934,7 +3934,7 @@ void InfantryClass::Clear_Occupy_Bit(Coord const & coord)
 	CellClass &cell = Map[coord];
 	int height = Map.Get_Height_GL(coord);
 
-	if (height + BRIDGE_LEPTON_HEIGHT <= coord.Z) {
+	if (height + BRIDGE_LEPTON_HEIGHT <= coord.Z && cell.IsUnderBridge) {
 
 		/*
 		**	Clear the occupy bit for the infantry in that cell
