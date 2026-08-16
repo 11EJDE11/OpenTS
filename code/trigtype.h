@@ -36,6 +36,7 @@
 
 #include "attach.hh"
 #include "dialog.hh"
+#include "diff.hh"
 
 class HouseTypeClass;
 class TActionClass;
@@ -100,6 +101,8 @@ class TriggerTypeClass : public AbstractTypeClass
 
 		bool Is_Allow_Win(void) const;
 
+		bool Is_Enabled_At(DiffType difficulty) const;
+
 		bool Is_Enabled(void) const {return(_IsEnabled);}
 		void Set_Enabled(bool val) {_IsEnabled = val;}
 		__declspec(property(get=Is_Enabled, put=Set_Enabled)) bool IsEnabled;
@@ -123,8 +126,8 @@ class TriggerTypeClass : public AbstractTypeClass
 	public:
 		/*
 		 * These specify the difficulty levels this trigger is active at. A trigger switched
-		 * off for the difficulty the player chose is disabled as the scenario is read, so it
-		 * never springs.
+		 * off for the scenario's difficulty is disabled as it is created, so it never
+		 * springs.
 		 */
 		bool IsEnabledOnEasy;
 		bool IsEnabledOnMedium;

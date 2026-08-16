@@ -182,9 +182,13 @@ The two house marks behind them are genuinely maintained, which is what makes th
 Force Trigger is the only way to get any consequence out of a trigger built on one of the three, and it fires the actions regardless of the event rather than because of it.
 :::
 
-## Settings and state without effect
+## Difficulty
 
-The per-difficulty fields in `[Triggers]` never disable anything. A trigger starts out marked active on all three difficulties and the read of those three fields can only set them, never clear them, so writing `0` in any of them leaves the trigger active there. The test that would switch a trigger off for the difficulty the player chose can never find a trigger switched off for it.
+A trigger record carries three per-difficulty fields in `[Triggers]`, and only the one for the difficulty the scenario is being played at is consulted. A trigger whose field reads `0` there is disabled as it is created, so it never springs, and [Enable Trigger](/mapping/actions/taction-enable-trigger/) leaves it alone rather than bringing it back.
+
+A campaign mission is played at the difficulty the player chose. A skirmish or multiplayer game is played at the one the lobby's computer skill sets. A saved game keeps the flags it was stored with.
+
+## Settings and state without effect
 
 A trigger keeps one countdown, not one per event. A trigger carrying more than one elapsed time or random delay event has each of them overwrite the single countdown as the list is walked, so the delay that takes effect is the one written first in the map file and the others are inert.
 

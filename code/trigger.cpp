@@ -95,6 +95,8 @@ TriggerClass::TriggerClass(TriggerTypeClass * trigtype) :
 		Reset_All_Timed_Events();
 		if (!Class->Is_Enabled()) {
 			Disable();
+		} else if (!Class->Is_Enabled_At(Scen->Difficulty)) {
+			Disable();
 		}
 	}
 }

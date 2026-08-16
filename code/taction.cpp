@@ -2123,7 +2123,7 @@ bool TActionClass::TAction_FORCE_TRIGGER(HouseClass * , ObjectClass * , TriggerC
 /// </summary>
 bool TActionClass::TAction_ENABLE_TRIGGER(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	if (Trigger != NULL) {
+	if (Trigger != NULL && Trigger->Is_Enabled_At(Scen->Difficulty)) {
 		for (int index = 0; index < Triggers.Count(); index++) {
 			if (Triggers[index]->Class == Trigger) {
 				Triggers[index]->Enable();

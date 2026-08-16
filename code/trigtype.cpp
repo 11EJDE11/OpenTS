@@ -237,6 +237,29 @@ bool TriggerTypeClass::Is_Allow_Win(void) const
 
 
 /// <summary>
+/// Checks whether this trigger takes part at the specified difficulty.
+/// </summary>
+/// <param name="difficulty">The difficulty the scenario is being played at.</param>
+/// <returns>Returns true if the trigger is active at that difficulty.</returns>
+bool TriggerTypeClass::Is_Enabled_At(DiffType difficulty) const
+{
+	switch (difficulty) {
+		case DIFF_EASY:
+			return(IsEnabledOnEasy);
+
+		case DIFF_NORMAL:
+			return(IsEnabledOnMedium);
+
+		case DIFF_HARD:
+			return(IsEnabledOnHard);
+
+		default:
+			return(true);
+	}
+}
+
+
+/// <summary>
 /// Is this trigger tied to the specified global variable?
 /// A trigger can watch for a global variable being set or cleared. This routine checks
 /// the trigger's whole event list for either kind of watch on the variable given.
@@ -494,35 +517,23 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 		}
 
 		token = strtok(NULL, ",");
-		if (token != NULL && atoi(token) != 0) {
-			IsEnabledOnEasy = true;
+		if (token != NULL) {
+			IsEnabledOnEasy = atoi(token) != 0;
 		}
 
 		token = strtok(NULL, ",");
-		if (token != NULL && atoi(token) != 0) {
-			IsEnabledOnMedium = true;
+		if (token != NULL) {
+			IsEnabledOnMedium = atoi(token) != 0;
 		}
 
 		token = strtok(NULL, ",");
-		if (token != NULL && atoi(token) != 0) {
-			IsEnabledOnHard = true;
+		if (token != NULL) {
+			IsEnabledOnHard = atoi(token) != 0;
 		}
 
 		token = strtok(NULL, ",");
 		if (token != NULL && atoi(token) != 0) {
 			Set_To_Inherit(true);
-		}
-
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_EASY && !IsEnabledOnEasy) {
-			IsEnabled = false;
-		}
-
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_NORMAL && !IsEnabledOnMedium) {
-			IsEnabled = false;
-		}
-
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_HARD && !IsEnabledOnHard) {
-			IsEnabled = false;
 		}
 
 		if (ini.Get_String(INI_EVENT_NAME, IniName, "", buffer, sizeof(buffer))) {

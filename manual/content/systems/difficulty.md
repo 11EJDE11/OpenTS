@@ -177,9 +177,10 @@ Every row below reads a house's own slot directly, with no second inversion appl
 | A computer house's harvesters | Outside a campaign, a house needs two harvesters per refinery on hand before it builds a replacement, or one when it sits in slot 2 |
 | The computer's Ion Cannon | In slot 0 it also rates objects still under construction |
 | Crushing an attacker | A computer house in slot 2 never answers fire by running the attacker down |
+| A map's triggers | A trigger whose difficulty flags exclude the scenario's difficulty is disabled as it is created, and the enable-trigger action leaves it alone; outside a campaign the difficulty is the one the lobby's computer skill sets |
 
 ## Parsed settings without effect
 
 The difficulty sections carry four settings no gameplay path reads, in three different states. [`BuildSlowdown`](/keys/buildslowdown/) has no reader at all. [`ContentScan`](/keys/contentscan/#scope-difficulty-settings) is compared in a routine nothing calls. [`Airspeed`](/keys/airspeed/#scope-difficulty-settings) and [`BuildDelay`](/keys/builddelay/) are folded into figures the house keeps, but no gameplay path reads those figures either. A country's own [`Airspeed=`](/keys/airspeed/#scope-housetype) is stored the same way and read no further. `[General]` carries [`FineDiffControl`](/keys/finediffcontrol/), and the [`ContentScan`](/keys/contentscan/#scope-global-rules) threshold in `[IQ]` is the other half of the same unreachable comparison.
 
-The slot reaches nothing in a map's own triggers. A trigger declares three per-difficulty fields, the engine tests them against the difficulty the player chose, and the test can never find a trigger switched off; [Trigger springing](/systems/trigger-springing/#settings-and-state-without-effect) covers why. The three flags an AI trigger declares are a different set and do decide whether it is drawn.
+The slot reaches nothing in a map's own triggers, which answer to the difficulty itself rather than to a house's slot. A trigger declares three per-difficulty fields and is disabled as it is created when the one for the scenario's difficulty is clear; [Trigger springing](/systems/trigger-springing/#difficulty) covers what that leaves it able to do. The three flags an AI trigger declares are a different set and do decide whether it is drawn.
