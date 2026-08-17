@@ -78,6 +78,14 @@ template<class T>
 class VectorClass
 {
 	public:
+		using value_type = T;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = T &;
+		using const_reference = T const &;
+		using iterator = T *;
+		using const_iterator = T const *;
+
 		VectorClass(NoInitClass const &) {};
 		VectorClass(int size=0);
 		VectorClass(VectorClass<T> const &);		// Copy constructor.
