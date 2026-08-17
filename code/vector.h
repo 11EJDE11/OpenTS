@@ -56,6 +56,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <ranges>
 #include <span>
 #include <type_traits>
@@ -90,6 +91,7 @@ class VectorClass
 		VectorClass(int size=0);
 		VectorClass(VectorClass<T> const &);		// Copy constructor.
 		VectorClass(VectorClass<T> &&) noexcept;	// Move constructor.
+		VectorClass(std::initializer_list<T> list);
 		~VectorClass(void);
 
 		T & operator[](int index) {assert((unsigned)index < (unsigned)VectorMax); return(Vector[index]);};
@@ -215,6 +217,22 @@ VectorClass<T>::VectorClass(VectorClass<T> && vector) noexcept :
 {
 	vector.Vector = nullptr;
 	vector.VectorMax = 0;
+}
+
+
+/// <summary>
+/// Constructs a vector holding a copy of every element in the list.
+/// </summary>
+/// <param name="list">The elements to fill the vector with.</param>
+template<class T>
+VectorClass<T>::VectorClass(std::initializer_list<T> list) :
+	Vector(nullptr),
+	VectorMax((int)list.size())
+{
+	if (VectorMax > 0) {
+		Vector = new T[VectorMax];
+		std::copy(list.begin(), list.end(), Vector);
+	}
 }
 
 
@@ -439,6 +457,7 @@ class DynamicVectorClass : public VectorClass<T>
 
 		DynamicVectorClass(int size=0);
 		DynamicVectorClass(NoInitClass const & x) : BASECLASS(x) {}
+		DynamicVectorClass(std::initializer_list<T> list);
 
 		DynamicVectorClass(DynamicVectorClass<T> const &) = default;
 		DynamicVectorClass<T> & operator =(DynamicVectorClass<T> const &) = default;
@@ -587,6 +606,21 @@ DynamicVectorClass<T> & DynamicVectorClass<T>::operator =(DynamicVectorClass<T> 
 		that.ActiveCount = 0;
 	}
 	return(*this);
+}
+
+
+/// <summary>
+/// Constructs a vector holding a copy of every element in the list.
+/// </summary>
+/// <param name="list">The elements to fill the vector with.</param>
+/// <remarks>A braced single integer supplies one element rather than a size; construct
+/// with parentheses to reserve room instead.</remarks>
+template<class T>
+DynamicVectorClass<T>::DynamicVectorClass(std::initializer_list<T> list)
+	: BASECLASS(list)
+{
+	GrowthStep = 10;
+	ActiveCount = Length();
 }
 
 
