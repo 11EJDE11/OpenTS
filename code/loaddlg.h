@@ -33,6 +33,7 @@
 #include "session.h"
 
 #include "house.hh"
+#include "opents_version.h"
 
 template<class T> class DynamicVectorClass;
 
@@ -80,9 +81,13 @@ class LoadOptionsClass
 		 * Save games carry this in their version header. Only a save stamped with the
 		 * current value loads; the per-member save format has no reader for anything
 		 * else, so every earlier stamp is refused outright.
+		 *
+		 * It is the packed project version, so opening the next development version is
+		 * what invalidates the saves of the version before it. A save format change
+		 * within a development version therefore has to open the next one.
 		 */
 		enum {
-			GAMEVER_OPENTS = 200000
+			GAMEVER_OPENTS = OPENTS_VERSION_PACKED
 		};
 
 		LoadOptionsClass (void);

@@ -50,7 +50,6 @@
 
 
 /****************************** Globals ************************************/
-//---------------------------------------------------------------------------
 // This is a table of version numbers # the communications protocol used for
 // that version number.  It's used by the game owner to determine the
 // protocol to be used for a given session.
@@ -61,11 +60,13 @@
 // A given protocol is used from its corresponding version #, up to (but not
 // including) the next version number in the table.  The last protocol in
 // the table is the default protocol for this version.
-//---------------------------------------------------------------------------
+//
+// One entry covers every version, because OpenTS speaks one protocol. A threshold
+// added here has to be an OpenTS version number: they start from zero again, so a
+// threshold drawn from the original game's numbering would capture OpenTS versions
+// that happen to reach it.
 static VersionProtocolType VersionProtocol[] = {
-	{0x00001000,COMM_PROTOCOL_SINGLE_NO_COMP},  // (obsolete)
-	{0x00002000,COMM_PROTOCOL_SINGLE_E_COMP},   // (obsolete)
-	{0x00010000,COMM_PROTOCOL_MULTI_E_COMP},
+	{0x00000000,COMM_PROTOCOL_MULTI_E_COMP},
 };
 
 
@@ -105,25 +106,15 @@ VersionClass::VersionClass(void) :
  * VersionClass::Version_Number -- Returns program version number          *
  *                                                                         *
  * Version Number Format:                                                  *
- * Non-CHEAT format:                                                       *
- *   Byte 3,2: major version (printed to the left of a decimal)            *
- *   Byte 1,0: minor version (printed to the right of a decimal)           *
- *   Thus, version 1.07 would appear as 0x0001 0700                        *
+ *   Byte 3,2: major version                                               *
+ *   Byte 1:   minor version                                               *
+ *   Byte 0:   patch version                                               *
+ *   Thus, version 1.7.2 would appear as 0x0001 0702                       *
  *                                                                         *
  *   This format guarantees that a greater-than or less-than comparison    *
  *   will work on version numbers.                                         *
  *                                                                         *
- * CHEAT format:                                                           *
- *   Byte 3: Month #                                                       *
- *   Byte 2: Day #                                                         *
- *   Byte 1: Hour #                                                        *
- *   Byte 0: Minute #                                                      *
- *                                                                         *
- * This format guarantees a unique version number for each compile (as     *
- * long as they're a minute or more apart), with increasing version #'s    *
- * for later times.                                                        *
- *                                                                         *
- * Either format should be printed in hex.                                 *
+ * The number should be printed in hex.                                    *
  *                                                                         *
  * This routine also fills in a text string (retrieved with Version_Text), *
  * which may contain a custom string (such as "Beta"); this string is      *
@@ -186,16 +177,6 @@ unsigned int VersionClass::Version_Number(void)
  *=========================================================================*/
 unsigned short VersionClass::Major_Version(void)
 {
-#ifdef DEV_VERSION
-	static char * date = __DATE__;		// format: Mmm dd yyyy
-	static char const * months = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
-	char buf[10];
-	char * ptr;
-	char * tok;
-	int monthnum;
-	int daynum;
-#endif
-
 	//------------------------------------------------------------------------
 	// Read the text description, if there is one
 	//------------------------------------------------------------------------
@@ -211,55 +192,7 @@ unsigned short VersionClass::Major_Version(void)
 		return(MajorVer);
 	}
 
-	//------------------------------------------------------------------------
-	// For a development version, use the date (month & day) as the major
-	// version number.
-	//------------------------------------------------------------------------
-#ifdef DEV_VERSION
-	//........................................................................
-	// Fetch the month and place in the high byte.
-	//........................................................................
-	strupr(date);
-	tok = strtok(date, " ");
-	ptr = strstr(months, tok);
-	if (ptr) {
-		monthnum = (((ptr - months) / 3) + 1);
-	} else {
-		monthnum = 0;
-	}
-
-	//........................................................................
-	// Convert the month number to a hex counterpart (so, when it's printed
-	// in hex, it will read correctly.)
-	//........................................................................
-	sprintf(buf,"%d",monthnum);
-	sscanf(buf,"%x",&monthnum);
-
-	//........................................................................
-	// Fetch the date and place that in the low byte.
-	//........................................................................
-	tok = strtok(NULL, " ");
-	if (tok) {
-		daynum = atoi(tok);
-	} else {
-		daynum = 0;
-	}
-
-	//........................................................................
-	// Convert the day number to a hex counterpart
-	//........................................................................
-	sprintf(buf,"%d",daynum);
-	sscanf(buf,"%x",&daynum);
-
-	MajorVer = ((monthnum << 8) | daynum);
-
-	//------------------------------------------------------------------------
-	// For a non-development version, use the hard-coded minor version number.
-	//------------------------------------------------------------------------
-#else
 	MajorVer = MAJOR_VERSION;
-#endif
-
 	MajorInit = 1;
 
 	return(MajorVer);
@@ -284,14 +217,6 @@ unsigned short VersionClass::Major_Version(void)
  *=========================================================================*/
 unsigned short VersionClass::Minor_Version(void)
 {
-#ifdef DEV_VERSION
-	static char * time = __TIME__;		// format: hh:mm:ss
-	char * tok;
-	char buf[10];
-	int hournum;
-	int minnum;
-#endif
-
 	//------------------------------------------------------------------------
 	// Read the text description, if there is one
 	//------------------------------------------------------------------------
@@ -307,53 +232,7 @@ unsigned short VersionClass::Minor_Version(void)
 		return(MinorVer);
 	}
 
-	//------------------------------------------------------------------------
-	// For in-development versions, use the time (hour & min) as the minor
-	// version
-	//------------------------------------------------------------------------
-#ifdef DEV_VERSION
-	//........................................................................
-	// Fetch the hour and place that in the last two digit positions.
-	//........................................................................
-	tok = strtok(time, ": ");
-	if (tok) {
-		hournum = atoi(tok);
-	} else {
-		hournum = 0;
-	}
-
-	//........................................................................
-	// Convert the hour number to a hex counterpart (so, when it's printed
-	// in hex, it will read correctly.)
-	//........................................................................
-	sprintf(buf,"%d",hournum);
-	sscanf(buf,"%x",&hournum);
-
-	//........................................................................
-	// Fetch the minute and place that in the last two digit positions.
-	//........................................................................
-	tok = strtok(NULL, ": ");
-	if (tok) {
-		minnum = atoi(tok);
-	} else {
-		minnum = 0;
-	}
-
-	//........................................................................
-	// Convert the minute number to a hex counterpart
-	//........................................................................
-	sprintf(buf,"%d",minnum);
-	sscanf(buf,"%x",&minnum);
-
-	MinorVer = ((hournum << 8) | minnum);
-
-	//------------------------------------------------------------------------
-	// For a non-development version, use the hard-coded minor revision number.
-	//------------------------------------------------------------------------
-#else
 	MinorVer = MINOR_VERSION;
-#endif
-
 	MinorInit = 1;
 
 	return(MinorVer);
@@ -378,29 +257,8 @@ unsigned short VersionClass::Minor_Version(void)
  *=========================================================================*/
 char * VersionClass::Version_Name(void)
 {
-	//------------------------------------------------------------------------
-	// For developmental versions, just use the major & minor version #'s
-	//------------------------------------------------------------------------
-#ifdef DEV_VERSION
-	sprintf(VersionName, "%x.%x", VerNum.Major_Version(), VerNum.Minor_Version());
-
-	//------------------------------------------------------------------------
-	// For final versions, trim 0's off the minor version
-	//------------------------------------------------------------------------
-#else
-	unsigned short adjusted_minor;
-	int i;
-
-	adjusted_minor = Minor_Version();
-	for (i = 0; i < 4; i++) {
-		if ( (adjusted_minor & 0x000f) != 0) {
-			break;
-		}
-		adjusted_minor >>= 4;
-	}
-
-	sprintf(VersionName, "%x.%x", VerNum.Major_Version(), adjusted_minor);
-#endif
+	strncpy(VersionName, OPENTS_VERSION, sizeof(VersionName) - 1);
+	VersionName[sizeof(VersionName) - 1] = '\0';
 
 	return(VersionName);
 
@@ -498,8 +356,7 @@ CommProtocolType VersionClass::Version_Protocol(unsigned int version)
  *      none.                                                              *
  *                                                                         *
  * WARNINGS:                                                               *
- *      The DEV_VERSION version of this routine calls Version_Number(), so *
- *      don't   call this routine until the file system has been initialized!*
+ *      none.                                                              *
  *                                                                         *
  * HISTORY:                                                                *
  *   10/26/1995 BRR : Created.                                             *
@@ -583,9 +440,6 @@ unsigned int VersionClass::Clip_Version(unsigned int minver,
  *                                                                         *
  * Returns the minimum version # this program will connect to.             *
  *                                                                         *
- * If DEV_VERSION is defined, this routine returns the current version, so *
- * this program will only connect to an exact copy of itself.              *
- *                                                                         *
  * INPUT:                                                                  *
  *      none.                                                              *
  *                                                                         *
@@ -593,19 +447,14 @@ unsigned int VersionClass::Clip_Version(unsigned int minver,
  *      min version #                                                      *
  *                                                                         *
  * WARNINGS:                                                               *
- *      The DEV_VERSION version of this routine calls Version_Number(), so *
- *      don't   call this routine until the file system has been initialized!*
+ *      none.                                                              *
  *                                                                         *
  * HISTORY:                                                                *
  *   10/26/1995 BRR : Created.                                             *
  *=========================================================================*/
 unsigned int VersionClass::Min_Version(void)
 {
-#ifdef DEV_VERSION
-	return(Version_Number());
-#else
 	return(MIN_VERSION);
-#endif
 
 }	/* end of Min_Version */
 
@@ -615,9 +464,6 @@ unsigned int VersionClass::Min_Version(void)
  *                                                                         *
  * Returns the maximum version # this program will connect to.             *
  *                                                                         *
- * If DEV_VERSION is defined, this routine returns the current version, so *
- * this program will only connect to an exact copy of itself.              *
- *                                                                         *
  * INPUT:                                                                  *
  *      none.                                                              *
  *                                                                         *
@@ -625,19 +471,14 @@ unsigned int VersionClass::Min_Version(void)
  *      max version #                                                      *
  *                                                                         *
  * WARNINGS:                                                               *
- *      The DEV_VERSION version of this routine calls Version_Number(), so *
- *      don't   call this routine until the file system has been initialized!*
+ *      none.                                                              *
  *                                                                         *
  * HISTORY:                                                                *
  *   10/26/1995 BRR : Created.                                             *
  *=========================================================================*/
 unsigned int VersionClass::Max_Version(void)
 {
-#ifdef DEV_VERSION
-	return(Version_Number());
-#else
 	return(MAX_VERSION);
-#endif
 }	/* end of Max_Version */
 
 
@@ -694,66 +535,4 @@ char const * Version_Name(void)
 	}
 	return(buffer);
 
-#if 0
-#ifdef NEVER
-	static char buffer[32];
-
-	/*
-	**	Fetch the day and month components from the current
-	**	build date.
-	*/
-	static char * date = __DATE__;		// format: Mmm dd yyyy
-	strupr(date);
-	char const * tok = strtok(date, " ");
-	static char const * months = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
-	char const * ptr = strstr(months, tok);
-	int monthnum = 0;
-	if (ptr != NULL) {
-		monthnum = (((ptr - months) / 3) + 1);
-	}
-
-	tok = strtok(NULL, " ");
-	int daynum = 0;
-	if (tok != NULL) {
-		daynum = atoi(tok);
-	}
-
-	/*
-	**	Fetch the time components from the current build time.
-	*/
-	static char * time = __TIME__;		// format: hh:mm:ss
-	tok = strtok(time, ": ");
-	int hournum = 0;
-	if (tok != NULL) {
-		hournum = atoi(tok);
-	}
-
-	tok = strtok(NULL, ": ");
-	int minnum = 0;
-	if (tok != NULL) {
-		minnum = atoi(tok);
-	}
-
-	sprintf(buffer, "%02d%02d%02d", monthnum, daynum, (hournum*4) + (minnum / 15));
-	return(buffer);
-#else
-
-	static char buffer[128];
-	memset(buffer, '\0', sizeof(buffer));
-
-#ifdef DEV_VERSION
-	strcpy(buffer,VerNum.Version_Name());
-#endif
-#ifdef DEV_VER_NAME
-	strcpy(buffer,__DATE__);		// format: Mmm dd yyyy
-#endif
-
-	RawFileClass file("VERSION.TXT");
-	if (file.Is_Available()) {
-		strcat(buffer, "\r");
-		file.Read(&buffer[strlen(buffer)], 25);
-	}
-	return(buffer);
-#endif
-#endif
 }

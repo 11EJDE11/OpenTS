@@ -66,13 +66,65 @@ intermediates remain under the selected build directory.
 
 ## Build identity
 
-Each build records the project version and the current commit, branch, commit
-date, and whether tracked files were modified, into a generated header that the
-debug log reports at startup. The stamp refreshes on every build, so committing
-is reflected without reconfiguring, and an unchanged stamp is not rewritten.
+The project version is declared once, by `project(OpenTS VERSION ...)` in the
+top-level `CMakeLists.txt`, with any SemVer prerelease label alongside it in
+`OPENTS_VERSION_PRERELEASE`, because `project()` accepts numbers only. Both must
+match the development entry of the manual's release registry, which
+`python manual/tools/manage.py check` enforces.
+
+Each build writes two generated headers from that version and the repository
+state:
+
+| Header | Contents |
+| --- | --- |
+| `opents_version.h` | The version components, the version string, a prerelease flag, and the packed version number |
+| `opents_build.h` | The commit, branch, commit date, whether tracked files were modified, and the version as it is displayed |
+
+The packed version number is the major, minor, and patch components in one byte
+each. The save game stamp and the network version are that number, so a build
+loads only its own version's saves and connects only to its own version. A
+prerelease is not distinguished there and carries the identity of the release it
+leads up to.
+
+Everything that names a version to the player reads these headers: the version
+resources of `Game.exe` and `Language.dll`, the title screen, the version
+dialog, the crash report, and the debug log's opening banner. A build reports
+its version with the commit it came from, as in `0.1.0 (ab12cd3)`, and adds a
+modification marker when tracked files differ from that commit. Configuring with
+`-DOPENTS_OFFICIAL_BUILD=ON` reports the version alone, for a build published
+under the version it declares.
+
+The version stamp is rewritten only when the version changes, so an ordinary
+commit does not recompile the code that reads it. The build stamp refreshes on
+every build, so committing is reflected without reconfiguring, and an unchanged
+stamp is not rewritten.
+
+A detached checkout, which is what building a tag or a pull request produces, has
+no branch of its own. The stamp then reports a ref that points at the commit,
+preferring a tag, so a continuous integration build of a pull request reports
+that pull request rather than the bare word `HEAD`.
 
 Git is not required. A build with no Git available, or from a source archive
-with no repository, succeeds and reports the commit as `unknown`.
+with no repository, succeeds and reports the commit as `unknown` and the version
+without one.
+
+## Continuous integration
+
+The `Engine` workflow builds every pull request and every push to `main` that
+touches the engine, its build files, or the workflows themselves. The `Engine
+nightly` workflow builds on a daily schedule, and skips the build when nothing
+has been committed since the last one. Both call the same reusable
+`Engine build` workflow, which on a Windows runner with Visual Studio 2022
+configures and builds Win32 Debug and Release with the commands above, runs the
+CTest suite, and uploads each configuration's executable, language library, and
+symbol file as an artifact named for the configuration and the short commit. The
+linker map is not uploaded, because the symbol file covers the same ground.
+
+Continuous integration builds redirect `TS_RUN_DIR` to an empty directory, so an
+uploaded artifact holds only the files that build produced.
+
+Continuous integration establishes the same thing a local build does, on the
+runner's toolchain. It does not establish runtime behavior.
 
 ## Verification boundary
 

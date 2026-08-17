@@ -1,0 +1,41 @@
+name: Engine
+
+on:
+  pull_request:
+    paths:
+      - "code/**"
+      - "cmake/**"
+      - "tests/**"
+      - "thirdparty/**"
+      - "CMakeLists.txt"
+      - ".gitmodules"
+      - ".github/msvc-problem-matcher.json"
+      - ".github/workflows/engine.yml"
+      - ".github/workflows/engine-build.yml"
+  push:
+    branches: [main]
+    paths:
+      - "code/**"
+      - "cmake/**"
+      - "tests/**"
+      - "thirdparty/**"
+      - "CMakeLists.txt"
+      - ".gitmodules"
+      - ".github/msvc-problem-matcher.json"
+      - ".github/workflows/engine.yml"
+      - ".github/workflows/engine-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/engine-build.yml
+    with:
+      artifact-prefix: opents

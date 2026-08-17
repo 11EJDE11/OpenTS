@@ -135,6 +135,7 @@
 #include "netdlg2.h"
 #include "newmenu.h"
 #include "obscure.h"
+#include "opents_build.h"
 #include "overlay.h"
 #include "overtype.h"
 #include "ovrlight.h"
@@ -3152,13 +3153,6 @@ BOOL CALLBACK Version_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPAR
 	int *res;
 	char buffer[256];
 
-	char build_date[128];
-	char build_number[128];
-	char build_by[128];
-
-	int cpu_type;
-	bool mmx;
-
 	int rc = OwnerDraw::Default_Dialog_Proc(window, message, wparam, lparam);
 
 	if (rc) {
@@ -3186,23 +3180,24 @@ BOOL CALLBACK Version_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPAR
 			sprintf(buffer, "Internal Version %s", VerNum.Version_Name());
 			ListBox_AddString(handle, buffer);
 
-			/// The braces keep the 'case' label from jumping over these initializations.
-			build_date[0] = 0;
-			Build_Date_String(build_date, sizeof(build_date));
-
 #ifdef _DEBUG
-			sprintf(buffer, "Debug Build: %s by %s - %s", Build_Number_String(build_number, sizeof(build_number)), Build_By_String(build_by,sizeof(build_by)), build_date);
+			sprintf(buffer, "Debug Build: %s - %s", OPENTS_BUILD_DESCRIPTION, OPENTS_COMMIT_DATE);
 #else
-			sprintf(buffer, "Release Build: %s by %s - %s", Build_Number_String(build_number, sizeof(build_number)), Build_By_String(build_by,sizeof(build_by)), build_date);
+			sprintf(buffer, "Release Build: %s - %s", OPENTS_BUILD_DESCRIPTION, OPENTS_COMMIT_DATE);
 #endif
 			ListBox_AddString(handle, buffer);
 
-			cpu_type = PROC_PENTIUM_PRO;
-			mmx = false;
-			Get_CPU_Type(cpu_type, mmx, NULL, 0);
+			/// The braces keep the 'case' label from jumping over these initializations.
+			{
+				int cpu_type = 5;
+				bool mmx = false;
+				char vendor[32];
+				vendor[0] = '\0';
+				Get_CPU_Type(cpu_type, mmx, vendor, sizeof(vendor) - 1);
 
-			sprintf(buffer, "CPU %01d86, MMX %s, Vendor: %s", cpu_type, mmx ? "Yes" : "No", &VendorID);
+				sprintf(buffer, "CPU vendor: %s", vendor);
 			ListBox_AddString(handle, buffer);
+			}
 
 			Get_Language_Version(buffer);
 			ListBox_AddString(handle, buffer);
@@ -3427,45 +3422,36 @@ void Title_Screen_Restore(bool force)
 /// <param name="surface">The surface to print the version text upon.</param>
 void Draw_Version_Text(Surface * surface)
 {
-	char buffer[128];
-	int cpu_type = PROC_PENTIUM_PRO;
-	bool mmx = false;
-	Rect srect;
+	char version[128];
+	Rect rect;
 
 	if (Fetch_Scheme_By_Name("Green") == NULL) {
 		return;
 	}
 
-	buffer[0] = '\0';
-	strcpy(buffer, Version_Name());
+	version[0] = '\0';
+	strcpy(version, Version_Name());
 
-	Get_CPU_Type(cpu_type, mmx, NULL, 0);
+	Cheat_Version_Suffix(version);
 
-	if (mmx == true) {
-		strcat(buffer, " MMX ");
-	}
-
-	Build_Version_String(&buffer[strlen(buffer)], (sizeof(buffer) - strlen(buffer)));
-	Cheat_Version_Suffix(buffer);
-
-	srect = surface->Get_Rect();
+	rect = surface->Get_Rect();
 
 	Fancy_Text_Print(
 		"V%s",
 		*surface,
-		srect,
-		Point2D(srect.X + srect.Width - 2, srect.Y + srect.Height - 20),
+		rect,
+		Point2D(rect.X + rect.Width - 2, rect.Y + rect.Height - 20),
 		Fetch_Scheme_By_Name("Green"),
 		TBLACK,
 		(TextPrintType)(TPF_EFNT|TPF_NOSHADOW|TPF_RIGHT),
-		buffer
+		version
 	);
 
 	Fancy_Text_Print(
 		Fetch_String(TXT_COPYRIGHT),
 		*surface,
-		srect,
-		Point2D(srect.X + srect.Width - 2, srect.Y + srect.Height - 10),
+		rect,
+		Point2D(rect.X + rect.Width - 2, rect.Y + rect.Height - 10),
 		Fetch_Scheme_By_Name("Green"),
 		TBLACK,
 		(TextPrintType)(TPF_EFNT|TPF_NOSHADOW|TPF_RIGHT)

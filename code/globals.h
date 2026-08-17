@@ -309,9 +309,6 @@ extern const Cell CELL_NONE;
 extern const Coord COORD_NONE;
 
 
-extern char BuildNumber[64];
-extern char BuildDate[64];
-
 /************************************************************
 **	Win32 specific externs
 */

@@ -102,14 +102,21 @@ Other format routes default to `/formats/<filename-stem>/`.
 metadata. It must contain exactly one `development` version, that version must
 be the highest entry, and only `released` entries carry an ISO date. The numeric
 core of the development version must match the version in CMake's
-`project(OpenTS VERSION ...)` declaration. The private npm package version is
-tooling metadata, not the OpenTS release.
+`project(OpenTS VERSION ...)` declaration, and its prerelease label must match
+CMake's `OPENTS_VERSION_PRERELEASE`, which is empty when the development version
+has no label. The private npm package version is tooling metadata, not the
+OpenTS release.
+
+The engine stamps its saves and network sessions with that version, so opening a
+cycle is also what retires the previous version's saves. See
+[Compatibility boundaries](../CONTRIBUTING.md).
 
 To open the next development cycle:
 
 1. Mark the current development entry `released` and add its ISO release date.
 2. Add one higher development version.
-3. Update the CMake project version when the numeric core changes.
+3. Update the CMake project version when the numeric core changes, and the CMake
+   prerelease label when the label changes.
 4. Run `python manual/tools/manage.py check`.
 
 Do not move existing change records to the new cycle. A record's release

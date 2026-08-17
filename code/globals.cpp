@@ -497,32 +497,6 @@ unsigned int LogLevelTime[ MAX_LOG_LEVEL ] = { 0 };
 unsigned int LogLastTime = 0;
 bool LogDump_Print = false;		// true = print the Log time Stuff
 
-/*
-**
-** This is just a placeholder for the build number.
-** A post build step will stamp the build number into here.
-**
-*/
-#if _MSC_VER > 1200
-char BuildNumber [64] = {"Insert1Build2Number3Here4   xxxx                               "};
-char BuildDate   [64] = {"Insert1Build2Date3Here4     xxxx                               "};
-
-/// Historical version stamps from the english executables.
-#elif defined(_DEMO)
-
-/// Build 193 by Joe_Bostic - 12/03/1999 @ 13:21:28
-char BuildNumber [64] = {"Insert1Build2Number3Here4   " "\xC1" "\x00" "\x00" "\x00" "Joe_Bostic" "\x00" "                    "};
-char BuildDate   [64] = {"Insert1Build2Date3Here4     " "\xB0" "\x0E" "\xA4" "\x4E" "\x91" "\x3D" "\xBF" "\x01" "                           "};
-
-#else
-
-/// Build 10 by STEVE_TALL - 06/05/2000 @ 14:27:06
-char BuildNumber [64] = {"Insert1Build2Number3Here4   " "\x0A" "\x00" "\x00" "\x00" "STEVE_TALL" "\x00" "                    "};
-char BuildDate   [64] = {"Insert1Build2Date3Here4     " "\x00" "\xD9" "\xC7" "\x1F" "\xFA" "\xCE" "\xBF" "\x01" "                           "};
-
-#endif
-
-
 /***************************************************************************
 **	Win32 specific globals
 */

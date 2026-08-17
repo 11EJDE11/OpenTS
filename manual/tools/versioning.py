@@ -132,6 +132,11 @@ def validate_releases(errors, manual, root):
 
     if development_version:
         cmake = (root / "CMakeLists.txt").read_text(encoding="utf-8")
+        development_parsed = next(
+            (row["_parsed"] for row in normalized
+             if row.get("version") == development_version),
+            None,
+        )
         match = re.search(
             r"project\s*\(\s*OpenTS\s+VERSION\s+([0-9]+(?:\.[0-9]+){2,3})",
             cmake,
@@ -139,20 +144,30 @@ def validate_releases(errors, manual, root):
         )
         if not match:
             errors.append("CMakeLists.txt must declare project(OpenTS VERSION ...)")
-        else:
-            parsed = next(
-                (row["_parsed"] for row in normalized
-                 if row.get("version") == development_version),
-                None,
+        elif development_parsed:
+            expected = (f"{development_parsed.major}.{development_parsed.minor}"
+                        f".{development_parsed.patch}")
+            actual_parts = match.group(1).split(".")
+            actual = ".".join(actual_parts[:3])
+            if actual != expected:
+                errors.append(
+                    "CMake project version must match the development "
+                    f"SemVer core {expected}, found {match.group(1)}")
+
+        # project() carries numbers only, so a prerelease label is declared beside it.
+        if development_parsed:
+            label = ".".join(development_parsed.prerelease)
+            label_match = re.search(
+                r"set\s*\(\s*OPENTS_VERSION_PRERELEASE\s+\"([^\"]*)\"\s*\)",
+                cmake,
             )
-            if parsed:
-                expected = f"{parsed.major}.{parsed.minor}.{parsed.patch}"
-                actual_parts = match.group(1).split(".")
-                actual = ".".join(actual_parts[:3])
-                if actual != expected:
-                    errors.append(
-                        "CMake project version must match the development "
-                        f"SemVer core {expected}, found {match.group(1)}")
+            if not label_match:
+                errors.append(
+                    'CMakeLists.txt must declare set(OPENTS_VERSION_PRERELEASE "...")')
+            elif label_match.group(1) != label:
+                errors.append(
+                    "CMake prerelease label must match the development version's "
+                    f"label {label!r}, found {label_match.group(1)!r}")
 
     by_version = {
         row["version"]: row for row in normalized

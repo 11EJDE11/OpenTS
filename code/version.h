@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include "opents_version.h"
+
 enum CommProtocolType {
 	COMM_PROTOCOL_SINGLE_NO_COMP = 0,   // single frame with no compression
 	COMM_PROTOCOL_SINGLE_E_COMP,        // single frame with event compression
@@ -99,25 +101,21 @@ class VersionClass {
 		//.....................................................................
 		void Read_Text_String(void);
 
-		//.....................................................................
-		// These values define the major & minor version #'s for the current
-		// version.  Change these values to change the game's version #!
-		//.....................................................................
+		// The version the program reports, taken from the project version so that the
+		// number a build negotiates with matches the number it displays. The minor
+		// field carries the SemVer minor and patch, one byte each, which makes the
+		// composed version number the packed form the save stamp also uses.
 		enum VersionEnum {
-			MAJOR_VERSION = 0x0002,
-			MINOR_VERSION = 0x0000
+			MAJOR_VERSION = OPENTS_VERSION_MAJOR,
+			MINOR_VERSION = (OPENTS_VERSION_MINOR << 8) | OPENTS_VERSION_PATCH
 		};
 
-		//.....................................................................
-		// These values control which other versions this program will connect
-		// to.  Keep them current!
-		// If CHEAT is defined, the program will only connect to itself; these
-		// values aren't used.
-		//.....................................................................
+		// The versions this program will connect to. A prerelease is not distinguished
+		// here, so a prerelease and its final release connect to each other.
 		enum VersionRangeEnum {
 			// ajw - We can only play against same version.
-			MIN_VERSION = 0x20000,
-			MAX_VERSION = 0x20000
+			MIN_VERSION = OPENTS_VERSION_PACKED,
+			MAX_VERSION = OPENTS_VERSION_PACKED
 		};
 
 		//.....................................................................

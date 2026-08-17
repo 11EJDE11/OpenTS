@@ -58,15 +58,6 @@
 
 
 /**********************************************************************
-**	This define tells the Version Number class to use the date/time-based
-**	version numbering system.  If this define is not set, the actual
-**	major/minor version numbers will be used.
-*/
-//#define DEV_VERSION
-//#define DEV_VER_NAME
-
-
-/**********************************************************************
 **	Defines for verifying free disk space
 */
 #define	INIT_FREE_DISK_SPACE		8192

@@ -97,7 +97,7 @@ Neither is marked as surviving into multiplayer, so starting a network game clea
 
 ### The version dialog
 
-The version dialog reports the title, the game and internal version names, a build line labeled by configuration and carrying the build number, the builder's name and the build date stamped into the executable, a processor line, and the version of the language resource library.
+The version dialog reports the title, the game and internal version names, a build line labeled by configuration and naming the commit the build was made from, the branch it sat on and that commit's date, a processor line, and the version of the language resource library.
 
 ## Toggles that reach nothing
 

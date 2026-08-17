@@ -6,6 +6,11 @@ file(GLOB_RECURSE LANG_SRC CONFIGURE_DEPENDS
 add_library(Language SHARED ${LANG_SRC})
 target_compile_features(Language PRIVATE cxx_std_20)
 
+# The version resource is stamped from the generated headers, which the resource compiler
+# reaches through the target's include paths.
+target_include_directories(Language PRIVATE "${OPENTS_GENERATED_DIR}")
+add_dependencies(Language OpenTSBuildStamp)
+
 if (MSVC)
     target_link_options(Language PRIVATE "/NOENTRY" "/NODEFAULTLIB")
 endif()

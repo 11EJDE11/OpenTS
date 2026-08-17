@@ -76,6 +76,7 @@
 #include "wwmouse.h"
 #include "mainopt.h"
 #include "conquer.h"
+#include "opents_version.h"
 
 #include <commctrl.h>
 
@@ -392,101 +393,14 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 
 
 /// <summary>
-/// Reports the build information for this executable.
-/// This routine is an empty hook. Callers that actually need the build stamp fetch
-/// it through the Build_Date_String, Build_Number and Build_By_String accessors.
-/// </summary>
-void Build_Info(void)
-{
-}
-
-
-/// <summary>
-/// Fetches the date and time this executable was built.
-/// This routine is used by the crash reporter and the debug overlay to identify the
-/// build, and formats the stamped time as month, day, year and clock time.
-/// </summary>
-/// <remarks>The buffer is left as it was found if the stamped time cannot be
-/// converted.</remarks>
-void Build_Date_String(char * buffer, int buflen)
-{
-	SYSTEMTIME systime;
-
-	if (FileTimeToSystemTime ((LPFILETIME)(&BuildDate[28]), &systime) ) {
-		sprintf(buffer, "%02d/%02d/%04d - %02d:%02d:%02d", systime.wMonth, systime.wDay, systime.wYear, systime.wHour, systime.wMinute, systime.wSecond);
-	}
-}
-
-
-/// <summary>
-/// Fetches the build number as a printable string.
-/// </summary>
-/// <returns>Returns with a pointer to the buffer supplied.</returns>
-char *Build_Number_String(char * buffer, int buflen)
-{
-	sprintf (buffer, "%d", *(unsigned int*)(&BuildNumber[28]));
-	return(buffer);
-}
-
-
-/// <summary>
 /// Fetches the build number of this executable.
-/// This routine is used by the network and modem code to check that every machine
-/// joining a game is running the same build.
+/// This routine is used by the network code to check that every machine joining a
+/// game is running the same build.
 /// </summary>
-/// <returns>Returns with the build number stamped into the executable.</returns>
+/// <returns>Returns with the packed project version this executable was built from.</returns>
 unsigned int Build_Number(void)
 {
-	return(*(unsigned int*)(&BuildNumber[28]));
-}
-
-
-/// <summary>
-/// Fetches the name of whoever built this executable.
-/// This routine is used by the crash reporter and the debug overlay so that a bad
-/// build can be traced back to the machine that made it.
-/// </summary>
-/// <returns>Returns with a pointer to the buffer supplied.</returns>
-char *Build_By_String(char * buffer, int buflen)
-{
-	strncpy(buffer, &BuildNumber[32], 32);
-	return(buffer);
-}
-
-
-/// <summary>
-/// Fetches the initials of whoever built this executable.
-/// The build stamp carries the builder's name in "First_Last" form, and this routine
-/// reduces it to the two initials.
-/// </summary>
-/// <returns>Returns with a pointer to the buffer supplied.</returns>
-char *Build_By_Initials(char * buffer, int buflen)
-{
-	buffer[0] = BuildNumber[32];
-	buffer[1] = 0;
-	buffer[2] = 0;
-
-	char *lastname = strchr(&BuildNumber[32], '_');
-	if (lastname) {
-		buffer[1] = lastname[1];
-	}
-	return(buffer);
-}
-
-
-/// <summary>
-/// Builds the short version string for this executable.
-/// This routine is used where the build must be identified in very little space --
-/// the builder's initials and the build number, joined by a dash.
-/// </summary>
-/// <returns>Returns with a pointer to the buffer supplied.</returns>
-char *Build_Version_String(char * buffer, int buflen)
-{
-	char _buffer1[128];
-	char _buffer2[128];
-
-	sprintf(buffer, "%s-%s", Build_By_Initials(_buffer2, sizeof(_buffer2)), Build_Number_String(_buffer1, sizeof(_buffer1)));
-	return(buffer);
+	return(OPENTS_VERSION_PACKED);
 }
 
 

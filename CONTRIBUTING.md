@@ -54,6 +54,15 @@ Before changing one of these boundaries:
 Cross-version save, replay, network, and ABI compatibility is not implied
 unless a documented contract explicitly provides it.
 
+Saves and network sessions are stamped with the packed project version, so each
+version accepts only its own saves and peers. Opening the next development
+version is therefore what retires the previous version's saves: a change to the
+save format or to deterministic simulation within a development version has to
+open the next one, which means raising the version in `CMakeLists.txt` and the
+manual's release registry together, as
+[Maintaining](manual/MAINTAINING.md) describes. See
+[Build identity](docs/BUILDING.md) for how the stamp is derived.
+
 ## Source changes
 
 - Target C++20 for new and substantially rewritten C++ while modernizing
@@ -118,6 +127,11 @@ current warning set as clean.
 
 Behavior changes need focused, reproducible evidence. Automated checks must not
 depend on proprietary game assets or original executables.
+
+Continuous integration builds Win32 Debug and Release and runs the CTest suite
+for every pull request that touches the engine. It reports the same class of
+result a local build does, so it does not replace the runtime evidence a
+behavior change needs.
 
 ## Pull request content
 

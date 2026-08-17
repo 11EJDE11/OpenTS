@@ -127,6 +127,7 @@
 #include "msgloop.h"
 #include "netdlg.h"
 #include "netshare.h"
+#include "opents_build.h"
 #include "overlay.h"
 #include "overtype.h"
 #include "ownrdraw.h"
@@ -4467,18 +4468,14 @@ static void Print_CRCs(EventClass *ev)
 	fprintf(fp, "\nVersion %s\n", Version_Name());
 	fprintf(fp, "Internal Version %s\n", VerNum.Version_Name());
 
-	char date[128];
-	char builder[128];
-	char number[128];
-
-	date[0] = 0;
-	Build_Date_String(date, sizeof(date));
-	fprintf(fp, "Release Build: %s by %s - %s\r\n", Build_Number_String(number, sizeof(number)), Build_By_String(builder, sizeof(builder)), date);
+	fprintf(fp, "Release Build: %s - %s\r\n", OPENTS_BUILD_DESCRIPTION, OPENTS_COMMIT_DATE);
 
 	int cpu_type = PROC_PENTIUM_PRO;
 	bool mmx = false;
-	Get_CPU_Type(cpu_type, mmx);
-	fprintf(fp, "CPU %01d86, MMX %s, Vendor: %s\r\n", cpu_type, mmx ? "Yes" : "No", &VendorID);
+	char vendor[32];
+	vendor[0] = '\0';
+	Get_CPU_Type(cpu_type, mmx, vendor, sizeof(vendor) - 1);
+	fprintf(fp, "CPU vendor: %s\r\n", vendor);
 
 	fprintf(fp, "Frames: %d\n", Frame);
 

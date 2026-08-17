@@ -1,0 +1,53 @@
+name: Engine nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-nightly
+  cancel-in-progress: false
+
+jobs:
+  activity:
+    name: Check for new commits
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      # A scheduled run rebuilds the same commit every night until something lands. A run
+      # started by hand always builds.
+      - name: Look for a commit since the last nightly
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Started by hand; building regardless of repository activity."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          committed="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_REF_NAME}" \
+            --jq '.commit.committer.date')"
+          age=$(( $(date --utc +%s) - $(date --utc -d "${committed}" +%s) ))
+          echo "Last commit ${committed}, $(( age / 3600 ))h ago."
+          # The window is a little over a day, so a run that starts late still sees the
+          # commits of the day it covers.
+          if [ "${age}" -lt 90000 ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nothing new since the last nightly; skipping the build."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build
+    needs: activity
+    if: needs.activity.outputs.changed == 'true'
+    uses: ./.github/workflows/engine-build.yml
+    with:
+      artifact-prefix: opents-nightly

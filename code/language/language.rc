@@ -30,6 +30,10 @@
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
+// The version resource reports the project version and the commit it was built from.
+#include "opents_version.h"
+#include "opents_build.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
@@ -46,16 +50,16 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,0
- PRODUCTVERSION 2,0,0,0
+ FILEVERSION OPENTS_RC_FILEVERSION
+ PRODUCTVERSION OPENTS_RC_FILEVERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x1L
+ FILEFLAGS VS_FF_DEBUG | OPENTS_RC_PRERELEASE_FLAG
 #else
- FILEFLAGS 0x0L
+ FILEFLAGS OPENTS_RC_PRERELEASE_FLAG
 #endif
  FILEOS 0x4L
- FILETYPE 0x1L
+ FILETYPE VFT_DLL
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
@@ -63,16 +67,16 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "United States & United Kingdom\0"
-            VALUE "CompanyName", "Westwood Studios\0"
+            VALUE "CompanyName", "OpenTS contributors\0"
             VALUE "FileDescription", "Tiberian Sun Language Definitions\0"
-            VALUE "FileVersion", "2.0\0"
+            VALUE "FileVersion", OPENTS_VERSION "\0"
             VALUE "InternalName", "English Resources\0"
-            VALUE "LegalCopyright", "Copyright Â© 2000 Westwood Studios\0"
+            VALUE "LegalCopyright", "Copyright © 2000 Westwood Studios, © 2026 OpenTS contributors\0"
             VALUE "LegalTrademarks", "Command & Conquer is a trademark of Westwood Studios\0"
             VALUE "OriginalFilename", "Language.dll\0"
-            VALUE "PrivateBuild", "\0"
+            VALUE "PrivateBuild", OPENTS_BUILD_DESCRIPTION "\0"
             VALUE "ProductName", "Command & Conquer: Tiberian Sun\0"
-            VALUE "ProductVersion", "2.0\0"
+            VALUE "ProductVersion", OPENTS_VERSION_DISPLAY "\0"
             VALUE "SpecialBuild", "\0"
         END
     END

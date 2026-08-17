@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.23)
 
 project(OpenTS VERSION 0.1.0 LANGUAGES C CXX ASM_MASM)
 
+# A SemVer prerelease label, which project() cannot carry because it takes numbers only. Set it
+# to "beta1" and the version reads 0.1.0-beta1; leave it empty outside a prerelease series. The
+# manual's release registry is checked against both this and the project version.
+set(OPENTS_VERSION_PRERELEASE "")
+
+# Marks a build published under the version it declares, so that it is named by that version
+# alone. Every other build names the commit it came from as well.
+option(OPENTS_OFFICIAL_BUILD "Build as an official release of the declared version" OFF)
+
 if(NOT MSVC OR MSVC_VERSION LESS 1930)
     message(FATAL_ERROR "OpenTS requires the Visual Studio 2022 MSVC toolchain.")
 endif()
@@ -16,16 +25,23 @@ set(TS_RUN_DIR "${CMAKE_SOURCE_DIR}/Run" CACHE PATH "Tiberian Sun run directory"
 # Build identity stamp
 # ---------------------------------------------------------
 #
-# The debug log opens with the version and commit that produced the binary. Stamping runs
-# once here so the header exists before the first compile, and again per build through
-# OpenTSBuildStamp so that committing does not require a reconfigure to be reflected.
+# The version resources, the version displays, and the debug log's opening banner all report
+# the version and commit that produced the binary. Stamping runs once here so the headers exist
+# before the first compile, and again per build through OpenTSBuildStamp so that committing does
+# not require a reconfigure to be reflected.
 set(OPENTS_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
+set(OPENTS_VERSION_HEADER "${OPENTS_GENERATED_DIR}/opents_version.h")
 set(OPENTS_STAMP_HEADER "${OPENTS_GENERATED_DIR}/opents_build.h")
 file(MAKE_DIRECTORY "${OPENTS_GENERATED_DIR}")
 
 set(OPENTS_STAMP_ARGS
-    "-DOPENTS_VERSION=${PROJECT_VERSION}"
+    "-DOPENTS_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}"
+    "-DOPENTS_VERSION_MINOR=${PROJECT_VERSION_MINOR}"
+    "-DOPENTS_VERSION_PATCH=${PROJECT_VERSION_PATCH}"
+    "-DOPENTS_VERSION_PRERELEASE=${OPENTS_VERSION_PRERELEASE}"
+    "-DOPENTS_OFFICIAL_BUILD=${OPENTS_OFFICIAL_BUILD}"
     "-DOPENTS_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+    "-DOPENTS_VERSION_HEADER=${OPENTS_VERSION_HEADER}"
     "-DOPENTS_STAMP_HEADER=${OPENTS_STAMP_HEADER}"
     -P "${CMAKE_SOURCE_DIR}/cmake/GitStamp.cmake"
 )
