@@ -17,9 +17,6 @@ struct IStream;
 class CounterClass : protected VectorClass<int>
 {
 public:
-	CounterClass(void);
-	~CounterClass(void);
-
 	int Increment(int index);
 	int Decrement(int index);
 

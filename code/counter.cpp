@@ -19,27 +19,6 @@
 
 
 /// <summary>
-/// Constructor for the counter object.
-/// The counter starts out empty and sizes itself as counters are tallied, so the
-/// houses may keep a running total per object type without knowing how many types
-/// there will be.
-/// </summary>
-CounterClass::CounterClass(void)
-{
-	/// nothing
-}
-
-
-/// <summary>
-/// Destructor for the counter object.
-/// </summary>
-CounterClass::~CounterClass(void)
-{
-	/// nothing
-}
-
-
-/// <summary>
 /// Adds one to the counter specified.
 /// </summary>
 /// <returns>Returns with the counter's new value, or zero if there was no room for
