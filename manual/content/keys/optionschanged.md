@@ -1,6 +1,6 @@
 ---
 key: OptionsChanged
-summary: Sound played in a modem lobby as the other player's settings arrive.
+summary: Sound played when the main menu accepts a typed cheat string.
 see_also: [PlayerJoined, PlayerLeft, SystemError]
 when_omitted:
   kind: value
@@ -12,6 +12,6 @@ when_omitted:
 OptionsChanged=OPTCHG ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the modem and null-modem lobby and is played without a position. The guest hears it each time arriving host options differ from the ones it already holds, and the dialog is refilled with the new map name, preview and accept button; an identical retransmit is silent. The host hears it when the guest's name, color or house changes. Both checks are on the values rather than on the message.
+One path plays the sound, and it is not a multiplayer one: the main menu sounds it when a typed cheat string is accepted. That path is on the plain menu the game falls back to when the graphical main menu cannot be built, not on the graphical menu itself, so a run that builds its menu never reaches the sound at all. [Developer mode and diagnostics](/systems/developer-mode/#the-main-menu-code-recognizer) covers the strings the menu recognizes.
 
-One path outside multiplayer plays it: the main menu sounds it when a typed cheat string is accepted. That path is on the plain menu the game falls back to when the graphical main menu cannot be built, not on the graphical menu itself.
+The sound answered the multiplayer lobby it is named for, where each side heard it as the other's settings arrived. That lobby belonged to modem and null-modem play and went with them.

@@ -78,9 +78,9 @@ Seven `sun.ini` settings exist to diagnose a desynchronized game, and one of the
 
 ## Crash reporting
 
-An unhandled exception dumps the machine state to `except.txt`, overwriting any previous dump, and then raises the exception dialog. Quitting from that dialog ends the run; any other answer passes the exception on unhandled, as does an exception raised off the main thread. In a Debug build a breakpoint exception is passed on immediately, on the assumption that a debugger set it.
+An unhandled exception writes a folder of its own under `Exceptions`, beside the executable and named for the time of the crash. The folder holds a minidump, a readable `except.txt` report, and a copy of the end of that run's debug log, so reporting a crash means attaching one folder. The report names the fault and the address involved, identifies the crash site by function, file and line, and carries two independently derived call stacks, the registers, the loaded modules and a scan of the stack. Addresses are resolved against the symbol file shipped beside the executable rather than against whatever directory the game was launched from.
 
-The structured frame that would wrap the game loop compiles only under MSVC 12.0 and earlier, and the supported toolchain is far newer, so the handler is reached solely as the process-wide unhandled-exception filter. The Debug build's exception-trap option skips the installation of that filter, leaving an exception to whatever is attached to the process.
+The handler is installed as the process-wide unhandled-exception filter before the window, sound and renderer exist, so a crash during startup and a crash on any thread are both reported. A debugger attached to the process sees the exception first and the handler never runs, which is why no option is offered to stand it down. Crash folders older than thirty days are removed at startup, and the copied portion of the log is capped at 256 KiB.
 
 ## The Release configuration's own surface
 

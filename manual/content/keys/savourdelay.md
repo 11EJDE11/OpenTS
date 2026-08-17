@@ -15,4 +15,4 @@ A house that has won, lost, or been condemned to blow up does not act on it at o
 
 The countdown is set on the frame the fate is decided, and covers all three fates from the same figure. Two things bypass it: a win or a loss can be declared in a silent form that never sets the countdown, and a house that already carries a fate ignores a further flag for any other, so the first decision keeps its own delay. Flagging a house to lose is the exception and cancels a pending win.
 
-A network or modem game rounds the delay up. It is first raised to at least the number of frames the session runs ahead of itself, then rounded so that it expires on a frame number that is a multiple of ten, which keeps every machine agreeing on when the game ends.
+A network game rounds the delay up. It is first raised to at least the number of frames the session runs ahead of itself, then rounded so that it expires on a frame number that is a multiple of ten, which keeps every machine agreeing on when the game ends.

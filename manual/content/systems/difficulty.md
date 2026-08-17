@@ -156,7 +156,7 @@ Nothing about the countdown is restricted to computer houses. Lowering a campaig
 
 ## The computer's bonus with more than one human
 
-Outside a campaign game, [`CompEasyBonus=yes`](/keys/compeasybonus/) drops a computer house one slot as it is assigned, provided the session holds more than one human entry and the house is not already in slot 0. A skirmish registers exactly one human entry, so the bonus never fires there; it takes a LAN, modem or online session.
+Outside a campaign game, [`CompEasyBonus=yes`](/keys/compeasybonus/) drops a computer house one slot as it is assigned, provided the session holds more than one human entry and the house is not already in slot 0. A skirmish registers exactly one human entry, so the bonus never fires there; it takes a LAN or online session.
 
 The name says easy and the step does the opposite. A computer house already holds the inverse of the setting the player chose, so dropping it a slot moves it to the slot the next harder setting would have given it. The table traces one computer house through both steps; the right-hand column is the setting its handicap then matches, and it is never easier than the one chosen.
 
