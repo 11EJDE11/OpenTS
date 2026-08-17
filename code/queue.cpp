@@ -4457,7 +4457,8 @@ static void Print_CRCs(EventClass *ev)
 
 	fp = fopen(filename,"wt");
 	if (fp==NULL) {
-		DebugString("Error - failed to open sync file for writing. Error code %d - %s\n", GetLastError(), Last_Error_Text());
+		DWORD const error = GetLastError();
+		DebugString("Error - failed to open sync file for writing. Error code %d - %s\n", error, Last_Error_Text(error));
 		return;
 	}
 

@@ -373,7 +373,7 @@ bool Send_Remote_File ( char const *file_name, bool send_to_all, bool show_progr
 		for (int i = 0; i < Session.RequestCount; i++) {
 			do {
 				Call_Back();
-				DebugString("Sending file info packet to player %d\n", Session.Players[Session.ScenarioRequests[i]]->Name);
+				DebugString("Sending file info packet to player %s\n", Session.Players[Session.ScenarioRequests[i]]->Name);
 			} while (Ipx.Send_Global_Message (&net_file_info, sizeof (GlobalPacketType),
 				1, &(Session.Players[Session.ScenarioRequests[i]]->Address)) == 0 && response_timer);
 		}

@@ -1779,7 +1779,9 @@ PathStruct * AStarClass::Find_Path(Cell const & from, Cell const & to, FootClass
 
 	if (with_hs) {
 		if (!Find_Path_Hierarchical(hs_from, hs_to, move_zone, foot)) {
+#ifdef _DEBUG
 			DebugString("Hierarchical findpath failure: (%d,%d) to (%d, %d)\n", hs_from.X, hs_from.Y, hs_to.X, hs_to.Y);
+#endif
 			with_hs = false;
 		}
 	}

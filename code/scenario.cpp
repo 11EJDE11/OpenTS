@@ -421,8 +421,8 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 /// </summary>
 void Pause_Scenario(void)
 {
-	if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
-		DebugString("Paused ElapsedTimer = %ld\n", Scen->ElapsedTimer);
+	if ((Session.Type == GAME_NORMAL) || (Session.Type == GAME_SKIRMISH)) {
+		DebugString("Paused ElapsedTimer = %d\n", (int)Scen->ElapsedTimer);
 		Scen->ElapsedTimer.Stop();
 	}
 
@@ -453,7 +453,7 @@ void Resume_Scenario(void)
 	Map.Revert_Mouse_Shape();
 
 	Scen->ElapsedTimer.Start();
-	DebugString("Resume ElapsedTimer = %ld\n", Scen->ElapsedTimer);
+	DebugString("Resume ElapsedTimer = %d\n", (int)Scen->ElapsedTimer);
 
 	if (ToolTips != NULL) {
 		ToolTips->Activate(Options.ToolTips);
@@ -2355,8 +2355,8 @@ static void Create_Units(bool official)
 		unit_count--;
 	}
 
-	DebugString("Creating %d units - Random seed is %08x\n", unit_count, Scen->RandomNumber);
-	DebugString("UniqueID is %08x\n", Scen->UniqueID);
+	DebugString ("Creating %d units\n", unit_count);
+	DebugString ("UniqueID is %08x\n", Scen->UniqueID);
 
 	int total_cost = 0;
 	int total_objs = 0;
@@ -2893,7 +2893,7 @@ static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist)
 /// </summary>
 void ScenarioClass::Save(IStream * stream) const
 {
-	DebugString("Scenario Save: ElapsedTimer = %ld\n", ElapsedTimer);
+	DebugString("Scenario Save: ElapsedTimer = %d\n", (int)ElapsedTimer);
 	ElapsedTimer.Stop();
 
 	SaveStreamClass savestream(stream, SaveStreamClass::MODE_SAVE);
@@ -2922,7 +2922,7 @@ void ScenarioClass::Load(IStream * stream)
 	Serialize(savestream);
 
 	ElapsedTimer.Start();
-	DebugString("Scenario Load: ElapsedTimer = %ld\n", ElapsedTimer);
+	DebugString("Scenario Load: ElapsedTimer = %d\n", (int)ElapsedTimer);
 }
 
 

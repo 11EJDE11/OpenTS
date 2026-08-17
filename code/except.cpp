@@ -458,7 +458,8 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	}
 
 	if (!symbols_available)	{
-		DebugString ("SymInitialize failed with code %d - %s\n", GetLastError(), Last_Error_Text());
+		DWORD const error = GetLastError();
+		DebugString ("SymInitialize failed with code %d - %s\n", error, Last_Error_Text(error));
 	} else {
 		if (ImageHelp.SymSetOptions != NULL) {
 			ImageHelp.SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME);
@@ -470,7 +471,8 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 
 		if (!symload) {
 			assert(ImageHelp.SymLoadModule != NULL);
-			DebugString ("SymLoad failed with code %d - %s\n", GetLastError(), Last_Error_Text());
+			DWORD const error = GetLastError();
+			DebugString ("SymLoad failed with code %d - %s\n", error, Last_Error_Text(error));
 		}
 	}
 
@@ -544,7 +546,8 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		} else {
 			//DebugString ("Failed to get symbol for EIP\n");
 			if (ImageHelp.SymGetSymFromAddr != NULL) {
-				DebugString("SymGetSymFromAddr failed with code %d - %s\n", GetLastError(), Last_Error_Text());
+				DWORD const error = GetLastError();
+				DebugString("SymGetSymFromAddr failed with code %d - %s\n", error, Last_Error_Text(error));
 			}
 			sprintf (scrap, "Exception occurred at %08X\r\n", context->Eip);
 		}

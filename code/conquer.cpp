@@ -1193,7 +1193,8 @@ unsigned int Disk_Space_Available(void)
 
 			// NOTE: This function uses GetDiskFreeSpaceEx() and therefore assumes Win '95 OSR2 or greater.
 			if (!getfreediskspaceex(NULL, &freebytecount, &totalbytecount, &totalfreebytecount)) {
-				DebugString("GetDiskFreeSpaceEx failed with error code %d - %s\n", GetLastError(), Last_Error_Text());
+				DWORD const error = GetLastError();
+				DebugString("GetDiskFreeSpaceEx failed with error code %d - %s\n", error, Last_Error_Text(error));
 			} else {
 				/// Convert to a 32-bit integer.
 				diskspace = int(((int)freebytecount.LowPart + ((int)freebytecount.HighPart * (double)((__int64)UINT_MAX + 1))) / (double)1024);
@@ -1201,7 +1202,8 @@ unsigned int Disk_Space_Available(void)
 				return(diskspace);
 			}
 		} else {
-			DebugString("GetProcAddress failed with error code %d - %s\n", GetLastError(), Last_Error_Text());
+			DWORD const error = GetLastError();
+			DebugString("GetProcAddress failed with error code %d - %s\n", error, Last_Error_Text(error));
 		}
 	} else {
 		DebugString("Failed to get module handle for KERNEL32.DLL\n");

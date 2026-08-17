@@ -60,7 +60,9 @@ unsigned long __cdecl Timer_Callback_Audio_Handler(VQAHandle *vqa)
 	unsigned long t;
 
 	if (handle->Flags & AHANDLEF_IS_PAUSED) {
+#ifdef _DEBUG
 		DebugString("Ahandle: Paused %ld\n", handle->TickCount);
+#endif
 		return(handle->TickCount);
 	}
 

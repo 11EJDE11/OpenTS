@@ -3201,7 +3201,7 @@ bool Net2ReadyToGo(int load_game)
 	**	we need to fix up the file name so we load the right one.
 	*/
 	if (Find_Local_Scenario (Session.ScenarioFileName, Session.ScenarioFileLength, Session.ScenarioDigest, Session.ScenarioIsOfficial) == true) {
-		DebugString("Found local scenario, file name is %d\n", Session.ScenarioFileName);
+		DebugString("Found local scenario, file name is %s\n", Session.ScenarioFileName);
 
 		/*
 		** We have the scenario. Tell the host that I am ready to go.
@@ -3218,7 +3218,7 @@ bool Net2ReadyToGo(int load_game)
 		// If the other guys are playing a scenario I don't have (sniff), I can't
 		// play.  Try to bail gracefully.
 		//.....................................................................
-		DebugString("Failed to find local scenario, file name is %d\n", Session.ScenarioFileName);
+		DebugString("Failed to find local scenario, file name is %s\n", Session.ScenarioFileName);
 
 		if ((Session.ScenarioIsOfficial && strcmpi(Session.ScenarioFileName, RANDOM_MAP_FILE_NAME) != 0) || !Get_File_From_Host(Session.ScenarioFileName, true)) {
 			Session.Options.ScenarioIndex = -1;

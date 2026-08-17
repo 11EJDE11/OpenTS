@@ -1918,19 +1918,20 @@ bool Parse_Command_Line(int argc, char * argv[])
 						break;
 
 					/*
-					 * Enable debug console.
-					 */
-					case 'C':
-						Debug_Console = true;
-						break;
-
-					/*
 					**	Print lots of debug stuff about events & packets
 					*/
 					case 'P':
 						Debug_Print_Events = true;
 						break;
 #endif
+
+					/*
+					 * Enable debug output to a console.
+					 */
+					case 'C':
+						Debug_Console = true;
+						Debug_Init_Console();
+						break;
 
 					/*
 					**	Quiet mode override control.
@@ -3116,7 +3117,7 @@ bool Cheat_Key_Process(char chr)
 	char tmp[2];
 	tmp[0] = chr;
 	tmp[1] = 0;
-	DebugStringNoPrefix(tmp);
+	DebugStringNoPrefix("%s", tmp);
 
 	int len = strlen(_buffer);
 

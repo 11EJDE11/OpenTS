@@ -154,7 +154,11 @@ add_subdirectory(vqalib)
 message(STATUS "${PROJECT_NAME}: Adding include paths...")
 target_include_directories(OpenTS PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${OPENTS_GENERATED_DIR}"
 )
+
+# The generated build stamp has to exist before anything compiles.
+add_dependencies(OpenTS OpenTSBuildStamp)
 
 # Only the renderer's own translation unit sees bgfx, so its headers and the shaders it
 # embeds are put on that file rather than on the whole target.

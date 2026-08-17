@@ -1022,9 +1022,7 @@ int Assign_House_And_Color(char * who, int house, int color)
 		g_UserInfo[offset].color = color;
 		Draw_Player_List();
 	} else {
-		char msg[100];
-		sprintf(msg, "Assign_House_And_Color failed for '%s'!\n", who);
-		DebugString(msg);
+		DebugString("Assign_House_And_Color failed for '%s'!\n", who);
 	}
 
 	/// If this is the local player, keep the color combo box UI in sync.
@@ -2739,7 +2737,7 @@ class CChatEventSink : public CComObjectRoot, public IChatEvent
 			 */
 			while (tmp != NULL) {
 				if (strcmp((char *)tmp->connlabel, "IRC") == 0) {
-					DebugString((char *)tmp->connlabel);
+					DebugString("%s", (char *)tmp->connlabel);
 
 					if (chat_server_index == 0) {
 						g_Servers.addTail(*tmp);

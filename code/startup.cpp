@@ -563,63 +563,9 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 
 	ProgramInstance = instance;
 
-	MainThread = (HANDLE)GetCurrentThreadId();
+	Debug_Init();
 
-	DebugString("%d-%d\n", __LINE__, sizeof(CrateData));
-	DebugString("%d-%d\n", __LINE__, sizeof(CrateShares));
-	DebugString("%d-%d\n", __LINE__, sizeof(CrateAnims));
-	DebugString("%d-%d\n", __LINE__, 0xDC8);		/// Presumed to be Tactical.
-	DebugString("%d-%d\n", __LINE__, sizeof(AircraftClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(AircraftTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(AITriggerTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(AnimClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(AnimTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(BaseClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(BuildingClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(BuildingTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(BulletClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(BulletTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(CellClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(FactoryClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(HouseClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(HouseTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(InfantryClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(InfantryTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(LayerClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(MouseClass));
-	DebugString("%d-%d\n", __LINE__, 0xDC8);		/// Presumed to be MapEditTactical.
-	DebugString("%d-%d\n", __LINE__, sizeof(OverlayClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(OverlayTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(SmudgeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(SmudgeTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TaskForceClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TeamClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TeamTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TerrainClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TerrainTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TriggerClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TriggerTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TagTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(TagClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(UnitClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(UnitTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(ScenarioClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(SuperWeaponTypeClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(SuperClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(Ground));
-	DebugString("%d-%d\n", __LINE__, sizeof(RulesClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(MissionControl));
-	DebugString("%d-%d\n", __LINE__, 1);
-	DebugString("%d-%d\n", __LINE__, sizeof(TechnoClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(RadioClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(MissionClass));
-	DebugString("%d-%d\n", __LINE__, 8);
-	DebugString("%d-%d\n", __LINE__, sizeof(StageClass));
-	DebugString("%d-%d\n", __LINE__, 8);
-	DebugString("%d-%d\n", __LINE__, 8);
-	DebugString("%d-%d\n", __LINE__, sizeof(StorageClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(DelayTimerClass));
-	DebugString("%d-%d\n", __LINE__, sizeof(FacingClass));
+	MainThread = (HANDLE)GetCurrentThreadId();
 
 	/*
 	 * Create a mutex with a unique name to TibSun in order to determine if
@@ -924,6 +870,12 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		}while (ReadyToQuit == 1);
 
 		error_code = EXIT_SUCCESS;
+
+	} else {
+
+		// The help and the invalid option message are of no use if the console closes with
+		// the process a moment later.
+		Debug_Console_Hold();
 	}
 
 	if (dwRegisterMap != -1) {

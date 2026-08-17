@@ -64,6 +64,16 @@ name and copy the runtime files into `TS_RUN_DIR`, which defaults to `Run/`:
 built configuration replaces the previous copy in `Run/`. Compiler and linker
 intermediates remain under the selected build directory.
 
+## Build identity
+
+Each build records the project version and the current commit, branch, commit
+date, and whether tracked files were modified, into a generated header that the
+debug log reports at startup. The stamp refreshes on every build, so committing
+is reflected without reconfiguring, and an unchanged stamp is not rewritten.
+
+Git is not required. A build with no Git available, or from a source archive
+with no repository, succeeds and reports the commit as `unknown`.
+
 ## Verification boundary
 
 The supported matrix was verified on August 16, 2026 with CMake 4.3.3, Visual

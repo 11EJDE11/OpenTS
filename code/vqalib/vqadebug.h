@@ -14,13 +14,9 @@
 #ifndef VQADEBUG_H
 #define VQADEBUG_H
 
-// If this is a debug build, extern to the debug function defined in the project linking to it, otherwise just emit empty inlines.
-#ifdef _DEBUG
-extern void __cdecl DebugString(const char *string, ...);
-extern void __cdecl DebugStringNoPrefix(const char *string, ...);
-#else
-inline void __cdecl DebugString(const char *string, ...) {}
-inline void __cdecl DebugStringNoPrefix(const char *string, ...) {}
-#endif
+// Declared here rather than through dbgprint.h so that the VQA sources stay independent of
+// the engine headers. The definitions live in the project linking to this library.
+extern void __cdecl DebugString(char const * string, ...);
+extern void __cdecl DebugStringNoPrefix(char const * string, ...);
 
 #endif /* VQADEBUG_H */

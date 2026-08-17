@@ -1930,13 +1930,14 @@ launch_options:
   route_id: console-debug
   kind: launch
   title: Console debug output
-  description: Enables debug output in a console.
-  audience: debug
-  availability: *id002
+  description: Opens the debug output console. Debug builds always open it; this option opens it in release
+    builds.
+  audience: developer
+  availability: *id001
   syntax: -XC
   _provenance:
     source: code/init.cpp
-    guard: _DEBUG
+    guard: null
 - id: launch:event-debug
   route_id: event-debug
   kind: launch

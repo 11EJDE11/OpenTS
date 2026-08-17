@@ -15,16 +15,15 @@
 
 #include "sun.h"
 
-#ifdef _DEBUG
-void __cdecl DebugString(const char *string, ...);
-void __cdecl DebugStringNoPrefix(const char *string, ...);
-#else
-inline void __cdecl DebugString(const char *string, ...) {}
-inline void __cdecl DebugStringNoPrefix(const char *string, ...) {}
-#endif
+#include <sal.h>
 
-#ifdef _DEBUG
-char const * Last_Error_Text(void);
-#else
-inline char const * Last_Error_Text(void) { return(0); }
-#endif
+void Debug_Init(void);
+void Debug_Init_Console(void);
+void Debug_Console_Hold(void);
+char const * Debug_Log_File_Name(void);
+bool Delete_Files_Older_Than(char const * directory, char const * pattern, unsigned days);
+
+void __cdecl DebugString(_Printf_format_string_ char const * string, ...);
+void __cdecl DebugStringNoPrefix(_Printf_format_string_ char const * string, ...);
+
+char const * Last_Error_Text(unsigned long error);

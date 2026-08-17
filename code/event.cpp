@@ -209,7 +209,9 @@ EventClass::EventClass(int index, SpecialClass data)
  *=============================================================================================*/
 EventClass::EventClass(int index, unsigned char type, TargetClass target)
 {
+#ifdef _DEBUG
 	DebugString("Adding event %s\n", EventNames[type]);
+#endif
 
 	if (index >= 0) {
 		ID = index;

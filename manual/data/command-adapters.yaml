@@ -597,11 +597,11 @@ launch_options:
   - id: launch:console-debug
     title: Console debug output
     syntax: -XC
-    description: Enables debug output in a console.
-    audience: debug
-    availability: *debug
+    description: Opens the debug output console. Debug builds always open it; this option opens it in release builds.
+    audience: developer
+    availability: *all
     sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XC', guard: _DEBUG }
+      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XC' }
   - id: launch:event-debug
     title: Event and packet debug
     syntax: -XP
