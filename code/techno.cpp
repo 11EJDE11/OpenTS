@@ -755,41 +755,6 @@ void TechnoClass::Init(void)
 
 
 /// <summary>
-/// Constructs a techno object without initializing it.
-/// This constructor serves the load process, which is about to overwrite every member from
-/// the save file. The object still joins the global techno list if it is not already on it.
-/// </summary>
-TechnoClass::TechnoClass(NoInitClass const & x) :
-	BASECLASS(x),
-	FlasherClass(x),
-	StageClass(x),
-	Storage(x),
-	Cargo(x),
-	IdleTimer(x),
-	RadarFlashTimer(x),
-	Door(x),
-	Veterancy(x),
-	CloakDelay(x),
-	BarrelPitch(x),
-	PrimaryFacing(x),
-	SecondaryFacing(x),
-	Arm(x),
-	TargetingLaserTimer(x)
-{
-	bool found = false;
-	for (int i = 0; i < Technos.Count(); i++) {
-		if (Technos[i] == this) {
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
-		Technos.Add(this);
-	}
-}
-
-
-/// <summary>
 /// Destroys the techno object and unlinks it from the game.
 /// The object gives up its house and drops out of the global techno lists that were holding
 /// it.

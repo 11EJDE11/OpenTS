@@ -18,7 +18,6 @@
 #include "globals.h"
 #include "house.h"
 #include "houstype.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"

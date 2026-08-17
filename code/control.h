@@ -54,7 +54,6 @@ class ControlClass : public GadgetClass
 		typedef GadgetClass BASECLASS;
 
 	public:
-		ControlClass(NoInitClass const & x) : BASECLASS(x) {};
 		ControlClass(unsigned id, int x, int y, int w, int h, unsigned flags=LEFTPRESS|RIGHTPRESS, bool sticky=false);
 		ControlClass(ControlClass const & control);
 

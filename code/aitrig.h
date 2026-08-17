@@ -11,7 +11,6 @@
 
 #include "abstype.h"
 #include "ccini.h"
-#include "noinit.h"
 
 /*
  * AI trigger type enumeration
@@ -59,7 +58,6 @@ class AITriggerTypeClass : public AbstractTypeClass
 
 	public:
 		AITriggerTypeClass(const char *name = NULL);
-		AITriggerTypeClass(NoInitClass const & x) : BASECLASS(x) {};
 		~AITriggerTypeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

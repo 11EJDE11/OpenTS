@@ -28,7 +28,6 @@ class TunnelLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		TunnelLocomotionClass(void);
-		TunnelLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 

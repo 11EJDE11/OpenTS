@@ -74,18 +74,6 @@ LightSourceClass::LightSourceClass(void) :
 
 
 /// <summary>
-/// Load constructor for a light source.
-/// This constructor deliberately leaves the members alone. It is used when the object
-/// is being rebuilt over bytes that a save file has already supplied.
-/// </summary>
-LightSourceClass::LightSourceClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Removes this light source from the game.
 /// The light is switched off so that the cells it was tinting revert to normal, it
 /// leaves the global light list, and anything still pointing at it is notified.

@@ -116,7 +116,6 @@ class GadgetClass : public LinkClass
 		};
 
 		GadgetClass(int x, int y, int w, int h, unsigned flags, bool sticky=false);
-		GadgetClass(NoInitClass const & x) : BASECLASS(x) {};
 		GadgetClass(void) {};
 		GadgetClass(GadgetClass const & gadget);
 		virtual ~GadgetClass(void) override;

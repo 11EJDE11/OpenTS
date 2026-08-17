@@ -61,7 +61,6 @@ class AnimClass : public ObjectClass, public StageClass
 		AnimTypeClass * Class;
 
 		AnimClass(AnimTypeClass const * type, Coord const & coord, int timedelay=0, int loop=1, ShapeFlags_Type flags=ShapeFlags_Type(SHAPE_WIN_REL|SHAPE_CENTER), int zadjust = 0);
-		AnimClass(NoInitClass const & x) : BASECLASS(x), StageClass(x), Bounce(x) {};
 		AnimClass(void);
 		virtual ~AnimClass(void) override;
 

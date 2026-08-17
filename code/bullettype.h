@@ -234,7 +234,6 @@ class BulletTypeClass : public ObjectTypeClass
 		int Tumble;
 
 		//---------------------------------------------------------------------
-		BulletTypeClass(NoInitClass const & x);
 		BulletTypeClass(char const * name = NULL);
 		virtual ~BulletTypeClass(void) override;
 

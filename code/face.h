@@ -34,7 +34,6 @@
 
 #include "comtypes.h"
 #include "coord.h"
-#include "noinit.h"
 #include "visualc.h"
 
 #include <cmath>
@@ -96,9 +95,7 @@ enum Dir256 {
 class DirType
 {
 	public:
-		DirType(NoInitClass const & x) {}
-
-		DirType(void) {}
+		DirType(void) = default;
 		DirType(int dir) { Facing = dir; }
 		DirType(DirStruct dir) { Raw = dir.Raw; }
 		DirType(FacingType dir) { From_Facing(dir); }
@@ -189,8 +186,8 @@ class DirType
 		 * As_Facing reads Facing where the As_Dir conversions read Raw -- the
 		 * whole difference from As_Dir8. They always agree, since padding only
 		 * reaches bits above the wrap, so it decides folding rather than value:
-		 * padding is indeterminate, so only this form folds for a constant
-		 * direction, and the constant DIR_ conversions are built on it.
+		 * only this form folds for a constant direction whatever the padding
+		 * holds, and the constant DIR_ conversions are built on it.
 		 */
 		FacingType	As_Facing(void) const	{ return (FacingType)	((((((unsigned int)Facing >> 12) + 1) >> 1)) % (8)); }
 
@@ -267,15 +264,17 @@ class DirType
 			/*
 			 * This is the direction, expressed as a 16 bit binary angle -- zero is north and
 			 * the value rises clockwise, so that 0x4000 is east. Every write goes through
-			 * this member, so the upper half of the storage is left holding junk.
+			 * this member, so the upper half of the storage keeps whatever it was built with.
 			 */
 			short Facing;
 
 			/*
 			 * This is the whole of the storage read as one dword, which is what the rounding
-			 * conversions read. The junk in its upper half is why they must always wrap.
+			 * conversions read. Construction zeroes it, but a direction restored from a save
+			 * game or converted from a DirStruct can carry any value in the upper half, which
+			 * is why those conversions must always wrap.
 			 */
-			int Raw;
+			int Raw = 0;
 		};
 };
 

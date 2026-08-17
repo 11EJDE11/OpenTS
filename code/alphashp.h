@@ -32,7 +32,6 @@ class AlphaShapeClass : public AbstractClass
 		*/
 		AlphaShapeClass(ObjectClass * owner, int x, int y);
 		AlphaShapeClass(void);
-		AlphaShapeClass(NoInitClass const & x);
 		~AlphaShapeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

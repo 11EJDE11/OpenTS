@@ -100,26 +100,6 @@ ObjectTypeClass::ObjectTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructor for the object type object.
-/// This is the no-initialization constructor. It is used when the object type is about to
-/// be overwritten wholesale by a load from a save game stream, so the members are
-/// deliberately left as they are.
-/// </summary>
-ObjectTypeClass::ObjectTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	RadialColor(x),
-	GraphicName(x),
-	AlphaGraphicName(x),
-	Voxel(x),
-	AuxVoxel(x),
-	AuxVoxel2(x),
-	ImageData(NULL)
-{
-
-}
-
-
-/// <summary>
 /// Destructor for the object type object.
 /// This routine will detach the object type from the master list of object types, so that
 /// no further code can find it by name or by index.

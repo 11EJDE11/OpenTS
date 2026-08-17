@@ -11,7 +11,6 @@
 
 #include "coord.h"
 #include "ilocos.h"
-#include "noinit.h"
 
 class FootClass;
 class SaveStreamClass;
@@ -20,7 +19,6 @@ class LocomotionClass : public IPersistStream, public ILocomotion
 {
 	public:
 		LocomotionClass(void);
-		LocomotionClass(const NoInitClass &x) {}
 		virtual ~LocomotionClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID *ppvObj) override;

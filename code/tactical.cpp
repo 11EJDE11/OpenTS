@@ -152,18 +152,6 @@ Tactical::Tactical(void) :
 
 
 /// <summary>
-/// Constructs the tactical map without initializing it.
-/// This constructor is used by the load process, which fills the members in from the save
-/// game rather than letting them be built up here.
-/// </summary>
-Tactical::Tactical(const NoInitClass &x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys the tactical map and drops the global pointer to it.
 /// </summary>
 Tactical::~Tactical(void)

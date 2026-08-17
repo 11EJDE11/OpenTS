@@ -55,7 +55,6 @@ class AircraftClass : public FootClass, public IFlyControl
 
 		//-----------------------------------------------------------------------------
 		AircraftClass(AircraftTypeClass const * type = NULL, HouseClass * house = NULL);
-		AircraftClass(NoInitClass const & x) : BASECLASS(x), SightTimer(x) {};
 		virtual ~AircraftClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

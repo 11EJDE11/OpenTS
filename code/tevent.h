@@ -102,7 +102,6 @@ class TEventClass : public AbstractClass
 		} Data;
 
 		TEventClass(void);
-		TEventClass(NoInitClass const & x): BASECLASS(x) {}
 		virtual ~TEventClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

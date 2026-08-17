@@ -100,17 +100,6 @@ AircraftTypeClass::AircraftTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Creates an aircraft type without initializing it.
-/// This is the constructor used when loading a save game. The data has already been read
-/// into the object, so nothing may be disturbed here beyond restoring the virtual table.
-/// </summary>
-AircraftTypeClass::AircraftTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Destroys the aircraft type.
 /// Any object still pointing at this type is told to forget it, and the type is removed
 /// from the aircraft type heap so that nothing can find it again.

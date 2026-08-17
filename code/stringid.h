@@ -33,8 +33,6 @@ struct TStringID
 
 		TStringID(TStringID const & that) = default;
 
-		TStringID(NoInitClass const & x) {}
-
 		operator char * (void) { return(StringBuffer); }
 		operator char const * (void) const { return(StringBuffer); }
 

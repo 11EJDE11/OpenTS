@@ -1783,8 +1783,8 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 				 * Simplest of the blits, straight horizontal line.
 				 */
 				for (int i = 0; i <= end.X - start.X; i++) {
-					RGBClass gradient_color((NoInitClass()));
-					gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+					RGBClass gradient_color;
+					gradient_color.Lerp(start_color, end_color, gradient_position);
 
 					*((unsigned short *)buffer + i) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -1806,8 +1806,8 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 				 */
 				int dy = abs(end.Y - start.Y);
 				for (int i = 0; i <= dy; i++) {
-					RGBClass gradient_color((NoInitClass()));
-					gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+					RGBClass gradient_color;
+					gradient_color.Lerp(start_color, end_color, gradient_position);
 
 					*(unsigned short *)buffer = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -1851,8 +1851,8 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 					 * Plot low line.
 					 */
 					for (int i = 0; i <= dx; i++) {
-						RGBClass gradient_color((NoInitClass()));
-						gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+						RGBClass gradient_color;
+						gradient_color.Lerp(start_color, end_color, gradient_position);
 
 						*((unsigned short *)buffer + i) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -1885,8 +1885,8 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 					 * Plot high line.
 					 */
 					for (int i = 0; i <= dy; i++) {
-						RGBClass gradient_color((NoInitClass()));
-						gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+						RGBClass gradient_color;
+						gradient_color.Lerp(start_color, end_color, gradient_position);
 
 						*((unsigned short *)buffer + k) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 

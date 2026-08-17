@@ -62,19 +62,6 @@ ParticleSystemTypeClass::ParticleSystemTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructs a particle system type without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// with the data it reads from the save file.
-/// </summary>
-ParticleSystemTypeClass::ParticleSystemTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	LaserColor(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys the particle system type.
 /// Every object that still refers to this type is detached from it first, so that no
 /// dangling reference survives the removal from the master list.

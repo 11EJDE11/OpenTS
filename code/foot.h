@@ -376,7 +376,6 @@ class FootClass : public TechnoClass
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
-		FootClass(NoInitClass const & x);
 		FootClass(HouseClass * house);
 		virtual ~FootClass(void) override;
 

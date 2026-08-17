@@ -29,8 +29,6 @@ class TubeClass : public AbstractClass
 	public:
 		TubeClass(Cell const &cell = CELL_NONE, FacingType dir = FACING_N);
 
-		TubeClass(NoInitClass const & x) {};
-
 		virtual ~TubeClass(void) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;

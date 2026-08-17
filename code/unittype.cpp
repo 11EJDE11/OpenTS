@@ -146,19 +146,6 @@ UnitTypeClass::UnitTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructor for unit type objects that skips initialization.
-/// This routine is used when the object is about to be filled in from a save game, so
-/// every member is deliberately left as it lies.
-/// </summary>
-UnitTypeClass::UnitTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	AltImageFile(x)
-{
-
-}
-
-
-/// <summary>
 /// Destructor for the unit type objects.
 /// This routine severs every reference the game holds to this unit type before removing
 /// it from the unit type heap.

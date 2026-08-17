@@ -345,7 +345,6 @@ class BuildingClass : public TechnoClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		BuildingClass(BuildingTypeClass const * type = NULL, HouseClass * house = NULL);
-		BuildingClass(NoInitClass const & x);
 		virtual ~BuildingClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

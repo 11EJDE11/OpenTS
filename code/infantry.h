@@ -124,7 +124,6 @@ class InfantryClass : public FootClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		InfantryClass(InfantryTypeClass const * type = NULL, HouseClass * house = NULL);
-		InfantryClass(NoInitClass const & x) : BASECLASS(x), Comment(x), LookTimer(x), ProneStruggleTimer(0) {};
 		virtual ~InfantryClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

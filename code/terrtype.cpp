@@ -142,19 +142,6 @@ TerrainTypeClass::TerrainTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructs a terrain type without initializing it.
-/// This constructor is used by the load process, which is about to overwrite every
-/// member with the data recorded in the save file.
-/// </summary>
-TerrainTypeClass::TerrainTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	RadarColor(x)
-{
-
-}
-
-
-/// <summary>
 /// Removes this terrain type from the game.
 /// This routine will detach the type from everything that refers to it before it
 /// drops out of the terrain type heap.

@@ -476,8 +476,7 @@ class TechnoClass :	public RadioClass,
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
-		TechnoClass(HouseClass * house=0);
-		TechnoClass(NoInitClass const & x);
+		TechnoClass(HouseClass* house=0);
 		virtual ~TechnoClass(void) override;
 
 		virtual void Serialize(SaveStreamClass & stream) override;

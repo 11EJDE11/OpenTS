@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 #include "abstract.h"
 
@@ -179,7 +178,6 @@ class TargetClass : public xTargetClass
 	public:
 
 		TargetClass(void) {Invalidate();}
-		TargetClass(NoInitClass const &) {}
 
 		TargetClass(Cell const &cell);
 		TargetClass(Coord const &coord);

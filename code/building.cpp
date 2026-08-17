@@ -195,21 +195,6 @@ enum SAMState {
 };
 
 
-/// <summary>
-/// Constructs a building without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// wholesale with the data read from the save file.
-/// </summary>
-BuildingClass::BuildingClass(NoInitClass const & x) :
-	BASECLASS(x),
-	CountDown(x),
-	PlacementDelay(x),
-	GateTimer(x),
-	BuildingStage()
-{
-}
-
-
 /***********************************************************************************************
  * BuildingClass::BuildingClass -- Constructor for buildings.                                  *
  *                                                                                             *

@@ -50,7 +50,6 @@ class WarheadTypeClass : public AbstractTypeClass
 
 	public:
 		WarheadTypeClass(char const * ininame = NULL);
-		WarheadTypeClass(NoInitClass const & x);
 		virtual ~WarheadTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

@@ -600,10 +600,6 @@ def parse_ctor_defaults(text, cls):
         inner, end = match_call(text, m.end() - 1)
         if inner is None:
             continue
-        # The NoInitClass constructor's Member(x) entries pass the marker
-        # through -- they are not default values.
-        if "NoInitClass" in inner:
-            continue
         params = {p.split("=")[0].split()[-1].lstrip("*&")
                   for p in split_args(inner) if p.split("=")[0].split()}
         brace = text.find("{", end)

@@ -47,7 +47,6 @@ class AbstractTypeClass : public AbstractClass
 		TStringID<48> GivenName;
 
 		AbstractTypeClass(char const * ininame = NULL);
-		AbstractTypeClass(NoInitClass const & x);
 		virtual ~AbstractTypeClass(void) override;
 
 		bool operator == (char const * string) const { return(IniName == string); }

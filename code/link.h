@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
-
 
 /*
 **	This implements a simple linked list. It is possible to add, remove, and traverse the
@@ -43,7 +41,6 @@
 class LinkClass
 {
 	public:
-		LinkClass(NoInitClass const &) {};
 		LinkClass(void) : Next(0), Prev(0) {};
 		virtual ~LinkClass(void);
 

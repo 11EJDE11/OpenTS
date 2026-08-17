@@ -99,7 +99,6 @@ class HouseTypeClass : public AbstractTypeClass
 		bool IsSmartAI;
 
 		//------------------------------------------------------------------------
-		HouseTypeClass(NoInitClass const & x);
 		HouseTypeClass(char const * ininame = NULL);
 		virtual ~HouseTypeClass() override;
 

@@ -16,7 +16,6 @@
 #include "ccini.h"
 #include "findmake.h"
 #include "globals.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"

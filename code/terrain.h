@@ -57,7 +57,6 @@ class TerrainClass : public ObjectClass, public StageClass
 		*/
 		TerrainClass(void);
 		TerrainClass(TerrainTypeClass const * type, Cell const & cell);
-		TerrainClass(NoInitClass const & x) : BASECLASS(x), StageClass(x) {}
 		virtual ~TerrainClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

@@ -63,8 +63,6 @@
 #include <utility>
 
 
-class	NoInitClass;
-
 /**************************************************************************
 **	This is a general purpose vector class. A vector is defined by this
 **	class, as an array of arbitrary objects where the array can be dynamically
@@ -87,7 +85,6 @@ class VectorClass
 		using iterator = T *;
 		using const_iterator = T const *;
 
-		VectorClass(NoInitClass const &) {};
 		VectorClass(int size=0);
 		VectorClass(VectorClass<T> const &);		// Copy constructor.
 		VectorClass(VectorClass<T> &&) noexcept;	// Move constructor.
@@ -456,7 +453,6 @@ class DynamicVectorClass : public VectorClass<T>
 		using BASECLASS::Length;
 
 		DynamicVectorClass(int size=0);
-		DynamicVectorClass(NoInitClass const & x) : BASECLASS(x) {}
 		DynamicVectorClass(std::initializer_list<T> list);
 
 		DynamicVectorClass(DynamicVectorClass<T> const &) = default;

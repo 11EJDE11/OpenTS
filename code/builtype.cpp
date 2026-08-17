@@ -233,8 +233,6 @@ BuildingTypeClass::BuildingTypeClass(char const * ininame) :
 	SecondaryFirePixelOffset(Point2D(0xFFFF, 0xFFFF)),
 	ToOverlay(NULL),
 	ToTile(NULL),
-	BuildupFilename(NoInitClass()),
-	PowersUpBuilding(NoInitClass()),
 	FreeUnit(NULL),
 	FoundationFace(FACING_NONE),
 	Adjacent(3),
@@ -357,21 +355,6 @@ BuildingTypeClass::BuildingTypeClass(char const * ininame) :
 	TheaterImageFile[0] = '\0';
 	VoxelBarrelFile[0] = '\0';
 	IsTrainable = false;
-}
-
-
-/// <summary>
-/// Constructs a building type without initializing it.
-/// This constructor is used by the load game system, which fills the object in from the
-/// save file rather than from the rules.
-/// </summary>
-BuildingTypeClass::BuildingTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	BuildupData(NULL), /// Will get loaded on demand
-	BuildupFilename(x),
-	PowersUpBuilding(x)
-{
-
 }
 
 

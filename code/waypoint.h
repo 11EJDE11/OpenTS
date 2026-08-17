@@ -46,7 +46,6 @@ class WaypointPathClass : public AbstractClass
 
 	public:
 		WaypointPathClass(void);
-		WaypointPathClass(NoInitClass const & x);
 		WaypointPathClass(int index);
 		virtual ~WaypointPathClass(void) override;
 

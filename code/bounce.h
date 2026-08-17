@@ -11,7 +11,6 @@
 
 #include "coord.h"
 #include "matrix3d.h"
-#include "noinit.h"
 #include "quat.h"
 #include "vector3.h"
 
@@ -37,8 +36,6 @@ class BounceClass
 		{
 
 		}
-
-		BounceClass(NoInitClass const & x) : Rotation(x), AngularVelocity(x) {}
 
 		void Init(Coord const & coord, double elasticity, double, double min_speed, double max_speed);
 		void Init(Coord const & coord, double elasticity, double gravity, double max_velocity, Vector3 const & velocity, double rotation);

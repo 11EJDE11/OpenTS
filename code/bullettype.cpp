@@ -126,17 +126,6 @@ BulletTypeClass::BulletTypeClass(char const * name) :
 
 
 /// <summary>
-/// Constructs a bullet type object, leaving its data untouched.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// with the data it reads from the save game file.
-/// </summary>
-BulletTypeClass::BulletTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Removes this bullet type from the game.
 /// This routine severs any references other objects hold to this bullet type before
 /// dropping it from the type databases.

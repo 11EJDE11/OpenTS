@@ -25,7 +25,6 @@ class SideClass : public AbstractTypeClass
 
 	public:
 		SideClass(char const * ininame = NULL);
-		SideClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~SideClass() override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

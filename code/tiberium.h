@@ -35,7 +35,6 @@ class TiberiumClass : public AbstractTypeClass
 	public:
 
 		TiberiumClass(char const * ininame = NULL);
-		TiberiumClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~TiberiumClass() override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

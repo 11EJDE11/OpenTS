@@ -142,7 +142,7 @@ ParticleClass::ParticleClass(ParticleTypeClass const * type, Coord const & origi
 		if (Class->StartColor1 == RGBClass(0,0,0) && Class->StartColor2 == RGBClass(0,0,0)) {
 			Color = Class->ColorList[0];
 		} else {
-			Color = RGBClass(NoInitClass()).Lerp(Class->StartColor1, Class->StartColor2, Random_Double(0.0,1.0));
+			Color = RGBClass().Lerp(Class->StartColor1, Class->StartColor2, Random_Double(0.0,1.0));
 		}
 	}
 

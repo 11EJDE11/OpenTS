@@ -21,7 +21,6 @@
 #include "globals.h"
 #include "mixfile.h"
 #include "mouse.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "swizzle.h"
@@ -83,20 +82,6 @@ SuperWeaponTypeClass::SuperWeaponTypeClass(char const * ininame) :
 	HeapID = (SuperWeaponType)SuperWeaponTypes.Count();
 	SuperWeaponTypes.Add(this);
 	SidebarImage = IniName;
-}
-
-
-/// <summary>
-/// Constructs a super weapon type without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// with the data it reads from the save game stream.
-/// </summary>
-SuperWeaponTypeClass::SuperWeaponTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	SidebarImage(x),
-	CameoData(NULL)
-{
-
 }
 
 

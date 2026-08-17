@@ -27,7 +27,6 @@ class DropPodLocomotionClass : public LocomotionClass, public IPiggyback
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		DropPodLocomotionClass(void);
-		DropPodLocomotionClass(NoInitClass const & x) : BASECLASS(x), Piggybacker(NULL) {}
 		virtual ~DropPodLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

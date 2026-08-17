@@ -110,18 +110,6 @@ SmudgeTypeClass::SmudgeTypeClass(char const * ini) :
 
 
 /// <summary>
-/// Creates a smudge type object without initializing it.
-/// The load process uses this constructor to give the object its virtual function table
-/// back; every value is about to be overwritten with what the save file holds.
-/// </summary>
-SmudgeTypeClass::SmudgeTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys this smudge type object.
 /// Anything still pointing at this type is detached from it before the type is dropped from
 /// the smudge type heap.

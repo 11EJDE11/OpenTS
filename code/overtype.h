@@ -156,7 +156,6 @@ class OverlayTypeClass: public ObjectTypeClass
 		bool IsARock;
 
 		//----------------------------------------------------------
-		OverlayTypeClass(NoInitClass const & x);
 		OverlayTypeClass(char const * ininame = NULL);
 		~OverlayTypeClass(void);
 

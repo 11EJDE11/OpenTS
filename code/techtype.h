@@ -674,7 +674,6 @@ class TechnoTypeClass : public ObjectTypeClass
 		int ZFudgeBridge;
 
 		//--------------------------------------------------------------------
-		TechnoTypeClass(NoInitClass const & x);
 		TechnoTypeClass(char const * ininame, SpeedType speed);
 		virtual ~TechnoTypeClass() override;
 

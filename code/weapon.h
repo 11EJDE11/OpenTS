@@ -58,7 +58,6 @@ class WeaponTypeClass : public AbstractTypeClass
 
 	public:
 		WeaponTypeClass(char const * ininame = NULL);
-		WeaponTypeClass(NoInitClass const &);
 		~WeaponTypeClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

@@ -122,19 +122,6 @@ InfantryTypeClass::InfantryTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructs an infantry type without initializing it.
-/// This constructor is used by the load process, which fills the object in from the save
-/// stream rather than building it up from scratch.
-/// </summary>
-InfantryTypeClass::InfantryTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	VoiceComment(x)
-{
-
-}
-
-
-/// <summary>
 /// Removes this infantry type from the game.
 /// Everything that refers to this infantry type is detached from it, and its animation
 /// sequence controls are freed, before it is dropped from the infantry type heap.

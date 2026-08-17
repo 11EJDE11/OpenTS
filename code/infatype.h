@@ -169,7 +169,6 @@ class InfantryTypeClass : public TechnoTypeClass
 		/*
 		**	This is the explicit infantry type class constructor.
 		*/
-		InfantryTypeClass(NoInitClass const & x);
 		InfantryTypeClass(char const * ininame = NULL);
 		virtual ~InfantryTypeClass() override;
 

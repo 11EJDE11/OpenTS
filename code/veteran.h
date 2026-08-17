@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 #include "ability.hh"
 
@@ -46,7 +45,6 @@ class VeterancyClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		VeterancyClass(void);
-		VeterancyClass(NoInitClass const & x) {};
 		~VeterancyClass(void);
 
 		void Made_A_Kill(int cost, int value);

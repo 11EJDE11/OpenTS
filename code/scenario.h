@@ -75,7 +75,6 @@ class ScenarioClass {
 
 		// Constructor.
 		ScenarioClass(void);
-		ScenarioClass(NoInitClass const &);
 		void Set_Scenario_Name(char const * name);
 		void Reset(void);
 

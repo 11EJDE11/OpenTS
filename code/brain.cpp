@@ -15,7 +15,6 @@
 #include "crc.h"
 #include "ftimer.h"
 #include "globals.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "tracker.h"

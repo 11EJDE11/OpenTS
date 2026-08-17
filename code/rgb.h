@@ -31,7 +31,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 class PaletteClass;
 class HSVClass;
@@ -59,7 +58,6 @@ class RGBClass
 {
 	public:
 		RGBClass(void) : Red(0), Green(0), Blue(0) {}
-		RGBClass(NoInitClass const & x) {}
 		RGBClass(unsigned char red, unsigned char green, unsigned char blue) : Red(red), Green(green), Blue(blue) {}
 		operator HSVClass (void) const;
 

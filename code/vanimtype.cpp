@@ -134,7 +134,7 @@ bool VoxelAnimTypeClass::Read_INI(CCINIClass const & ini)
 		bool share_turret_data = ini.Get_Bool(IniName, "ShareTurretData", false);
 		bool share_barrel_data = ini.Get_Bool(IniName, "ShareBarrelData", false);
 
-		TargetClass share_source((NoInitClass()));
+		TargetClass share_source;
 
 		VoxelIndex = ini.Get_Int(IniName, "VoxelIndex", VoxelIndex);
 

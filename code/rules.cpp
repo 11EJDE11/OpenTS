@@ -126,18 +126,6 @@ static inline int _Scale_To_256(int val)
 }
 
 
-/// <summary>
-/// Constructor for a rules object that is about to be overwritten.
-/// The load process reads the rule data straight off the save game stream, so this
-/// constructor deliberately leaves every value alone rather than paying for defaults that
-/// would only be thrown away.
-/// </summary>
-RulesClass::RulesClass(NoInitClass const & x)
-{
-	x();
-}
-
-
 /***********************************************************************************************
  * RulesClass::RulesClass -- Default constructor for rules class object.                       *
  *                                                                                             *

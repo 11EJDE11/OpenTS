@@ -10,7 +10,6 @@
 #pragma once
 
 #include "globals.h"
-#include "noinit.h"
 #include "object.h"
 #include "vector.h"
 
@@ -28,7 +27,6 @@ class ParticleSystemClass : public ObjectClass
 		typedef ObjectClass BASECLASS;
 
 	public:
-		ParticleSystemClass(NoInitClass const & x) : BASECLASS(x) {};
 		ParticleSystemClass(ParticleSystemTypeClass const * system, Coord const & coord1, AbstractClass * = NULL, AbstractClass * = NULL, Coord const & coord2 = COORD_NONE);
 		ParticleSystemClass(void);
 		virtual ~ParticleSystemClass(void) override;

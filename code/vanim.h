@@ -31,7 +31,6 @@ class VoxelAnimClass : public ObjectClass, public BounceClass
 		*/
 		VoxelAnimClass(void);
 		VoxelAnimClass(VoxelAnimTypeClass const * type, Coord const & coord, HouseClass * house = NULL);
-		VoxelAnimClass(NoInitClass const & x) : BASECLASS(x), BounceClass(x) {}
 		virtual ~VoxelAnimClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

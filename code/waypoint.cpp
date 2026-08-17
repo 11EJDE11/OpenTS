@@ -13,7 +13,6 @@
 #include "waypoint.h"
 
 #include "crc.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "tracker.h"
@@ -124,19 +123,6 @@ WaypointPathClass::WaypointPathClass(void) :
 	Waypoints()
 {
 	WaypointPaths.Add(this);
-}
-
-
-/// <summary>
-/// Constructs a waypoint path without initializing it.
-/// This constructor is used by the load process, which will fill the path in from the save
-/// game stream rather than build it up from scratch.
-/// </summary>
-WaypointPathClass::WaypointPathClass(NoInitClass const & x) :
-	BASECLASS(x),
-	Waypoints(x)
-{
-
 }
 
 

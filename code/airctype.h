@@ -54,7 +54,6 @@ class AircraftTypeClass : public TechnoTypeClass
 		*/
 		bool IsLandable;
 
-		AircraftTypeClass(NoInitClass const & x);
 		AircraftTypeClass(char const * ininame = NULL);
 		virtual ~AircraftTypeClass(void) override;
 

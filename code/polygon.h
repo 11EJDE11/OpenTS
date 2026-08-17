@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "noinit.h"
 #include "point.h"
 
 /*
@@ -31,8 +30,6 @@ struct PolygonShapeStruct
 	PolygonShapeStruct(void) :
 		Count(0),
 		Vertices(NULL) {}
-
-	PolygonShapeStruct(NoInitClass const & x) : Vertices(NULL) {}
 
 	enum {
 		END_LEFT,
@@ -74,8 +71,6 @@ struct PolygonRasterStruct
 		Count(0),
 		BaseY(0),
 		Points(NULL) {}
-
-	PolygonRasterStruct(NoInitClass const & x) : Points(NULL) {}
 
 };
 

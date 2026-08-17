@@ -50,7 +50,6 @@ class CarryoverClass : public LinkClass {
 
 	public:
 		CarryoverClass(TechnoClass * techno = 0);
-		CarryoverClass(NoInitClass const & x) : BASECLASS(x) {}
 
 		bool Create(void) const;
 

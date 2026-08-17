@@ -140,20 +140,6 @@
 
 
 /// <summary>
-/// Constructs a cell without initializing it.
-/// This is the fast load constructor. Only those members that the loader cannot reinstate on
-/// its own are given values; everything else is left exactly as it was found.
-/// </summary>
-CellClass::CellClass(NoInitClass const & x) :
-	BASECLASS(x),
-	Drawer(NULL),
-	Passability(PASSABLE_LAND)
-{
-
-}
-
-
-/// <summary>
 /// Fetches the ground height at a point within this cell.
 /// A ramp cell slopes across its own width, so a single height for the whole cell will not
 /// serve. Use this routine whenever something must be made to sit on the ground exactly.
@@ -510,16 +496,16 @@ void CellClass::Cell_Color(RGBClass & lowcolor, RGBClass & highcolor) const
 		RGBClass lowest(record->LowColor.Red, record->LowColor.Green, record->LowColor.Blue);
 		RGBClass highest(record->HighColor.Red, record->HighColor.Green, record->HighColor.Blue);
 
-		lowest = RGBClass(NoInitClass()).Set(lowest, _arr1[Scen->Theater]);
-		highest = RGBClass(NoInitClass()).Set(highest, _arr1[Scen->Theater]);
+		lowest = RGBClass().Set(lowest, _arr1[Scen->Theater]);
+		highest = RGBClass().Set(highest, _arr1[Scen->Theater]);
 
-		RGBClass lowres((NoInitClass()));
-		RGBClass hires((NoInitClass()));
+		RGBClass lowres;
+		RGBClass hires;
 		lowres.Set(lowest, _arr2[Scen->Theater]);
 		hires.Set(highest, _arr2[Scen->Theater]);
 
-		lowcolor = RGBClass(NoInitClass()).Lerp(lowest, lowres, (double)Height / 12.0);
-		highcolor = RGBClass(NoInitClass()).Lerp(highest, hires, (double)Height / 12.0);
+		lowcolor = RGBClass().Lerp(lowest, lowres, (double)Height / 12.0);
+		highcolor = RGBClass().Lerp(highest, hires, (double)Height / 12.0);
 	} else {
 		lowcolor = RGBClass(0, 0, 0);
 		highcolor = RGBClass(0, 0, 0);
@@ -4361,11 +4347,11 @@ void CellClass::Serialize(SaveStreamClass & stream)
 	bool hasfogged = (FoggedObjects != NULL);
 	stream.Serialize(hasfogged);
 	if (stream.Is_Loading() && hasfogged) {
-			FoggedObjects = new FOGGED_OBJECT_LIST;
+		FoggedObjects = new FOGGED_OBJECT_LIST;
 	}
 	if (hasfogged) {
 		stream.Serialize(*FoggedObjects);
-			}
+	}
 
 	stream.Serialize(BridgeDeckCell);
 	stream.Serialize(UnusedCell);
@@ -4458,11 +4444,11 @@ void CellClass::Post_Load(void)
 	BASECLASS::Post_Load();
 
 	int id = CellID.X + (CellID.Y << 9);
-		if (Map.Array[id] != NULL) {
-			delete Map.Array[id];
-			Map.Array[id] = NULL;
-		}
-		Map.Array[id] = this;
+	if (Map.Array[id] != NULL) {
+		delete Map.Array[id];
+		Map.Array[id] = NULL;
+	}
+	Map.Array[id] = this;
 }
 
 

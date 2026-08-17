@@ -25,7 +25,6 @@ class MechLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		MechLocomotionClass(void);
-		MechLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 		virtual ~MechLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

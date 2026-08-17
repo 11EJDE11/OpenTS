@@ -31,7 +31,6 @@ class TagTypeClass : public AbstractTypeClass
 
 	public:
 		TagTypeClass(char const * name = NULL);
-		TagTypeClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~TagTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

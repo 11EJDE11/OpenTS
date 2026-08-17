@@ -200,22 +200,6 @@ FootClass::FootClass(HouseClass * house) :
 
 
 /// <summary>
-/// Constructs the object without initializing it.
-/// This constructor is used by the load process, which needs the object built in place but
-/// left untouched so that the saved data can be read straight over the top of it.
-/// </summary>
-FootClass::FootClass(NoInitClass const & x) :
-	BASECLASS(x),
-	RouteQueue(x),
-	NavQueue(x),
-	PathDelay(x),
-	BaseAttackTimer(x),
-	BlockagePathDelay(x)
-{
-}
-
-
-/// <summary>
 /// Destroys the object and unlinks it from the game.
 /// This routine will resign the object from whatever team it belongs to and then remove it
 /// from the global foot and team trackers.

@@ -24,7 +24,6 @@
 #include "house.h"
 #include "inline.h"
 #include "map.h"
-#include "noinit.h"
 #include "rules.h"
 #include "savestream.h"
 #include "scenario.h"

@@ -24,7 +24,6 @@ class IsometricTileClass : public ObjectClass
 		typedef ObjectClass BASECLASS;
 	public:
 		IsometricTileClass(IsometricTileType type, Cell const &cell);
-		IsometricTileClass(NoInitClass const &x) : BASECLASS(x) {}
 		virtual ~IsometricTileClass() override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

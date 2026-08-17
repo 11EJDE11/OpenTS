@@ -143,7 +143,6 @@ class TActionClass : public AbstractClass
 		} Data;
 
 		TActionClass(void);
-		TActionClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~TActionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

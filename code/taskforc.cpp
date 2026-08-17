@@ -52,14 +52,6 @@ TaskForceClass::TaskForceClass(char const *name) :
 
 
 /// <summary>
-/// Creates a task force without initializing it.
-/// This constructor is used by the load process, which fills the object in from the save
-/// game stream rather than building it up from scratch.
-/// </summary>
-TaskForceClass::TaskForceClass(NoInitClass const & x) : BASECLASS(x) {}
-
-
-/// <summary>
 /// Destroys the task force.
 /// Anything still pointing at this force is detached from it before the force drops out
 /// of the global list.

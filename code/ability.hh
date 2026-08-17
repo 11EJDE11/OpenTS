@@ -41,8 +41,6 @@ enum AbilityType {
 };
 
 
-class NoInitClass;
-
 struct AbilityFlagsType {
 	public:
 		AbilityFlagsType()
@@ -52,8 +50,6 @@ struct AbilityFlagsType {
 				AbilitiesFlag[type] = false;
 			}
 		}
-
-		AbilityFlagsType(NoInitClass const & x) {}
 
 		AbilityFlagsType & operator=(AbilityFlagsType const & that)
 		{

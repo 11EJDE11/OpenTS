@@ -23,7 +23,6 @@ class JumpjetLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		JumpjetLocomotionClass(void);
-		JumpjetLocomotionClass(NoInitClass const & x) : BASECLASS(x), Facing(x) {}
 		virtual ~JumpjetLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

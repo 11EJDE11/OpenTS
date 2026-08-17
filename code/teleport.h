@@ -18,7 +18,6 @@ class TeleportLocomotionClass : public LocomotionClass
 
 	public:
 		TeleportLocomotionClass(void);
-		TeleportLocomotionClass(const NoInitClass & x) : BASECLASS(x) {}
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 

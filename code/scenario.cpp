@@ -217,24 +217,6 @@ ScenarioClass::ScenarioClass(void)
 
 
 /// <summary>
-/// Constructs a scenario object without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// with the data it reads from the save game stream.
-/// </summary>
-ScenarioClass::ScenarioClass(NoInitClass const & x) :
-	MissionTimer(x),
-	ShroudTimer(x),
-	FogTimer(x),
-	IceGrowthTimer(x),
-	VeinGrowthTimer(x),
-	AmbientChangeTimer(x),
-	FadeTimer(x)
-{
-	// nothing
-}
-
-
-/// <summary>
 /// Resets the scenario data back to its defaults.
 /// This routine runs before a scenario is read, so that any setting the mission neglects
 /// to mention falls back on a sensible value rather than a leftover from the last game.

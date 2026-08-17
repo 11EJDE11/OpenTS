@@ -34,7 +34,6 @@
 
 #include "face.h"
 #include "ftimer.h"
-#include "noinit.h"
 #include "timer.h"
 #include "win.h"
 
@@ -51,7 +50,6 @@ class FacingClass
 	public:
 		FacingClass(void);
 		FacingClass(int rate);
-		FacingClass(NoInitClass const & x) : RotationTimer(x) {};
 
 		DirType Current(void) const;
 		DirType Desired(void) const;

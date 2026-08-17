@@ -181,18 +181,6 @@ ObjectClass::ObjectClass(void) :
 
 
 /// <summary>
-/// Constructs the object without initializing it.
-/// This constructor is used by the load process, which needs the object built in place but
-/// left untouched so that the saved data can be read straight over the top of it.
-/// </summary>
-ObjectClass::ObjectClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys the object and unlinks it from the game.
 /// This routine will remove the object from the deferred deletion list and from every global tracker it
 /// was registered with, then mark it inactive so that no stale pointer can revive it.

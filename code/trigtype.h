@@ -51,7 +51,6 @@ class TriggerTypeClass : public AbstractTypeClass
 
 	public:
 		TriggerTypeClass(char const * name = NULL);
-		TriggerTypeClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~TriggerTypeClass(void) override;
 
 		static TriggerTypeClass * Find_Or_Make(char const * ininame = NULL);

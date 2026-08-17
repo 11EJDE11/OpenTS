@@ -61,7 +61,6 @@ class OverlayClass : public ObjectClass
 		**	Constructors and destructors.
 		*/
 		OverlayClass(OverlayTypeClass const * ttype, Cell const & pos = CELL_NONE, HousesType = HOUSE_NONE);
-		OverlayClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~OverlayClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override {if (retval == NULL) return(E_POINTER);*retval = CLSID_OverlayClass;return(S_OK);}

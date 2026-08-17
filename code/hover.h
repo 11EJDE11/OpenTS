@@ -34,7 +34,6 @@ class HoverLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		HoverLocomotionClass(void);
-		HoverLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 		virtual ~HoverLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

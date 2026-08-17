@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 class FootClass;
 class MonoClass;
@@ -49,7 +48,6 @@ class CargoClass {
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		CargoClass(void) : Quantity(0), CargoHold(0) {};
-		CargoClass(NoInitClass const & ) {};
 		~CargoClass(void) {/*CargoHold=0;*/};
 
 		/*---------------------------------------------------------------------

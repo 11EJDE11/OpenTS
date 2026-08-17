@@ -52,7 +52,6 @@ class FactoryClass : public AbstractClass, private StageClass
 
 	public:
 		FactoryClass(void);
-		FactoryClass(NoInitClass const & x) : BASECLASS(x), StageClass(x) {};
 		~FactoryClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

@@ -76,7 +76,6 @@ class BulletClass : public ObjectClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		BulletClass(void);
-		BulletClass(NoInitClass const & x) : BASECLASS(x), Fuse(x) {};
 		virtual ~BulletClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

@@ -292,17 +292,6 @@ IsometricTileTypeClass::IsometricTileTypeClass(IsometricTileType type, int unkno
 
 
 /// <summary>
-/// Constructs a tile type without initializing it.
-/// This constructor is used when the object is about to be filled in from a save game.
-/// </summary>
-IsometricTileTypeClass::IsometricTileTypeClass(NoInitClass const & x) :
-	BASECLASS(x)//,
-	//Filename(x)
-{
-}
-
-
-/// <summary>
 /// Destroys this tile type and everything hanging off it.
 /// The rest of the variation chain goes with it, along with any artwork and preview colors
 /// it owns, and the tile type is unhooked from the type heaps so that nothing is left
@@ -2915,19 +2904,19 @@ void IsometricTileTypeClass::Build_Preview_Tiles(void)
 
 			static float const _brightness_factor = 1.4f;
 
-			RGBClass alow((NoInitClass()));
+			RGBClass alow;
 			alow.Set(low, _brightness_factor);
 
-			RGBClass ahigh((NoInitClass()));
+			RGBClass ahigh;
 			ahigh.Set(high, _brightness_factor);
 
 			unsigned short * ptr = buffer;
 
 			for (j = 0; j <= 12; j++) {
-				RGBClass tmp = RGBClass(NoInitClass()).Lerp(low, alow, float((double)j / 12.0f));
+				RGBClass tmp = RGBClass().Lerp(low, alow, float((double)j / 12.0f));
 				ptr[0] = DSurface::Build_Hicolor_Pixel(tmp.Get_Red(), tmp.Get_Green(), tmp.Get_Blue());
 
-				tmp = RGBClass(NoInitClass()).Lerp(high, ahigh, float((double)j / 12.0f));
+				tmp = RGBClass().Lerp(high, ahigh, float((double)j / 12.0f));
 				ptr[1] = DSurface::Build_Hicolor_Pixel(tmp.Get_Red(), tmp.Get_Green(), tmp.Get_Blue());
 
 				ptr += 2;

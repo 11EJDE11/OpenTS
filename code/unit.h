@@ -132,7 +132,6 @@ class UnitClass : public FootClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		UnitClass(UnitTypeClass const * type = NULL, HouseClass * house = NULL);
-		UnitClass(NoInitClass const & x) : BASECLASS(x), Reload(x) {};
 		virtual ~UnitClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

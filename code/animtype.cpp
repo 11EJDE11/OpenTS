@@ -165,18 +165,6 @@ AnimTypeClass::AnimTypeClass(char const *ininame) :
 
 
 /// <summary>
-/// Constructs an animation type without initializing it.
-/// This constructor is used when the object is about to be filled in wholesale from a save
-/// game stream, so that no effort is spent on values that are about to be overwritten.
-/// </summary>
-AnimTypeClass::AnimTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys this animation type.
 /// Any artwork that was demand loaded is released and the type removes itself from the
 /// heaps that track it.

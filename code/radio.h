@@ -78,7 +78,6 @@ class RadioClass : public MissionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		RadioClass(void);
-		RadioClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~RadioClass(void) override {/*Radio=0;*/};
 
 

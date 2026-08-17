@@ -824,7 +824,6 @@ class BuildingTypeClass : public TechnoTypeClass
 		/*---------------------------------------------------------------------------
 		**	This is the building type explicit constructor.
 		*/
-		BuildingTypeClass(NoInitClass const & x);
 		BuildingTypeClass(char const * ininame = NULL);
 		virtual ~BuildingTypeClass() override;
 

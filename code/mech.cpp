@@ -18,7 +18,6 @@
 #include "globals.h"
 #include "house.h"
 #include "inline.h"
-#include "noinit.h"
 #include "overtype.h"
 #include "rules.h"
 #include "savestream.h"

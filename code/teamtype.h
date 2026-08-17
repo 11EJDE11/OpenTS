@@ -66,7 +66,6 @@ class TeamTypeClass : public AbstractTypeClass
 		**	Constructor/Destructor
 		*/
 		TeamTypeClass(char const * name = NULL);
-		TeamTypeClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~TeamTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

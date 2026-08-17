@@ -26,7 +26,6 @@ class LevitateLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		LevitateLocomotionClass(void);
-		LevitateLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 		virtual ~LevitateLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

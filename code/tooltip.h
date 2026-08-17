@@ -24,7 +24,6 @@ public:
 	ToolTip(void) : ID(0), Region(0, 0, 0, 0), Text(0) {}
 	~ToolTip(void){}
 	ToolTip(ToolTip const &that) : ID(that.ID), Region(that.Region), Text(that.Text) {}
-	ToolTip(NoInitClass const &) {}
 
 	/*
 	 * This is the identifier the tooltip is registered under. No two tooltips held by one

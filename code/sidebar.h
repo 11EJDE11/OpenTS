@@ -140,7 +140,6 @@ class SidebarClass : public PowerClass
 			{
 				public:
 					SelectClass(void);
-					SelectClass(NoInitClass const & x) : ControlClass(x) {};
 
 					void Set_Owner(StripClass & strip, int index);
 
@@ -154,7 +153,6 @@ class SidebarClass : public PowerClass
 			public:
 				StripClass(void) {}
 				StripClass(InitClass const &);
-				StripClass(NoInitClass const & ) {};
 
 				void Serialize(SaveStreamClass & stream);
 

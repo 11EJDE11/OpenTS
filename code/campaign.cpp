@@ -15,7 +15,6 @@
 #include "ccini.h"
 #include "crc.h"
 #include "globals.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "sun.h"
 #include "tracker.h"

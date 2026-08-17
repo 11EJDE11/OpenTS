@@ -21,7 +21,6 @@ class WaveClass : public ObjectClass
 		typedef ObjectClass BASECLASS;
 
 	public:
-		WaveClass(NoInitClass const & x) : BASECLASS(x), WaveShape(x), DrawData(x), AffectedCells() {}
 		WaveClass(Coord const & source_coord, Coord const & target_coord, TechnoClass * source, WaveType type, TechnoClass * target);
 		WaveClass(void);
 		virtual ~WaveClass(void) override;

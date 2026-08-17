@@ -291,7 +291,6 @@ class UnitTypeClass : public TechnoTypeClass
 		/*
 		**	This is the explicit unit type class constructor.
 		*/
-		UnitTypeClass(NoInitClass const & x);
 		UnitTypeClass(char const * ininame = NULL);
 		virtual ~UnitTypeClass() override;
 

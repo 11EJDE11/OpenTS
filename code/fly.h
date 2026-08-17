@@ -56,7 +56,6 @@ class FlyLocomotionClass : public LocomotionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		FlyLocomotionClass(void);
-		FlyLocomotionClass(NoInitClass const & x) : BASECLASS(x) {}
 		virtual ~FlyLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

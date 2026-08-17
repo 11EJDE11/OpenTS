@@ -99,7 +99,6 @@ class Tactical : public AbstractClass
 		 * Constructors, destructors, and persistence.
 		 */
 		Tactical(void);
-		Tactical(const NoInitClass & noinit);
 		virtual ~Tactical(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

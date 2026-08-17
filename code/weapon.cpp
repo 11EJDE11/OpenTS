@@ -122,23 +122,6 @@ WeaponTypeClass::WeaponTypeClass(char const * ininame) :
 }
 
 
-/// <summary>
-/// Constructs a weapon type object, leaving its data untouched.
-/// This constructor is used by the load process, which is about to overwrite the object
-/// with the data it reads from the save game file.
-/// </summary>
-WeaponTypeClass::WeaponTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	Sound(x),
-	Anim(x),
-	LaserInnerColor(x),
-	LaserOuterColor(x),
-	LaserOuterSpread(x)
-{
-
-}
-
-
 /***********************************************************************************************
  * WeaponTypeClass::~WeaponTypeClass -- Destructor for weapon type class objects.              *
  *                                                                                             *

@@ -206,43 +206,6 @@ TechnoTypeClass::TechnoTypeClass(char const * ininame, SpeedType speed) :
 
 
 /// <summary>
-/// Creates an object type without initializing it.
-/// This constructor is used when a save game is about to be loaded over the object type,
-/// so nothing is set up that the load would only overwrite. The type still makes itself
-/// known to the master techno type list, but only if it is not listed there already.
-/// </summary>
-TechnoTypeClass::TechnoTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	VeteranAbilities(x),
-	EliteAbilities(x),
-	DebrisMaximums(x),
-	DebrisTypes(x),
-	Unused2(0),
-	Dock(x),
-	VoiceSelect(x),
-	VoiceMove(x),
-	VoiceAttack(x),
-	VoiceDie(x),
-	VoiceFeedback(x),
-	Prerequisite(x),
-	CameoFilename(NULL),
-	Explosion(x),
-	DamageParticleSystems()
-{
-	bool found = false;
-	for (int i = 0; i < TechnoTypes.Count(); i++) {
-		if (TechnoTypes[i] == this) {
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
-		TechnoTypes.Add(this);
-	}
-}
-
-
-/// <summary>
 /// Destroys the object type.
 /// The type removes itself from the master type lists so that nothing can look it up
 /// after it is gone.

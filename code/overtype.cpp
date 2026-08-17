@@ -126,17 +126,6 @@ OverlayTypeClass::OverlayTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Creates an overlay type object without initializing it.
-/// The load process uses this constructor to give the object its virtual function table
-/// back; every value is about to be overwritten with what the save file holds.
-/// </summary>
-OverlayTypeClass::OverlayTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Destroys this overlay type object.
 /// Any artwork that was demand loaded is released, anything still pointing at this type is
 /// detached from it, and the type is dropped from the overlay type heap.

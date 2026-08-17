@@ -48,7 +48,7 @@ template<class T> class TRect;
 template<class T>
 class TPoint2D {
 	public:
-		TPoint2D(void) {}		// Default constructor does nothing by design.
+		TPoint2D(void) = default;
 		constexpr TPoint2D(T x, T y) : X(x), Y(y) {}
 
 		// Equality comparison operators.
@@ -97,8 +97,8 @@ class TPoint2D {
 		}
 
 	public:
-		T X;
-		T Y;
+		T X = T(0);
+		T Y = T(0);
 };
 
 
@@ -108,7 +108,7 @@ class TPoint2D {
 class Point2D : public TPoint2D<int>
 {
 	public:
-		Point2D(void) {}		// Default constructor does nothing by design.
+		Point2D(void) = default;
 		constexpr Point2D(int x, int y) : TPoint2D<int>(x, y) {}
 		constexpr Point2D(Point2DStruct const & rvalue) : TPoint2D<int>(rvalue.X, rvalue.Y) {}
 		constexpr Point2D(TPoint2D<int> const & rvalue) : TPoint2D<int>(rvalue) {}
@@ -147,7 +147,7 @@ class TPoint3D : public TPoint2D<T> {
 		using BASECLASS::X;
 		using BASECLASS::Y;
 
-		TPoint3D(void) {}		// Default constructor does nothing by design.
+		TPoint3D(void) = default;
 		constexpr TPoint3D(T x, T y, T z) : BASECLASS(x, y), Z(z) {}
 		constexpr TPoint3D(BASECLASS const & rvalue, T z /*= 0*/) : BASECLASS(rvalue), Z(z) {}
 
@@ -206,7 +206,7 @@ class TPoint3D : public TPoint2D<T> {
 		/*
 		**	The Z component of this point.
 		*/
-		T Z;
+		T Z = T(0);
 };
 
 

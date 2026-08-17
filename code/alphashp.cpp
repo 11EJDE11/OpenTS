@@ -80,17 +80,6 @@ AlphaShapeClass::AlphaShapeClass(void) :
 
 
 /// <summary>
-/// Creates an alpha shape without initializing it.
-/// This routine is used by the load process, which is about to overwrite every member
-/// with the values read out of the save stream.
-/// </summary>
-AlphaShapeClass::AlphaShapeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Destroys the alpha shape.
 /// This routine takes the shape out of the global list so that it stops contributing
 /// light to the tactical map.

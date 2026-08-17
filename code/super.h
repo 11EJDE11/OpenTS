@@ -46,7 +46,6 @@ class SuperClass : public AbstractClass
 	public:
 		SuperClass(void);
 		SuperClass(SuperWeaponTypeClass * type, HouseClass * owner);
-		SuperClass(NoInitClass const & x) : Control(x) {};
 		virtual ~SuperClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

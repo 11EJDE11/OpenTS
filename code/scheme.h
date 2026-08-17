@@ -14,7 +14,6 @@
 #pragma once
 
 #include "hsv.h"
-#include "noinit.h"
 #include "palette.h"
 
 #include "scheme.hh"

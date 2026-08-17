@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "noinit.h"
 #include "vector3.h"
 
 #include <cmath>
@@ -25,7 +24,6 @@ class Quaternion
 	public:
 		//Quaternion(void) {}
 		Quaternion(const Vector3 & axis,float angle);
-		Quaternion(NoInitClass const & x) {}
 
 		Quaternion(float x = 0.0, float y = 0.0, float z = 0.0, float w = 1.0);
 		Quaternion operator=(const Quaternion & q);

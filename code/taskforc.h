@@ -23,7 +23,6 @@ class TaskForceClass : public AbstractTypeClass
 
 	public:
 		TaskForceClass(char const *name=NULL);
-		TaskForceClass(NoInitClass const & x);
 		virtual ~TaskForceClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

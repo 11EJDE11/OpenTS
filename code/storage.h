@@ -9,13 +9,11 @@
 
 #pragma once
 
-#include "noinit.h"
 
 class StorageClass
 {
 	public:
 		StorageClass(void);
-		StorageClass(NoInitClass const & x) {}
 		~StorageClass(void) {};
 
 		int Get_Total_Value(void) const;

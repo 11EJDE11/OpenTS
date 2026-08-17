@@ -11,7 +11,6 @@
 
 #include "abstract.h"
 #include "coord.h"
-#include "noinit.h"
 #include "rect.h"
 
 class Cell;
@@ -25,7 +24,6 @@ class EMPulseClass : public AbstractClass
 	public:
 		EMPulseClass(Cell cell, int spread, int duration, TechnoClass *source);
 		EMPulseClass(void);
-		EMPulseClass(NoInitClass const & x);
 		virtual ~EMPulseClass(void) override;
 
 		virtual void Compute_CRC(CRCEngine &crc) const override;

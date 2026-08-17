@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 #include "rect.h"
 #include "stimer.h"
 #include "timer.h"
@@ -85,7 +84,6 @@ class SfxEntry {
 class ScoreClass {
 	public:
 		ScoreClass(void) {};
-		ScoreClass(NoInitClass const &) {};
 
 		void Init(void);
 		void Presentation(void);

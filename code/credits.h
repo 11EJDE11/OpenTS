@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 /****************************************************************************
 **	The animating credit counter display is controlled by this class.

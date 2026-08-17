@@ -205,36 +205,6 @@
 DynamicVectorClass<HouseClass::BuildChoiceClass *> HouseClass::BuildChoice;
 
 
-/// <summary>
-/// Constructs a house object without initializing it.
-/// This routine is used by the load process, which will fill in every member of the house
-/// from the save file and so has no use for the work the normal constructor performs.
-/// </summary>
-HouseClass::HouseClass(NoInitClass const & x) :
-	BASECLASS(x),
-	Control(x),
-	AlertTime(x),
-	BorrowedTime(x),
-	RemapColorRGB(x),
-	Base(x),
-	Tiberium(x),
-	Weed(x),
-	Attack(x),
-	AITimer(x),
-	PickEnemyTimer(x),
-	DamageTime(x),
-	TeamTime(x),
-	TriggerTime(x),
-	SpeakAttackDelay(x),
-	SpeakPowerDelay(x),
-	SpeakMoneyDelay(x),
-	SpeakMaxedDelay(x),
-	IniName(x)
-{
-
-}
-
-
 /***********************************************************************************************
  * HouseClass::HouseClass -- Constructor for a house object.                                   *
  *                                                                                             *

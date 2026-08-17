@@ -127,17 +127,6 @@ WarheadTypeClass::WarheadTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructor for warhead objects that skips initialization.
-/// Use this routine when the warhead is about to be filled in from a save game, since
-/// every value would only be overwritten by the data read from the stream.
-/// </summary>
-WarheadTypeClass::WarheadTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Destructor for warhead objects.
 /// This routine will break every link to this warhead before dropping it from the list of
 /// warheads the game knows about.

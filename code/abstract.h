@@ -35,7 +35,6 @@
 #include "coord.h"
 #include "globals.h"
 #include "irtti.h"
-#include "noinit.h"
 #include "stimer.h"
 
 #include "house.hh"
@@ -104,7 +103,6 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		**	Constructor & destructors.
 		*/
 		AbstractClass(void);
-		AbstractClass(NoInitClass const & x);
 		virtual ~AbstractClass(void);
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;

@@ -23,7 +23,6 @@ class BuildingLightClass : public ObjectClass
 
 	public:
 		BuildingLightClass(TechnoClass * owner = NULL);
-		BuildingLightClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~BuildingLightClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

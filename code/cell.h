@@ -515,7 +515,6 @@ class CellClass : public AbstractClass
 
 		//----------------------------------------------------------------
 		CellClass(void);
-		CellClass(NoInitClass const & x);
 		virtual ~CellClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

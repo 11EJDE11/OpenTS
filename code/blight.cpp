@@ -177,7 +177,7 @@ void BuildingLightClass::AI(void)
 		return;
 	}
 
-	Coord coord;
+	Coord coord = PositionCoord;
 	switch (Behavior) {
 		default:
 			coord = PositionCoord;
@@ -188,8 +188,6 @@ void BuildingLightClass::AI(void)
 				coord = Lerp(PositionCoord, Target->PositionCoord, 0.25);
 			} else {
 				Set_Behavior_Type(LIGHT_BEHAVIOR_SWEEP);
-				/// No coordinate is computed on this path, so the position below is
-				/// written back from the uninitialized local.
 			}
 			break;
 

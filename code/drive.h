@@ -56,7 +56,6 @@ class DriveLocomotionClass : public LocomotionClass, public IPiggyback
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		DriveLocomotionClass(void);
-		DriveLocomotionClass(NoInitClass const & x) : BASECLASS(x), RampTimer(x) {}
 		virtual ~DriveLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

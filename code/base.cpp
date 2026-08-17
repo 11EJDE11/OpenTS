@@ -600,14 +600,3 @@ void BaseClass::Compute_CRC(CRCEngine & crc) const
 		crc(Nodes[i].CellID.Y);
 	}
 }
-
-
-/// <summary>
-/// Constructs the base without disturbing its members.
-/// This routine is used when the base is about to be filled in from a save game stream,
-/// where every member is overwritten and initializing them first would be wasted effort.
-/// </summary>
-BaseClass::BaseClass(NoInitClass const & x)
-{
-
-}

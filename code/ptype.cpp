@@ -69,20 +69,6 @@ ParticleTypeClass::ParticleTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructs a particle type object without initializing it.
-/// This routine is used by the load process, which is about to overwrite the object
-/// with the saved data anyway, so any initialization would only be thrown away.
-/// </summary>
-ParticleTypeClass::ParticleTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	StartColor1(x),
-	StartColor2(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys the particle type object.
 /// Every reference to this type is severed and the type is removed from the particle
 /// type heap before it goes away.

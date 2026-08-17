@@ -27,7 +27,6 @@ class ScriptClass : public AbstractClass
 
 	public:
 		ScriptClass(ScriptTypeClass *type = NULL);
-		ScriptClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~ScriptClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
@@ -73,7 +72,6 @@ class ScriptTypeClass : public AbstractTypeClass
 
 	public:
 		ScriptTypeClass(char const *name = NULL);
-		ScriptTypeClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~ScriptTypeClass(void) override;
 
 		static ScriptTypeClass * Find_Or_Make(char const * ininame = NULL);

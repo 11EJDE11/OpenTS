@@ -99,7 +99,6 @@ template<class T> class DynamicVectorClass;
 class HouseStaticClass {
 	public:
 		HouseStaticClass(void);
-		HouseStaticClass(NoInitClass const & ) {};
 
 		/*
 		**	This value indicates the degree of smartness to assign to this house.
@@ -658,7 +657,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 			/// Unused
 			unsigned InitialAttack;
 			AttackStruct(void) { InitialAttack = 0; }
-			AttackStruct(NoInitClass const & x) : Timer(x) { }
 
 			/// Carries the all out attack schedule to or from a save game.
 			template<typename S>
@@ -732,7 +730,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		HouseClass(HouseTypeClass const * type = NULL);
-		HouseClass(NoInitClass const & x);
 		virtual ~HouseClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
@@ -1065,7 +1062,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 			StructType	Structure;  // The type of building to produce.
 
 			BuildChoiceClass(UrgencyType urgency=URGENCY_NONE, StructType structure=STRUCT_NONE) : Urgency(urgency), Structure(structure) {};
-			BuildChoiceClass(NoInitClass const & ) {};
 			bool operator==(BuildChoiceClass const & ) const {return(false);}
 			bool operator!=(BuildChoiceClass const & ) const {return(true);}
 			HRESULT Save(IStream *) const {return(S_OK);};

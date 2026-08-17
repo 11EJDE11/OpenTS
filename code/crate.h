@@ -40,7 +40,7 @@
 
 class CrateClass {
 	public:
-		CrateClass(void) : Timer(NoInitClass()), Location(0,0) {}
+		CrateClass(void) : Location(0,0) {}
 		void Init(void) {Make_Invalid();}
 		bool Create_Crate(Cell const & cell);
 		bool Is_Here(Cell const & cell) const {return(Is_Valid() && cell == Location);}

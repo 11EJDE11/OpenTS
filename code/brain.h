@@ -10,7 +10,6 @@
 #pragma once
 
 #include "abstract.h"
-#include "noinit.h"
 #include "vector.h"
 
 class BrainClass;
@@ -23,7 +22,6 @@ class NeuronClass : public AbstractClass
 
 	public:
 		NeuronClass(void);
-		NeuronClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~NeuronClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

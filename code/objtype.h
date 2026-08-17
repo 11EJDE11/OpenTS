@@ -186,7 +186,6 @@ class ObjectTypeClass : public AbstractTypeClass
 		VoxelIndexClass AuxVoxel2Index;
 
 		//--------------------------------------------------------------------
-		ObjectTypeClass(NoInitClass const & x);
 		ObjectTypeClass(char const * ininame = NULL);
 		virtual ~ObjectTypeClass() override;
 

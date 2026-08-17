@@ -44,7 +44,6 @@
 #include "coord.h"
 #include "crc.h"
 #include "globals.h"
-#include "noinit.h"
 #include "savestream.h"
 #include "scenario.h"
 #include "swizzle.h"
@@ -62,17 +61,6 @@ AbstractClass::AbstractClass(void) :
 	RefCount(0),
 	Dirty(false)
 {
-}
-
-
-/// <summary>
-/// No-initialization constructor for abstract objects.
-/// Use this constructor when the object is about to be overwritten wholesale by
-/// the load process. It deliberately leaves every member untouched.
-/// </summary>
-AbstractClass::AbstractClass(NoInitClass const & x)
-{
-	x(); /// referenced so the compiler does not warn about it
 }
 
 

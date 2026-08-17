@@ -63,7 +63,6 @@ class TriggerClass : public AbstractClass
 		**	Constructor/Destructor
 		*/
 		TriggerClass(TriggerTypeClass * trigtype=NULL);
-		TriggerClass(NoInitClass const & x) : BASECLASS(x), Timer(x) {}
 		virtual ~TriggerClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

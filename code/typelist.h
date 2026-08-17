@@ -31,7 +31,6 @@ class TypeList : public DynamicVectorClass<T>
 		using BASECLASS::Add;
 
 		TypeList(void) {}
-		TypeList(const NoInitClass & x) : BASECLASS(x) {}
 		TypeList(std::initializer_list<T> list) : BASECLASS(list) {}
 
 		bool Is_In_List(T const & object) const;

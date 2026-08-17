@@ -31,7 +31,6 @@ class SuperWeaponTypeClass : public AbstractTypeClass
 
 	public:
 		SuperWeaponTypeClass(char const * ininame = NULL);
-		SuperWeaponTypeClass(NoInitClass const & x);
 		virtual ~SuperWeaponTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

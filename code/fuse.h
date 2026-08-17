@@ -36,7 +36,6 @@
 
 #include "coord.h"
 #include "ftimer.h"
-#include "noinit.h"
 #include "timer.h"
 
 
@@ -55,7 +54,6 @@ enum FuseResultType {
 class FuseClass {
 	public:
 		FuseClass(void);
-		FuseClass(NoInitClass const &) {};
 		~FuseClass(void) {};
 
 		void Arm_Fuse(Coord const & location, Coord const & target, int arming=0, int time=INT_MAX);

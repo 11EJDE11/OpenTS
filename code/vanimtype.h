@@ -29,7 +29,6 @@ class VoxelAnimTypeClass : public ObjectTypeClass
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.
 		*/
-		VoxelAnimTypeClass(NoInitClass const & x) : BASECLASS(x) {}
 		VoxelAnimTypeClass(char const * ininame = NULL);
 		~VoxelAnimTypeClass(void);
 

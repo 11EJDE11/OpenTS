@@ -76,18 +76,6 @@ EMPulseClass::EMPulseClass(void) :
 
 
 /// <summary>
-/// Creates a pulse without initializing it.
-/// This routine is used by the load process, which is about to overwrite every member with
-/// the values read out of the save stream.
-/// </summary>
-EMPulseClass::EMPulseClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-
-}
-
-
-/// <summary>
 /// Destroys the pulse.
 /// This routine lifts the pulse's effect off the map, breaks any references other objects
 /// hold to it, and takes it out of the global pulse list.

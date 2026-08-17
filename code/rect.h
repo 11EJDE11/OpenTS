@@ -49,7 +49,7 @@ template<class T>
 class TRect
 {
 	public:
-		TRect(void) {}		// Default constructor does nothing by design.
+		TRect(void) = default;
 		constexpr TRect(T x, T y, T w, T h) : X(x), Y(y), Width(w), Height(h) {}
 		constexpr TRect(TPoint2D<T> const & point, T w, T h) : X(point.X), Y(point.Y), Width(w), Height(h) {}
 
@@ -123,15 +123,15 @@ class TRect
 		/*
 		**	Coordinate of upper left corner of rectangle.
 		*/
-		T X;
-		T Y;
+		T X = T(0);
+		T Y = T(0);
 
 		/*
 		**	Dimensions of rectangle. If the width or height is less than or equal to
 		**	zero, then the rectangle is in an invalid state.
 		*/
-		T Width;
-		T Height;
+		T Width = T(0);
+		T Height = T(0);
 };
 
 

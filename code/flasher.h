@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 class MonoClass;
 
@@ -53,7 +52,6 @@ class FlasherClass {
 		bool IsBlushing;
 
 		FlasherClass(void) {FlashCount = 0; IsBlushing = false;};
-		FlasherClass(NoInitClass const & ) {};
 		~FlasherClass(void) {};
 
 		/// Carries the flash state to or from a save game.

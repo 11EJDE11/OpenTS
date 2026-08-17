@@ -108,7 +108,6 @@ class TerrainTypeClass : public ObjectTypeClass
 		bool IsVeinhole;
 
 		//----------------------------------------------------------------
-		TerrainTypeClass(NoInitClass const & x);
 		TerrainTypeClass(char const * ininame = NULL);
 		virtual ~TerrainTypeClass(void) override;
 

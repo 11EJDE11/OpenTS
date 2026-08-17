@@ -10,7 +10,6 @@
 #pragma once
 
 #include "motlib.h"
-#include "noinit.h"
 #include "stbuffer.h"
 #include "voxlib.h"
 
@@ -26,7 +25,6 @@ struct VoxelDataStruct
 		MotLib = NULL;
 	}
 
-	VoxelDataStruct(NoInitClass const & x) {}
 	~VoxelDataStruct(void); /// lives in object.cpp
 
 	/*

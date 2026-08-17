@@ -90,7 +90,6 @@ class BaseClass
 		**	Constructor/Destructor
 		*/
 		BaseClass(void);
-		BaseClass(NoInitClass const & x);
 		~BaseClass(void) {Nodes.Clear();}
 
 		/*

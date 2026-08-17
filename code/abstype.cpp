@@ -59,31 +59,6 @@ AbstractTypeClass::AbstractTypeClass(char const * ininame) :
 }
 
 
-/***********************************************************************************************
- * AbstractTypeClass::AbstractTypeClass -- Constructor for abstract type objects.              *
- *                                                                                             *
- *    This is the constructor for AbstractTypeClass objects. It initializes the INI name and   *
- *    the text name for this object type.                                                      *
- *                                                                                             *
- * INPUT:   name  -- Text number for the full name of the object.                              *
- *                                                                                             *
- *          ini   -- The ini name for this object type.                                        *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   05/22/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-AbstractTypeClass::AbstractTypeClass(NoInitClass const & x) :
-	BASECLASS(x),
-	IniName(x),
-	GivenName(x)
-{
-}
-
-
 /// <summary>
 /// Removes this object type from the master type list.
 /// Every abstract type adds itself to the AbstractTypes list when it is created, so it

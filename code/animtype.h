@@ -428,7 +428,6 @@ class AnimTypeClass : public ObjectTypeClass
 
 		//---------------------------------------------------------------------------
 		AnimTypeClass(char const * ininame = NULL);
-		AnimTypeClass(NoInitClass const & x);
 		virtual ~AnimTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

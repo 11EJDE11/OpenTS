@@ -29,7 +29,6 @@ class ParticleClass : public ObjectClass
 	public:
 		ParticleClass(void);
 		ParticleClass(ParticleTypeClass const * type, Coord const & origin, Coord const & target = COORD_NONE, ParticleSystemClass * partsys = NULL);
-		ParticleClass(NoInitClass const & x) : BASECLASS(x), Color(x) {};
 		virtual ~ParticleClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

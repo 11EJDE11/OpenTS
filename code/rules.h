@@ -93,7 +93,6 @@ class RulesClass
 {
 	public:
 		RulesClass(void);
-		RulesClass(NoInitClass const & x);
 		~RulesClass(void);
 
 		void Initialize(CCINIClass const & ini);

@@ -26,7 +26,6 @@ class ParticleTypeClass : public ObjectTypeClass
 
 	public:
 		ParticleTypeClass(char const * ininame = NULL);
-		ParticleTypeClass(NoInitClass const & x);
 		virtual ~ParticleTypeClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

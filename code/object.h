@@ -203,7 +203,6 @@ class ObjectClass : public AbstractClass
 		**	Constructor & destructors.
 		*/
 		ObjectClass(void);
-		ObjectClass(NoInitClass const & x);
 		virtual ~ObjectClass(void) override;
 
 		virtual void Serialize(SaveStreamClass & stream) override;

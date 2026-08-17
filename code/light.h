@@ -23,7 +23,6 @@ class LightSourceClass : public AbstractClass
 	public:
 		LightSourceClass(Coord coord, int visibility, int intensity, int red, int green, int blue);
 		LightSourceClass(void);
-		LightSourceClass(NoInitClass const & x);
 		virtual ~LightSourceClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

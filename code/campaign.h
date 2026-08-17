@@ -21,7 +21,6 @@ class CampaignClass : public AbstractTypeClass
 
 	public:
 		CampaignClass(char const * name = NULL);
-		CampaignClass(NoInitClass const & x) : BASECLASS(x) {}
 		virtual ~CampaignClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

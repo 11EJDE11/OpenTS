@@ -98,17 +98,6 @@ HouseTypeClass::HouseTypeClass(char const * ininame) :
 
 
 /// <summary>
-/// Constructs a house type without initializing it.
-/// This constructor is used by the load process, which fills the object in from the save
-/// stream rather than building it up from scratch.
-/// </summary>
-HouseTypeClass::HouseTypeClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Removes this house type from the game.
 /// Everything that refers to this house type is detached from it before it is dropped from
 /// the house type heap.

@@ -12,7 +12,6 @@
 #include "abstract.h"
 #include "coord.h"
 #include "index.h"
-#include "noinit.h"
 #include "rect.h"
 #include "vector.h"
 
@@ -34,7 +33,6 @@ class FoggedObjectClass : public AbstractClass
 		friend void Update_Fogged_Objects(void);
 
 	public:
-		FoggedObjectClass(NoInitClass const & x);
 		FoggedObjectClass(void);
 		FoggedObjectClass(Coord const & coord, OverlayType type, int data);
 		FoggedObjectClass(Coord const & coord, SmudgeType type, int data);

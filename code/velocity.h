@@ -18,7 +18,7 @@ template <typename T>
 class TVelocity2D
 {
 	public:
-		TVelocity2D(void) {}
+		TVelocity2D(void) = default;
 		TVelocity2D(T x, T y)
 		{
 			X = x;
@@ -75,8 +75,8 @@ class TVelocity2D
 		}
 
 	public:
-		T X;
-		T Y;
+		T X = T(0);
+		T Y = T(0);
 };
 
 
@@ -96,7 +96,7 @@ class TVelocity3D : public TVelocity2D<T>
 		using BASECLASS::X;
 		using BASECLASS::Y;
 
-		TVelocity3D(void) {}
+		TVelocity3D(void) = default;
 		TVelocity3D(const TVelocity3D & velocity) : BASECLASS(velocity), Z(velocity.Z) {}
 		TVelocity3D(Dir256 pitch, Dir256 yaw, T magnitude);
 		TVelocity3D(DirType const & yaw, DirType const & pitch, T magnitude);
@@ -195,7 +195,7 @@ class TVelocity3D : public TVelocity2D<T>
 		}
 
 	public:
-		T Z;
+		T Z = T(0);
 };
 
 

@@ -48,17 +48,6 @@ IndexClass<int, FoggedObjectClass *> FoggedObjectClass::FoggedObjectIndex;
 
 
 /// <summary>
-/// Creates a fogged object without initializing it.
-/// This constructor is used by the load process, which is about to overwrite the
-/// object's data with the contents of the save game stream.
-/// </summary>
-FoggedObjectClass::FoggedObjectClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
-
-
-/// <summary>
 /// Creates an empty fogged object.
 /// The object joins the master list of fogged objects, but it remembers nothing until
 /// something fills it in.

@@ -20,7 +20,6 @@ class DelayTimerClass
 {
 	public:
 		DelayTimerClass(void);
-		DelayTimerClass(NoInitClass const & x) : Timer(x) {};
 
 		bool Is_Count_Up_Active(void) const;
 		bool Is_Count_Down_Active(void) const;

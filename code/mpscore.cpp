@@ -844,7 +844,6 @@ void MultiScore::Print_Scores(void)
 
 	/// Temporary buffer to store rectangles for updating
 	Rect updateRects[MAX_PLAYERS];
-	memset(updateRects, 0, sizeof(updateRects));
 
 	/// Animate the scores incrementally
 	if (maxScore > 0) {
@@ -979,7 +978,6 @@ void MultiScore::Draw_Bars(int * scores, int numScores, int x, int y, int width)
 
 	/// Temporary buffer to store rectangles for updating
 	Rect updateRects[MAX_PLAYERS];
-	memset(updateRects, 0, sizeof(updateRects));
 
 	Rect dr;
 	Rect sr;

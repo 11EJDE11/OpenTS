@@ -34,7 +34,6 @@
 
 #include "imap.h"
 #include "keyboard.h"
-#include "noinit.h"
 
 #include "mouse.hh"
 #include "theater.hh"

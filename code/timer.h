@@ -52,7 +52,6 @@
 
 #pragma once
 
-#include "noinit.h"
 
 /*
 **	This is a timer class that watches a constant rate timer (specified by the parameter
@@ -68,7 +67,6 @@ class BasicTimerClass {
 	public:
 		// Constructor allows assignment as if class was integral 'long' type.
 		BasicTimerClass(int set=0);
-		BasicTimerClass(NoInitClass const & );
 
 		~BasicTimerClass(void);
 
@@ -95,12 +93,6 @@ class BasicTimerClass {
 		int Started;    // Time started.
 		T Timer;        // Timer regulator (ticks at constant rate).
 };
-
-
-template<class T>
-inline BasicTimerClass<T>::BasicTimerClass(NoInitClass const & )
-{
-}
 
 
 /***********************************************************************************************
@@ -218,7 +210,6 @@ class TTimerClass : public BasicTimerClass<T> {
 	public:
 		// Constructor allows assignment as if class was integral 'long' type.
 		TTimerClass(int set=0);
-		TTimerClass(NoInitClass const & x);
 
 		~TTimerClass(void) {};
 
@@ -251,13 +242,6 @@ class TTimerClass : public BasicTimerClass<T> {
 	private:
 		int Accumulated;				// Total accumulated ticks.
 };
-
-
-template<class T>
-inline TTimerClass<T>::TTimerClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
 
 
 /***********************************************************************************************
@@ -455,7 +439,6 @@ class CDTimerClass : public BasicTimerClass<T> {
 	public:
 		// Constructor allows assignment as if class was integral 'long' type.
 		CDTimerClass(int set=0);
-		CDTimerClass(NoInitClass const & x);
 
 		~CDTimerClass(void);
 
@@ -488,13 +471,6 @@ class CDTimerClass : public BasicTimerClass<T> {
 	protected:
 		int DelayTime;			// Ticks remaining before countdown timer expires.
 };
-
-
-template<class T>
-inline CDTimerClass<T>::CDTimerClass(NoInitClass const & x) :
-	BASECLASS(x)
-{
-}
 
 
 /***********************************************************************************************
@@ -722,7 +698,6 @@ class ProgressTimerClass : protected CDTimerClass<T>
 		using BASECLASS::DelayTime;
 	public:
 		ProgressTimerClass(int set = 0);
-		ProgressTimerClass(const NoInitClass & x);
 		~ProgressTimerClass(void) {}
 
 		int Time_Spent(void) const;
@@ -748,13 +723,6 @@ class ProgressTimerClass : protected CDTimerClass<T>
 		 */
 		int TotalTime;
 };
-
-
-template<class T>
-inline ProgressTimerClass<T>::ProgressTimerClass(const NoInitClass &x) :
-	BASECLASS(x)
-{
-}
 
 
 template<class T>

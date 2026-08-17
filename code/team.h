@@ -263,7 +263,6 @@ class TeamClass : public AbstractClass
 		 * Constructors, destructors, and persistence.
 		 */
 		TeamClass(TeamTypeClass const * team=0, HouseClass * owner=0, void * = NULL);
-		TeamClass(NoInitClass const & x) : BASECLASS(x), TimeOut(x), SuspendTimer(x) {};
 		virtual ~TeamClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;

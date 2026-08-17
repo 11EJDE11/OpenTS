@@ -56,7 +56,6 @@ class SmudgeTypeClass : public ObjectTypeClass
 		bool IsScorch;
 
 		//----------------------------------------------------------
-		SmudgeTypeClass(NoInitClass const & x);
 		SmudgeTypeClass(char const * ininame = NULL);
 		virtual ~SmudgeTypeClass(void) override;
 

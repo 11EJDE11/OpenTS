@@ -22,7 +22,6 @@
 #include "globals.h"
 #include "house.h"
 #include "map.h"
-#include "noinit.h"
 #include "rules.h"
 #include "savestream.h"
 #include "sun.h"

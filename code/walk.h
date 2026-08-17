@@ -27,7 +27,6 @@ class WalkLocomotionClass : public LocomotionClass, public IPiggyback
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		WalkLocomotionClass(void);
-		WalkLocomotionClass(NoInitClass const & x) : BASECLASS(x), Piggybacker(NULL) {}
 		virtual ~WalkLocomotionClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
