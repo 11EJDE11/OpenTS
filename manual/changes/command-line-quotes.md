@@ -3,6 +3,7 @@ title: Strip quotes from launch options
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 A launch option written with double quotes around it, or around part of it, is now matched

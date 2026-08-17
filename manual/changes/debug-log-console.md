@@ -6,6 +6,7 @@ targets:
 - type: command
   id: launch:console-debug
   effect: changed
+credit: [ZivDero]
 ---
 
 Every run now writes a log to a `Debug` folder beside the executable, named for the time the

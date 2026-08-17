@@ -3,6 +3,7 @@ title: Keep the elapsed mission time across a save game
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero]
 ---
 
 The elapsed mission time survives a save and load. It previously reset to zero whenever a

@@ -9,6 +9,7 @@ targets:
 - type: action
   id: TACTION_DESTROY_TAG
   effect: changed
+credit: [ZivDero, tomsons26]
 ---
 
 Destroying a trigger or a tag now marks it and lets the frame finish before the object is

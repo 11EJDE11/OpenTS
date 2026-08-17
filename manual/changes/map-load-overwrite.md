@@ -3,6 +3,7 @@ title: Stop a load from discarding restored radar and display state
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 The radar and the display layers come back from a save as they were left. Loading used to

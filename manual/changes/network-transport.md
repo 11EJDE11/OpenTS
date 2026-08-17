@@ -18,6 +18,7 @@ targets:
 - type: command
   id: launch:socket
   effect: removed
+credit: [ZivDero, tomsons26]
 ---
 
 Network games are played over UDP. Tiberian Sun reached the other machines on a

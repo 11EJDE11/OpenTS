@@ -21,6 +21,7 @@ targets:
   id: CD
   effect: changed
   scope: campaign
+credit: [ZivDero]
 ---
 
 `-CD<path>` now adds a local data search path in both Debug and Release builds.

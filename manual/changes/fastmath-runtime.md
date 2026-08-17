@@ -3,6 +3,7 @@ title: Replace the fastmath lookup tables
 category: internal
 release: 0.1.0
 targets: []
+credit: [ZivDero]
 ---
 
 OpenTS now uses the C runtime trigonometric and square-root functions in place

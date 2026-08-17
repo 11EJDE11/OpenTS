@@ -6,6 +6,7 @@ targets:
 - type: system
   id: sidebar
   effect: changed
+credit: [ZivDero]
 ---
 
 Each sidebar strip now carries 60 cameo slots rather than 20, and the number of rows a strip

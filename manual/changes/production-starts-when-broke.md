@@ -3,6 +3,7 @@ title: Start production regardless of funds
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero]
 ---
 
 Ordering something a house cannot yet afford now starts its build clock, which then creeps

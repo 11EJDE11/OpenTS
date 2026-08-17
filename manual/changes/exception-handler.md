@@ -9,6 +9,7 @@ targets:
 - type: command
   id: launch:exception-test
   effect: added
+credit: [ZivDero]
 ---
 
 A crash now writes everything needed to diagnose it into a folder of its own, named for the

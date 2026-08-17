@@ -9,6 +9,7 @@ targets:
 - type: format
   id: save-games
   effect: changed
+credit: [ZivDero]
 ---
 
 A save game stores each object one named member at a time rather than as a copy of its

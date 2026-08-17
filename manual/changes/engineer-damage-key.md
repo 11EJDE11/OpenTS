@@ -6,6 +6,7 @@ targets:
 - type: key
   id: EngineerDamage
   effect: added
+credit: [ZivDero, tomsons26]
 ---
 
 `[General] EngineerDamage=` is now read from its own name. The read asked the rules for

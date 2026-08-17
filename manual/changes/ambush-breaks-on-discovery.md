@@ -3,6 +3,7 @@ title: Break ambush when the ambusher is discovered
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 An object sitting in ambush now breaks cover and hunts once it is discovered, which is what

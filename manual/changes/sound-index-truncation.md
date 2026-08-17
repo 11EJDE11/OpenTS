@@ -3,6 +3,7 @@ title: Compare sound entries without truncating the index
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 An animation may name any sound in the sound list, however far down it sits. The checks for

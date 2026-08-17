@@ -6,6 +6,7 @@ targets:
 - type: system
   id: sidebar
   effect: changed
+credit: [ZivDero]
 ---
 
 A sidebar strip now holds 225 entries rather than 75, and it stops taking them at that

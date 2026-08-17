@@ -6,6 +6,7 @@ targets:
 - type: key
   id: MaxPlayers
   effect: added
+credit: [ZivDero, tomsons26]
 ---
 
 A multiplayer map's `MaxPlayers` field now fills the largest number of players the map

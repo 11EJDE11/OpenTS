@@ -39,6 +39,7 @@ targets:
 - type: command
   id: launch:high-color
   effect: removed
+credit: [ZivDero]
 ---
 
 The finished picture reaches the screen through bgfx, which draws it with Direct3D, Vulkan, or OpenGL depending on the machine. The game still renders every frame in software exactly as it did, so nothing about how the game looks or plays depends on the graphics card; only the last step, getting that picture in front of the player, has changed. DirectDraw is gone from the engine entirely.

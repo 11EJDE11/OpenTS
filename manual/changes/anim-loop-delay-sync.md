@@ -3,6 +3,7 @@ title: Draw animation loop delays from the synchronized generator
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 An animation that waits a random spell between loops now draws that delay from the

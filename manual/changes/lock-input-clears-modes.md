@@ -6,6 +6,7 @@ targets:
 - type: action
   id: TACTION_LOCK_INPUT
   effect: changed
+credit: [ZivDero, tomsons26]
 ---
 
 Taking control away from the player now cancels a structure waiting to be placed and drops

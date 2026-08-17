@@ -3,6 +3,7 @@ title: Reconnect a house's flag position when loading
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 A house's flag position is reconnected when a save is loaded. The record of where the flag

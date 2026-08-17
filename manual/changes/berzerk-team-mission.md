@@ -6,6 +6,7 @@ targets:
 - type: mission
   id: TMISSION_BERZERK
   effect: changed
+credit: [ZivDero, tomsons26]
 ---
 
 A team script that reaches the Berzerk mission now sends the team's cyborgs berserk and

@@ -39,6 +39,7 @@ targets:
 - type: key
   id: PhoneIndex
   effect: removed
+credit: [ZivDero]
 ---
 
 Games played over a modem or a null-modem cable are no longer supported. The

@@ -3,6 +3,7 @@ title: Measure fuse proximity in three dimensions
 category: fix
 release: 0.1.0
 targets: []
+credit: [ZivDero, tomsons26]
 ---
 
 A proximity-fused projectile now measures its distance to the target in full, height

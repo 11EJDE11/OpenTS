@@ -6,6 +6,7 @@ targets:
 - type: action
   id: TACTION_ENABLE_TRIGGER
   effect: changed
+credit: [ZivDero, tomsons26]
 ---
 
 A trigger that a map switches off for a difficulty no longer takes part when the scenario
