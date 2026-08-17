@@ -1087,7 +1087,7 @@ void EventClass::Execute(void)
 			if (house != PlayerPtr && house != NULL) {
 				str = Fetch_String(TXT_PLAYER_CHANGED_SPEED);
 				if (str != NULL && strlen(str) != 0) {
-					sprintf(msg, str, (char *)house->IniName);
+					sprintf(msg, str, house->IniName.c_str());
 					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
 				}
 			}
@@ -1171,7 +1171,7 @@ void EventClass::Execute(void)
 			if (house != PlayerPtr && house != NULL) {
 				str = Fetch_String(TXT_PLAYER_CHANGED_LATENCY);
 				if (str != NULL && strlen(str) != 0) {
-					sprintf(msg, str, (char *)house->IniName);
+					sprintf(msg, str, house->IniName.c_str());
 					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
 				}
 			}

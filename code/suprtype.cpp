@@ -233,9 +233,7 @@ bool SuperWeaponTypeClass::Read_INI(CCINIClass const & ini)
 			RechargeTime = recharge * TICKS_PER_MINUTE;
 		}
 
-		char sidebar_image[256];
-		ini.Get_String(IniName, "SidebarImage", (char *)SidebarImage, sidebar_image, sizeof(sidebar_image));
-		SidebarImage = sidebar_image;
+		ini.Get_String(IniName, "SidebarImage", SidebarImage);
 
 		char fullname[_MAX_FNAME+_MAX_EXT];
 		_makepath(fullname, NULL, NULL, SidebarImage, ".SHP");

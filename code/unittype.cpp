@@ -449,9 +449,7 @@ bool UnitTypeClass::Read_INI(CCINIClass const & ini)
 		FiringSyncFrame[0] = ArtINI.Get_Int(Graphic_Name(), "FiringSyncFrame1", FiringSyncFrame[0]);
 		FiringSyncFrame[1] = ArtINI.Get_Int(Graphic_Name(), "FiringSyncFrame2", FiringSyncFrame[1]);
 
-		char defvalue[25];
-		strcpy(defvalue, AltImageFile);
-		ini.Get_String(Name(), "AltImage", defvalue, AltImageFile, sizeof(AltImageFile));
+		ini.Get_String(Name(), "AltImage", AltImageFile);
 
 		char filename[_MAX_PATH];
 		_makepath(filename, NULL, NULL, AltImageFile, ".SHP");
@@ -531,14 +529,14 @@ void UnitTypeClass::Post_Load(void)
 {
 	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
 
-	if (AltImageFile.Length() != 0) {
-			char filename[_MAX_PATH];
-			_makepath(filename, NULL, NULL, AltImageFile, ".SHP");
-			AltImageData = (ShapeSet const *)MFCD::Retrieve(filename);
-		}
+	if (!AltImageFile.empty()) {
+		char filename[_MAX_PATH];
+		_makepath(filename, NULL, NULL, AltImageFile, ".SHP");
+		AltImageData = (ShapeSet const *)MFCD::Retrieve(filename);
+	}
 }
 
 

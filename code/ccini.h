@@ -38,6 +38,7 @@
 #include "pk.h"
 #include "point.h"
 #include "rgb.h"
+#include "stringid.h"
 #include "target.h"
 #include "typelist.h"
 #include "voc.h"
@@ -105,6 +106,28 @@ class CCINIClass : public INIClass
 		int Load(Straw & file, bool withdigest, bool loadcomments = false);
 		int Save(FileClass & file, bool withdigest) const;
 		int Save(Pipe & pipe, bool withdigest) const;
+
+		using BASECLASS::Get_String;
+
+		/*
+		 * Reading into a fixed string bounds the read by the destination itself, so the
+		 * caller cannot name a size that the string does not have.
+		 */
+		template<int SIZE>
+		int Get_String(char const * section, char const * entry, char const * defvalue, TStringID<SIZE> & value) const
+		{
+			char buffer[SIZE + 1];
+
+			int length = BASECLASS::Get_String(section, entry, defvalue, buffer, sizeof(buffer));
+			value = buffer;
+			return(length);
+		}
+
+		template<int SIZE>
+		int Get_String(char const * section, char const * entry, TStringID<SIZE> & value) const
+		{
+			return(Get_String(section, entry, value.c_str(), value));
+		}
 
 		int Get_Buildings(char const * section, char const * entry, int defvalue) const;
 		ArmorType Get_ArmorType(char const * section, char const * entry, ArmorType defvalue) const;

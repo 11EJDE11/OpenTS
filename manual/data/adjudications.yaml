@@ -209,7 +209,7 @@ MinZVel:
   "VoxelAnimTypeClass::MinZVel": {verdict: distinct}
 
 Name:
-  "AbstractTypeClass::buffer": {verdict: distinct}
+  "AbstractTypeClass::GivenName": {verdict: distinct}
   "ScenarioClass::None": {verdict: distinct}
   "SessionClass::None":
     verdict: distinct

@@ -3748,7 +3748,7 @@ Buildup:
     _provenance:
       default_candidate: null
       declared_in: BuildingTypeClass
-      member: buffer
+      member: BuildupFilename
       source: code/builtype.cpp
       guard: null
     level: BuildingTypeClass
@@ -13996,9 +13996,9 @@ Name:
     value_type: string
     status: reviewed
     _provenance:
-      default_candidate: null
+      default_candidate: ''
       declared_in: AbstractTypeClass
-      member: buffer
+      member: GivenName
       source: code/abstype.cpp
       guard: null
     level: AbstractTypeClass
@@ -15749,7 +15749,7 @@ PowersUpBuilding:
     _provenance:
       default_candidate: null
       declared_in: BuildingTypeClass
-      member: buffer
+      member: PowersUpBuilding
       source: code/builtype.cpp
       guard: null
     level: BuildingTypeClass
@@ -18847,9 +18847,9 @@ SidebarImage:
     value_type: string
     status: generated
     _provenance:
-      default_candidate: null
+      default_candidate: ''
       declared_in: SuperWeaponTypeClass
-      member: sidebar_image
+      member: SidebarImage
       source: code/suprtype.cpp
       guard: null
     level: SuperWeaponTypeClass

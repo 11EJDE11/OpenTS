@@ -635,7 +635,7 @@ void ScoreClass::Do_Graphs(void)
 	for (int hous = 0; hous < Houses.Count(); hous++) {
 
 		HouseClass *hows = Houses[hous];
-		DebugString("Stats: %s - UnitsLost %ld, BuildingsLost %ld\n", (char *)hows->Class->IniName, hows->UnitsLost, hows->BuildingsLost);
+		DebugString("Stats: %s - UnitsLost %ld, BuildingsLost %ld\n", hows->Class->IniName.c_str(), hows->UnitsLost, hows->BuildingsLost);
 
 		if ((PlayerPtr->Is_Ally(hows) && hows->Is_Ally(PlayerPtr)) || PlayerPtr == hows) {
 			allyu += hows->UnitsLost;

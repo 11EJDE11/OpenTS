@@ -944,7 +944,7 @@ bool Save_Game(const char *file_name, char const * descr, bool )
 	info.Set_Internal_Version(ExpectedGameVersion);
 	info.Set_Scenario_Description(descr);
 	info.Set_Version(1);
-	info.Set_Player_House((char *)PlayerPtr->Class->GivenName);
+	info.Set_Player_House(PlayerPtr->Class->GivenName);
 	info.Set_Campaign_Number(Scen->Campaign);
 	info.Set_Scenario_Number(Scen->Scenario);
 	info.Set_Executable_Name("SUN.EXE");

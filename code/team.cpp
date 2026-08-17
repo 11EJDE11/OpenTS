@@ -227,7 +227,7 @@ static inline bool _Is_It_Playing(FootClass const * object)
  *=============================================================================================*/
 void TeamClass::Debug_Dump(MonoClass * mono) const
 {
-	mono->Set_Cursor(1, 20);mono->Printf("%8.8s", (char const *)Class->IniName);
+	mono->Set_Cursor(1, 20);mono->Printf("%8.8s", Class->IniName.c_str());
 	mono->Set_Cursor(10, 20);mono->Printf("%3d", Total);
 	mono->Set_Cursor(17, 20);mono->Printf("%3d", Quantity[Class->ID]);
 //	if (CurrentMission != -1) {

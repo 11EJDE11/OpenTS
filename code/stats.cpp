@@ -431,7 +431,7 @@ void Send_Statistics_Packet(void)
 		**	Player handle.
 		*/
 		field_player_handle[3] = '0' + (char)house;
-		stats.Add_Field (field_player_handle, (char*) player->IniName);
+		stats.Add_Field (field_player_handle, player->IniName.c_str());
 
 		/*
 		 * Player IP Address.

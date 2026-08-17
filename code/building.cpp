@@ -661,7 +661,7 @@ void BuildingClass::Debug_Dump(MonoClass * mono) const
 
 	mono->Set_Cursor(1, 11);
 	if (Factory != NULL) {
-		mono->Printf("%s %d%%", Factory->Get_Object()->Class_Of()->IniName, (100*Factory->Completion())/FactoryClass::STEP_COUNT);
+		mono->Printf("%s %d%%", Factory->Get_Object()->Class_Of()->IniName.c_str(), (100*Factory->Completion())/FactoryClass::STEP_COUNT);
 	}
 
 	BASECLASS::Debug_Dump(mono);
@@ -1856,12 +1856,12 @@ bool BuildingClass::Unlimbo(Coord const & coord, Dir256 dir)
 		return(false);
 	}
 
-	if (Class->PowersUpBuilding[0] != '\0') {
+	if (!Class->PowersUpBuilding.empty()) {
 		ObjectClass * object = Map.Cell_Object(coord.As_Cell(), Point2D(0, 0));
 		if (object != NULL && object->RTTI == RTTI_BUILDING) {
 			BuildingClass * building = (BuildingClass *)object;
 			BuildingTypeClass *btype = Class;
-			if (House == building->House && stricmp(btype->PowersUpBuilding, (char *)building->Class->IniName) == 0) {
+			if (House == building->House && stricmp(btype->PowersUpBuilding, building->Class->IniName) == 0) {
 				bool ok = false;
 				if (btype->PowersUpToLevel != -1) {
 					if (btype->PowersUpToLevel <= 0 || btype->PowersUpToLevel > BUILDING_UPGRADE_MAX) {
@@ -2518,8 +2518,8 @@ void BuildingClass::Drop_Debris(AbstractClass * source)
 				i = NULL;
 				const InfantryTypeClass * typ = Crew_Type();
 				if (typ != NULL) i = new InfantryClass(typ, House);
-				DebugString("Creating survivor type '%s' from building type '%s'\n", (char *)i->Class->GivenName, (char *)Class->GivenName);
 				if (i != NULL) {
+					DebugString("Creating survivor type '%s' from building type '%s'\n", i->Class->GivenName.c_str(), Class->GivenName.c_str());
 					if (HasBuildupData && i->Class->IsNominal) i->IsTechnician = true;
 					ScenarioInit++;
 					Coord newcoord = Coord(newcell) + Coord(0, 36, 0);
@@ -3103,7 +3103,7 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 
 				if (node != NULL && node->CellID != Cell(0, 0)) {
 
-					if (buildingtype->PowersUpBuilding[0] != '\0' || House->Can_Build_Here(buildingtype, node->CellID)) {
+					if (!buildingtype->PowersUpBuilding.empty() || House->Can_Build_Here(buildingtype, node->CellID)) {
 						placementcoord = Coord(node->CellID);
 					} else {
 
@@ -3119,7 +3119,7 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 
 				} else {
 
-					if (buildingtype->PowersUpBuilding[0] == '\0') {
+					if (buildingtype->PowersUpBuilding.empty()) {
 						placementcoord = Coord(House->Where_To_Place_Building(buildingtype, HouseClass::Base_Cell_Weight_By_Distance, -1));
 					} else {
 						cell = House->Where_To_Place_Upgrade(buildingtype);
@@ -3197,7 +3197,7 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 
 				} else {
 
-					if (buildingtype->PowersUpBuilding[0] != '\0') {
+					if (!buildingtype->PowersUpBuilding.empty()) {
 						if (House->Base.Next_Buildable(STRUCT_NONE) == node) {
 							House->Base.Nodes.Delete_Index(House->Base.Next_Buildable_Index(STRUCT_NONE));
 						}

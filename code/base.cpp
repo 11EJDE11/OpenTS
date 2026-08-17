@@ -229,7 +229,7 @@ BuildingClass * BaseClass::Get_Building(int index) const
 					return(bldg);
 				}
 
-				if (btype->PowersUpBuilding[0] != '\0') {
+				if (!btype->PowersUpBuilding.empty()) {
 
 					int upgrades = 0;
 					for (i = 0; i < ARRAY_SIZE(bldg->Upgrades); i++) {

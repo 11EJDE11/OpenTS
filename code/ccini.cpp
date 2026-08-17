@@ -924,7 +924,7 @@ SuperWeaponType CCINIClass::Get_SuperWeaponType(char const * section, char const
 	char buffer[32];
 	char emptystr[28];
 
-	char * defname;
+	char const * defname;
 	if (defvalue != SUPER_NONE) {
 		defname = SuperWeaponTypes[defvalue]->IniName;
 	}

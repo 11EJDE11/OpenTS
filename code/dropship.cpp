@@ -1129,7 +1129,7 @@ void Draw_Unit_Info(Surface *surface, ConvertClass *drawer, TechnoTypeClass *tec
 		char armament[40];
 		char armor[32];
 
-		sprintf(name, "Name: %s", (char *)techtype->GivenName);
+		sprintf(name, "Name: %s", techtype->GivenName.c_str());
 
 		if (allowed) {
 			sprintf(cost, "Cost: %d", techtype->Raw_Cost());
@@ -1138,7 +1138,7 @@ void Draw_Unit_Info(Surface *surface, ConvertClass *drawer, TechnoTypeClass *tec
 		}
 
 		if (techtype->Get_Weapon(0)->Weapon != NULL) {
-			sprintf(armament, "Armament: %s", (char *)techtype->Get_Weapon(0)->Weapon->GivenName);
+			sprintf(armament, "Armament: %s", techtype->Get_Weapon(0)->Weapon->GivenName.c_str());
 		} else {
 			sprintf(armament, "Armament: NONE");
 		}

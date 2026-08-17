@@ -3958,7 +3958,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 						if (DoList[j].Type==EventClass::EXIT) {
 							DebugString("Exit Event: ID:%d (%s),  Event Frame:%d,  My Frame:%d\n",
 								DoList[j].ID,
-								(char *)Houses[(HousesType)(DoList[j].ID)]->IniName,
+								Houses[(HousesType)(DoList[j].ID)]->IniName.c_str(),
 								DoList[j].Frame,
 								Frame);
 						}

@@ -272,7 +272,7 @@ void AnimTypeClass::Load_Image(TheaterType theater)
 			Fetch_Normal_Image();
 		} else {
 			char fullname[_MAX_FNAME+_MAX_EXT];
-			_makepath(fullname, NULL, NULL, GraphicName[0] != '\0' ? Graphic_Name() : Name(), ".SHP");
+			_makepath(fullname, NULL, NULL, !GraphicName.empty() ? Graphic_Name() : Name(), ".SHP");
 			Theater_Naming_Convention(fullname, theater);
 			ImageData = MFCD::Retrieve(fullname);
 		}
@@ -359,7 +359,7 @@ AnimType AnimTypeClass::From_Name(char const * name)
 bool AnimTypeClass::Read_INI(CCINIClass const & ini)
 {
 	if (BASECLASS::Read_INI(ini)) {
-		if (GraphicName[0] != '\0') {
+		if (!GraphicName.empty()) {
 			if (ImageData == NULL) {
 				IsTheater = ArtINI.Get_Bool(Name(), "Theater", IsTheater);
 				IsNewTheater = ArtINI.Get_Bool(Name(), "NewTheater", IsNewTheater);
@@ -653,7 +653,7 @@ void const * AnimTypeClass::Get_Image_Data(void) const
 		DebugString("Demand loading image for %s\n", Full_Name());
 
 		char fullname[_MAX_FNAME + _MAX_EXT];
-		_makepath(fullname, NULL, NULL, GraphicName[0] != '\0' ? Graphic_Name() : Name(), ".SHP");
+		_makepath(fullname, NULL, NULL, !GraphicName.empty() ? Graphic_Name() : Name(), ".SHP");
 
 		if (IsTheater) {
 			_makepath(fullname, NULL, NULL, Name(), Theaters[Scen->Theater].Suffix);

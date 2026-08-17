@@ -779,7 +779,7 @@ bool Create_Special_Reinforcement(HouseClass * house, TechnoTypeClass const * ty
 			/*
 			**	Fill in the team characteristics.
 			*/
-			strcpy((char *)&team->IniName[0], "TEMP");
+			team->IniName = "TEMP";
 			team->IsReinforcable = false;
 			team->IsTransient = true;
 			team->ClassCount = 1;

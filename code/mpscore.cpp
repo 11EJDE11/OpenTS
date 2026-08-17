@@ -378,7 +378,8 @@ void MultiScore::Tally_Score(void)
 		**	Initialize this new score entry
 		*/
 		Session.Score[score_index].Wins = 0;
-		strcpy (Session.Score[score_index].Name, hptr->IniName);
+		strncpy(Session.Score[score_index].Name, hptr->IniName, MPLAYER_NAME_MAX);
+		Session.Score[score_index].Name[MPLAYER_NAME_MAX - 1] = '\0';
 
 		/*
 		**	Init this player's Kills to 0 (-1 means he didn't play this round;

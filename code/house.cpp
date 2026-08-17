@@ -598,7 +598,7 @@ IApplication * STDMETHODCALLTYPE HouseClass::Get_Application(void)
 BSTR STDMETHODCALLTYPE HouseClass::Name(void)
 {
 	WCHAR psz[32];
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char *)Class->GivenName, -1, psz, ARRAY_SIZE(psz));
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, Class->GivenName, -1, psz, ARRAY_SIZE(psz));
 	return(SysAllocString(psz));
 }
 
@@ -1261,7 +1261,7 @@ int HouseClass::Can_Build(ObjectTypeClass const * type, bool forced, bool includ
 
 				default: {
 					BuildingTypeClass * btype = BuildingTypes[pre[i]];
-					if (btype->PowersUpBuilding[0] != '\0') {
+					if (!btype->PowersUpBuilding.empty()) {
 						BuildingClass * bptr;
 						bool found = false;
 						for (int j = Buildings.Count() - 1; j >= 0; j--) {
@@ -4779,7 +4779,7 @@ int HouseClass::AI_Building(void)
 	 * If this is a building upgrade, check that it can actually be placed where it is
 	 * scheduled to go.
 	 */
-	if (b->PowersUpToLevel <= 0 && b->PowersUpToLevel == -1 && node->CellID != CELL_NONE && b->PowersUpBuilding[0]) {
+	if (b->PowersUpToLevel <= 0 && b->PowersUpToLevel == -1 && node->CellID != CELL_NONE && !b->PowersUpBuilding.empty()) {
 
 		BuildingClass * existing_building = Map[node->CellID].Cell_Building();
 		BuildingTypeClass * powerup = BuildingTypes[BuildingTypeClass::From_Name(b->PowersUpBuilding)];

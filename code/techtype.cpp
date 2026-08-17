@@ -589,10 +589,6 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 		TargetDistanceCoefficient = ini.Get_Float(Name(), "TargetDistanceCoefficient", TargetDistanceCoefficient == 0 ? Rule->TargetDistanceCoefficientDefault : TargetDistanceCoefficient);
 		SpecialThreatValue = ini.Get_Float(Name(), "SpecialThreatValue", SpecialThreatValue);
 
-//Mono_Printf("before image=: %s\n",GraphicName);
-		//ini.Get_String(Name(), "Image", GraphicName, GraphicName, sizeof(GraphicName));
-//Mono_Printf("after image=: %s\n",GraphicName);if (Random_Pick(0,4)) Keyboard->Get();
-
 		IsLeader = false;
 		if (Weapons[0].Weapon != NULL && Weapons[0].Weapon->Attack > 0) {
 			IsLeader = true;
@@ -610,10 +606,9 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 		IsVisibleLoad = ArtINI.Get_Bool(Graphic_Name(), "VisibleLoad", IsVisibleLoad);
 		ShadowIndex = ArtINI.Get_Int(Graphic_Name(), "ShadowIndex", ShadowIndex);
 
-		char cameo[32];
-		ArtINI.Get_String(Graphic_Name(), "Cameo", "", cameo, GraphicName.Size());
-		if (strlen(cameo)) {
-			strcpy(CameoFilename, cameo);
+		TStringID<24> cameo;
+		if (ArtINI.Get_String(Graphic_Name(), "Cameo", "", cameo) > 0) {
+			CameoFilename = cameo;
 			_makepath(filename, NULL, NULL, CameoFilename, ".SHP");
 			CameoData = (ShapeSet const *)MFCD::Retrieve(filename);
 		}

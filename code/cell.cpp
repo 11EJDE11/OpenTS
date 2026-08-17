@@ -1950,7 +1950,7 @@ bool CellClass::Draw_Placement_Cursor(Point2D const & xpoint, Rect const & clipr
 					ok = false;
 				}
 
-			} else if (ptype->PowersUpBuilding[0] != '\0') {
+			} else if (!ptype->PowersUpBuilding.empty()) {
 
 				/*
 				 * This object is an upgrade. It may be placed only onto an existing

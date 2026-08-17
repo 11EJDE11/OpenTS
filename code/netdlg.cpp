@@ -251,9 +251,9 @@ void Destroy_Connection(int id, int error)
 	//------------------------------------------------------------------------
 	txt[0] = '\0';
 	if (error==1) {
-		sprintf(txt,Fetch_String(TXT_CONNECTION_LOST), (char *)housep->IniName);
+		sprintf(txt,Fetch_String(TXT_CONNECTION_LOST), housep->IniName.c_str());
 	} else if (error==0) {
-		sprintf(txt,Fetch_String(TXT_LEFT_GAME), (char *)housep->IniName);
+		sprintf(txt,Fetch_String(TXT_LEFT_GAME), housep->IniName.c_str());
 	}
 
 	if (strlen(txt)) {
@@ -265,14 +265,14 @@ void Destroy_Connection(int id, int error)
 	// Remove this player from the Players vector
 	//------------------------------------------------------------------------
 	for (i = 0; i < Session.Players.Count(); i++) {
-		if (!_stricmp(Session.Players[i]->Name,(char *)housep->IniName)) {
+		if (!_stricmp(Session.Players[i]->Name, housep->IniName)) {
 			delete Session.Players[i];
 			Session.Players.Delete(Session.Players[i]);
 			break;
 		}
 	}
 
-	if (Session.Type == GAME_INTERNET && ! stricmp(Session.MasterPlayerName, (char *)housep->IniName)) {
+	if (Session.Type == GAME_INTERNET && ! stricmp(Session.MasterPlayerName, housep->IniName)) {
 		Session.MasterPlayerID = -1;
 		Session.MasterPlayerName[0] = '\0';
 	}

@@ -634,16 +634,12 @@ void ObjectTypeClass::Fetch_Normal_Image(void)
 /// <returns>bool; Was the object type's section found and read?</returns>
 bool ObjectTypeClass::Read_INI(CCINIClass const & ini)
 {
-	char namebuffer[25];
 	char path[_MAX_PATH];
 
 	if (BASECLASS::Read_INI(ini)) {
 
-		strcpy(namebuffer, GraphicName);
-		ini.Get_String(IniName, "Image", namebuffer, GraphicName, sizeof(namebuffer));
-
-		strcpy(namebuffer, AlphaGraphicName);
-		ini.Get_String(IniName, "AlphaImage", namebuffer, AlphaGraphicName, sizeof(namebuffer));
+		ini.Get_String(IniName, "Image", GraphicName);
+		ini.Get_String(IniName, "AlphaImage", AlphaGraphicName);
 
 		CrushSound = ini.Get_VocType(IniName, "CrushSound", CrushSound);
 
@@ -672,7 +668,7 @@ bool ObjectTypeClass::Read_INI(CCINIClass const & ini)
 			Fetch_Normal_Image();
 		}
 
-		if (AlphaGraphicName[0] != '\0') {
+		if (!AlphaGraphicName.empty()) {
 			_makepath(path, NULL, NULL, AlphaGraphicName, ".SHP");
 			AlphaImageData = MixFileClass::Retrieve(path);
 		}
@@ -789,7 +785,7 @@ void ObjectTypeClass::Post_Load(void)
 	delete AuxVoxel2.MotLib;
 	AuxVoxel2.MotLib = NULL;
 
-	if (*AlphaGraphicName != NULL) {
+	if (!AlphaGraphicName.empty()) {
 		char filename[_MAX_FNAME + _MAX_EXT];
 		_makepath(filename, NULL, NULL, AlphaGraphicName, ".SHP");
 		AlphaImageData = MFCD::Retrieve(filename);

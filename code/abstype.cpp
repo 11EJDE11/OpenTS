@@ -89,12 +89,9 @@ AbstractTypeClass::~AbstractTypeClass(void)
  *=============================================================================================*/
 bool AbstractTypeClass::Read_INI(CCINIClass const & ini)
 {
-	char buffer[64];
-
 	if (ini.Section_Present(IniName)) {
 
-		ini.Get_String(IniName, "Name", GivenName, buffer, GivenName.Size());
-		GivenName = TStringID<48>(buffer);
+		ini.Get_String(IniName, "Name", GivenName);
 		return(true);
 	}
 	return(false);

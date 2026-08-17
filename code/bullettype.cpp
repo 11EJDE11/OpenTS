@@ -182,7 +182,7 @@ bool BulletTypeClass::Read_INI(CCINIClass const & ini)
 		IsSplits = ini.Get_Bool(Name(), "Splits", IsAirburst);
 		RetargetAccuracy = ini.Get_Float(Name(), "RetargetAccuracy", RetargetAccuracy);
 
-		if (ini.Get_String(Name(), "Image", "", GraphicName, GraphicName.Size()) > 0) {
+		if (ini.Get_String(Name(), "Image", "", GraphicName) > 0) {
 			Trailer = TGet_Class(ArtINI, Graphic_Name(), "Trailer", Trailer);
 			IsFaceless = !ArtINI.Get_Bool(Graphic_Name(), "Rotates", !IsFaceless);
 		}

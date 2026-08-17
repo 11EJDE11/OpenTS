@@ -350,8 +350,8 @@ BuildingTypeClass::BuildingTypeClass(char const * ininame) :
 		AnimData[i].PoweredLight = false;
 	}
 
-	BuildupFilename[0] = '\0';
-	PowersUpBuilding[0] = '\0';
+	BuildupFilename.clear();
+	PowersUpBuilding.clear();
 	TheaterImageFile[0] = '\0';
 	VoxelBarrelFile[0] = '\0';
 	IsTrainable = false;
@@ -953,7 +953,7 @@ void BuildingTypeClass::Fetch_Building_Normal_Image(TheaterType theater)
 	char buffer[64];
 
 	if (!IsDemandLoadBuildup) {
-		if (strlen(BuildupFilename) != 0) {
+		if (!BuildupFilename.empty()) {
 
 			/*
 			**	Fetch the construction animation for this building.
@@ -1215,10 +1215,7 @@ bool BuildingTypeClass::Read_INI(CCINIClass const & ini)
 			IsRadarVisible = false;
 		}
 
-		ini.Get_String(Name(), "PowersUpBuilding", "", buffer, PowersUpBuilding.Size());
-		if (strlen(buffer) != 0) {
-			strcpy(PowersUpBuilding, buffer);
-		}
+		ini.Get_String(Name(), "PowersUpBuilding", PowersUpBuilding);
 		PowersUpToLevel = ini.Get_Int(Name(), "PowersUpToLevel", PowersUpToLevel);
 
 		IsBridgeRepairHut = ini.Get_Bool(Name(), "BridgeRepairHut", IsBridgeRepairHut);
@@ -1277,10 +1274,7 @@ bool BuildingTypeClass::Read_INI(CCINIClass const & ini)
 		/*
 		 * Graphics.
 		 */
-		ArtINI.Get_String(Graphic_Name(), "Buildup", "", buffer, BuildupFilename.Size());
-		if (strlen(buffer) != 0) {
-			strcpy(BuildupFilename, buffer);
-		}
+		ArtINI.Get_String(Graphic_Name(), "Buildup", BuildupFilename);
 
 		BuildingTypeClass::Fetch_Building_Normal_Image(Scen->Theater);
 
@@ -2022,7 +2016,7 @@ void const * BuildingTypeClass::Get_Buildup_Data(void) const
 	char fullname[MAX_PATH];
 
 	if (BuildupData == NULL && IsDemandLoadBuildup) {
-		if (strlen(BuildupFilename) != 0) {
+		if (!BuildupFilename.empty()) {
 			_makepath(fullname, NULL, NULL, BuildupFilename, ".SHP");
 			Theater_Naming_Convention(fullname, Scen->Theater);
 			CCFileClass file(fullname);

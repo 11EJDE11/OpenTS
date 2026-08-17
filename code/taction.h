@@ -34,7 +34,6 @@
 
 #include "abstract.h"
 #include "rect.h"
-#include "stringid.h"
 #include "types.h"
 
 #include "anim.hh"
