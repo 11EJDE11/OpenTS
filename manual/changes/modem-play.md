@@ -2,6 +2,10 @@
 title: Remove modem and null-modem play
 category: feature
 release: 0.1.0
+breaking: true
+migration:
+- Play over a network, the Internet, or in skirmish instead. A modem or null-modem game can no longer be started.
+- Delete the `[SerialDefaults]`, `[InitStrings]` and `[PhoneBook]` sections and `[MultiPlayer] PhoneIndex` from `sun.ini`, or leave them to be ignored.
 targets:
 - type: command
   id: fixed:cancel-modem-operation

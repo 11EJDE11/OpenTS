@@ -2,6 +2,9 @@
 title: Report a crash with a minidump and a readable report
 category: feature
 release: 0.1.0
+breaking: true
+migration:
+- Remove `-XE` from any shortcut. A debugger attached to the process already takes a crash before this handler does.
 targets:
 - type: command
   id: launch:no-exception-trap

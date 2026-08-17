@@ -2,6 +2,10 @@
 title: Present the game through bgfx instead of DirectDraw
 category: feature
 release: 0.1.0
+breaking: true
+migration:
+- Remove `-16` from any shortcut. The option is gone.
+- Delete `AllowHiResModes`, `AllowModeToggle` and `VideoBackBuffer` from `sun.ini`, or leave them to be ignored. Size the window with `Fullscreen`, `WindowWidth` and `WindowHeight` instead.
 targets:
 - type: key
   id: Fullscreen

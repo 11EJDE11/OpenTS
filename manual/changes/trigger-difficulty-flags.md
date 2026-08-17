@@ -2,6 +2,9 @@
 title: Honor a trigger's difficulty flags
 category: fix
 release: 0.1.0
+breaking: true
+migration:
+- Check maps whose triggers carry `0` in one of their three difficulty fields. Such a trigger is now genuinely disabled at that difficulty; set the field to `1` to keep it taking part.
 targets:
 - type: action
   id: TACTION_ENABLE_TRIGGER

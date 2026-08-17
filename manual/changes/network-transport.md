@@ -2,6 +2,11 @@
 title: Play network games over UDP instead of IPX
 category: feature
 release: 0.1.0
+breaking: true
+migration:
+- Remove `-SOCKET` and `-DESTNET` from any shortcut. Both options are gone, and `-DESTNET` has no counterpart because it addressed a bridge only IPX had.
+- Delete `Socket`, `NetCard` and `DestNet` from the `[Network]` section of `sun.ini`, or leave them to be ignored.
+- Check that every player can reach the others on one of the networks their machine is attached to. All players use UDP port 1234, and a router between two of them normally stops the broadcast that finds a game.
 targets:
 - type: key
   id: Socket

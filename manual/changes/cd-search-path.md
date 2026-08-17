@@ -2,6 +2,10 @@
 title: Remove CD-ROM-dependent startup behavior
 category: feature
 release: 0.1.0
+breaking: true
+migration:
+- Check any shortcut carrying `-CD<path>`. It now adds a local data search path rather than selecting a disc.
+- Remove `CD=` from map packet entries and from a loose map's `[Multiplay]` section. A map no longer names the discs it may be played from.
 targets:
 - type: command
   id: launch:cd-path
