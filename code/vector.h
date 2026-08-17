@@ -115,12 +115,6 @@ class VectorClass
 		**	This is the maximum number of elements allowed in this vector.
 		*/
 		int VectorMax;
-
-		/*
-		**	Does the vector data pointer refer to memory that this class has manually
-		**	allocated? If so, then this class is responsible for deleting it.
-		*/
-		bool IsAllocated;
 };
 
 
@@ -142,8 +136,7 @@ class VectorClass
 template<class T>
 VectorClass<T>::VectorClass(int size) :
 	Vector(nullptr),
-	VectorMax(size),
-	IsAllocated(false)
+	VectorMax(size)
 {
 	/*
 	**	Allocate the vector. The default constructor will be called for every
@@ -151,7 +144,6 @@ VectorClass<T>::VectorClass(int size) :
 	*/
 	if (size > 0) {
 		Vector = new T[size];
-		IsAllocated = true;
 	} else {
 		VectorMax = 0;
 	}
@@ -198,8 +190,7 @@ VectorClass<T>::~VectorClass(void)
 template<class T>
 VectorClass<T>::VectorClass(VectorClass<T> const & vector) :
 	Vector(nullptr),
-	VectorMax(0),
-	IsAllocated(false)
+	VectorMax(0)
 {
 	*this = vector;
 }
@@ -212,12 +203,10 @@ VectorClass<T>::VectorClass(VectorClass<T> const & vector) :
 template<class T>
 VectorClass<T>::VectorClass(VectorClass<T> && vector) noexcept :
 	Vector(vector.Vector),
-	VectorMax(vector.VectorMax),
-	IsAllocated(vector.IsAllocated)
+	VectorMax(vector.VectorMax)
 {
 	vector.Vector = nullptr;
 	vector.VectorMax = 0;
-	vector.IsAllocated = false;
 }
 
 
@@ -255,7 +244,6 @@ VectorClass<T> & VectorClass<T>::operator =(VectorClass<T> const & vector)
 		Clear();
 		Vector = newptr;
 		VectorMax = newmax;
-		IsAllocated = (newptr != nullptr);
 	}
 	return(*this);
 }
@@ -273,10 +261,8 @@ VectorClass<T> & VectorClass<T>::operator =(VectorClass<T> && vector) noexcept
 		Clear();
 		Vector = vector.Vector;
 		VectorMax = vector.VectorMax;
-		IsAllocated = vector.IsAllocated;
 		vector.Vector = nullptr;
 		vector.VectorMax = 0;
-		vector.IsAllocated = false;
 	}
 	return(*this);
 }
@@ -353,11 +339,10 @@ int VectorClass<T>::ID(T const & object) const
 template<class T>
 void VectorClass<T>::Clear(void)
 {
-	if (Vector && IsAllocated) {
+	if (Vector != nullptr) {
 		delete[] Vector;
 	}
 	Vector = nullptr;
-	IsAllocated = false;
 	VectorMax = 0;
 }
 
@@ -407,9 +392,7 @@ bool VectorClass<T>::Resize(int newsize)
 			**	assignment operator very important. The default assignment operator will
 			**	only work for the simplest of objects.
 			*/
-			if (IsAllocated) {
-				delete[] Vector;
-			}
+			delete[] Vector;
 		}
 
 		/*
@@ -417,7 +400,6 @@ bool VectorClass<T>::Resize(int newsize)
 		*/
 		Vector = newptr;
 		VectorMax = newsize;
-		IsAllocated = true;
 
 	} else {
 
@@ -521,11 +503,9 @@ class DynamicVectorClass : public VectorClass<T>
 
 	protected:
 
-		// Growing is refused unless this vector owns its storage, or has none yet,
-		// and a growth step has been set.
+		// Growing is refused when the growth step is zero.
 		bool Grow(void);
 
-		using BASECLASS::IsAllocated;
 		using BASECLASS::VectorMax;
 
 		/*
@@ -606,15 +586,14 @@ DynamicVectorClass<T> & DynamicVectorClass<T>::operator =(DynamicVectorClass<T> 
 /// Makes room for one more object, expanding the vector by its growth step if needed.
 /// </summary>
 /// <returns>bool; Is there room for another object?</returns>
-/// <remarks>Growing is refused for a vector sitting on storage it does not own, or one
-/// whose growth step is zero.</remarks>
+/// <remarks>Growing is refused for a vector whose growth step is zero.</remarks>
 template<class T>
 bool DynamicVectorClass<T>::Grow(void)
 {
 	if (ActiveCount < Length()) {
 		return(true);
 	}
-	if ((IsAllocated || !VectorMax) && GrowthStep > 0) {
+	if (GrowthStep > 0) {
 		return(Resize(Length() + GrowthStep));
 	}
 	return(false);
