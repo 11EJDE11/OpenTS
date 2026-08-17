@@ -129,3 +129,10 @@
     - "-16"
     - High color
   summary: Set a high-color flag at launch. Removed when it lost its last reader; the game always renders in high color.
+- type: command
+  id: launch:no-exception-trap
+  route: /using/command-line/no-exception-trap/
+  search_aliases:
+    - "-XE"
+    - Disable exception trap
+  summary: Left a crash to the debugger instead of the engine's own handler. Removed because a debugger now takes a crash first without being asked.

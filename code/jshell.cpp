@@ -36,37 +36,32 @@
 
 #include "always.h"
 
-#include "_mono.h"
-#include "conquer.h"
-#include "mono.h"
+#include "except.h"
 
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 
-/***********************************************************************************************
- * Fatal -- General purpose fatal error handler.                                               *
- *                                                                                             *
- *    This is a very simple general purpose fatal error handler. It goes directly to text      *
- *    mode, prints the error, and then aborts with a failure code.                             *
- *                                                                                             *
- * INPUT:   message  -- The text message to display.                                           *
- *                                                                                             *
- *          ...      -- Any optional parameters that are used in formatting the message.       *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   This routine never returns. The game exits immediately.                         *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/17/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Reports an unrecoverable engine error and ends the process.
+/// </summary>
+/// <param name="message">A printf style description of what went wrong.</param>
+/// <remarks>
+/// The message is raised as an exception rather than printed, so that the crash handler
+/// reports it with the machine state that produced it. This never returns.
+/// </remarks>
 void __cdecl Fatal(char const * message, ...)
 {
-	va_list	va;
+	// Static because the report reads it from the raised exception, after this frame is gone.
+	static char _text[1024];
 
+	va_list va;
 	va_start(va, message);
-	Emergency_Exit();
-	vfprintf(stderr, message, va);
-	Mono_Printf(message);
-	exit(EXIT_FAILURE);
+	vsnprintf(_text, sizeof(_text), message, va);
+	va_end(va);
+
+	ULONG_PTR const argument = (ULONG_PTR)_text;
+	RaiseException(EXCEPTION_OPENTS_FATAL, EXCEPTION_NONCONTINUABLE, 1, &argument);
+
+	TerminateProcess(GetCurrentProcess(), EXIT_FAILURE);
 }

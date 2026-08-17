@@ -190,6 +190,7 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 
 # Required libraries:
 #  Comctl32.lib
+#  DbgHelp.lib
 #  DSound.lib
 #  Version.lib
 #  Winmm.lib
@@ -208,6 +209,7 @@ target_link_libraries(OpenTS PRIVATE
     $<TARGET_FILE:bx>
     $<TARGET_FILE:bimg>
     comctl32
+    dbghelp
     dsound
     iphlpapi
     psapi

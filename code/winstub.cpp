@@ -56,6 +56,7 @@
 #include "draw.h"
 #include "dsaudio.h"
 #include "dsurface.h"
+#include "except.h"
 #include "globals.h"
 #include "goptions.h"
 #include "init.h"
@@ -78,7 +79,6 @@
 
 #include <commctrl.h>
 
-HANDLE	MainThread;
 int		ShowCommand;
 HWND	MainWindow;
 HWND	UnusedWindow;
@@ -214,6 +214,12 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 	}
 
 	switch ( message ) {
+		// Raised on request so that crash reporting can be exercised from inside window
+		// procedure dispatch, which the operating system unwinds differently from a call.
+		case WM_EXCEPTION_TEST:
+			Exception_Wndproc_Test_Fault();
+			return(0);
+
 //		case WM_SYSKEYDOWN:
 //			Mono_Printf("wparam=%08X lparam=%08X\n", (long)wParam, (long)lParam);
 			// fall through

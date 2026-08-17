@@ -1848,6 +1848,19 @@ launch_options:
   _provenance:
     source: code/init.cpp
     guard: null
+- id: launch:exception-test
+  route_id: exception-test
+  kind: launch
+  title: Exception reporting test
+  description: Raises a chosen fault on purpose so that crash reporting can be checked without waiting
+    for a real crash. Accepts av-read, av-write, stack, purecall, terminate, invalidparam, fatal, worker,
+    sectionfault, wndproc, and timer.
+  audience: developer
+  availability: *id001
+  syntax: -EXCEPTIONTEST=<fault>
+  _provenance:
+    source: code/init.cpp
+    guard: null
 - id: launch:seed
   route_id: seed
   kind: launch
@@ -1857,17 +1870,6 @@ launch_options:
   audience: debug
   availability: *id002
   syntax: -SEED<number>
-  _provenance:
-    source: code/init.cpp
-    guard: _DEBUG
-- id: launch:no-exception-trap
-  route_id: no-exception-trap
-  kind: launch
-  title: Disable exception trap
-  description: Disables the engine exception trap.
-  audience: debug
-  availability: *id002
-  syntax: -XE
   _provenance:
     source: code/init.cpp
     guard: _DEBUG

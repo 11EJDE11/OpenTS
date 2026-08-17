@@ -12,6 +12,8 @@
 
 #include "bgfxbackend.h"
 
+#include "except.h"
+
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 
@@ -80,11 +82,8 @@ class BackendCallback : public bgfx::CallbackI
 
 		virtual void fatal(const char * filepath, uint16_t line, bgfx::Fatal::Enum code, const char * str) override
 		{
-			char message[1024];
-			snprintf(message, sizeof(message), "Renderer error %d at %s(%u):\n\n%s", (int)code, filepath != NULL ? filepath : "", (unsigned)line, str != NULL ? str : "");
-			OutputDebugString(message);
-			MessageBox(NULL, message, "Tiberian Sun", MB_OK | MB_ICONSTOP);
-			abort();
+			Fatal("Renderer error %d at %s(%u): %s", (int)code,
+						filepath != NULL ? filepath : "", (unsigned)line, str != NULL ? str : "");
 		}
 
 		virtual void traceVargs(const char * filepath, uint16_t line, const char * format, va_list argList) override

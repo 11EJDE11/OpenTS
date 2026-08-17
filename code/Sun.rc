@@ -134,22 +134,6 @@ BEGIN
                     IDC_STATIC,14,60,157,25,WS_DISABLED,WS_EX_TRANSPARENT
 END
 
-IDD_EXCEPTION DIALOG DISCARDABLE  0, 0, 252, 82
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "Tiberian Sun"
-FONT 8, "MS Sans Serif"
-BEGIN
-    CTEXT           "Tiberian Sun has encountered an internal error",
-                    IDC_STATIC,7,11,238,8,NOT WS_GROUP
-    CTEXT           "and is unable to continue normally.",
-                    IDC_EXCEPTION_TEXT1,7,19,238,8,NOT WS_GROUP
-    CTEXT           "Please visit our website at http://www.westwood.com",
-                    IDC_EXCEPTION_TEXT2,7,36,238,8,NOT WS_GROUP
-    PUSHBUTTON      "OK",IDC_EXCEPTION_OK,83,61,79,14
-    CTEXT           "for the latest updates and technical support.",
-                    IDC_STATIC,7,44,238,8,NOT WS_GROUP
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -184,13 +168,6 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 85
-    END
-
-    IDD_EXCEPTION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 180
-        TOPMARGIN, 7
     END
 END
 #endif    // APSTUDIO_INVOKED

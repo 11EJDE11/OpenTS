@@ -105,6 +105,7 @@
 #include "egos.h"
 #include "empulse.h"
 #include "enviro.h"
+#include "except.h"
 #include "expand.h"
 #include "factory.h"
 #include "fog.h"
@@ -239,8 +240,6 @@ void Version_Dialog(void);
 
 BOOL CALLBACK Rules_Choice_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK Main_Menu_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-
-bool NoExceptionHandler = false;
 
 void Init_Random(void);
 
@@ -1852,6 +1851,14 @@ bool Parse_Command_Line(int argc, char * argv[])
 			WindowedMode = true;
 			continue;
 		}
+
+		/*
+		 * Arms a deliberate fault; the mode decides where it is raised later.
+		 */
+		if (strnicmp(string, "-EXCEPTIONTEST=", strlen("-EXCEPTIONTEST=")) == 0) {
+			Exception_Set_Test_Mode(string + strlen("-EXCEPTIONTEST="));
+			continue;
+		}
 #ifdef _DEBUG
 		/*
 		**	Specify the random number seed (for debugging)
@@ -1872,13 +1879,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 				switch (toupper(code)) {
 
 #ifdef _DEBUG
-
-					/*
-					 * Disable exceptions handler.
-					 */
-					case 'E':
-						NoExceptionHandler = true;
-						break;
 
 					/*
 					**	Monochrome debug screen enable.

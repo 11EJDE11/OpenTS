@@ -31,25 +31,28 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-
 #include "win.h"
-/*
-**	Forward Declarations
-*/
-typedef struct _EXCEPTION_POINTERS EXCEPTION_POINTERS;
-typedef struct _CONTEXT CONTEXT;
 
-int Exception_Handler(int exception_code, EXCEPTION_POINTERS *e_info);
+#include <sal.h>
 
-/*
-**	Register dump variables. These are used to allow the game to restart from an arbitrary
-**	position after an exception occurs.
-*/
-extern unsigned int ExceptionReturnStack;
-extern unsigned int ExceptionReturnAddress;
-extern unsigned int ExceptionReturnFrame;
+// Posted to the main window so that a requested test fault happens inside window procedure
+// dispatch, which the operating system unwinds differently from an ordinary call.
+#define WM_EXCEPTION_TEST (WM_APP + 0x54)
 
+// Exception codes OpenTS raises itself. Routing an engine error through RaiseException rather
+// than reporting it in place is what gives the handler a genuine machine context to dump: a
+// terminate or pure call handler is entered with none.
+#define EXCEPTION_OPENTS_FATAL				0xE0545301
+#define EXCEPTION_OPENTS_TERMINATE			0xE0545302
+#define EXCEPTION_OPENTS_PURECALL			0xE0545303
+#define EXCEPTION_OPENTS_INVALID_PARAMETER	0xE0545304
 
+void Install_Exception_Handler(void);
+void Exception_Register_Log_File(char const * path);
 
-#endif	//_MSC_VER
+void Exception_Set_Test_Mode(char const * mode);
+void Exception_Run_Immediate_Test(void);
+void Exception_Run_Post_Window_Test(void);
+void Exception_Wndproc_Test_Fault(void);
+
+void __cdecl Fatal(_Printf_format_string_ char const * message, ...);

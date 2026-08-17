@@ -538,6 +538,17 @@ launch_options:
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-WIN' }
+  - id: launch:exception-test
+    title: Exception reporting test
+    syntax: -EXCEPTIONTEST=<fault>
+    description: >-
+      Raises a chosen fault on purpose so that crash reporting can be checked without waiting
+      for a real crash. Accepts av-read, av-write, stack, purecall, terminate, invalidparam,
+      fatal, worker, sectionfault, wndproc, and timer.
+    audience: developer
+    availability: *all
+    sites:
+      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-EXCEPTIONTEST=' }
   - id: launch:seed
     title: Random seed
     syntax: -SEED<number>
@@ -546,14 +557,6 @@ launch_options:
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-SEED', guard: _DEBUG }
-  - id: launch:no-exception-trap
-    title: Disable exception trap
-    syntax: -XE
-    description: Disables the engine exception trap.
-    audience: debug
-    availability: *debug
-    sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XE', guard: _DEBUG }
   - id: launch:monochrome
     title: Monochrome debug display
     syntax: -XM

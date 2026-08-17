@@ -20,9 +20,11 @@
 #define IDD_TEMPLATE                    198
 #define IDD_EXCEPTION                   247
 #define IDC_CURSOR2                     248
-#define IDC_EXCEPTION_TEXT1             1151
-#define IDC_EXCEPTION_TEXT2             1152
-#define IDC_EXCEPTION_OK                1153
+#define IDC_EXCEPTION_FOLDER            1160
+#define IDC_EXCEPTION_DETAILS           1161
+#define IDC_EXCEPTION_FULLDUMP          1162
+#define IDC_EXCEPTION_DEBUG             1163
+#define IDC_EXCEPTION_QUIT              1164
 #define IDM_MODE_640X480                40304
 #define IDM_MODE_800X600                40305
 #define IDM_MODE_1024X768               40306

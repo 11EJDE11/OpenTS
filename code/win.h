@@ -43,7 +43,6 @@
 #include <winuser.h>
 
 extern int			ShowCommand;
-extern HANDLE		MainThread;
 extern HINSTANCE	ProgramInstance;
 extern HWND			MainWindow;
 extern HWND			UnusedWindow;

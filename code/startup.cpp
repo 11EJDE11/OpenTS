@@ -382,17 +382,6 @@ void Reset_Surfaces(void)
 }
 
 /// <summary>
-/// Handles any exception that escapes the game.
-/// This routine is installed as the top level exception filter for the process, so that
-/// a crash is reported by the game's own exception handler rather than by Windows.
-/// </summary>
-/// <returns>Returns with the disposition that the exception handler decided upon.</returns>
-LONG Top_Level_Exception_Filter(EXCEPTION_POINTERS *e_info)
-{
-	return(Exception_Handler(e_info->ExceptionRecord->ExceptionCode, e_info));
-}
-
-/// <summary>
 /// Registers the game's COM classes with OLE.
 /// This routine is called during startup, before anything that lives in the object
 /// database can be created. It first ensures the support DLLs are present, asking any
@@ -561,11 +550,16 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 #endif
 
+	// First, so that everything after it is covered, including the rest of this function.
+	Install_Exception_Handler();
+
 	ProgramInstance = instance;
 
 	Debug_Init();
 
-	MainThread = (HANDLE)GetCurrentThreadId();
+	// Handed over now because the exception path may not ask the logger for anything: the
+	// thread that crashed may be the one holding the logger's lock.
+	Exception_Register_Log_File(Debug_Log_File_Name());
 
 	/*
 	 * Create a mutex with a unique name to TibSun in order to determine if
@@ -699,6 +693,8 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 
 	if (Parse_Command_Line(argc, argv)) {
 
+		Exception_Run_Immediate_Test();
+
 		RawFileClass *cfile = new RawFileClass(CONFIG_FILE_NAME);
 
 		ConfigINI.Load(*cfile, false);
@@ -751,6 +747,9 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		VideoModeHeight = Options.ScreenHeight;
 
 		Create_Main_Window(instance, command_show, Options.ScreenWidth, Options.ScreenHeight);
+
+		Exception_Run_Post_Window_Test();
+
 		Audio.Init(MainWindow, 16, 0, 22050);
 
 		if (!Video_Init(MainWindow)) {
@@ -809,42 +808,9 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		cfile->Close();
 		delete cfile;
 
-		if (NoExceptionHandler) {
+		DebugString("Main_Game\n");
 
-			Main_Game(argc, argv);
-
-		} else {
-
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-			/*
-			**	The __try/__except construct is part of the WIN32 interface. This is not the same
-			**	as C++ exception handling. There is no additional code overhead required
-			**	with this interface and the compilers exception handling options should be disabled
-			**	to prevent the compiler generating additional stack unwinding code.
-			*/
-			__try {
-#else
-			SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER) &Top_Level_Exception_Filter);
-#endif
-
-				DebugString("Main_Game\n");
-
-				Main_Game(argc, argv);
-
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-			} __except(Exception_Handler(GetExceptionCode(), GetExceptionInformation())) {};
-#else
-			/*
-			**	Set the exception filter to use on shutdown.
-			*/
-			SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER) &Top_Level_Exception_Filter);
-#endif
-
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-			SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER) &Top_Level_Exception_Filter);
-#endif
-
-		}
+		Main_Game(argc, argv);
 
 		HiddenSurface->Fill(0);
 		Update_Visible_Surface(HiddenSurface);
