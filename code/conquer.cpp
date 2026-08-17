@@ -80,7 +80,6 @@
 #include "data.h"
 #include "dbgprint.h"
 #include "dsaudio.h"
-#include "except.h"
 #include "gamedlg.h"
 #include "globals.h"
 #include "houstype.h"
@@ -340,17 +339,6 @@ void Main_Game(int argc, char * argv[])
 		}
 		return;
 	}
-
-	__asm {
-		mov ExceptionReturnStack, esp
-		mov ExceptionReturnFrame, ebp
-		lea eax, ret_addr
-		mov ExceptionReturnAddress, eax
-	}
-
-ret_addr:
-	DebugString("ExceptionReturnStack = %08X\n", ExceptionReturnStack);
-	DebugString("ExceptionReturnAddress = %08X\n", ExceptionReturnAddress);
 
 	/*
 	**	Game processing loop:
