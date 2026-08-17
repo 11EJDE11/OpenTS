@@ -106,7 +106,7 @@ ParticleTypeClass::~ParticleTypeClass(void)
 bool ParticleTypeClass::Read_INI(CCINIClass const & ini)
 {
 	if (BASECLASS::Read_INI(ini)) {
-		ColorList = ini.Get_RGBClass_List(IniName, "ColorList", TypeList<RGBClass>());
+		ColorList = ini.Get_RGBClass_List(IniName, "ColorList", {});
 
 		MaxDC = ini.Get_Int(IniName, "MaxDC", MaxDC);
 		MaxEC = ini.Get_Int(IniName, "MaxEC", MaxEC);

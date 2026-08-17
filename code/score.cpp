@@ -200,15 +200,15 @@ void ScoreClass::Presentation(void)
 	ShapeSet *curr01shape = (ShapeSet *)Load_Alloc_Data(file);
 	file.Close();
 
-	ScoreSnds.Clear();
-
-	ScoreSnds.Add(new SfxEntry("Wipe", "WIPE.AUD"));
-	ScoreSnds.Add(new SfxEntry("Emblem", "EMBLEM.AUD"));
-	ScoreSnds.Add(new SfxEntry("BestBox", "BESTBOX.AUD"));
-	ScoreSnds.Add(new SfxEntry("Efficiency", "EFFICIEN.AUD"));
-	ScoreSnds.Add(new SfxEntry("BarGraph", "BARGRAPH.AUD"));
-	ScoreSnds.Add(new SfxEntry("Type", "TYPE.AUD"));
-	ScoreSnds.Add(new SfxEntry("Back", "SCOLD8.AUD"));
+	ScoreSnds = {
+		new SfxEntry("Wipe", "WIPE.AUD"),
+		new SfxEntry("Emblem", "EMBLEM.AUD"),
+		new SfxEntry("BestBox", "BESTBOX.AUD"),
+		new SfxEntry("Efficiency", "EFFICIEN.AUD"),
+		new SfxEntry("BarGraph", "BARGRAPH.AUD"),
+		new SfxEntry("Type", "TYPE.AUD"),
+		new SfxEntry("Back", "SCOLD8.AUD")
+	};
 
 	FullFont = new ScoreFullFontClass(drawer);
 	BigFont = new ScoreBigFontClass(drawer);

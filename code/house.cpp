@@ -7421,10 +7421,7 @@ void HouseClass::Make_Base_Nodes(void)
 		refpos++;
 	}
 
-	DynamicVectorClass<BuildingTypeClass const *> finalqueue;
-	finalqueue.Add(startingqueue[0]);
-	finalqueue.Add(startingqueue[1]);
-	finalqueue.Add(startingqueue[2]);
+	DynamicVectorClass<BuildingTypeClass const *> finalqueue = {startingqueue[0], startingqueue[1], startingqueue[2]};
 
 	int defensecount = 0;
 	int buildcost = startingqueue[1]->Cost_Of(this) + startingqueue[2]->Cost_Of(this);
