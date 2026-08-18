@@ -703,7 +703,7 @@ int VoxelLibrary::Read_File(FileClass & file, int load_file_palette)
 		LayerInfos[i].ZSize = layerinfo.ZSize;
 		LayerInfos[i].NormalType = layerinfo.NormalType;
 		LayerInfos[i].Scale = layerinfo.Scale;
-		LayerInfos[i].Transform = (Matrix3DStruct &)Matrix3D(layerinfo.Transform);
+		LayerInfos[i].Transform = Matrix3D(layerinfo.Transform);
 
 		Vector3 min = Vector3(layerinfo.MinBounds[0], layerinfo.MinBounds[1], layerinfo.MinBounds[2]);
 		Vector3 max = Vector3(layerinfo.MaxBounds[0], layerinfo.MaxBounds[1], layerinfo.MaxBounds[2]);

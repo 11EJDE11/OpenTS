@@ -70,7 +70,7 @@ class VoxelLibrary
 			 * layout as the file is read. The animation supplies a matrix per layer per
 			 * frame, so nothing consults this copy.
 			 */
-			Matrix3DStruct Transform;
+			Matrix3D Transform;
 
 			/*
 			 * These are the eight corners of the layer's bounding box, expanded at load time

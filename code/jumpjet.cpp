@@ -73,7 +73,7 @@ boolean STDMETHODCALLTYPE JumpjetLocomotionClass::Is_Moving(void)
 /// </summary>
 /// <returns>Returns with the destination coordinate. Otherwise, COORD_NONE is
 /// returned.</returns>
-CoordStruct STDMETHODCALLTYPE JumpjetLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE JumpjetLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(HeadToCoord);
@@ -161,7 +161,7 @@ boolean STDMETHODCALLTYPE JumpjetLocomotionClass::Process(void)
 /// </summary>
 /// <param name="to">The coordinate to fly to, or COORD_NONE to give the unit no
 /// destination at all.</param>
-void STDMETHODCALLTYPE JumpjetLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE JumpjetLocomotionClass::Move_To(Coord to)
 {
 	if (HeadToCoord != COORD_NONE && CurrentState != GROUNDED && IsLanding) {
 		LinkedTo->Clear_Occupy_Bit(HeadToCoord);
@@ -170,8 +170,8 @@ void STDMETHODCALLTYPE JumpjetLocomotionClass::Move_To(CoordStruct to)
 
 	HeadToCoord = to;
 
-	if ((Coord)to != COORD_NONE) {
-		Cell cell = Map.Nearby_Location(((Coord&)to).As_Cell(), LinkedTo->TClass->Speed, -1, MZONE_FLYER, Map[to].IsUnderBridge);
+	if (to != COORD_NONE) {
+		Cell cell = Map.Nearby_Location(to.As_Cell(), LinkedTo->TClass->Speed, -1, MZONE_FLYER, Map[to].IsUnderBridge);
 		Coord free = Closest_Free_Spot(cell);
 		if (free != COORD_NONE) {
 			HeadToCoord = free;
@@ -224,7 +224,7 @@ void STDMETHODCALLTYPE JumpjetLocomotionClass::Stop_Moving(void)
 /// through the locomotor's own facing tracker.
 /// </summary>
 /// <param name="coord">The direction the unit should be facing.</param>
-void STDMETHODCALLTYPE JumpjetLocomotionClass::Do_Turn(DirStruct coord)
+void STDMETHODCALLTYPE JumpjetLocomotionClass::Do_Turn(DirType coord)
 {
 	LinkedTo->PrimaryFacing.Set(coord);
 }
@@ -696,7 +696,7 @@ void STDMETHODCALLTYPE JumpjetLocomotionClass::Mark_All_Occupation_Bits(int mark
 /// destination.
 /// </summary>
 /// <returns>Returns with the coordinate being flown to.</returns>
-CoordStruct STDMETHODCALLTYPE JumpjetLocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE JumpjetLocomotionClass::Head_To_Coord(void)
 {
 	if (CurrentState == GROUNDED) {
 		return(LinkedTo->PositionCoord);

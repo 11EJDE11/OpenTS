@@ -80,7 +80,7 @@ boolean STDMETHODCALLTYPE TunnelLocomotionClass::Is_Moving_Now(void)
 /// Returns the burrow destination while moving, or the current position when idle.
 /// </summary>
 /// <returns>The destination coordinate.</returns>
-CoordStruct STDMETHODCALLTYPE TunnelLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE TunnelLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(DestinationCoord);
@@ -96,7 +96,7 @@ CoordStruct STDMETHODCALLTYPE TunnelLocomotionClass::Destination(void)
 /// ignores the order altogether.
 /// </summary>
 /// <param name="to">The location to travel to.</param>
-void STDMETHODCALLTYPE TunnelLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE TunnelLocomotionClass::Move_To(Coord to)
 {
 	if (LinkedTo->StunDuration <= 0) {
 		Coord coord = to;
@@ -277,7 +277,7 @@ void TunnelLocomotionClass::Process_Turning(void)
 	if (!LinkedTo->PrimaryFacing.Is_Rotating()) {
 		DirType dir = DirType().Direction(LinkedTo->PositionCoord, DestinationCoord);
 		if (dir != LinkedTo->PrimaryFacing.Current()) {
-			Do_Turn((DirStruct &)dir);
+			Do_Turn(dir);
 		} else {
 			DigTimer = ((64.0 / LinkedTo->TClass->ROT) / Rule->TunnelSpeed);
 			State = STATE_DIGGING_IN;
@@ -457,7 +457,7 @@ void TunnelLocomotionClass::Process_Emerging(void)
 /// </summary>
 /// <param name="key">The shape cache key to fold this pose into. May be NULL.</param>
 /// <returns>Returns with the matrix to draw the unit with.</returns>
-Matrix3DStruct STDMETHODCALLTYPE TunnelLocomotionClass::Draw_Matrix(int * key)
+Matrix3D STDMETHODCALLTYPE TunnelLocomotionClass::Draw_Matrix(int * key)
 {
 	if (State == STATE_IDLE) {
 		int ramp = Map[(Coord const &)(LinkedTo->PositionCoord)].Ramp;
@@ -471,7 +471,7 @@ Matrix3DStruct STDMETHODCALLTYPE TunnelLocomotionClass::Draw_Matrix(int * key)
 		} else {
 			mtx = BASECLASS::Draw_Matrix(key);
 		}
-		return((Matrix3DStruct &)mtx);
+		return(mtx);
 	}
 	if (key != NULL) {
 		*key = -1;
@@ -519,7 +519,7 @@ Matrix3DStruct STDMETHODCALLTYPE TunnelLocomotionClass::Draw_Matrix(int * key)
 		*key |= (int(theta * 32.0) & 64-1);
 	}
 	mtx.Rotate_Y(theta);
-	return((Matrix3DStruct &)mtx);
+	return(mtx);
 }
 
 
@@ -612,7 +612,7 @@ boolean STDMETHODCALLTYPE TunnelLocomotionClass::Is_To_Have_Shadow(void)
 /// </summary>
 /// <param name="cell">Cell to test.</param>
 /// <returns>MOVE_OK or MOVE_NO.</returns>
-MoveType STDMETHODCALLTYPE TunnelLocomotionClass::Can_Enter_Cell(CellStruct cell)
+MoveType STDMETHODCALLTYPE TunnelLocomotionClass::Can_Enter_Cell(Cell cell)
 {
 	if (!Debug_Map && !Map[cell].Can_Burrow_Here()) {
 		return(MOVE_NO);
@@ -625,9 +625,9 @@ MoveType STDMETHODCALLTYPE TunnelLocomotionClass::Can_Enter_Cell(CellStruct cell
 /// Sets the unit's desired facing (used while turning to face the dig destination).
 /// </summary>
 /// <param name="coord">Desired facing.</param>
-void STDMETHODCALLTYPE TunnelLocomotionClass::Do_Turn(DirStruct coord)
+void STDMETHODCALLTYPE TunnelLocomotionClass::Do_Turn(DirType coord)
 {
-	DirType dir = (DirType &)coord;
+	DirType dir = coord;
 	LinkedTo->PrimaryFacing.Set_Desired(dir);
 }
 

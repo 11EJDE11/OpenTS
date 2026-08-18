@@ -42,22 +42,22 @@ class HoverLocomotionClass : public LocomotionClass
 
 		virtual HRESULT STDMETHODCALLTYPE Link_To_Object(void *pointer) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Head_To_Coord(void) override;
-		virtual Matrix3DStruct STDMETHODCALLTYPE Draw_Matrix(int *key) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual Coord STDMETHODCALLTYPE Head_To_Coord(void) override;
+		virtual Matrix3D STDMETHODCALLTYPE Draw_Matrix(int *key) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
-		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) override;
 		virtual boolean STDMETHODCALLTYPE Power_Off(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Powered(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Ion_Sensitive(void) override;
-		virtual boolean STDMETHODCALLTYPE Push(DirStruct dir) override;
-		virtual boolean STDMETHODCALLTYPE Shove(DirStruct dir) override;
+		virtual boolean STDMETHODCALLTYPE Push(DirType dir) override;
+		virtual boolean STDMETHODCALLTYPE Shove(DirType dir) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
-		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) override;
+		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(Coord to) override;
 
 	private:
 

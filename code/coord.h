@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "comtypes.h"
 #include "point.h"
 #include "sun.h"
 
@@ -41,21 +40,12 @@ class Cell : public TPoint2D<short>
 	public:
 		Cell(void) : BASECLASS() {}
 		Cell(Coord const & cell);
-		Cell(CellStruct const & coord) { X = coord.X; Y = coord.Y; }
 		Cell(int x, int y) : BASECLASS(x, y) {}
 		explicit Cell(TPoint2D<int> const & pt) : BASECLASS(pt.X, pt.Y) {}
 		Cell(BASECLASS const & pt) : BASECLASS(pt) {};
 		explicit Cell(int cellnum) : BASECLASS(cellnum % 128, cellnum / 128) {}
 
 		Coord As_Coord(int z = 0) const;
-
-		operator CellStruct(void) const
-		{
-			CellStruct cs;
-			cs.X = X;
-			cs.Y = Y;
-			return(cs);
-		}
 
 		int As_Int(void) const { return((Y - (MAP_CELL_W * (X + Y)) - X) << 6); }
 };
@@ -69,20 +59,10 @@ class Coord : public Point3D
 		Coord(void) : BASECLASS() {}
 		Coord(Point2D const & pt, LEPTON z) {X=pt.X; Y=pt.Y; Z=z;}
 		Coord(Cell const & cell, LEPTON z = 0);
-		Coord(CoordStruct const & coord) { X = coord.X; Y = coord.Y; Z = coord.Z; }
 		Coord(int x, int y, int z = 0) : BASECLASS(x, y, z) {}
 		Coord(BASECLASS const & pt) : BASECLASS(pt) {};
 
 		Cell As_Cell(void) const;
-
-		operator CoordStruct(void) const
-		{
-			CoordStruct cs;
-			cs.X = X;
-			cs.Y = Y;
-			cs.Z = Z;
-			return(cs);
-		}
 
 		int As_Int(void) { return((X / 10) + ((Y / 10) << 16)); }
 };

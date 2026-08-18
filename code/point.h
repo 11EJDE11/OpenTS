@@ -31,8 +31,6 @@
 
 #pragma once
 
-#include "comtypes.h"
-
 #include <cmath>
 
 
@@ -110,12 +108,9 @@ class Point2D : public TPoint2D<int>
 	public:
 		Point2D(void) = default;
 		constexpr Point2D(int x, int y) : TPoint2D<int>(x, y) {}
-		constexpr Point2D(Point2DStruct const & rvalue) : TPoint2D<int>(rvalue.X, rvalue.Y) {}
 		constexpr Point2D(TPoint2D<int> const & rvalue) : TPoint2D<int>(rvalue) {}
 
-		operator Point2DStruct (void) const {Point2DStruct pt;pt.X = X;pt.Y = Y;return(pt);}
-
-		constexpr Point2D & operator += (Point2D const & rvalue) {X += rvalue.X;Y += rvalue.Y;return(*this);}
+		constexpr Point2D & operator +=(Point2D const & rvalue) {X += rvalue.X;Y += rvalue.Y;return(*this);}
 		constexpr Point2D & operator -= (Point2D const & rvalue) {X -= rvalue.X;Y -= rvalue.Y;return(*this);}
 		[[nodiscard]] constexpr Point2D const operator - (Point2D const & rvalue) const {return(Point2D(int(X - rvalue.X), int(Y - rvalue.Y)));}
 		[[nodiscard]] constexpr Point2D const operator + (Point2D const & rvalue) const {return(Point2D(int(X + rvalue.X), int(Y + rvalue.Y)));}

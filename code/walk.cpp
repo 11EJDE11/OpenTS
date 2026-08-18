@@ -90,7 +90,7 @@ boolean STDMETHODCALLTYPE WalkLocomotionClass::Is_Moving_Now(void)
 /// </summary>
 /// <returns>Returns with the coordinate being traveled to, or COORD_NONE if the infantry has
 /// nowhere it needs to be.</returns>
-CoordStruct STDMETHODCALLTYPE WalkLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE WalkLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(DestinationCoord);
@@ -104,7 +104,7 @@ CoordStruct STDMETHODCALLTYPE WalkLocomotionClass::Destination(void)
 /// </summary>
 /// <returns>Returns with the immediate destination, or the current position if the infantry
 /// is not part way between spots.</returns>
-CoordStruct STDMETHODCALLTYPE WalkLocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE WalkLocomotionClass::Head_To_Coord(void)
 {
 	if (HeadToCoord != COORD_NONE) {
 		return(HeadToCoord);
@@ -135,11 +135,11 @@ boolean STDMETHODCALLTYPE WalkLocomotionClass::Process(void)
 /// than beneath it.
 /// </summary>
 /// <param name="to">The coordinate to travel to, or COORD_NONE to clear the destination.</param>
-void STDMETHODCALLTYPE WalkLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE WalkLocomotionClass::Move_To(Coord to)
 {
 	if (LinkedTo->StunDuration <= 0) {
 		DestinationCoord = to;
-		if ((Coord &)to != COORD_NONE) {
+		if (to != COORD_NONE) {
 			if (Map[to].IsUnderBridge) {
 				DestinationCoord.Z += TacticalMap->Pixel_To_Z_Lepton(4 * ISO_TILE_PIXEL_H / 2);
 			}
@@ -172,7 +172,7 @@ void STDMETHODCALLTYPE WalkLocomotionClass::Stop_Moving(void)
 /// Infantry snap around instantly, so there is no rotation to play out over time.
 /// </summary>
 /// <param name="dir">The direction the infantry should face.</param>
-void STDMETHODCALLTYPE WalkLocomotionClass::Do_Turn(DirStruct dir)
+void STDMETHODCALLTYPE WalkLocomotionClass::Do_Turn(DirType dir)
 {
 	LinkedTo->PrimaryFacing.Set(dir);
 }
@@ -184,7 +184,7 @@ void STDMETHODCALLTYPE WalkLocomotionClass::Do_Turn(DirStruct dir)
 /// redirected without waiting for the current step to finish.
 /// </summary>
 /// <param name="coord">The coordinate to step to, or COORD_NONE to abandon the step.</param>
-void STDMETHODCALLTYPE WalkLocomotionClass::Force_Immediate_Destination(CoordStruct coord)
+void STDMETHODCALLTYPE WalkLocomotionClass::Force_Immediate_Destination(Coord coord)
 {
 	HeadToCoord = coord;
 	if (HeadToCoord == COORD_NONE && DestinationCoord == COORD_NONE) {
@@ -429,7 +429,7 @@ void WalkLocomotionClass::Movement_AI(bool first_pass)
 			if (Mark_Head_To(coord)) {
 				IsReallyMoving = true;
 				if (LinkedTo->IsActive) {
-					DirStruct face = (DirStruct &)::Direction(LinkedTo->Center_Coord(), HeadToCoord);
+					DirType face = ::Direction(LinkedTo->Center_Coord(), HeadToCoord);
 					Do_Turn(face);
 					LinkedTo->Set_Speed(1.0);
 					LinkedTo->IsNewNavCom = false;
@@ -510,7 +510,7 @@ void WalkLocomotionClass::Movement_AI(bool first_pass)
 		int speed = LinkedTo->Current_Speed();
 		LinkedTo->IsToPathAroundBlockage = false;
 
-		DirStruct face = (DirStruct &)::Direction(LinkedTo->Center_Coord(), HeadToCoord);
+		DirType face = ::Direction(LinkedTo->Center_Coord(), HeadToCoord);
 		Do_Turn(face);
 
 		Cell old_cell = LinkedTo->Get_Cell();
@@ -799,7 +799,7 @@ void STDMETHODCALLTYPE WalkLocomotionClass::Mark_All_Occupation_Bits(int mark)
 /// </summary>
 /// <param name="to">The coordinate to test the immediate destination against.</param>
 /// <returns>bool; Is the infantry walking to that spot?</returns>
-boolean STDMETHODCALLTYPE WalkLocomotionClass::Is_Moving_Here(CoordStruct to)
+boolean STDMETHODCALLTYPE WalkLocomotionClass::Is_Moving_Here(Coord to)
 {
 	Coord headto = Head_To_Coord();
 	if (headto.As_Cell() == Coord(to).As_Cell() && abs(headto.Z - to.Z) <= LEVEL_LEPTON_H) {

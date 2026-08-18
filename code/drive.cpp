@@ -393,7 +393,7 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Now(void)
 /// </summary>
 /// <returns>Returns with the destination coordinate, or COORD_NONE if the unit has
 /// nowhere it must be.</returns>
-CoordStruct STDMETHODCALLTYPE DriveLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE DriveLocomotionClass::Destination(void)
 {
 	return(DestinationCoord);
 }
@@ -404,7 +404,7 @@ CoordStruct STDMETHODCALLTYPE DriveLocomotionClass::Destination(void)
 /// </summary>
 /// <returns>Returns with the coordinate being driven toward. A unit that is not under
 /// way returns its current position instead.</returns>
-CoordStruct STDMETHODCALLTYPE DriveLocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE DriveLocomotionClass::Head_To_Coord(void)
 {
 	if (HeadToCoord != COORD_NONE) {
 		return(HeadToCoord);
@@ -419,7 +419,7 @@ CoordStruct STDMETHODCALLTYPE DriveLocomotionClass::Head_To_Coord(void)
 /// raised to the deck, since that is where the vehicle will actually end up driving.
 /// </summary>
 /// <param name="to">The location to drive to.</param>
-void STDMETHODCALLTYPE DriveLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE DriveLocomotionClass::Move_To(Coord to)
 {
 	if (LinkedTo->StunDuration <= 0) {
 		DestinationCoord = to;
@@ -488,9 +488,9 @@ BOOL DriveLocomotionClass::Is_Angled(void) const
 /// </summary>
 /// <param name="key">Pointer to the voxel cache key to be updated. May be NULL.</param>
 /// <returns>Returns with the matrix the unit is to be rendered through.</returns>
-Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
+Matrix3D STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
 {
-	Matrix3DStruct m;
+	Matrix3D m;
 
 	if (!Is_Angled()) {
 		Matrix3D m1, m2;
@@ -531,7 +531,7 @@ Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
 
 		Matrix3D basemtx(BASECLASS::Draw_Matrix(key));
 		Matrix3D slopemtx = Get_Slope_Matrix();
-		m = (Matrix3DStruct &)(((m1 * slopemtx) * basemtx) * m2);
+		m = (((m1 * slopemtx) * basemtx) * m2);
 		return(m);
 	}
 
@@ -543,7 +543,7 @@ Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
 
 	Matrix3D basemtx(BASECLASS::Draw_Matrix(key));
 	Matrix3D slopemtx = Get_Slope_Matrix();
-	m = (Matrix3DStruct &)(slopemtx * basemtx);
+	m = (slopemtx * basemtx);
 	return(m);
 }
 
@@ -770,7 +770,7 @@ void DriveLocomotionClass::Mark_Track(Coord const & headto, MarkType type)
  * HISTORY:                                                                                    *
  *   03/17/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void STDMETHODCALLTYPE DriveLocomotionClass::Force_Track(int track, CoordStruct coord)
+void STDMETHODCALLTYPE DriveLocomotionClass::Force_Track(int track, Coord coord)
 {
 	assert(LinkedTo->IsActive);
 
@@ -875,11 +875,11 @@ bool DriveLocomotionClass::Start_Driver(Coord const & headto)
  * HISTORY:                                                                                    *
  *   05/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void DriveLocomotionClass::Do_Turn(DirStruct coord)
+void DriveLocomotionClass::Do_Turn(DirType coord)
 {
 	assert(LinkedTo->IsActive);
 
-	DirType dir = (DirType &)coord;
+	DirType dir = coord;
 
 	//if (dir != PrimaryFacing) {
 
@@ -1626,7 +1626,7 @@ bool DriveLocomotionClass::Start_Of_Move(bool & stop_processing, bool retry, boo
 		/*
 		**	Request a change of facing.
 		*/
-		Do_Turn((DirStruct &)DirType(facing));
+		Do_Turn(DirType(facing));
 		return(true);
 
 	} else {
@@ -2208,7 +2208,7 @@ void STDMETHODCALLTYPE DriveLocomotionClass::Mark_All_Occupation_Bits(int mark)
 /// </summary>
 /// <param name="to">The location to test against.</param>
 /// <returns>bool; Is the unit moving there?</returns>
-boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(CoordStruct to)
+boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(Coord to)
 {
 	Coord coord = Head_To_Coord();
 
@@ -2230,7 +2230,7 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(CoordStruct to)
 						Point2D pt = Smooth_Turn(ptr[cellidx].Offset, dir);
 						Coord coord = Coord(pt.X, pt.Y);
 						coord.Z += LinkedTo->PositionCoord.Z;
-						if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
+						if (coord.As_Cell() == to.As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
 							return(true);
 						}
 					}
@@ -2238,7 +2238,7 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(CoordStruct to)
 			}
 		}
 
-		if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
+		if (coord.As_Cell() == to.As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
 			return(true);
 		}
 	}

@@ -34,7 +34,6 @@
 
 #include "_voxel.h"
 #include "cargo.h"
-#include "comtypes.h"
 #include "door.h"
 #include "facing.h"
 #include "flasher.h"

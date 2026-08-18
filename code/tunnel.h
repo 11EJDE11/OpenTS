@@ -35,17 +35,17 @@ class TunnelLocomotionClass : public LocomotionClass
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual VisualType STDMETHODCALLTYPE Visual_Character(boolean flag) override;
-		virtual Matrix3DStruct STDMETHODCALLTYPE Draw_Matrix(int *key) override;
+		virtual Matrix3D STDMETHODCALLTYPE Draw_Matrix(int *key) override;
 		virtual int STDMETHODCALLTYPE Z_Adjust(void) override;
 		virtual ZGradientType STDMETHODCALLTYPE Z_Gradient(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_To_Have_Shadow(void) override;
-		virtual MoveType STDMETHODCALLTYPE Can_Enter_Cell(CellStruct cell) override;
-		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override;
+		virtual MoveType STDMETHODCALLTYPE Can_Enter_Cell(Cell cell) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual FireErrorType STDMETHODCALLTYPE Can_Fire(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Surfacing(void) override;

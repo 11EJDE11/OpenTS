@@ -64,15 +64,15 @@ class FlyLocomotionClass : public LocomotionClass
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
-		virtual Matrix3DStruct STDMETHODCALLTYPE Draw_Matrix(int *key) override;
-		virtual Point2DStruct STDMETHODCALLTYPE Draw_Point(void) override;
-		virtual Point2DStruct STDMETHODCALLTYPE Shadow_Point(void) override;
-		virtual Matrix3DStruct STDMETHODCALLTYPE Shadow_Matrix(int *key) override;
-		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override;
+		virtual Matrix3D STDMETHODCALLTYPE Draw_Matrix(int *key) override;
+		virtual Point2D STDMETHODCALLTYPE Draw_Point(void) override;
+		virtual Point2D STDMETHODCALLTYPE Shadow_Point(void) override;
+		virtual Matrix3D STDMETHODCALLTYPE Shadow_Matrix(int *key) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual boolean STDMETHODCALLTYPE Power_Off(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Powered(void) override;
@@ -96,7 +96,7 @@ class FlyLocomotionClass : public LocomotionClass
 		bool Process_Take_Off(void);
 		bool Process_Landing(void);
 
-		int Nearing_Target(bool stage_approach, CoordStruct coord);
+		int Nearing_Target(bool stage_approach, Coord coord);
 
 		void Take_Off(void);
 		void Land(void);

@@ -6238,7 +6238,7 @@ int BuildingClass::Do_MISSION_UNLOAD(void)
 						} else if (clsid != CLSID_DriveLocomotion) {
 							unit->Assign_Destination(&Map[Get_Cell() + Cell(3, 1)]);
 						} else {
-							CoordStruct cs;
+							Coord cs;
 							cs.X = coord.X;
 							cs.Y = coord.Y;
 							cs.Z = 0;

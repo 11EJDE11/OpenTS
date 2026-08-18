@@ -3167,7 +3167,7 @@ int CellClass::Clear_Icon(IsometricTileType type, int seq_length) const
 	static bool _init = false;
 	static int _small_pattern[16] = { 0, 1, 2, 3, 3, 2, 1, 0, 2, 3, 0, 1, 1, 0, 3, 2 };
 	static int _large_pattern[64];
-	static Point2DStruct _adjacent_icon[8] = {
+	static Point2D _adjacent_icon[8] = {
 		{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,0}, {-1,1}, {0,1}, {1,1}
 	};
 

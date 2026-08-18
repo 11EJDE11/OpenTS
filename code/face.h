@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "comtypes.h"
 #include "coord.h"
 #include "visualc.h"
 
@@ -97,7 +96,6 @@ class DirType
 	public:
 		DirType(void) = default;
 		DirType(int dir) { Facing = dir; }
-		DirType(DirStruct dir) { Raw = dir.Raw; }
 		DirType(FacingType dir) { From_Facing(dir); }
 		DirType(Dir32 dir) { From_Dir32(dir); }
 		DirType(Dir256 dir) { From_Dir256(dir); }
@@ -271,8 +269,8 @@ class DirType
 			/*
 			 * This is the whole of the storage read as one dword, which is what the rounding
 			 * conversions read. Construction zeroes it, but a direction restored from a save
-			 * game or converted from a DirStruct can carry any value in the upper half, which
-			 * is why those conversions must always wrap.
+			 * game can carry any value in the upper half, which is why those conversions must
+			 * always wrap.
 			 */
 			int Raw = 0;
 		};

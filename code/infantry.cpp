@@ -4323,7 +4323,7 @@ int InfantryClass::Do_MISSION_GUARD(void)
 	if (!IsProne && TarCom == NULL && NavCom == NULL && !PrimaryFacing.Is_Rotating() && Class->IsDoggie && Get_Cell_Ptr()->Land_Type() == LAND_TIBERIUM) {
 		if (PrimaryFacing.Current().As_Dir8() != FACING_E) {
 			DirType dir(DIR_E);
-			Locomotion->Do_Turn((DirStruct &)dir);
+			Locomotion->Do_Turn(dir);
 		} else {
 			Do_Action(DO_LIE_DOWN);
 		}

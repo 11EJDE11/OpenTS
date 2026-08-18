@@ -32,17 +32,17 @@ class MechLocomotionClass : public LocomotionClass
 		virtual void Serialize(SaveStreamClass & stream) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Head_To_Coord(void) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual Coord STDMETHODCALLTYPE Head_To_Coord(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
-		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
-		virtual void STDMETHODCALLTYPE Force_Immediate_Destination(CoordStruct coord) override;
+		virtual void STDMETHODCALLTYPE Force_Immediate_Destination(Coord coord) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
-		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) override;
+		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(Coord to) override;
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

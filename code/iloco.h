@@ -9,7 +9,10 @@
 
 #pragma once
 
-#include "comtypes.h"
+#include "coord.h"
+#include "face.h"
+#include "matrix3d.h"
+#include "point.h"
 
 #include "fire.hh"
 #include "layer.hh"
@@ -43,17 +46,17 @@ public:
 	/*
 	 * Fetches destination coordinate.
 	 */
-	virtual CoordStruct STDMETHODCALLTYPE Destination(void) = 0;
+	virtual Coord STDMETHODCALLTYPE Destination(void) = 0;
 
 	/*
 	 * Fetches immediate (next cell) destination coordinate.
 	 */
-	virtual CoordStruct STDMETHODCALLTYPE Head_To_Coord(void) = 0;
+	virtual Coord STDMETHODCALLTYPE Head_To_Coord(void) = 0;
 
 	/*
 	 * Determine if specific cell can be entered.
 	 */
-	virtual MoveType STDMETHODCALLTYPE Can_Enter_Cell(CellStruct cell) = 0;
+	virtual MoveType STDMETHODCALLTYPE Can_Enter_Cell(Cell cell) = 0;
 
 	/*
 	 * Should object cast a shadow?
@@ -63,22 +66,22 @@ public:
 	/*
 	 * Fetch voxel draw matrix.
 	 */
-	virtual Matrix3DStruct STDMETHODCALLTYPE Draw_Matrix(int *key) = 0;
+	virtual Matrix3D STDMETHODCALLTYPE Draw_Matrix(int *key) = 0;
 
 	/*
 	 * Fetch shadow draw matrix.
 	 */
-	virtual Matrix3DStruct STDMETHODCALLTYPE Shadow_Matrix(int *key) = 0;
+	virtual Matrix3D STDMETHODCALLTYPE Shadow_Matrix(int *key) = 0;
 
 	/*
 	 * Draw point center location.
 	 */
-	virtual Point2DStruct STDMETHODCALLTYPE Draw_Point(void) = 0;
+	virtual Point2D STDMETHODCALLTYPE Draw_Point(void) = 0;
 
 	/*
 	 * Shadow draw point center location.
 	 */
-	virtual Point2DStruct STDMETHODCALLTYPE Shadow_Point(void) = 0;
+	virtual Point2D STDMETHODCALLTYPE Shadow_Point(void) = 0;
 
 	/*
 	 * Visual character for drawing.
@@ -103,7 +106,7 @@ public:
 	/*
 	 * Instruct to move to location specified.
 	 */
-	virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) = 0;
+	virtual void STDMETHODCALLTYPE Move_To(Coord to) = 0;
 
 	/*
 	 * Stop moving at first opportunity.
@@ -113,7 +116,7 @@ public:
 	/*
 	 * Try to face direction specified.
 	 */
-	virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) = 0;
+	virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) = 0;
 
 	/*
 	 * Object is appearing in the world.
@@ -148,17 +151,17 @@ public:
 	/*
 	 * Push object in direction specified.
 	 */
-	virtual boolean STDMETHODCALLTYPE Push(DirStruct dir) = 0;
+	virtual boolean STDMETHODCALLTYPE Push(DirType dir) = 0;
 
 	/*
 	 * Shove object (with spin) in direction specified.
 	 */
-	virtual boolean STDMETHODCALLTYPE Shove(DirStruct dir) = 0;
+	virtual boolean STDMETHODCALLTYPE Shove(DirType dir) = 0;
 
 	/*
 	 * Force drive track -- special case only.
 	 */
-	virtual void STDMETHODCALLTYPE Force_Track(int track, CoordStruct coord) = 0;
+	virtual void STDMETHODCALLTYPE Force_Track(int track, Coord coord) = 0;
 
 	/*
 	 * What display layer is it located in.
@@ -168,7 +171,7 @@ public:
 	/*
 	 * Don't use this function.
 	 */
-	virtual void STDMETHODCALLTYPE Force_Immediate_Destination(CoordStruct coord) = 0;
+	virtual void STDMETHODCALLTYPE Force_Immediate_Destination(Coord coord) = 0;
 
 	/*
 	 * Force a voxel unit to a given slope. Used in cratering.
@@ -218,7 +221,7 @@ public:
 	/*
 	 * Is this object in the process of moving into this coord.
 	 */
-	virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) = 0;
+	virtual boolean STDMETHODCALLTYPE Is_Moving_Here(Coord to) = 0;
 
 	/*
 	 * Will this object jump tracks?

@@ -866,7 +866,7 @@ boolean LevitateLocomotionClass::Is_Moving_Now(void)
 /// ILocomotion destination query; the levitator reports none.
 /// </summary>
 /// <returns>COORD_NONE.</returns>
-CoordStruct LevitateLocomotionClass::Destination(void)
+Coord LevitateLocomotionClass::Destination(void)
 {
 	return(COORD_NONE);
 }
@@ -876,7 +876,7 @@ CoordStruct LevitateLocomotionClass::Destination(void)
 /// Returns the unit's current position as its immediate heading target.
 /// </summary>
 /// <returns>The current position.</returns>
-CoordStruct LevitateLocomotionClass::Head_To_Coord(void)
+Coord LevitateLocomotionClass::Head_To_Coord(void)
 {
 	return(LinkedTo->PositionCoord);
 }

@@ -74,15 +74,6 @@ Matrix3D::Matrix3D(float m[12])
 }
 
 
-/// <summary>
-/// Constructs a matrix from its plain struct form.
-/// This routine is used where a matrix arrives as raw storage rather than as a class.
-/// </summary>
-Matrix3D::Matrix3D(const Matrix3DStruct & m)
-{
-	Matrix3DStruct_To_Matrix3D(*this, m);
-}
-
 
 /// <summary>
 /// Constructs a matrix from its twelve elements.
@@ -1036,21 +1027,6 @@ Vector3 operator * (const Matrix3D & m, const Vector3 & vect)
 	return(vec);
 }
 
-
-/// <summary>
-/// Converts a matrix held in plain struct form into a Matrix3D.
-/// This routine is used where a matrix arrives as raw storage rather than as a class. The
-/// struct carries the same twelve floats in the same order, so nothing is rearranged along
-/// the way.
-/// </summary>
-/// <param name="d">The matrix to fill in.</param>
-/// <param name="s">The plain struct form to convert from.</param>
-/// <returns>Returns with a reference to the destination matrix.</returns>
-Matrix3D & Matrix3D::Matrix3DStruct_To_Matrix3D(Matrix3D & d, const Matrix3DStruct &s)
-{
-	memcpy(&d, &s, sizeof(Matrix3D));
-	return d;
-}
 
 
 /// <summary>

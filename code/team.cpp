@@ -3057,7 +3057,7 @@ void TeamClass::TMission_FORCE_FACING(TeamMissionClass * mission, bool)
 			is_complete = false;
 		} else {
 			if (unit->PrimaryFacing.Current() != mission->Data.Facing) {
-				unit->Locomotion->Do_Turn((DirStruct &)DirType(mission->Data.Facing));
+				unit->Locomotion->Do_Turn(DirType(mission->Data.Facing));
 			}
 		}
 		unit = unit->Member;

@@ -141,7 +141,7 @@ boolean STDMETHODCALLTYPE FlyLocomotionClass::Is_Moving_Now(void)
 /// </summary>
 /// <returns>Returns with the destination coordinate. If the aircraft is not going
 /// anywhere, COORD_NONE is returned.</returns>
-CoordStruct STDMETHODCALLTYPE FlyLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE FlyLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(DestinationCoord);
@@ -232,7 +232,7 @@ boolean STDMETHODCALLTYPE FlyLocomotionClass::Process(void)
 /// destination is a request to stop, which brings a flying aircraft down to land.
 /// </summary>
 /// <param name="to">The coordinate to head for, or COORD_NONE to stop and land.</param>
-void STDMETHODCALLTYPE FlyLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE FlyLocomotionClass::Move_To(Coord to)
 {
 	if (((Coord)to).As_Cell() != DestinationCoord.As_Cell() || !IsLanding) {
 
@@ -1068,7 +1068,7 @@ bool FlyLocomotionClass::Process_Landing(void)
 /// </summary>
 /// <param name="stage_approach">Should the approach speed and turret aim be staged for arrival?</param>
 /// <returns>Returns with the distance remaining to the destination.</returns>
-int FlyLocomotionClass::Nearing_Target(bool stage_approach, CoordStruct coord)
+int FlyLocomotionClass::Nearing_Target(bool stage_approach, Coord coord)
 {
 	IFlyControlPtr flyctrl(LinkedTo);
 
@@ -1301,7 +1301,7 @@ int FlyLocomotionClass::Nearing_Target(bool stage_approach, CoordStruct coord)
 /// <param name="key">Optional cache key for the resulting orientation. It may be NULL, and
 /// is set to -1 for an attitude that is not worth caching.</param>
 /// <returns>Returns with the matrix to draw the aircraft with.</returns>
-Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
+Matrix3D STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
 {
 	Matrix3D mtx;
 	mtx.Make_Identity();
@@ -1326,7 +1326,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
 			if (key) {
 				*key = -1;
 			}
-			return((Matrix3DStruct &)mtx);
+			return(mtx);
 		}
 
 		if (!LinkedTo->TClass->IsDropship) {
@@ -1357,7 +1357,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
 					mtx.Rotate_X(float(-LinkedTo->TClass->RollAngle));
 				}
 			}
-			return((Matrix3DStruct &)mtx);
+			return(mtx);
 		}
 
 		if (LinkedTo->TClass->IsDropship) {
@@ -1386,7 +1386,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
 		}
 	}
 
-	return((Matrix3DStruct &)mtx);
+	return(mtx);
 }
 
 
@@ -1396,7 +1396,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Matrix(int * key)
 /// look pinned in place while it hovers. Dropships and grounded aircraft do not bob.
 /// </summary>
 /// <returns>Returns with the pixel offset to shift the aircraft by.</returns>
-Point2DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Point(void)
+Point2D STDMETHODCALLTYPE FlyLocomotionClass::Draw_Point(void)
 {
 	int y = 0;
 	IFlyControlPtr flyctrl(LinkedTo);
@@ -1419,7 +1419,7 @@ Point2DStruct STDMETHODCALLTYPE FlyLocomotionClass::Draw_Point(void)
 /// The shadow is drawn where the aircraft's position puts it, so no adjustment is needed.
 /// </summary>
 /// <returns>Returns with the pixel offset to shift the shadow by.</returns>
-Point2DStruct STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Point(void)
+Point2D STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Point(void)
 {
 	return(Point2D(0, 0));
 }
@@ -1468,7 +1468,7 @@ void FlyLocomotionClass::Land(void)
 /// <param name="key">Optional cache key for the shadow orientation. It may be NULL, and a
 /// value of -1 marks the shadow as not worth caching.</param>
 /// <returns>Returns with the matrix to draw the shadow with.</returns>
-Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Matrix(int * key)
+Matrix3D STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Matrix(int * key)
 {
 	int ramp = Map[(Coord const &)LinkedTo->PositionCoord].Ramp;
 	if (LinkedTo->TClass->IsDropship) {
@@ -1482,7 +1482,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Matrix(int * key)
 		*key = 32 * (ramp + (*key << 6));
 		*key |= LinkedTo->SecondaryFacing.Current().As_Dir32();
 	}
-	return((Matrix3DStruct &)matrix);
+	return(matrix);
 }
 
 
@@ -1491,7 +1491,7 @@ Matrix3DStruct STDMETHODCALLTYPE FlyLocomotionClass::Shadow_Matrix(int * key)
 /// This routine snaps the body around immediately rather than rotating it over time.
 /// </summary>
 /// <param name="coord">The facing to set the aircraft body to.</param>
-void STDMETHODCALLTYPE FlyLocomotionClass::Do_Turn(DirStruct coord)
+void STDMETHODCALLTYPE FlyLocomotionClass::Do_Turn(DirType coord)
 {
 	LinkedTo->SecondaryFacing.Set(coord);
 }

@@ -1160,7 +1160,7 @@ RadioMessageType UnitClass::Receive_Message(RadioClass * from, RadioMessageType 
 		case RADIO_BACKUP_NOW:
 			BASECLASS::Receive_Message(from, message, param);
 			if (!IsRotating && PrimaryFacing.Current() != DIR_E) {
-				Locomotion->Do_Turn((DirStruct &)DirType(DIR_E));
+				Locomotion->Do_Turn(DirType(DIR_E));
 			} else {
 				if (!Locomotion->Is_Moving()) {
 					TechnoClass	* whom = Contact_With_Whom();
@@ -1922,7 +1922,7 @@ bool UnitClass::Try_To_Deploy(void)
 			Dir256 dfacing = Class->DeploysInto->Deploy_Facing();
 			if (PrimaryFacing.Current().As_Dir256() != dfacing) {
 				if (!Locomotion->Is_Moving_Now()) {
-					Locomotion->Do_Turn((DirStruct &)DirType(dfacing));
+					Locomotion->Do_Turn(DirType(dfacing));
 				}
 				Transmit_Message(RADIO_OVER_OUT);
 				IsDeploying = true;
@@ -3092,7 +3092,7 @@ int UnitClass::Do_MISSION_UNLOAD(void)
 				}
 				dir = Desired_Load_Dir(NULL, cell);
 				if (Cargo.How_Many() && cell != CELL_NONE) {
-					Locomotion->Do_Turn((DirStruct &)DirType(dir));
+					Locomotion->Do_Turn(DirType(dir));
 					Status = MANEUVERING;
 					return(1);
 				} else {
@@ -3182,7 +3182,7 @@ int UnitClass::Do_MISSION_UNLOAD(void)
 
 		if (PrimaryFacing.Current().As_Dir256() != DIR_E) {
 			if (!IsRotating) {
-				Locomotion->Do_Turn((DirStruct &)DirType(DIR_E));
+				Locomotion->Do_Turn(DirType(DIR_E));
 			}
 			return(5);
 		}

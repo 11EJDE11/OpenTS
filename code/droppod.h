@@ -38,8 +38,8 @@ class DropPodLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual ULONG STDMETHODCALLTYPE Release(void) override {return(BASECLASS::Release());}
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;

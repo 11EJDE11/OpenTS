@@ -79,7 +79,7 @@ HRESULT STDMETHODCALLTYPE LocomotionClass::Link_To_Object(void *pointer)
 /// <param name="key">Optional cache key for the voxel renderer, which the facing is folded
 /// into. May be NULL, and a key of -1 means the drawing is not to be cached.</param>
 /// <returns>Returns with the matrix to transform the object by.</returns>
-Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Draw_Matrix(int *key)
+Matrix3D STDMETHODCALLTYPE LocomotionClass::Draw_Matrix(int *key)
 {
 	Matrix3D draw_matrix(true);
 
@@ -89,7 +89,7 @@ Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Draw_Matrix(int *key)
 		*key *= 32;
 		*key |= LinkedTo->PrimaryFacing.Current().As_Dir32();
 	}
-	return((Matrix3DStruct &)draw_matrix);
+	return(draw_matrix);
 }
 
 
@@ -101,7 +101,7 @@ Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Draw_Matrix(int *key)
 /// <param name="key">Optional cache key for the voxel renderer, which the slope and facing are
 /// folded into. May be NULL, and a key of -1 means the shadow is not to be cached.</param>
 /// <returns>Returns with the matrix to transform the shadow by.</returns>
-Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Shadow_Matrix(int *key)
+Matrix3D STDMETHODCALLTYPE LocomotionClass::Shadow_Matrix(int *key)
 {
 	int ramp = Map[LinkedTo->Get_Coord()].Ramp;
 
@@ -112,7 +112,7 @@ Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Shadow_Matrix(int *key)
 		*key = 32 * (ramp + (*key << 6));
 		*key |= LinkedTo->PrimaryFacing.Current().As_Dir32();
 	}
-	return((Matrix3DStruct &)draw_matrix);
+	return(draw_matrix);
 }
 
 
@@ -122,9 +122,9 @@ Matrix3DStruct STDMETHODCALLTYPE LocomotionClass::Shadow_Matrix(int *key)
 /// down by however far the object is flying above the terrain.
 /// </summary>
 /// <returns>Returns with the pixel offset to shift the shadow by when drawing.</returns>
-Point2DStruct STDMETHODCALLTYPE LocomotionClass::Shadow_Point(void)
+Point2D STDMETHODCALLTYPE LocomotionClass::Shadow_Point(void)
 {
-	Point2DStruct pt;
+	Point2D pt;
 
 	pt.X = 0;
 	pt.Y = TacticalMap->Z_Lepton_To_Pixel(LinkedTo->HeightAGL);
@@ -399,7 +399,7 @@ LONG STDMETHODCALLTYPE LocomotionClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
 /// occupying. The base locomotor cannot be moved and declines.
 /// </summary>
 /// <returns>bool; Did the object step out of the way?</returns>
-boolean STDMETHODCALLTYPE LocomotionClass::Push(DirStruct dir)
+boolean STDMETHODCALLTYPE LocomotionClass::Push(DirType dir)
 {
 	return(false);
 }
@@ -411,7 +411,7 @@ boolean STDMETHODCALLTYPE LocomotionClass::Push(DirStruct dir)
 /// displaced to clear the way. The base locomotor will not budge.
 /// </summary>
 /// <returns>bool; Was the object shoved out of the way?</returns>
-boolean STDMETHODCALLTYPE LocomotionClass::Shove(DirStruct dir)
+boolean STDMETHODCALLTYPE LocomotionClass::Shove(DirType dir)
 {
 	return(false);
 }
@@ -469,9 +469,9 @@ VisualType STDMETHODCALLTYPE LocomotionClass::Visual_Character(boolean flag)
 /// locomotor makes its object bob, hop, or sink. The base locomotor draws in place.
 /// </summary>
 /// <returns>Returns with the pixel offset to shift the object by when drawing.</returns>
-Point2DStruct STDMETHODCALLTYPE LocomotionClass::Draw_Point(void)
+Point2D STDMETHODCALLTYPE LocomotionClass::Draw_Point(void)
 {
-	Point2DStruct pt;
+	Point2D pt;
 	pt.X = 0;
 	pt.Y = 0;
 	return(pt);
@@ -497,7 +497,7 @@ boolean STDMETHODCALLTYPE LocomotionClass::Is_To_Have_Shadow(void)
 /// unrestricted and welcomes every cell.
 /// </summary>
 /// <returns>Returns with the move legality of the cell.</returns>
-MoveType STDMETHODCALLTYPE LocomotionClass::Can_Enter_Cell(CellStruct cell)
+MoveType STDMETHODCALLTYPE LocomotionClass::Can_Enter_Cell(Cell cell)
 {
 	return(MOVE_OK);
 }
@@ -509,7 +509,7 @@ MoveType STDMETHODCALLTYPE LocomotionClass::Can_Enter_Cell(CellStruct cell)
 /// outside code must dictate exactly where the object ends up next.
 /// </summary>
 /// <param name="coord">The coordinate the object should head to immediately.</param>
-void STDMETHODCALLTYPE LocomotionClass::Force_Immediate_Destination(CoordStruct coord)
+void STDMETHODCALLTYPE LocomotionClass::Force_Immediate_Destination(Coord coord)
 {
 }
 
@@ -521,7 +521,7 @@ void STDMETHODCALLTYPE LocomotionClass::Force_Immediate_Destination(CoordStruct 
 /// </summary>
 /// <param name="track">The track number the object should be placed onto.</param>
 /// <param name="coord">The coordinate to treat as the start of the track.</param>
-void STDMETHODCALLTYPE LocomotionClass::Force_Track(int track, CoordStruct coord)
+void STDMETHODCALLTYPE LocomotionClass::Force_Track(int track, Coord coord)
 {
 }
 
@@ -541,7 +541,7 @@ void STDMETHODCALLTYPE LocomotionClass::Unlimbo(void)
 /// The base locomotor has no body of its own to rotate, so the request goes unheeded.
 /// </summary>
 /// <param name="coord">The direction that the object should come to face.</param>
-void STDMETHODCALLTYPE LocomotionClass::Do_Turn(DirStruct coord)
+void STDMETHODCALLTYPE LocomotionClass::Do_Turn(DirType coord)
 {
 }
 
@@ -561,7 +561,7 @@ void STDMETHODCALLTYPE LocomotionClass::Stop_Moving(void)
 /// This is how the object hands its locomotor a new place to go. The base locomotor
 /// cannot move anything, so the request is quietly ignored.
 /// </summary>
-void STDMETHODCALLTYPE LocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE LocomotionClass::Move_To(Coord to)
 {
 }
 
@@ -585,9 +585,9 @@ boolean STDMETHODCALLTYPE LocomotionClass::Process(void)
 /// destination at all.
 /// </summary>
 /// <returns>Returns with the destination coordinate, or COORD_NONE if there is none.</returns>
-CoordStruct STDMETHODCALLTYPE LocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE LocomotionClass::Destination(void)
 {
-	CoordStruct coord;
+	Coord coord;
 	coord.X = COORD_NONE.X;
 	coord.Y = COORD_NONE.Y;
 	coord.Z = COORD_NONE.Z;
@@ -601,7 +601,7 @@ CoordStruct STDMETHODCALLTYPE LocomotionClass::Destination(void)
 /// has nowhere to go, it reports the object's own position.
 /// </summary>
 /// <returns>Returns with the coordinate currently being moved toward.</returns>
-CoordStruct STDMETHODCALLTYPE LocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE LocomotionClass::Head_To_Coord(void)
 {
 	return(LinkedTo->PositionCoord);
 }

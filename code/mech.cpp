@@ -67,7 +67,7 @@ boolean STDMETHODCALLTYPE MechLocomotionClass::Is_Moving(void)
 /// </summary>
 /// <returns>Returns with the destination assigned, or COORD_NONE if the unit has not been
 /// given one.</returns>
-CoordStruct STDMETHODCALLTYPE MechLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE MechLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(DestinationCoord);
@@ -81,7 +81,7 @@ CoordStruct STDMETHODCALLTYPE MechLocomotionClass::Destination(void)
 /// </summary>
 /// <returns>Returns with the location being stepped into, or the unit's own location if it
 /// is not part way between cells.</returns>
-CoordStruct STDMETHODCALLTYPE MechLocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE MechLocomotionClass::Head_To_Coord(void)
 {
 	if (HeadToCoord != COORD_NONE) {
 		return(HeadToCoord);
@@ -108,7 +108,7 @@ boolean STDMETHODCALLTYPE MechLocomotionClass::Process(void)
 /// raised to the deck above it, since that is where a walking unit can actually get to.
 /// </summary>
 /// <param name="to">The location to walk to.</param>
-void STDMETHODCALLTYPE MechLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE MechLocomotionClass::Move_To(Coord to)
 {
 	if (LinkedTo->StunDuration <= 0) {
 		Coord coord = to;
@@ -141,7 +141,7 @@ void STDMETHODCALLTYPE MechLocomotionClass::Stop_Moving(void)
 /// frames that follow by the unit's facing tracker.
 /// </summary>
 /// <param name="coord">The direction the mech should come to face.</param>
-void MechLocomotionClass::Do_Turn(DirStruct coord)
+void MechLocomotionClass::Do_Turn(DirType coord)
 {
 	assert(LinkedTo->IsActive);
 
@@ -155,7 +155,7 @@ void MechLocomotionClass::Do_Turn(DirStruct coord)
 /// destination -- it will walk there and then pick its path up again.
 /// </summary>
 /// <param name="coord">The location to step into immediately.</param>
-void STDMETHODCALLTYPE MechLocomotionClass::Force_Immediate_Destination(CoordStruct coord)
+void STDMETHODCALLTYPE MechLocomotionClass::Force_Immediate_Destination(Coord coord)
 {
 	HeadToCoord = coord;
 }
@@ -378,7 +378,7 @@ void MechLocomotionClass::Movement_AI(bool continue_moving)
 						return;
 					}
 
-					DirStruct face = (DirStruct &)::Direction(LinkedTo->Center_Coord(), head_coord);
+					DirType face = ::Direction(LinkedTo->Center_Coord(), head_coord);
 					Do_Turn(face);
 					return;
 				}
@@ -453,7 +453,7 @@ void MechLocomotionClass::Movement_AI(bool continue_moving)
 
 				if (LinkedTo->IsActive) {
 
-					DirStruct face = (DirStruct &)::Direction(LinkedTo->Center_Coord(), HeadToCoord);
+					DirType face = ::Direction(LinkedTo->Center_Coord(), HeadToCoord);
 					Do_Turn(face);
 
 					if (!LinkedTo->PrimaryFacing.Is_Rotating()) {
@@ -557,7 +557,7 @@ void MechLocomotionClass::Movement_AI(bool continue_moving)
 		int speed = LinkedTo->Current_Speed();
 
 		DirType desired_facing = ::Direction(LinkedTo->Center_Coord(), HeadToCoord);
-		Do_Turn((DirStruct &)desired_facing);
+		Do_Turn(desired_facing);
 
 		if (LinkedTo->PrimaryFacing.Is_Rotating()) {
 			return;
@@ -734,11 +734,11 @@ void STDMETHODCALLTYPE MechLocomotionClass::Mark_All_Occupation_Bits(int mark)
 /// </summary>
 /// <param name="to">The location to test against.</param>
 /// <returns>bool; Is the mech heading into that location?</returns>
-boolean STDMETHODCALLTYPE MechLocomotionClass::Is_Moving_Here(CoordStruct to)
+boolean STDMETHODCALLTYPE MechLocomotionClass::Is_Moving_Here(Coord to)
 {
-	CoordStruct coord = Head_To_Coord();
+	Coord coord = Head_To_Coord();
 
-	if (Coord(coord).As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
+	if (Coord(coord).As_Cell() == to.As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
 		return(true);
 	}
 

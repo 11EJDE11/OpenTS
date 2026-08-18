@@ -34,8 +34,8 @@ class LevitateLocomotionClass : public LocomotionClass
 
 		virtual HRESULT STDMETHODCALLTYPE Link_To_Object(void *pointer) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Head_To_Coord(void) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual Coord STDMETHODCALLTYPE Head_To_Coord(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;

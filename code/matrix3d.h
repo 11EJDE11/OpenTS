@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "comtypes.h"
 #include "vector3.h"
 #include "vector4.h"
 #include "visualc.h"
@@ -63,7 +62,6 @@ class Matrix3D
 		// Creates identity rotation w. given position.
 		explicit Matrix3D(const Vector3 & position);
 
-		Matrix3D(const Matrix3DStruct & m);
 
 		// Assignment operator
 		Matrix3D & operator=(Matrix3D const & that) { memcpy(this, &that, sizeof(*this)); return(*this);}
@@ -159,7 +157,6 @@ class Matrix3D
 
 		static Matrix3D Orthogonal_Inverse(Matrix3D const & src);
 
-		static Matrix3D & Matrix3DStruct_To_Matrix3D(Matrix3D & d, const Matrix3DStruct &s);
 
 	protected:
 		Vector4 Row[3];

@@ -2695,7 +2695,7 @@ int FootClass::Offload_Tiberium_Bail(void)
 MoveType FootClass::Can_Enter_Cell(CellClass const * cell, FacingType, int cell_height, CellClass const *, bool use_locomotor_enter_check) const
 {
 	if (Locomotion != NULL && use_locomotor_enter_check) {
-		CellStruct cellnum = (CellStruct&)cell->CellID;
+		Cell cellnum = cell->CellID;
 		return(Locomotion->Can_Enter_Cell(cellnum));
 	}
 	return(MOVE_OK);
@@ -3676,7 +3676,7 @@ Coord FootClass::Destination_Coord(void) const
 		Cell exit = Tubes[CurrentTube]->Exit;
 		return(exit.As_Coord());
 	} else {
-		CoordStruct tmp = Locomotion->Head_To_Coord();
+		Coord tmp = Locomotion->Head_To_Coord();
 		Coord head_to = tmp;
 		if (head_to != COORD_NONE) {
 			return(head_to);

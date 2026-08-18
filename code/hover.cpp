@@ -139,7 +139,7 @@ void HoverLocomotionClass::Gravity_AI(void)
 /// </summary>
 /// <param name="key">Pointer to the render cache key to update; may be NULL.</param>
 /// <returns>Returns with the matrix to render the object with.</returns>
-Matrix3DStruct STDMETHODCALLTYPE HoverLocomotionClass::Draw_Matrix(int *key)
+Matrix3D STDMETHODCALLTYPE HoverLocomotionClass::Draw_Matrix(int *key)
 {
 	if (!Is_Powered()) {
 		int ramp = Map[(Coord const &)(LinkedTo->PositionCoord)].Ramp;
@@ -149,7 +149,7 @@ Matrix3DStruct STDMETHODCALLTYPE HoverLocomotionClass::Draw_Matrix(int *key)
 			*key = 32 * (ramp + (*key << 6));
 			*key |= LinkedTo->PrimaryFacing.Current().As_Dir32();
 		}
-		return((Matrix3DStruct &)mtx);
+		return(mtx);
 	}
 	return(BASECLASS::Draw_Matrix(key));
 }
@@ -309,7 +309,7 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Moving_Now(void)
 /// </summary>
 /// <returns>Returns with the destination coordinate, or COORD_NONE if the object has no
 /// move order outstanding.</returns>
-CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE HoverLocomotionClass::Destination(void)
 {
 	if (DestinationCoord != COORD_NONE) {
 		return(DestinationCoord);
@@ -323,7 +323,7 @@ CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Destination(void)
 /// </summary>
 /// <returns>Returns with the intermediate destination, or with the object's current
 /// position if it is not headed anywhere.</returns>
-CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Head_To_Coord(void)
+Coord STDMETHODCALLTYPE HoverLocomotionClass::Head_To_Coord(void)
 {
 	if (HeadToCoord != COORD_NONE) {
 		return(HeadToCoord);
@@ -339,7 +339,7 @@ CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Head_To_Coord(void)
 /// the drive is started if the object is not already under way.
 /// </summary>
 /// <param name="to">The coordinate to move to.</param>
-void STDMETHODCALLTYPE HoverLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE HoverLocomotionClass::Move_To(Coord to)
 {
 	DestinationCoord = to;
 	if (Is_Powered() && Is_Ion_Sensitive() && IonStormClass::Is_Ion_Storm_Active()) {
@@ -351,7 +351,7 @@ void STDMETHODCALLTYPE HoverLocomotionClass::Move_To(CoordStruct to)
 		DestinationCoord.Z += BRIDGE_LEPTON_HEIGHT;
 	}
 
-	if ((Coord &)to != COORD_NONE && Is_Powered()) {
+	if (to != COORD_NONE && Is_Powered()) {
 		if (!Is_Moving_Now()) {
 			LinkedTo->Set_Speed(1.0);
 			Start_Of_Move(0);
@@ -693,11 +693,11 @@ void STDMETHODCALLTYPE HoverLocomotionClass::Stop_Moving(void)
 /// direction given over the following game frames.
 /// </summary>
 /// <param name="coord">The direction the object should come to face.</param>
-void HoverLocomotionClass::Do_Turn(DirStruct coord)
+void HoverLocomotionClass::Do_Turn(DirType coord)
 {
 	assert(LinkedTo->IsActive);
 
-	DirType dir = (DirType &)coord;
+	DirType dir = coord;
 
 	LinkedTo->PrimaryFacing.Set_Desired(dir);
 }
@@ -997,11 +997,11 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Ion_Sensitive(void)
 /// </summary>
 /// <param name="dir">The direction to push the object toward.</param>
 /// <returns>bool; Was the object pushed?</returns>
-boolean STDMETHODCALLTYPE HoverLocomotionClass::Push(DirStruct dir)
+boolean STDMETHODCALLTYPE HoverLocomotionClass::Push(DirType dir)
 {
 	if (Is_Powered() && !WasPushed) {
 
-		FacingType face = ((DirType &)dir).As_Facing();
+		FacingType face = dir.As_Facing();
 		Cell cell = Adjacent_Cell(LinkedTo->PositionCell, face);
 
 		FootClass * link = LinkedTo;
@@ -1026,7 +1026,7 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Push(DirStruct dir)
 				LinkedTo->Set_Occupy_Bit(HeadToCoord);
 
 			} else {
-				Move_To((CoordStruct const &)(Coord)cell);
+				Move_To((Coord)cell);
 			}
 			return(true);
 		}
@@ -1042,7 +1042,7 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Push(DirStruct dir)
 /// </summary>
 /// <param name="dir">The direction to shove the object toward.</param>
 /// <returns>bool; Was the object shoved?</returns>
-boolean STDMETHODCALLTYPE HoverLocomotionClass::Shove(DirStruct dir)
+boolean STDMETHODCALLTYPE HoverLocomotionClass::Shove(DirType dir)
 {
 	if (Push(dir)) {
 		Do_Shove();
@@ -1159,12 +1159,12 @@ void STDMETHODCALLTYPE HoverLocomotionClass::Mark_All_Occupation_Bits(int mark)
 /// </summary>
 /// <param name="to">The coordinate to compare the current destination against.</param>
 /// <returns>bool; Is the object moving to this location?</returns>
-boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Moving_Here(CoordStruct to)
+boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Moving_Here(Coord to)
 {
 	Coord coord = Head_To_Coord();
 
 	if (coord != COORD_NONE) {
-		if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
+		if (coord.As_Cell() == to.As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
 			return(true);
 		}
 	}

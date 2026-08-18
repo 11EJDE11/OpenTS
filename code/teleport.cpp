@@ -64,7 +64,7 @@ boolean TeleportLocomotionClass::Is_Stationary(void)
 /// </summary>
 /// <returns>Returns with the pending teleport destination, or with the object's current
 /// position if no teleport has been ordered.</returns>
-CoordStruct STDMETHODCALLTYPE TeleportLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE TeleportLocomotionClass::Destination(void)
 {
 	if (Is_Moving()) {
 		return(DestinationCoord);
@@ -78,7 +78,7 @@ CoordStruct STDMETHODCALLTYPE TeleportLocomotionClass::Destination(void)
 /// The jump is not made here. It happens the next time this locomotor is processed.
 /// </summary>
 /// <param name="to">The coordinate to teleport the object to.</param>
-void STDMETHODCALLTYPE TeleportLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE TeleportLocomotionClass::Move_To(Coord to)
 {
 	DestinationCoord = to;
 }

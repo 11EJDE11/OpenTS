@@ -67,22 +67,22 @@ class DriveLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
 		virtual boolean STDMETHODCALLTYPE Is_Moving(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Destination(void) override;
-		virtual CoordStruct STDMETHODCALLTYPE Head_To_Coord(void) override;
-		virtual Matrix3DStruct STDMETHODCALLTYPE Draw_Matrix(int *key) override;
+		virtual Coord STDMETHODCALLTYPE Destination(void) override;
+		virtual Coord STDMETHODCALLTYPE Head_To_Coord(void) override;
+		virtual Matrix3D STDMETHODCALLTYPE Draw_Matrix(int *key) override;
 		virtual int STDMETHODCALLTYPE Z_Adjust(void) override;
 		virtual ZGradientType STDMETHODCALLTYPE Z_Gradient(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
-		virtual void STDMETHODCALLTYPE Move_To(CoordStruct to) override;
+		virtual void STDMETHODCALLTYPE Move_To(Coord to) override;
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
-		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirType coord) override;
 		virtual void STDMETHODCALLTYPE Unlimbo(void) override;
-		virtual void STDMETHODCALLTYPE Force_Track(int track, CoordStruct coord) override;
+		virtual void STDMETHODCALLTYPE Force_Track(int track, Coord coord) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 		virtual void STDMETHODCALLTYPE Force_New_Slope(int ramp) override;
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
-		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(CoordStruct to) override;
+		virtual boolean STDMETHODCALLTYPE Is_Moving_Here(Coord to) override;
 		virtual boolean STDMETHODCALLTYPE Will_Jump_Tracks(void) override;
 		virtual void STDMETHODCALLTYPE Lock(void) override;
 		virtual void STDMETHODCALLTYPE Unlock(void) override;
@@ -143,7 +143,7 @@ class DriveLocomotionClass : public LocomotionClass, public IPiggyback
 		};
 
 		struct TrackType {
-			Point2DStruct Offset;   // Offset to origin coordinate.
+			Point2D Offset;   // Offset to origin coordinate.
 			Dir256	Facing;         // Facing (primary track).
 		};
 

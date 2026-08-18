@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "comtypes.h"
 #include "iloco.h"
 
 #include <comdef.h>

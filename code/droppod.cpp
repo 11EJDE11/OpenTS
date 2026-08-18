@@ -66,7 +66,7 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Is_Moving(void)
 /// </summary>
 /// <returns>Returns with the landing coordinate, or COORD_NONE if no destination has
 /// been assigned yet.</returns>
-CoordStruct STDMETHODCALLTYPE DropPodLocomotionClass::Destination(void)
+Coord STDMETHODCALLTYPE DropPodLocomotionClass::Destination(void)
 {
 	return(DestinationCoord);
 }
@@ -163,7 +163,7 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 /// has a destination ignores any later request.
 /// </summary>
 /// <param name="to">The coordinate the pod should land on.</param>
-void STDMETHODCALLTYPE DropPodLocomotionClass::Move_To(CoordStruct to)
+void STDMETHODCALLTYPE DropPodLocomotionClass::Move_To(Coord to)
 {
 	if (DestinationCoord == COORD_NONE) {
 

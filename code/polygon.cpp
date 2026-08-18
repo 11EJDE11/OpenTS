@@ -113,7 +113,7 @@ void Rasterize_Polygon(const PolygonShapeStruct & shape, PolygonRasterStruct & r
 			if (raster_point_count > 0) {
 				raster.BaseY = min_y - bottom_span_exists + 1;
 				if (raster.Points == NULL) {
-					raster.Points = (Point2D*)new Point2DStruct[raster_point_count + 200];
+					raster.Points = new Point2D[raster_point_count + 200];
 				}
 				if (raster.Points == NULL) {
 					raster.Count = 0;
