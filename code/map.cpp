@@ -434,18 +434,6 @@ Cell MapClass::Cell_To_LocalRect(Cell const & cell)
 
 
 /// <summary>
-/// Determines if the cell has been revealed to the local player.
-/// This routine is the whole of the IGameMap interface, and exists so that code on the far
-/// side of that boundary can ask about the shroud without knowing anything about cells.
-/// </summary>
-/// <returns>Returns with non-zero if the cell has been mapped.</returns>
-LONG STDMETHODCALLTYPE MapClass::Is_Visible(CellStruct cell)
-{
-	return((*this)[cell].IsMapped);
-}
-
-
-/// <summary>
 /// Fetches the cell that contains the specified coordinate.
 /// This routine never fails. A coordinate that lies outside the map is handed the scratch
 /// cell instead, so callers may reach past the edge of the map without checking first --

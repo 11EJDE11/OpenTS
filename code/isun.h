@@ -15,17 +15,8 @@
 
 #define GAME_VERNAME TEXT("Tiberian Sun")
 
-#define GAME_VPROGID TEXT("WW.TiberianSun")
-#define GAME_PROGID TEXT("WW.TiberianSun.1")
-#define GAME_CURVER TEXT("WW.TiberianSun\\CurVer")
-#define GAME_VCLSID TEXT("WW.TiberianSun\\CLSID")
-#define GAME_CLSID TEXT("WW.TiberianSun.1\\CLSID")
-
-EXTERN_C const IID LIBID_TiberianSun;
-EXTERN_C const CLSID CLSID_TiberianSun;
 EXTERN_C const IID IID_ILinkStream;
 EXTERN_C const CLSID CLSID_CompressStream;
-EXTERN_C const IID IID_IPowerEvents;
 EXTERN_C const CLSID CLSID_HouseClass;
 EXTERN_C const CLSID CLSID_SuperWeaponTypeClass;
 EXTERN_C const CLSID CLSID_SuperWeaponClass;
@@ -87,9 +78,3 @@ EXTERN_C const CLSID CLSID_NeuronClass;
 EXTERN_C const CLSID CLSID_FoggedObjectClass;
 EXTERN_C const CLSID CLSID_AlphaShapeClass;
 EXTERN_C const CLSID CLSID_VeinholeMonsterClass;
-EXTERN_C const IID LIBID_AIHouseClass;
-EXTERN_C const CLSID CLSID_AIHouse;
-EXTERN_C const CLSID CLSID_AIMeade;
-EXTERN_C const  CLSID CLSID_AIJackson;
-EXTERN_C const  CLSID CLSID_AIGrant;
-EXTERN_C const  CLSID CLSID_AIHooker;

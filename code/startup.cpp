@@ -53,7 +53,6 @@
 #include "alphashp.h"
 #include "anim.h"
 #include "animtype.h"
-#include "app.h"
 #include "blight.h"
 #include "brain.h"
 #include "building.h"
@@ -178,165 +177,9 @@ const struct RegStruct {
 HANDLE AppMutex;
 HANDLE AutoPlayMutex;
 
-DWORD dwRegisterTiberianSun;
-DWORD dwRegisterMap = -1;
-DWORD pTiberianSun;
-
 DynamicVectorClass<DWORD> RegisteredClasses;
 
 //WinTimerClass * WinTimer;
-
-/// MSDN sample code
-
-/// <summary>
-/// Sets the default value of a registry key.
-/// This is the low level routine that the server registration code uses to create a key
-/// beneath HKEY_CLASSES_ROOT and give it a string value.
-/// </summary>
-/// <param name="pszKey">The key to create, relative to HKEY_CLASSES_ROOT.</param>
-/// <param name="pszSubkey">The subkey to create beneath the key, or NULL for none.</param>
-/// <param name="pszValue">The string to store as the key's default value, or NULL to
-/// leave the value alone.</param>
-/// <returns>bool; Was the key created and its value stored?</returns>
-bool SetRegKeyValue(const LPCSTR pszKey, const LPCSTR pszSubkey, const LPCSTR pszValue)
-{
-	bool bOk = FALSE;
-	LONG ec;
-	HKEY hKey;
-	TCHAR szKey[260];
-
-	lstrcpy(szKey, pszKey);
-
-	if (NULL != pszSubkey)
-	{
-		lstrcat(szKey, TEXT("\\"));
-		lstrcat(szKey, pszSubkey);
-	}
-
-	ec = RegCreateKeyEx(HKEY_CLASSES_ROOT, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, NULL);
-
-	if (ERROR_SUCCESS == ec)
-	{
-		if (NULL != pszValue)
-		{
-			ec = RegSetValueEx(hKey, NULL, 0, REG_SZ, (BYTE *)pszValue, (lstrlen(pszValue) + 1) * sizeof(TCHAR));
-		}
-		if (ERROR_SUCCESS == ec)
-			bOk = TRUE;
-		RegCloseKey(hKey);
-	}
-
-	return(bOk);
-}
-
-/// MSDN sample code
-
-/// <summary>
-/// Registers the game as a COM server.
-/// This routine writes the ProgID, the version independent ProgID and the CLSID keys
-/// that let OLE find the game by name, and loads the type library so that the interfaces
-/// the game exposes are known to the system.
-/// </summary>
-/// <returns>Returns with the result code; this routine always reports success.</returns>
-HRESULT RegisterServer(void)
-{
-	HRESULT hr = NOERROR;
-	TCHAR szID[39 + 1];
-	TCHAR szCLSID[48];
-	TCHAR szLibID[39 + 1];
-	WCHAR temp[39 + 1];
-	TCHAR szModulePath[MAX_PATH];
-
-	GetModuleFileName(ProgramInstance, szModulePath, sizeof(szModulePath) / sizeof(TCHAR));
-	StringFromGUID2(CLSID_TiberianSun, temp, (sizeof(temp) / sizeof(WCHAR)) - 1);
-	WideCharToMultiByte(0, 0, temp, -1, szID, (sizeof(temp) / sizeof(WCHAR)) - 1, 0, 0);
-	StringFromGUID2(LIBID_TiberianSun, temp, (sizeof(temp) / sizeof(WCHAR)) - 1);
-	WideCharToMultiByte(0, 0, temp, -1, szLibID, (sizeof(temp) / sizeof(WCHAR)) - 1, 0, 0);
-
-	/// Create some base key strings.
-	lstrcpy(szCLSID, TEXT("CLSID\\"));
-	lstrcat(szCLSID, szID);
-
-	/*
-	 * Create ProgID keys.
-	 */
-	SetRegKeyValue(TEXT(GAME_PROGID), NULL, GAME_VERNAME);
-	SetRegKeyValue(TEXT(GAME_PROGID), TEXT("CLSID"), szID);
-
-	/*
-	 * Create VersionIndependentProgID keys.
-	 */
-	SetRegKeyValue(TEXT(GAME_VPROGID), NULL, GAME_VERNAME);
-	SetRegKeyValue(TEXT(GAME_VPROGID), TEXT("CurVer"), TEXT(GAME_PROGID));
-	SetRegKeyValue(TEXT(GAME_VPROGID), TEXT("CLSID"), szID);
-
-	/*
-	 * Create entries under CLSID.
-	 */
-	SetRegKeyValue(szCLSID, NULL, GAME_VERNAME);
-	SetRegKeyValue(szCLSID, TEXT("ProgID"), TEXT(GAME_PROGID));
-	SetRegKeyValue(szCLSID, TEXT("VersionIndependentProgID"), TEXT(GAME_VPROGID));
-	SetRegKeyValue(szCLSID, TEXT("NotInsertable"), NULL);
-	SetRegKeyValue(szCLSID, TEXT("InprocServer32"), szModulePath);
-	SetRegKeyValue(szCLSID, TEXT("Typelib"), szLibID);
-
-	ITypeLib * pITypeLib = NULL;
-	LoadTypeLib(L"SUN.TLB", &pITypeLib);
-	if (pITypeLib != NULL) {
-		pITypeLib->Release();
-	}
-
-	return(hr);
-}
-
-/// MSDN sample code
-
-/// <summary>
-/// Removes the game's registration from the system.
-/// This routine undoes the work of RegisterServer, deleting the ProgID, the version
-/// independent ProgID and the CLSID keys that the game claims for itself.
-/// </summary>
-/// <returns>Returns with the result code; this routine always reports success.</returns>
-HRESULT UnregisterServer(void)
-{
-	HRESULT hr = NOERROR;
-	TCHAR szCLSID[39 + 1 + 32];
-	TCHAR szID[39 + 1];
-	TCHAR szTemp[300];
-	WCHAR temp[39 + 1];
-
-	/// Create some base key strings.
-	StringFromGUID2(CLSID_TiberianSun, temp, (sizeof(temp) / sizeof(WCHAR)) - 1);
-	WideCharToMultiByte(0, WC_SEPCHARS, temp, -1, szID, (sizeof(temp) / sizeof(WCHAR)) - 1, 0, 0);
-	lstrcpy(szCLSID, TEXT("CLSID\\"));
-	lstrcat(szCLSID, szID);
-
-	RegDeleteKey(HKEY_CLASSES_ROOT, TEXT(GAME_CURVER));
-	RegDeleteKey(HKEY_CLASSES_ROOT, TEXT(GAME_VCLSID));
-	RegDeleteKey(HKEY_CLASSES_ROOT, TEXT(GAME_VPROGID));
-
-	RegDeleteKey(HKEY_CLASSES_ROOT, TEXT(GAME_CLSID));
-	RegDeleteKey(HKEY_CLASSES_ROOT, TEXT(GAME_PROGID));
-
-	wsprintf(szTemp, TEXT("%s\\%s"), szCLSID, TEXT("ProgID"));
-	RegDeleteKey(HKEY_CLASSES_ROOT, szTemp);
-
-	wsprintf(szTemp, TEXT("%s\\%s"), szCLSID, TEXT("VersionIndependentProgID"));
-	RegDeleteKey(HKEY_CLASSES_ROOT, szTemp);
-
-	wsprintf(szTemp, TEXT("%s\\%s"), szCLSID, TEXT("NotInsertable"));
-	RegDeleteKey(HKEY_CLASSES_ROOT, szTemp);
-
-	wsprintf(szTemp, TEXT("%s\\%s"), szCLSID, TEXT("InprocServer32"));
-	RegDeleteKey(HKEY_CLASSES_ROOT, szTemp);
-
-	wsprintf(szTemp, TEXT("%s\\%s"), szCLSID, TEXT("Typelib"));
-	RegDeleteKey(HKEY_CLASSES_ROOT, szTemp);
-
-	RegDeleteKey(HKEY_CLASSES_ROOT, szCLSID);
-
-	return(hr);
-}
 
 /// <summary>
 /// Destroys the drawing surfaces and drops the video mode.
@@ -419,8 +262,6 @@ static bool RegisterClasses(void)
 	}
 #endif
 
-	RegisterServer();
-
 	DWORD dwRegister;
 	IClassFactory *t;
 
@@ -433,16 +274,6 @@ static bool RegisterClasses(void)
 			CoRegisterClassObject(_clsid, t, CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE, &dwRegister); \
 			RegisteredClasses.Add(dwRegister); \
 		} \
-
-	/// Register a class-object with OLE (precreated factory).
-	#define REGISTER_FACT_CLASS(_class, _fact, _clsid) \
-		{ \
-			t = _fact; \
-			CoRegisterClassObject(_clsid, t, CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE, &dwRegister); \
-			RegisteredClasses.Add(dwRegister); \
-		}
-
-	REGISTER_FACT_CLASS(TiberianSunClassFactory, &TibSunFactory, CLSID_TiberianSun);
 
 	REGISTER_CLASS(CStreamClass, CLSID_CompressStream);
 	REGISTER_CLASS(WaveClass, CLSID_WaveClass);
@@ -511,8 +342,6 @@ static bool RegisterClasses(void)
 	REGISTER_CLASS(NeuronClass, CLSID_NeuronClass);
 	REGISTER_CLASS(FoggedObjectClass, CLSID_FoggedObjectClass);
 	REGISTER_CLASS(AlphaShapeClass, CLSID_AlphaShapeClass);
-
-	RegisterActiveObject((IUnknown *)&ApplicationInstance, CLSID_TiberianSun, ACTIVEOBJECT_WEAK, &dwRegisterTiberianSun);
 
 	if (failed) {
 		MessageBox(NULL, Fetch_String(TXT_PREPARECOM_FAILED), Fetch_String(TXT_SHORT_TITLE), MB_ICONEXCLAMATION);
@@ -653,8 +482,6 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 	if (RegisterClasses()) {
 		exit(EXIT_FAILURE);
 	}
-
-	RegisterActiveObject((IUnknown *)&Map, CLSID_TiberianSun, ACTIVEOBJECT_WEAK, &dwRegisterMap);
 
 	/*
 	**	Get the full path to the .EXE
@@ -844,12 +671,6 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		Debug_Console_Hold();
 	}
 
-	if (dwRegisterMap != -1) {
-		RevokeActiveObject(dwRegisterMap, NULL);
-		dwRegisterMap = -1;
-	}
-
-	CoDisconnectObject((LPUNKNOWN)&ApplicationInstance, 0);
 	OleUninitialize();
 
 	return(error_code);
@@ -1181,8 +1002,6 @@ void __cdecl Prog_End(void)
 	}
 	RegisteredClasses.Clear();
 
-	RevokeActiveObject(dwRegisterTiberianSun, NULL);
-
 	if (LanguageResources) {
 		FreeLibrary(LanguageResources);
 	}
@@ -1232,13 +1051,6 @@ void Emergency_Exit(void)
 			break;
 		}
 	}
-
-	if (dwRegisterMap != -1) {
-		RevokeActiveObject(dwRegisterMap, NULL);
-		dwRegisterMap = -1;
-	}
-
-	CoDisconnectObject((LPUNKNOWN)&ApplicationInstance, 0);
 
 	OleUninitialize();
 

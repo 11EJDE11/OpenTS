@@ -299,20 +299,13 @@ endforeach()
 
 # List of all interface filenames (headers + C stubs)
 set(INTERFACE_FILES
-    iaihouse.h       iaihouse_i.c
-    iapp.h           iapp_i.c
     iblockci.h       iblockci_i.c
     iblowfish.h      iblowfish_i.c
     iflyctrl.h       iflyctrl_i.c
-    ihouse.h         ihouse_i.c
     ilinkstm.h
     iloco.h          iloco_i.c
     ilocos.h         ilocos_i.c
-    imap.h           imap_i.c
     ipiggy.h         ipiggy_i.c
-    ipowerevents.h   ipowerevents_i.c
-    ipublichouse.h   ipublichouse_i.c
-    irtti.h          irtti_i.c
     isun.h           isun_i.c
     wolapi/wolapi_i.c
 )

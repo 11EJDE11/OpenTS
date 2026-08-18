@@ -141,13 +141,11 @@
 #include "_tactica.h"
 #include "aircraft.h"
 #include "airctype.h"
-#include "app.h"
 #include "building.h"
 #include "builtype.h"
 #include "ccrand.h"
 #include "cell.h"
 #include "conquer.h"
-#include "cpoint.h"
 #include "data.h"
 #include "dbgprint.h"
 #include "ddist.h"
@@ -161,7 +159,6 @@
 #include "infatype.h"
 #include "inline.h"
 #include "ion.h"
-#include "ipowerevents.h"
 #include "language\language.h"
 #include "lightcon.h"
 #include "logic.h"
@@ -347,12 +344,9 @@ HouseClass::HouseClass(HouseTypeClass const * type) :
 	SpeakPowerDelay(1),
 	SpeakMoneyDelay(1),
 	SpeakMaxedDelay(1),
-	AIGeneral(NULL),
 	IniName(NULL),
 	Scheme(0),
 	BaseAreaMap(0),
-	PowerEventConnectionPoints(),
-	PowerEvents(NULL),
 	field_10E20(0),
 	field_10E28(1.0),
 	DefenseCostMultiplier(1.0),
@@ -447,16 +441,6 @@ HouseClass::HouseClass(HouseTypeClass const * type) :
 			ActLike = HOUSE_BAD;
 		}
 	}
-
-	IUnknown * unknown = NULL;
-	QueryInterface(IID_IUnknown, (void **)&unknown);
-	PowerEvents = new ConnectionPointClass(IID_IPowerEvents, unknown);
-
-	IConnectionPoint * cp;
-	PowerEvents->QueryInterface(IID_IConnectionPoint, (void **)&cp);
-	PowerEventConnectionPoints.Add(cp);
-
-	unknown->Release();
 }
 
 
@@ -513,96 +497,6 @@ bool HouseClass::Can_Make_Money(void)
 }
 
 
-/// <summary>
-/// Fetches one of the interfaces this house presents.
-/// This is the standard COM entry point. Through it the house hands out its scripting,
-/// connection point and persistence faces to whoever asks for them.
-/// </summary>
-/// <returns>Returns with S_OK if the interface was supplied. Otherwise, E_NOINTERFACE or
-/// E_POINTER is returned.</returns>
-HRESULT STDMETHODCALLTYPE HouseClass::QueryInterface(REFIID riid, LPVOID * ppvObject)
-{
-	if (ppvObject == NULL) {
-		return(E_POINTER);
-	}
-
-	*ppvObject = NULL;
-
-	if (riid == IID_IUnknown) {
-		*ppvObject = reinterpret_cast<IUnknown *>(this);
-	}
-
-	if (riid == IID_IHouse) {
-		*ppvObject = static_cast<IHouse *>(this);
-	}
-
-	if (riid == IID_IPublicHouse) {
-		*ppvObject = static_cast<IPublicHouse *>(this);
-	}
-
-	if (riid == IID_IConnectionPointContainer) {
-		*ppvObject = static_cast<IConnectionPointContainer *>(this);
-	}
-
-	if (riid == IID_IPersist) {
-		*ppvObject = static_cast<IPersist *>(this);
-	}
-
-	if (riid == IID_IPersistStream) {
-		*ppvObject = static_cast<IPersistStream *>(this);
-	}
-
-	if (*ppvObject == 0) {
-		return(E_NOINTERFACE);
-	}
-
-	this->AddRef();
-
-	return(S_OK);
-}
-
-
-/// <summary>
-/// Is this house's base fully powered?
-/// This routine serves the scripting interface, which uses it to tell whether the house is
-/// running a power deficit and its buildings are suffering for it.
-/// </summary>
-/// <returns>bool; Does the power output meet or exceed the drain?</returns>
-bool STDMETHODCALLTYPE HouseClass::Is_Powered(void)
-{
-	return(Power >= Drain);
-}
-
-
-/// <summary>
-/// Fetches the application object this house belongs to.
-/// This routine serves the scripting interface. Script that has hold of a house can reach
-/// the rest of the game object model through the application returned.
-/// </summary>
-/// <returns>Returns with a pointer to the application interface.</returns>
-IApplication * STDMETHODCALLTYPE HouseClass::Get_Application(void)
-{
-	IApplication *app;
-	ApplicationInstance.QueryInterface(IID_IApplication, (void**)&app);
-	return(app);
-}
-
-
-/// <summary>
-/// Fetches the name of this house.
-/// This routine serves the scripting interface. The given name of the house type is handed
-/// back as a wide string so that script can identify the house it is talking to.
-/// </summary>
-/// <returns>Returns with a newly allocated string holding the name of the house.</returns>
-/// <remarks>The caller owns the string returned and must free it.</remarks>
-BSTR STDMETHODCALLTYPE HouseClass::Name(void)
-{
-	WCHAR psz[32];
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, Class->GivenName, -1, psz, ARRAY_SIZE(psz));
-	return(SysAllocString(psz));
-}
-
-
 /***********************************************************************************************
  * HouseClass::Available_Money -- Fetches the total credit worth of the house.                 *
  *                                                                                             *
@@ -618,7 +512,7 @@ BSTR STDMETHODCALLTYPE HouseClass::Name(void)
  * HISTORY:                                                                                    *
  *   01/25/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-LONG STDMETHODCALLTYPE HouseClass::Available_Money(void)
+int HouseClass::Available_Money(void)
 {
 	return(Credits + Tiberium.Get_Total_Value());
 }
@@ -626,11 +520,9 @@ LONG STDMETHODCALLTYPE HouseClass::Available_Money(void)
 
 /// <summary>
 /// Fetches the unused tiberium storage of this house.
-/// This routine is part of the house interface. The computer's general watches it so that it
-/// knows when another silo is called for.
 /// </summary>
 /// <returns>Returns with the amount of tiberium the house still has room for.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Available_Storage(void)
+int HouseClass::Available_Storage(void)
 {
 	return(Capacity - Tiberium.Get_Total_Amount());
 }
@@ -638,11 +530,9 @@ LONG STDMETHODCALLTYPE HouseClass::Available_Storage(void)
 
 /// <summary>
 /// Fetches the power production of this house's base.
-/// This routine is part of the house interface that the computer's general uses to keep an
-/// eye on the base it is running.
 /// </summary>
 /// <returns>Returns with the power that the house's buildings produce.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Power_Output(void)
+int HouseClass::Power_Output(void)
 {
 	return(Power);
 }
@@ -650,143 +540,12 @@ LONG STDMETHODCALLTYPE HouseClass::Power_Output(void)
 
 /// <summary>
 /// Fetches the power draw of this house's base.
-/// This routine is part of the house interface, and is paired with Power_Output so that the
-/// computer's general can tell when another power plant is due.
+/// This is paired with Power_Output; a base whose drain exceeds its output suffers for it.
 /// </summary>
 /// <returns>Returns with the power that the house's buildings consume.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Power_Drain(void)
+int HouseClass::Power_Drain(void)
 {
 	return(Drain);
-}
-
-
-/// <summary>
-/// Fetches the number of objects this house owns in a category.
-/// This routine is part of the house interface, and the computer's general consults it when
-/// working out what its forces are short of.
-/// </summary>
-/// <param name="category">The object category to count.</param>
-/// <returns>Returns with the number of objects the house owns in that category.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Category_Quantity(CategoryType category)
-{
-	int quantity = 0;
-
-	for (int index = 0; index < Technos.Count(); index++) {
-		TechnoClass * techno = Technos[index];
-		if (techno->House == this && techno->TClass->Category == category) {
-			quantity++;
-		}
-	}
-
-	return(quantity);
-}
-
-
-/// <summary>
-/// Fetches the apparent number of objects this house owns in a category.
-/// This routine is part of the public house interface -- it reports what a rival is allowed
-/// to know about the size of this house's forces.
-/// </summary>
-/// <param name="category">The object category to count.</param>
-/// <returns>Returns with the number of objects the house owns in that category.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Apparent_Category_Quantity(CategoryType category)
-{
-	int quantity = 0;
-
-	for (int index = 0; index < Technos.Count(); index++) {
-		TechnoClass * techno = Technos[index];
-		if (techno->House == this && techno->TClass->Category == category) {
-			quantity++;
-		}
-	}
-
-	return(quantity);
-}
-
-
-/// <summary>
-/// Fetches the fighting worth of a category of this house's objects.
-/// This routine is part of the house interface. The computer's general weighs it when it
-/// judges how much it has already invested in a category.
-/// </summary>
-/// <param name="category">The object category to total up.</param>
-/// <returns>Returns with the combined risk and reward of the objects in that
-/// category.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Category_Power(CategoryType category)
-{
-	int quantity = 0;
-
-	for (int index = 0; index < Technos.Count(); index++) {
-		TechnoClass * techno = Technos[index];
-		TechnoTypeClass const * ttype = techno->TClass;
-		if (techno->House == this && ttype->Category == category) {
-			quantity += ttype->Risk + ttype->Reward;
-		}
-	}
-
-	return(quantity);
-}
-
-
-/// <summary>
-/// Fetches the apparent fighting worth of a category of this house's objects.
-/// This routine is part of the public house interface -- it reports what a rival is allowed
-/// to know about how much muscle this house keeps in the category.
-/// </summary>
-/// <param name="category">The object category to total up.</param>
-/// <returns>Returns with the combined risk and reward of the objects in that
-/// category.</returns>
-LONG STDMETHODCALLTYPE HouseClass::Apparent_Category_Power(CategoryType category)
-{
-	int quantity = 0;
-
-	for (int index = 0; index < Technos.Count(); index++) {
-		TechnoClass * techno = Technos[index];
-		TechnoTypeClass const * ttype = techno->TClass;
-		if (techno->House == this && ttype->Category == category) {
-			quantity += ttype->Risk + ttype->Reward;
-		}
-	}
-
-	return(quantity);
-}
-
-
-/// <summary>
-/// Fetches the center of this house's base.
-/// This routine is part of the house interface, and the computer's general treats the cell
-/// as the anchor for its base expansion and defense decisions.
-/// </summary>
-/// <returns>Returns with the cell at the center of the house's base.</returns>
-CellStruct STDMETHODCALLTYPE HouseClass::Base_Center(void)
-{
-	Cell cell = Center.As_Cell();
-	return((CellStruct &)cell);
-}
-
-
-/// <summary>
-/// Fetches the apparent center of this house's base.
-/// This routine is part of the public house interface -- it reports what a rival is allowed
-/// to know about where this house has settled.
-/// </summary>
-/// <returns>Returns with the cell at the center of the house's base.</returns>
-CellStruct STDMETHODCALLTYPE HouseClass::Apparent_Base_Center(void)
-{
-	Cell cell = Center.As_Cell();
-	return((CellStruct &)cell);
-}
-
-
-/// <summary>
-/// Fetches the identifier of this house.
-/// This routine is part of the house interface that the computer's general uses to examine
-/// the house it has been given to play.
-/// </summary>
-/// <returns>Returns with the house's index within the house heap.</returns>
-LONG STDMETHODCALLTYPE HouseClass::ID_Number(void)
-{
-	return(HeapID);
 }
 
 
@@ -929,24 +688,9 @@ HouseClass::~HouseClass (void)
 	}
 	SuperWeapon.Clear();
 
-	if (AIGeneral != NULL && GameActive) {
-		AIGeneral->Release();
-		AIGeneral = NULL;
-	}
-
 	while (HouseTags.Count() > 0) {
 		delete HouseTags[0];
 	}
-
-	for (index = 0; index < PowerEventConnectionPoints.Count(); index++) {
-		while (PowerEventConnectionPoints[index]->Release() > 0) {
-			;
-		}
-		PowerEventConnectionPoints[index] = NULL;
-	}
-	PowerEventConnectionPoints.Clear();
-
-	PowerEvents = NULL;
 
 	AbstractTypePtrTracker.Delete(this);
 	FactoryPtrTracker.Delete(this);
@@ -1493,11 +1237,6 @@ void HouseClass::AI(void)
 				AngerNodes[a].Level--;
 			}
 		}
-	}
-
-	if (AIGeneral != NULL) {
-		LONG framedelay = 0;
-		AIGeneral->AI(&framedelay);
 	}
 
 	/*
@@ -5779,8 +5518,6 @@ void HouseClass::Read_INI(CCINIClass const & ini)
 	Base.Read_INI(ini, hname);
 	Base.House = this;
 
-	AIGeneral = NULL;
-
 	//Make_Ally(HOUSE_NEUTRAL);
 	for (HousesType h = HOUSE_FIRST; h < Houses.Count(); h++) {
 		HouseClass * hptr = Houses[h];
@@ -5846,15 +5583,6 @@ void HouseClass::Write_INI(CCINIClass & ini)
 	ini.Put_Int(name, "IQ", Control.IQ);
 	ini.Put_Bool(name, "PlayerControl", IsPlayerControl);
 
-	if (AIGeneral) {
-		CLSID clsid;
-		IPersistPtr persist(AIGeneral);
-		persist->GetClassID(&clsid);
-		if (clsid != CLSID_AIHouse) {
-			ini.Put_CLSID(name, "AI", clsid);
-		}
-	}
-
 	unsigned allies = 0;
 	for (HousesType index = HOUSE_FIRST; index < Houses.Count(); index++) {
 		if ((Control.Allies & (1 << Houses[index]->HeapID)) != 0) {
@@ -5885,7 +5613,7 @@ void HouseClass::Write_INI(CCINIClass & ini)
  * HISTORY:                                                                                    *
  *   09/23/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-HRESULT STDMETHODCALLTYPE HouseClass::Fire_Sale(void)
+bool HouseClass::Fire_Sale(void)
 {
 	if (CurBuildings > 0) {
 		for (int index = 0; index < Buildings.Count(); index++) {
@@ -5917,7 +5645,7 @@ HRESULT STDMETHODCALLTYPE HouseClass::Fire_Sale(void)
  *   09/23/1996 JLB : Created.                                                                 *
  *   10/02/1996 JLB : Handles aircraft too.                                                    *
  *=============================================================================================*/
-HRESULT STDMETHODCALLTYPE HouseClass::All_To_Hunt(void)
+void HouseClass::All_To_Hunt(void)
 {
 	int index;
 
@@ -5931,8 +5659,6 @@ HRESULT STDMETHODCALLTYPE HouseClass::All_To_Hunt(void)
 	}
 
 	IsAllToHunt = true;
-
-	return(S_OK);
 }
 
 
@@ -6072,50 +5798,8 @@ void HouseClass::Adjust_Power(int adjust)
 {
 	if (!GameActive) return;
 
-	bool waslost = Power < Drain;
-
 	Power += adjust;
 	Update_Spied_Power_Plants();
-
-	bool islost = Power < Drain;
-
-	if (!ScenarioInit && waslost != islost) {
-
-		IConnectionPointContainer *pContainer;
-		QueryInterface(IID_IConnectionPointContainer, (void**)&pContainer);
-
-		IEnumConnectionPoints *ppEnumConnectionPoints;
-		pContainer->EnumConnectionPoints(&ppEnumConnectionPoints);
-
-		IConnectionPoint *pConnectionPoint;
-		while (SUCCEEDED(ppEnumConnectionPoints->Next(1, &pConnectionPoint, NULL))) {
-
-			IID iid;
-			pConnectionPoint->GetConnectionInterface(&iid);
-			if (iid != IID_IPowerEvents) {
-				pConnectionPoint->Release();
-				continue;
-			}
-
-			CONNECTDATA rgpcd;
-			IEnumConnections *ppEnumConnections;
-			pConnectionPoint->EnumConnections(&ppEnumConnections);
-			while (SUCCEEDED(ppEnumConnections->Next(1, &rgpcd, NULL))) {
-				if (islost) {
-					((IPowerEvents *)(rgpcd.pUnk))->Power_Lost();
-				} else {
-					((IPowerEvents *)(rgpcd.pUnk))->Power_Activated();
-				}
-				((IPowerEvents *)(rgpcd.pUnk))->Release();
-			}
-
-			ppEnumConnections->Release();
-			break;
-		}
-
-		pContainer->Release();
-		ppEnumConnectionPoints->Release();
-	}
 }
 
 
@@ -6136,52 +5820,8 @@ void HouseClass::Adjust_Power(int adjust)
  *=============================================================================================*/
 void HouseClass::Adjust_Drain(int adjust)
 {
-	bool waslost = Power < Drain;
-
 	Drain += adjust;
 	Update_Spied_Power_Plants();
-
-	bool islost = Power < Drain;
-
-	if (!ScenarioInit && waslost != islost) {
-
-		IConnectionPointContainer *pContainer;
-		QueryInterface(IID_IConnectionPointContainer, (void**)&pContainer);
-
-		IEnumConnectionPoints *ppEnumConnectionPoints;
-		pContainer->EnumConnectionPoints(&ppEnumConnectionPoints);
-
-		IConnectionPoint *pConnectionPoint;
-		while (SUCCEEDED(ppEnumConnectionPoints->Next(1, &pConnectionPoint, NULL))) {
-
-			IID iid;
-			pConnectionPoint->GetConnectionInterface(&iid);
-			if (iid != IID_IPowerEvents) {
-				pConnectionPoint->Release();
-				continue;
-			}
-
-			CONNECTDATA rgpcd;
-			IEnumConnections *ppEnumConnections;
-			pConnectionPoint->EnumConnections(&ppEnumConnections);
-			while (SUCCEEDED(ppEnumConnections->Next(1, &rgpcd, NULL))) {
-				IPowerEvents *iface = (IPowerEvents *)rgpcd.pUnk;
-				if (islost) {
-					iface->Power_Lost();
-				} else {
-					iface->Power_Activated();
-				}
-				iface->Release();
-
-			}
-
-			ppEnumConnections->Release();
-			break;
-		}
-
-		pContainer->Release();
-		ppEnumConnectionPoints->Release();
-	}
 }
 
 
@@ -6489,64 +6129,6 @@ bool HouseClass::Fetch_Waypoint_Data(WaypointClass * waypt, PathType & xpath, ch
 
 
 /// <summary>
-/// Creates an enumerator over this house's connection points.
-/// This routine is part of the connection point container contract, and lets a client
-/// discover which outgoing interfaces the house is prepared to serve.
-/// </summary>
-/// <param name="ppEnum">Pointer to fill in with the newly created enumerator.</param>
-/// <returns>Returns with S_OK, or E_OUTOFMEMORY if the enumerator could not be
-/// created.</returns>
-HRESULT STDMETHODCALLTYPE HouseClass::EnumConnectionPoints(IEnumConnectionPoints **ppEnum)
-{
-	if (ppEnum == NULL) {
-		return(E_POINTER);
-	}
-
-	EnumConnectionPointsClass *cpoints = new EnumConnectionPointsClass(PowerEventConnectionPoints);
-
-	if (cpoints == NULL) {
-		return(E_OUTOFMEMORY);
-	}
-
-	cpoints->AddRef();
-	*ppEnum = cpoints;
-	return(S_OK);
-}
-
-
-/// <summary>
-/// Finds the connection point for the outgoing interface specified.
-/// This routine is part of the connection point container contract. A client that wishes to
-/// be told about this house's power events locates its connection point through it.
-/// </summary>
-/// <param name="riid">The outgoing interface being asked for.</param>
-/// <param name="ppCP">Pointer to fill in with the connection point found.</param>
-/// <returns>Returns with S_OK, or CONNECT_E_CANNOTCONNECT if this house offers no such
-/// point.</returns>
-HRESULT STDMETHODCALLTYPE HouseClass::FindConnectionPoint(REFIID riid, IConnectionPoint **ppCP)
-{
-	if (ppCP == NULL) {
-		return(E_POINTER);
-	}
-
-	*ppCP = NULL;
-
-	for (int i = 0; i < PowerEventConnectionPoints.Count(); i++) {
-		IConnectionPoint *cpoint = PowerEventConnectionPoints[i];
-		IID iid;
-		cpoint->GetConnectionInterface(&iid);
-		if (iid == riid) {
-			*ppCP = cpoint;
-			cpoint->AddRef();
-			return(S_OK);
-		}
-	}
-
-	return(CONNECT_E_CANNOTCONNECT);
-}
-
-
-/// <summary>
 /// Stops tracking an object as one of this house's active possessions.
 /// This routine is called when an object leaves this house's control. A building also takes
 /// its power drain and storage capacity with it, and the tiberium it was holding is banked
@@ -6723,22 +6305,13 @@ void HouseClass::Compute_CRC(CRCEngine & crc) const
 
 /// <summary>
 /// Loads this house from the data stream.
-/// The super weapons and the published connection point belong to the session that created
-/// this house rather than to the record, so they are disposed of before the saved members
-/// are read over the top of them.
+/// The super weapons belong to the session that created this house rather than to the
+/// record, so they are disposed of before the saved members are read over the top of them.
 /// </summary>
 /// <param name="stream">The stream to read the house from.</param>
 /// <returns>Returns with S_OK, or the failure code reported by the stream.</returns>
 HRESULT STDMETHODCALLTYPE HouseClass::Load(IStream *stream)
 {
-	for (int index = 0; index < PowerEventConnectionPoints.Count(); index++) {
-		while (PowerEventConnectionPoints[index]->Release() > 0U) {
-			;
-		}
-		PowerEventConnectionPoints[index] = NULL;
-	}
-	PowerEventConnectionPoints.Clear();
-
 	while (SuperWeapon.Count()) {
 		delete SuperWeapon[0];
 		SuperWeapon.Delete_Index(0);
@@ -6908,32 +6481,12 @@ void HouseClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(SpeakMoneyDelay);
 	stream.Serialize(SpeakMaxedDelay);
 
-	/*
-	 * The strategy object is a COM sub-object rather than a member, so it persists itself
-	 * onto the raw stream through OLE. Loading hands back a fresh interface pointer instead
-	 * of filling this one in.
-	 */
-	bool hasaigen = (AIGeneral != NULL);
-	stream.Serialize(hasaigen);
-
-	if (hasaigen) {
-		if (stream.Is_Saving()) {
-			IPersistStreamPtr ptr(AIGeneral);
-			OleSaveToStream(ptr, stream.Get_Stream());
-		} else {
-			OleLoadFromStream(stream.Get_Stream(), IID_IAIHouse, (void **)&AIGeneral);
-		}
-	}
-
 	// BuildChoice -- a scratch list shared by every house rather than owned by one.
 	stream.Serialize(Regions);
 	stream.Serialize(IniName);
 	stream.Serialize(Scheme);
 	// BaseAreaMap -- points at a defense grid that only exists while a base defense is being
 	// placed.
-	// PowerEventConnectionPoints -- the connection point this house publishes belongs to the
-	// running session, so Post_Load publishes a fresh one.
-	// PowerEvents
 	stream.Serialize(field_10E20);
 	stream.Serialize(field_10E28);
 	stream.Serialize(DefenseCostMultiplier);
@@ -6942,27 +6495,6 @@ void HouseClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(EnemyAirForcePrediction);
 	stream.Serialize(EnemyInfantryForcePrediction);
 	stream.Serialize(PowerSurplus);
-}
-
-
-/// <summary>
-/// Publishes this house's connection point again once it has been loaded.
-/// The point the constructor published was released before the members were read, since a
-/// point advised by the previous session is of no use to this one.
-/// </summary>
-void HouseClass::Post_Load(void)
-{
-	BASECLASS::Post_Load();
-
-	IUnknown * unknown = NULL;
-	QueryInterface(IID_IUnknown, (void **)&unknown);
-	PowerEvents = new ConnectionPointClass(IID_IPowerEvents, unknown);
-
-	IConnectionPoint * cp;
-	PowerEvents->QueryInterface(IID_IConnectionPoint, (void **)&cp);
-	PowerEventConnectionPoints.Add(cp);
-
-	unknown->Release();
 }
 
 
@@ -9496,10 +9028,3 @@ int HouseClass::Fetch_Heap_ID(void) const
 {
 	return(HeapID);
 }
-
-
-/// Unlike every other interface identifier, this one is defined in the house module.
-#define INITGUID
-#undef DEFINE_GUID
-#include <basetyps.h>
-#include "ihouse_i.c"

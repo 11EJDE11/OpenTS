@@ -522,7 +522,7 @@ class CellClass : public AbstractClass
 		virtual void Serialize(SaveStreamClass & stream) override;
 		virtual void Post_Load(void) override;
 
-		virtual int STDMETHODCALLTYPE What_Am_I(void) const override;
+		virtual int What_Am_I(void) const override;
 
 		/// Hides AbstractClass::Detach rather than overriding it -- the signatures differ.
 		void Detach(AbstractClass const * target);

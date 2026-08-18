@@ -39,9 +39,6 @@
 #include "credits.h"
 #include "dropship.h"
 #include "ftimer.h"
-#include "iaihouse.h"
-#include "ihouse.h"
-#include "ipublichouse.h"
 #include "object.h"
 #include "region.h"
 #include "rgb.h"
@@ -148,7 +145,7 @@ class HouseStaticClass {
 **	Player control structure. Each player (computer or human) has one of
 **	these structures associated. These are located in a global array.
 */
-class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, public IConnectionPointContainer
+class HouseClass : public AbstractClass
 {
 		typedef AbstractClass BASECLASS;
 
@@ -736,32 +733,16 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 
 		virtual void Serialize(SaveStreamClass & stream) override;
-		virtual void Post_Load(void) override;
 
-		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
 		virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
-		virtual LONG STDMETHODCALLTYPE ID_Number(void) override;
-		virtual BSTR STDMETHODCALLTYPE Name(void) override;
-		virtual IApplication *STDMETHODCALLTYPE Get_Application(void) override;
-		virtual LONG STDMETHODCALLTYPE Available_Money(void) override;
-		virtual LONG STDMETHODCALLTYPE Available_Storage(void) override;
-		virtual LONG STDMETHODCALLTYPE Power_Output(void) override;
-		virtual LONG STDMETHODCALLTYPE Power_Drain(void) override;
-		virtual LONG STDMETHODCALLTYPE Category_Quantity(CategoryType category) override;
-		virtual LONG STDMETHODCALLTYPE Category_Power(CategoryType category) override;
-		virtual CellStruct STDMETHODCALLTYPE Base_Center(void) override;
-		virtual HRESULT STDMETHODCALLTYPE Fire_Sale(void) override;
-		virtual HRESULT STDMETHODCALLTYPE All_To_Hunt(void) override;
-
-		virtual LONG STDMETHODCALLTYPE Apparent_Category_Quantity(CategoryType category) override;
-		virtual LONG STDMETHODCALLTYPE Apparent_Category_Power(CategoryType category) override;
-		virtual CellStruct STDMETHODCALLTYPE Apparent_Base_Center() override;
-		virtual bool STDMETHODCALLTYPE Is_Powered() override;
-
-		virtual HRESULT STDMETHODCALLTYPE EnumConnectionPoints(IEnumConnectionPoints **ppEnum) override;
-		virtual HRESULT STDMETHODCALLTYPE FindConnectionPoint(REFIID riid, IConnectionPoint **ppCP) override;
+		int Available_Money(void);
+		int Available_Storage(void);
+		int Power_Output(void);
+		int Power_Drain(void);
+		bool Fire_Sale(void);
+		void All_To_Hunt(void);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
 		virtual void Compute_CRC(CRCEngine &) const override;
@@ -1070,12 +1051,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 
 		static DynamicVectorClass<BuildChoiceClass *> BuildChoice;
 
-		/*
-		 * Pointer to the external AI object driving this house, if one has been attached. It is
-		 * given a slice of every house AI pass to run whatever strategy it implements.
-		 */
-		IAIHouse *AIGeneral;
-
 	public:
 		/*
 		**	This vector holds the recorded status of the map regions. It is through
@@ -1109,18 +1084,6 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		 * planned. The cell weighing routine is static, so this is how it reaches the grid.
 		 */
 		int *BaseAreaMap;
-
-		/*
-		 * These are the connection points this house publishes to outside listeners. Only the
-		 * PowerEvents point is ever offered.
-		 */
-		DynamicVectorClass<IConnectionPoint *> PowerEventConnectionPoints;
-
-		/*
-		 * Pointer to the connection point that tells subscribers when this house has lost or
-		 * regained power.
-		 */
-		IConnectionPoint *PowerEvents;
 
 		/// Unused
 		int field_10E20;

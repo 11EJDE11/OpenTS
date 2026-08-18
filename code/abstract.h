@@ -34,11 +34,12 @@
 
 #include "coord.h"
 #include "globals.h"
-#include "irtti.h"
 #include "stimer.h"
 
 #include "house.hh"
 #include "rtti.hh"
+
+#include <comdef.h>
 
 class AbstractTypeClass;
 class CRCEngine;
@@ -61,7 +62,7 @@ class MonoClass;
 **	This class is the base class for all game objects that have an existence on the
 **	battlefield.
 */
-class AbstractClass : public IPersistStream, public IRTTITypeInfo
+class AbstractClass : public IPersistStream
 {
 	public:
 
@@ -114,9 +115,9 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
-		virtual int STDMETHODCALLTYPE What_Am_I(void) const override;
-		virtual int STDMETHODCALLTYPE Fetch_ID(void) const override;
-		virtual void STDMETHODCALLTYPE Create_ID(void) override;
+		virtual int What_Am_I(void) const;
+		virtual int Fetch_ID(void) const;
+		virtual void Create_ID(void);
 
 		AbstractClass & operator = (const AbstractClass & that)
 		{

@@ -52,7 +52,7 @@ class SuperClass : public AbstractClass
 
 		virtual void Serialize(SaveStreamClass & stream) override;
 
-		virtual int STDMETHODCALLTYPE What_Am_I(void) const override {return(SuperClass::Fetch_RTTI());};
+		virtual int What_Am_I(void) const override {return(SuperClass::Fetch_RTTI());};
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_SUPERWEAPON);}
 

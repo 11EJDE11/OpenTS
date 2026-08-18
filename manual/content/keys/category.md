@@ -11,4 +11,4 @@ The value is matched against the [object categories](/reference/enums/object-cat
 
 An InfantryType categorized `Civilian` is left out of the cameo list on the dropship loadout screen a scenario opens when its `[Basic] StartingDropships` is above zero — and only on the fallback list that screen builds when the scenario declares no [`AllowableUnits`](/keys/allowableunits/) of its own.
 
-Nothing else consults the category. Four house queries group a house's objects by it — how many the house owns in a category and what those objects are worth in risk and reward — but they are there for an external AI advisor to call through the interface every house exposes. That advisor is the unfinished AI general: a house runs one every frame if it has one attached, and nothing in the game ever attaches one.
+Nothing else consults the category.

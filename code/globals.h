@@ -94,7 +94,6 @@ class ThemeClass;
 class SessionClass;
 class IPXManagerClass;
 class Buffer;
-class TiberianSunClassFactory;
 class SpecialClass;
 class EventClass;
 class FrameTimerClass;
@@ -322,5 +321,3 @@ extern CDTimerClass<FrameTimerClass> TournamentTimer;
 extern char Debug_ScenarioName[];
 
 extern Buffer * UnkBuffer;
-
-extern TiberianSunClassFactory TibSunFactory;

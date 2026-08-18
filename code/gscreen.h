@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "imap.h"
 #include "keyboard.h"
 
 #include "mouse.hh"
@@ -63,7 +62,7 @@ enum GScreenRedrawFlags
 };
 
 
-class GScreenClass : public IGameMap
+class GScreenClass
 {
 	friend class Tactical;
 
@@ -71,10 +70,6 @@ class GScreenClass : public IGameMap
 
 		GScreenClass(void);
 		virtual ~GScreenClass(void) {}
-
-		virtual LONG STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
-		virtual ULONG STDMETHODCALLTYPE AddRef(void) override { return(1); }
-		virtual ULONG STDMETHODCALLTYPE Release(void) override { return(1); }
 
 		virtual void Serialize(SaveStreamClass & stream);
 

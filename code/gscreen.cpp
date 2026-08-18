@@ -106,32 +106,6 @@ void GScreenClass::Serialize(SaveStreamClass & stream)
 }
 
 
-/// <summary>
-/// Fetches a requested interface from the game screen.
-/// The game screen publishes itself as IGameMap so that the scenario and save game code can
-/// reach the map through COM. Any other interface is refused.
-/// </summary>
-/// <param name="riid">The identifier of the interface being asked for.</param>
-/// <param name="ppvObject">Pointer to the interface pointer to fill in.</param>
-/// <returns>Returns with S_OK and a counted reference on success. Otherwise, E_POINTER or
-/// E_NOINTERFACE is returned.</returns>
-LONG GScreenClass::QueryInterface(REFIID riid, LPVOID * ppvObject)
-{
-	if (ppvObject == NULL) {
-		return(E_POINTER);
-	}
-
-	if (riid != IID_IUnknown && riid != IID_IGameMap) {
-		return(E_NOINTERFACE);
-	}
-
-	*ppvObject = reinterpret_cast<IGameMap *>(this);
-
-	reinterpret_cast<IUnknown *>(*ppvObject)->AddRef();
-	return(S_OK);
-}
-
-
 /***********************************************************************************************
  * GScreenClass::One_Time -- Handles one time class setups.                                    *
  *                                                                                             *
@@ -619,11 +593,3 @@ void GScreenClass::AI(KeyNumType &, Point2D const & xy)
 	ScreenX < 0 ? ScreenX += 1 : ScreenX > 0 ? ScreenX -= 1 : 0;
 	ScreenY < 0 ? ScreenY += 1 : ScreenY > 0 ? ScreenY -= 1 : 0;
 }
-
-
-/// Unlike the other interface identifiers, the IGameMap GUID is defined in this module.
-#define INITGUID
-#undef DEFINE_GUID
-#include <basetyps.h>
-
-#include "imap_i.c"

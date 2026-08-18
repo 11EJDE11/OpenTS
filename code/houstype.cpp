@@ -290,9 +290,6 @@ HRESULT STDMETHODCALLTYPE HouseTypeClass::QueryInterface(REFIID riid, LPVOID * p
 	if (riid == IID_IPersistStream) {
 		*ppvObject = (IPersist *)this;
 	}
-	if (riid == IID_IRTTITypeInfo) {
-		*ppvObject = (IRTTITypeInfo *)this;
-	}
 	if (*ppvObject == NULL) {
 		return(E_NOINTERFACE);
 	}

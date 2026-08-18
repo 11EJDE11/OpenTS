@@ -23,5 +23,3 @@ MapEditClass Map;
 #else
 MouseClass Map;
 #endif
-
-IGameMapPtr GameMap;

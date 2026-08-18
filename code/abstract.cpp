@@ -80,7 +80,7 @@ AbstractClass::~AbstractClass(void)
 /// of the hierarchy report RTTI_NONE.
 /// </summary>
 /// <returns>Returns with the RTTI type constant for this object.</returns>
-int STDMETHODCALLTYPE AbstractClass::What_Am_I(void) const
+int AbstractClass::What_Am_I(void) const
 {
 	return(RTTI);
 }
@@ -90,7 +90,7 @@ int STDMETHODCALLTYPE AbstractClass::What_Am_I(void) const
 /// Fetches this object's unique identifier.
 /// </summary>
 /// <returns>Returns with the unique ID, or -1 if none has been assigned yet.</returns>
-int STDMETHODCALLTYPE AbstractClass::Fetch_ID(void) const
+int AbstractClass::Fetch_ID(void) const
 {
 	return(ID);
 }
@@ -101,7 +101,7 @@ int STDMETHODCALLTYPE AbstractClass::Fetch_ID(void) const
 /// The ID is drawn from the scenario's running counter, so objects created
 /// before a scenario exists are all given an ID of zero.
 /// </summary>
-VOID STDMETHODCALLTYPE AbstractClass::Create_ID(void)
+void AbstractClass::Create_ID(void)
 {
 	ID = (Scen == NULL ? 0 : Scen->Get_Unique_ID());
 }
@@ -110,8 +110,8 @@ VOID STDMETHODCALLTYPE AbstractClass::Create_ID(void)
 /// <summary>
 /// Fetches a COM interface pointer from this object.
 /// This is the IUnknown implementation shared by every game object. Abstract
-/// objects expose IUnknown, IPersistStream, IPersist and IRTTITypeInfo; the save
-/// game system reaches the whole object hierarchy through them.
+/// objects expose IUnknown, IPersistStream and IPersist; the save game system
+/// reaches the whole object hierarchy through them.
 /// </summary>
 /// <param name="riid">The identifier of the interface being asked for.</param>
 /// <param name="ppvObject">Receives the interface pointer, or NULL when the
@@ -136,9 +136,6 @@ HRESULT STDMETHODCALLTYPE AbstractClass::QueryInterface(REFIID riid, LPVOID * pp
 	}
 	if (riid == IID_IPersist) {
 		*ppvObject = (IPersist *)this;
-	}
-	if (riid == IID_IRTTITypeInfo) {
-		*ppvObject = (IRTTITypeInfo *)this;
 	}
 	if (*ppvObject == NULL) {
 		return(E_NOINTERFACE);

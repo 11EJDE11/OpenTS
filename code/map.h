@@ -84,7 +84,6 @@ class MapClass: public GScreenClass
 		/*
 		 * Cell access, validity and visibility
 		 */
-		virtual LONG STDMETHODCALLTYPE Is_Visible(CellStruct cell) override;
 		CellClass & operator [] (Coord const & coord) const;
 		CellClass & operator [] (Cell const & cell) const;
 		int ID(CellClass * ptr) {return(Array.ID(ptr));};

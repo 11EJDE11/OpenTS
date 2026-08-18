@@ -6249,7 +6249,7 @@ bool CellClass::Can_Build_Here(void) const
 /// that only ever sees the cell through its abstract interface.
 /// </summary>
 /// <returns>Returns with RTTI_CELL.</returns>
-int STDMETHODCALLTYPE CellClass::What_Am_I(void) const
+int CellClass::What_Am_I(void) const
 {
 	return(RTTI_CELL);
 }

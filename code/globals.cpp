@@ -39,12 +39,6 @@
 #include "isun_i.c"
 #include "ilocos.h"
 #include "ilocos_i.c"
-#include "irtti.h"
-#include "irtti_i.c"
-#include "iaihouse.h"
-#include "iaihouse_i.c"
-#include "ipublichouse.h"
-#include "ipublichouse_i.c"
 #include "ipiggy.h"
 #include "ipiggy_i.c"
 #include "iblockci.h"
@@ -54,7 +48,6 @@
 #undef INCLUDE_COM
 
 #include "_voxel.h"
-#include "app.h"
 #include "globals.h"
 #include "goptions.h"
 #include "ipxmgr.h"
@@ -199,9 +192,6 @@ int NewINIFormat = 0;
 **
 */
 bool GameInFocus = false;
-
-
-TiberianSunClassFactory TibSunFactory;
 
 
 /***************************************************************************
