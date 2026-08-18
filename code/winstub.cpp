@@ -78,6 +78,7 @@
 #include "conquer.h"
 #include "opents_version.h"
 
+#include <algorithm>
 #include <commctrl.h>
 
 int		ShowCommand;
@@ -487,7 +488,7 @@ void Create_Main_Window ( HINSTANCE instance , int command_show , int width , in
 		int x = (GetSystemMetrics(SM_CXSCREEN) - windowwidth) / 2;
 		int y = (GetSystemMetrics(SM_CYSCREEN) - windowheight) / 2;
 
-		MoveWindow(MainWindow, MAX(x, 0), MAX(y, 0), windowwidth, windowheight, 1);
+		MoveWindow(MainWindow, std::max(x, 0), std::max(y, 0), windowwidth, windowheight, 1);
 
 	} else {
 		/*

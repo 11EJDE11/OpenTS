@@ -36,6 +36,8 @@
 
 #include "tube.hh"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Creates a hover locomotor.
@@ -642,16 +644,16 @@ void HoverLocomotionClass::Motion_AI(void)
 			}
 		}
 
-		double accel = MIN(1, Boost * Height);
+		double accel = std::min(1.0, Boost * Height);
 
 		if (accel > Acceleration) {
 			Acceleration += 1.0 / (Rule->HoverAcceleration * TICKS_PER_MINUTE);
-			Acceleration = MIN(Acceleration, accel);
+			Acceleration = std::min(Acceleration, accel);
 		}
 
 		if (accel < Acceleration) {
 			Acceleration -= 1.0 / (Rule->HoverBrake * TICKS_PER_MINUTE);
-			Acceleration = MAX(Acceleration, 0);
+			Acceleration = std::max(Acceleration, 0.0);
 		}
 
 		if (Height > 0 && !WasPushed) {

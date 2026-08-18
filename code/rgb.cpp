@@ -38,6 +38,8 @@
 
 #include "hsv.h"
 
+#include <algorithm>
+
 RGBClass const BlackColor(0, 0, 0);
 
 
@@ -51,9 +53,9 @@ RGBClass const BlackColor(0, 0, 0);
 /// <returns>Returns with a reference to this color object.</returns>
 RGBClass & RGBClass::Lerp(RGBClass const & a, RGBClass const & b, float t)
 {
-	Red = (unsigned char)MAX(0.0f, MIN(255.0f, a.Red * (1.0f - t) + b.Red * t));
-	Green = (unsigned char)MAX(0.0f, MIN(255.0f, a.Green * (1.0f - t) + b.Green * t));
-	Blue = (unsigned char)MAX(0.0f, MIN(255.0f, a.Blue * (1.0f - t) + b.Blue * t));
+	Red = (unsigned char)std::max(0.0f, std::min(255.0f, a.Red * (1.0f - t) + b.Red * t));
+	Green = (unsigned char)std::max(0.0f, std::min(255.0f, a.Green * (1.0f - t) + b.Green * t));
+	Blue = (unsigned char)std::max(0.0f, std::min(255.0f, a.Blue * (1.0f - t) + b.Blue * t));
 
 	return(*this);
 }
@@ -68,9 +70,9 @@ RGBClass & RGBClass::Lerp(RGBClass const & a, RGBClass const & b, float t)
 /// <returns>Returns with a reference to this color object.</returns>
 RGBClass & RGBClass::Set(RGBClass const & rgb, float value)
 {
-	Red = (unsigned char)MAX(0.0f, MIN(255.0f, rgb.Red * value));
-	Green = (unsigned char)MAX(0.0f, MIN(255.0f, rgb.Green * value));
-	Blue = (unsigned char)MAX(0.0f, MIN(255.0f, rgb.Blue * value));
+	Red = (unsigned char)std::max(0.0f, std::min(255.0f, rgb.Red * value));
+	Green = (unsigned char)std::max(0.0f, std::min(255.0f, rgb.Green * value));
+	Blue = (unsigned char)std::max(0.0f, std::min(255.0f, rgb.Blue * value));
 
 	return(*this);
 }

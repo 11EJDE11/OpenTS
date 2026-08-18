@@ -25,6 +25,8 @@
 #include "surface.h"
 #include "tactical.h"
 
+#include <algorithm>
+
 DynamicVectorClass<SpotLightClass *> SpotLights;
 
 int SpotLightDontUseMMX = false;
@@ -132,7 +134,7 @@ void SpotLightClass::One_Time(void)
 			int radius = i * 2 + 1;
 			if (radius > 0) {
 				for (int irad = radius, color = -2; irad > 0; irad -= 2, color += 4) {
-					surf.Draw_Circle(Point2D(128, 128), irad, Rect(0, 0, 255, 255), max(0, color));
+					surf.Draw_Circle(Point2D(128, 128), irad, Rect(0, 0, 255, 255), std::max(0, color));
 				}
 			}
 			for (j = 0; j < 128; j++) {
@@ -287,7 +289,7 @@ void SpotLightClass::Draw_It(void)
 								int rr = rgb.Get_Red() + ((rgb.Get_Red() * spixel) >> 8);
 								int gg = rgb.Get_Green() + ((rgb.Get_Green() * spixel) >> 8);
 								int bb = rgb.Get_Blue() + ((rgb.Get_Blue() * spixel) >> 8);
-								*dptr = DSurface::Build_Hicolor_Pixel(MIN(255, rr), MIN(255, gg), MIN(255, bb));
+								*dptr = DSurface::Build_Hicolor_Pixel(std::min(255, rr), std::min(255, gg), std::min(255, bb));
 							}
 							dptr++;
 						}

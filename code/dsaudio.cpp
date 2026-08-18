@@ -23,6 +23,7 @@
 #include "soscomp.h"
 #include "winfix.h"
 
+#include <algorithm>
 #include <math.h> // for log10f
 
 
@@ -455,7 +456,7 @@ bool DSAudio::Init( HWND window , int bits_per_sample, bool stereo , int rate )
 			DebugString("Error - Failed to obtain timer resolution caps\n");
 			TimerResolution = TIMER_WORST_RESOLUTION;
 		} else {
-			TimerResolution = MIN(MAX(tc.wPeriodMin, (unsigned int)TIMER_TARGET_RESOLUTION), tc.wPeriodMax);
+			TimerResolution = std::min(std::max(tc.wPeriodMin, (unsigned int)TIMER_TARGET_RESOLUTION), tc.wPeriodMax);
 		}
 
 		DebugString("Audio timer resolution is %d milliseconds\n", TimerResolution);
@@ -1741,7 +1742,7 @@ void DSAudio::File_Stream_Preload(int handle)
 	*/
 	if (st->Loading) {
 		num = st->FilePending + 2;
-	   num = MIN(num, maxnum);
+	   num = std::min(num, maxnum);
 	} else {
 		num = maxnum;
 	}
@@ -2090,7 +2091,7 @@ bool DSAudio::File_Callback(short id, short *odd, void **buffer, int *size)
 				// num_empty_buffers will be from 1 to STREAM_BUFFER_COUNT
 				//
 				if (StreamLowImpact) {
-					num_empty_buffers = MIN((STREAM_BUFFER_COUNT >> 1)+STREAM_CUSHION_BLOCKS, (STREAM_BUFFER_COUNT - 2) - st->FilePending);
+					num_empty_buffers = std::min((STREAM_BUFFER_COUNT >> 1)+STREAM_CUSHION_BLOCKS, (STREAM_BUFFER_COUNT - 2) - st->FilePending);
 				}
 				else {
 					num_empty_buffers = (STREAM_BUFFER_COUNT - 2) - st->FilePending;
@@ -2256,7 +2257,7 @@ void DSAudio::Restore_Sound_Buffers ( void )
 /// <param name="volume">The master volume to use, in the range 0 to 255.</param>
 void DSAudio::Set_Volume_All(int volume)
 {
-	SoundVolume = MIN(volume, 255);
+	SoundVolume = std::min(volume, 255);
 
 	for (int index = 0; index < MAX_SFX; index++) {
 		if (Sample_Status(index)) {
@@ -2280,7 +2281,7 @@ void DSAudio::Set_Volume_All(int volume)
 int DSAudio::Adjust_Volume_All(int percent)
 {
 	int volume = SoundVolume;
-	SoundVolume = MIN((percent * volume) / 100, 255);
+	SoundVolume = std::min((percent * volume) / 100, 255);
 
 	for (int index = 0; index < MAX_SFX; index++) {
 		if (Sample_Status(index)) {
@@ -2306,7 +2307,7 @@ void DSAudio::Set_Handle_Volume(int handle, int volume)
 
 		LOCK_SECONDARY_MUTEX(handle);
 
-		volume = MIN(volume, 255);
+		volume = std::min(volume, 255);
 		SampleTrackerType &st = SampleTracker[handle];
 
 		st.PlayBuffer->SetVolume(Convert_HMI_To_Direct_Sound_Volume((SoundVolume * volume) / 255));

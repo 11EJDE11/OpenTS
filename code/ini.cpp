@@ -80,6 +80,7 @@
 #include "xpipe.h"
 #include "xstraw.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <cstdio>
@@ -598,7 +599,7 @@ int INIClass::Save(Pipe & pipe) const
 			int spacepad = entryptr->AssignColumn - (entrylen);
 			int totalspacepad = 0;
 			/// why half..
-			spacepad = MIN(MAX_LINE_LENGTH / 2, spacepad);
+			spacepad = std::min(MAX_LINE_LENGTH / 2, spacepad);
 
 			total += pipe.Put(entryptr->Entry, entrylen);
 			if (spacepad > 0) {
@@ -610,7 +611,7 @@ int INIClass::Save(Pipe & pipe) const
 
 			spacepad = entryptr->ValueColumn - (entrylen + totalspacepad + 1);
 			/// why half..
-			spacepad = MIN(MAX_LINE_LENGTH / 2, spacepad);
+			spacepad = std::min(MAX_LINE_LENGTH / 2, spacepad);
 
 			if (spacepad > 0) {
 				total += pipe.Put(spacebuffer, spacepad);
@@ -622,7 +623,7 @@ int INIClass::Save(Pipe & pipe) const
 			if (entryptr->LineComment != NULL) {
 				spacepad = entryptr->CommentColumn - (entrylen + valuelen + totalspacepad + 1);
 				/// why half..
-				spacepad = MIN(MAX_LINE_LENGTH / 2, spacepad);
+				spacepad = std::min(MAX_LINE_LENGTH / 2, spacepad);
 
 				if (spacepad > 0) {
 					total += pipe.Put(spacebuffer, spacepad);
@@ -1918,9 +1919,9 @@ char * INIClass::Scan_Line_For_Columns(char * buffer, int & assign_col, int & va
 		buffer++;
 	};
 
-	assign_col = MAX(0, assign_col);
-	value_col = MAX(0, value_col);
-	comment_col = MAX(0, comment_col);
+	assign_col = std::max(0, assign_col);
+	value_col = std::max(0, value_col);
+	comment_col = std::max(0, comment_col);
 
 	return(line_comment);
 }

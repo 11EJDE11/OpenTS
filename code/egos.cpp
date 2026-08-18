@@ -65,6 +65,7 @@
 #include "color.hh"
 #include "dialog.hh"
 
+#include <algorithm>
 #include <cstring>
 
 /*
@@ -580,7 +581,7 @@ void Show_Who_Was_Responsible (void)
 			int xidx;
 			int yidx;
 			for (int raw_alpha = 256; raw_alpha > 0; raw_alpha -= 8) {
-				int alpha = min(raw_alpha, 255);
+				int alpha = std::min(raw_alpha, 255);
 				xidx = step * fade_y;
 				yidx = step * (VideoModeHeight - fade_y - 1);
 				for (fade_x = 0; fade_x < VideoModeWidth; fade_x++) {

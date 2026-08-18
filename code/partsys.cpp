@@ -34,6 +34,8 @@
 #include "vector.h"
 #include "wave.h"
 
+#include <algorithm>
+
 extern short SineTable[];
 
 
@@ -162,7 +164,7 @@ void ParticleSystemClass::Draw_It(Point2D const & point, Rect const & cliprect) 
 	if (Class->OneFrameLight) {
 		if (Class->LightSize > 0 && SystemParticles.Count() > 0) {
 			float cap = (float)SystemParticles.Count() / (float)Class->ParticleCap;
-			float fullness = MAX(0.4, MIN(1, cap));
+			float fullness = std::max(0.4f, std::min(1.0f, cap));
 			int spotsize = (int)(fullness * Class->LightSize);
 			SpotLightClass * spotlight = new SpotLightClass(PositionCoord, spotsize);
 			spotlight->Set_Radius(SparkRadius);
@@ -239,7 +241,7 @@ ParticleClass * ParticleSystemClass::Spawn_Held_Particle_Random(Coord const & co
 	int active_count = SystemParticles.Count();
 	ParticleClass **vector = &SystemParticles[0];
 
-	int random_range = MIN(active_count, v);
+	int random_range = std::min(active_count, v);
 	int random_offset = abs(Scen->RandomNumber) % random_range;
 
 	int source_index = active_count - 2;
@@ -594,7 +596,7 @@ void ParticleSystemClass::Railgun_AI(void)
 				particle->MovementDirection = Normalize(particle->MovementDirection);
 
 				double vp = (Random_Double(-0.5, 0.5) + velocity_accum) * (Class->VelocityPerturbationCoefficient * 0.5);
-				velocity_accum = (float)MAX(MIN(vp, Class->VelocityPerturbationCoefficient), -Class->MovementPerturbationCoefficient);
+				velocity_accum = (float)std::max(std::min(vp, Class->VelocityPerturbationCoefficient), -Class->MovementPerturbationCoefficient);
 				particle->Speed = velocity_accum + particle->Class->Velocity;
 				i++;
 			} while (i < num_particles);

@@ -26,6 +26,8 @@
 #include "tactical.h"
 #include "vector.h"
 
+#include <algorithm>
+
 
 DynamicVectorClass<VocClass *> Vocs;
 
@@ -103,8 +105,8 @@ int VocClass::Play(float vol, int var)
 {
 	if (Options.SoundVolume > 0.0) {
 		if (Can_Play() && Audio_Available()) {
-			vol = MIN(Options.SoundVolume * Volume * vol, 1.0);
-			return(Audio.Play_Sample(FilePtr, Priority * vol, MIN(int(255.0 * vol), 255)));
+			vol = std::min(Options.SoundVolume * Volume * vol, 1.0f);
+			return(Audio.Play_Sample(FilePtr, Priority * vol, std::min(int(255.0 * vol), 255)));
 		}
 	}
 	return(-1);
@@ -122,8 +124,8 @@ int VocClass::Play(float vol)
 {
 	if (vol > 0.0) {
 		if (Can_Play() && Audio_Available()) {
-			vol = MIN(Volume * vol, 1.0);
-			return(Audio.Play_Sample(FilePtr, Priority * vol, MIN(int(255.0 * vol), 255)));
+			vol = std::min(Volume * vol, 1.0f);
+			return(Audio.Play_Sample(FilePtr, Priority * vol, std::min(int(255.0 * vol), 255)));
 		}
 	}
 	return(-1);
@@ -225,12 +227,12 @@ int Sound_Effect(VocType voc, Coord const & coord)
 			int y = py < 0 ? abs(py) : 0;
 			int h = py > TacticalRect.Height ? py - TacticalRect.Height : 0;
 
-			x = max(abs(x), abs(w));
-			y = max(abs(y), abs(h));
+			x = std::max(abs(x), abs(w));
+			y = std::max(abs(y), abs(h));
 
 			const float v = (1/1360.0f);
 
-			vol = 1.0 - (max(x, y) * v);
+			vol = 1.0 - (std::max(x, y) * v);
 			vol = vol >= 0.0 ? vol : 0;
 		}
 		float volume = vol;

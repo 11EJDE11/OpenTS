@@ -42,6 +42,7 @@
 #include "pip.hh"
 #include "voc.hh"
 
+#include <algorithm>
 #include <new.h>
 
 
@@ -350,7 +351,7 @@ void const * TechnoTypeClass::Get_Cameo_Data(void) const
 int TechnoTypeClass::Repair_Cost(void) const
 {
 	int cost = (Raw_Cost()/(MaxStrength/Rule->RepairStep)) * Rule->RepairPercent;
-	return(MAX(cost, 1));
+	return(std::max(cost, 1));
 }
 
 
@@ -427,10 +428,10 @@ bool TechnoTypeClass::Is_Two_Shooter(void) const
  *=============================================================================================*/
 static inline int _Scale_To_256(int val)
 {
-	val = MIN(val, 100);
-	val = MAX(val, 0);
+	val = std::min(val, 100);
+	val = std::max(val, 0);
 	val = ((val * (MPH_LIGHT_SPEED + 1)) / 100);
-	val = MIN(val, MPH_LIGHT_SPEED);
+	val = std::min<int>(val, MPH_LIGHT_SPEED);
 	return(val);
 }
 
@@ -715,13 +716,13 @@ int TechnoTypeClass::Max_Pips(void) const
 			return(10);
 
 		case PIPSCALE_AMMO:
-			return(MIN(MaxAmmo, 5));
+			return(std::min(MaxAmmo, 5));
 
 		case PIPSCALE_TIBERIUM:
 			return(5);
 
 		case PIPSCALE_PASSENGERS:
-			return(MIN(MaxPassengers, 5));
+			return(std::min(MaxPassengers, 5));
 
 		case PIPSCALE_CHARGE:
 			return(8);

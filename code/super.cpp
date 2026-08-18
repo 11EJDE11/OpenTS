@@ -75,6 +75,8 @@
 #include "vox.h"
 #include "weapon.h"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Default constructor for the super weapon objects.
@@ -454,7 +456,7 @@ int SuperClass::Anim_Stage(void) const
 			}
 			stage = ANIMATION_STAGES * (double(Class->RechargeTime-Control.Value()) / Class->RechargeTime);
 		}
-		stage = MIN(stage, ANIMATION_STAGES-1);
+		stage = std::min(stage, ANIMATION_STAGES-1);
 		return(stage);
 	}
 	return(0);

@@ -74,6 +74,8 @@
 #include "windlg.h"
 #include "winstub.h"
 
+#include <algorithm>
+
 
 #define SIZEGBAR			140
 #define HALLFAME_X		11
@@ -685,7 +687,7 @@ void ScoreClass::Do_Graph(int gkilled, int nkilled, int xpos)
 
 	int gdikilled = gkilled, nodkilled=nkilled;
 
-	maxval = MAX(gdikilled, nodkilled);
+	maxval = std::max(gdikilled, nodkilled);
 	if (!maxval) maxval=1;
 
 	gdikilled = (gdikilled * SIZEGBAR) / maxval;
@@ -695,7 +697,7 @@ void ScoreClass::Do_Graph(int gkilled, int nkilled, int xpos)
 		nodkilled = nkilled * 5;
 	}
 
-	maxval = MAX(gdikilled, nodkilled);
+	maxval = std::max(gdikilled, nodkilled);
 	if (!maxval) maxval=1;
 
 	Rect trect;
@@ -722,7 +724,7 @@ void ScoreClass::Do_Graph(int gkilled, int nkilled, int xpos)
 	int nodadd = 2 * nkilled;
 	int gdiadd = 2 * gkilled;
 
-	for (int i = ypos - 1; gdicount <= MAX(gdikilled, nodkilled); ) {
+	for (int i = ypos - 1; gdicount <= std::max(gdikilled, nodkilled); ) {
 
 		if (rect1.Is_Valid()) {
 			HiddenSurface->Blit_From(rect1, *AlternateSurface, rect1);
@@ -1291,8 +1293,8 @@ int ScoreFontClass::Char_Width(char ch)
 	CharToOemBuff(&ch, out, sizeof(out));
 
 	int frame;
-	frame = MAX((out[0] & 0xFF) - 33, 0);
-	frame = 3 * MIN(frame, 216);
+	frame = std::max((out[0] & 0xFF) - 33, 0);
+	frame = 3 * std::min(frame, 216);
 
 	return(ShapePtr->Get_Rect(frame + 2).Width);
 }
@@ -1311,8 +1313,8 @@ void ScoreFontClass::Print_Char(Surface *surf, char ch, int x, int y, int v, boo
 
 	if (ch != 32) {
 		int frame;
-		frame = MAX((ch & 0xFF) - 33, 0);
-		frame = 3 * MIN(frame, 216);
+		frame = std::max((ch & 0xFF) - 33, 0);
+		frame = 3 * std::min(frame, 216);
 
 		if (play_sound == true && v == 0) {
 			void *snd = text_sounds[rand() % 3].mSound;
@@ -1337,7 +1339,7 @@ void ScoreFontClass::Print_String(Surface *surf, const char * string, int x, int
 	while (*string != '\0') {
 		if (*string != 32) {
 			CharToOemBuff(string, (LPSTR)buf, sizeof(char));
-			int frame = 3 * min(MAX(buf[0] - 33, 0), 216);
+			int frame = 3 * std::min(std::max(buf[0] - 33, 0), 216);
 
 			Draw_Shape(*surf, *Drawer, ShapePtr, frame + brightness_frame, Point2D(x - ShapePtr->Get_Rect(frame + 2).X, y), surf->Get_Rect(), SHAPE_WIN_REL);
 		}

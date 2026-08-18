@@ -49,6 +49,8 @@
 
 #include "draw.hh"
 
+#include <algorithm>
+
 
 LEPTON ParticleClass::SmokeWindX[FACING_COUNT] = { 0, 2, 2, 1, 0, -2, -2, -2 };
 LEPTON ParticleClass::SmokeWindY[FACING_COUNT] = { -2, -2, 0, 2, 2, 2, 0, -2 };
@@ -132,7 +134,7 @@ ParticleClass::ParticleClass(ParticleTypeClass const * type, Coord const & origi
 		}
 
 		if (abs_vy > 1e-6) {
-			min_time = MIN(min_time, abs(delta.Y) / abs_vy);
+			min_time = std::min(min_time, abs(delta.Y) / abs_vy);
 		}
 
 		StateAIAdvance = (int)(min_time / (Class->FinalDamageState + 1) + 1.0);
@@ -305,9 +307,9 @@ void ParticleClass::Gas_Behavior_AI(void)
 		}
 
 		if (HeightAGL > 5 && (Frame % 2) == 0) {
-			GasDrift.Z = MAX(-5, GasDrift.Z - 1);
+			GasDrift.Z = std::max(-5, GasDrift.Z - 1);
 		} else {
-			GasDrift.Z = MAX(GasDrift.Z, 0);
+			GasDrift.Z = std::max(GasDrift.Z, 0);
 		}
 	}
 
@@ -733,7 +735,7 @@ void ParticleClass::Smoke_Motion_AI(void)
 
 		int height = Map.Get_Height_GL(coord);
 		if (coord.Z > height + 5) {
-			int descend = MIN(coord.Z - (height + 5), 2);
+			int descend = std::min(coord.Z - (height + 5), 2);
 			coord.Z -= descend;
 		}
 

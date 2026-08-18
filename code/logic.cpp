@@ -76,6 +76,8 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 
 /*
  * Global COM reference count.
@@ -136,7 +138,7 @@ void LogicClass::Debug_Dump(MonoClass * mono) const
 	mono->Set_Cursor(1, 21);mono->Printf("%3d", TriggerTypes.Count());
 	mono->Set_Cursor(1, 22);mono->Printf("%3d", Factories.Count());
 
-	SpareTicks = MIN((int)SpareTicks, (int)TIMER_SECOND);
+	SpareTicks = std::min((int)SpareTicks, (int)TIMER_SECOND);
 
 	/*
 	**	CPU utilization record.
@@ -308,16 +310,16 @@ void LogicClass::AI(void)
 	if (Scen->DesiredAmbientLight != Scen->CurrentAmbientLight && Rule->AmbientLightChangeRate != 0 && Scen->AmbientChangeTimer == 0) {
 		Scen->AmbientChangeTimer = TICKS_PER_MINUTE * Rule->AmbientLightChangeRate;
 
-		Scen->DesiredAmbientLight = MAX(Scen->DesiredAmbientLight, 0);
+		Scen->DesiredAmbientLight = std::max(Scen->DesiredAmbientLight, 0);
 
 		int value = 100.0 * Rule->AmbientLightChangeStep;
 
 		if (Scen->DesiredAmbientLight < Scen->CurrentAmbientLight) {
 			Scen->CurrentAmbientLight -= value;
-			Scen->CurrentAmbientLight = MAX(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
+			Scen->CurrentAmbientLight = std::max(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
 		} else {
 			Scen->CurrentAmbientLight += value;
-			Scen->CurrentAmbientLight = MIN(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
+			Scen->CurrentAmbientLight = std::min(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
 		}
 		Scen->IsAmbientLightChanged = true;
 		Map.Update_Cell_Colors();

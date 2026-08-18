@@ -37,12 +37,8 @@
 
 #include "sha.h"
 
+#include <algorithm>
 #include <cstdlib>
-
-
-#if !defined(MIN)
-#define	MIN(a, b)		((a)<(b))?(a):(b)
-#endif
 
 
 /***********************************************************************************************
@@ -82,7 +78,7 @@ void SHAEngine::Process_Partial(void const * & data, int & length)
 	**	Attach as many bytes as possible from the source data into
 	**	the staging buffer.
 	*/
-	int add_count = MIN((int)length, SRC_BLOCK_SIZE - PartialCount);
+	int add_count = std::min((int)length, SRC_BLOCK_SIZE - PartialCount);
 	memcpy(&Partial[PartialCount], data, add_count);
 	data = ((char const *&)data) + add_count;
 	PartialCount += add_count;

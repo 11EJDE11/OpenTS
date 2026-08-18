@@ -78,6 +78,8 @@
 
 #include "overlay.hh"
 
+#include <algorithm>
+
 
 char const * const OverlayClass::INI_NAME = "OVERLAY";
 
@@ -285,7 +287,7 @@ bool OverlayClass::Mark(MarkType mark)
 					if (found_end) {
 						FacingType fixup_direction = Facing_Add(FACING_180, join_direction);
 						work_cell = Adjacent_Cell(work_cell, fixup_direction);
-						int length = MAX(abs(work_cell.X - start_cell.X), abs(work_cell.Y - start_cell.Y));
+						int length = std::max(abs(work_cell.X - start_cell.X), abs(work_cell.Y - start_cell.Y));
 						for (i = 0; i < length; i++) {
 							for (int j = 0; j < 3; j++) {
 								CellClass *cptr = &Map[work_cell + _offset_fixup[(fixup_direction%4)/2][j]];

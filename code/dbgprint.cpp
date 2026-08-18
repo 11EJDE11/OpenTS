@@ -20,6 +20,7 @@
 
 #include <shellapi.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <conio.h>
 #include <cstdarg>
@@ -342,7 +343,7 @@ static void Write_Message_Locked(char const * buffer, bool with_prefix)
 												now.wHour, now.wMinute, now.wSecond, now.wMilliseconds, buffer);
 		if (written > 0) {
 			// snprintf reports the length it wanted, which is not what was stored.
-			size_t const kept = MIN(size_t(written), sizeof(stamped) - 1);
+			size_t const kept = std::min(size_t(written), sizeof(stamped) - 1);
 			Write_Text_Locked(stamped, kept);
 			AtLineStart = buffer[length - 1] == '\n';
 			return;
@@ -548,7 +549,7 @@ void __cdecl DebugString(char const * string, ...)
 
 	char buffer[DEBUG_MESSAGE_MAX];
 
-	va_list	va;
+	va_list va;
 	va_start(va, string);
 	vsnprintf(buffer, sizeof(buffer), string, va);
 	va_end(va);

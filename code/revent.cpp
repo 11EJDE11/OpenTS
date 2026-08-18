@@ -22,6 +22,8 @@
 #include "savestream.h"
 #include "vector.h"
 
+#include <algorithm>
+
 DynamicVectorClass<RadarEventClass *> RadarEventClass::RadarEvents;
 
 Cell LastRadarEventCell(0,0);
@@ -112,7 +114,7 @@ RadarEventClass::RadarEventClass(RadarEventType type, Cell cell):
 	IsVisible(true)
 {
 	Offset = Map.Cell_To_Radar_Pixel(cell).TopLeft - Map.RadarRect.TopLeft;
-	Radius = MAX(Offset.X, MAX(Offset.Y, MAX(Map.RadarRect.Width - Offset.X, Map.RadarRect.Height - Offset.Y)));
+	Radius = std::max(Offset.X, std::max(Offset.Y, std::max(Map.RadarRect.Width - Offset.X, Map.RadarRect.Height - Offset.Y)));
 	LastRadarEventCell = cell;
 	RadarEvents.Add(this);
 }
@@ -156,7 +158,7 @@ void RadarEventClass::Process(void)
 		}
 
 		Plot();
-		Radius = MAX(Radius - Rule->RadarEventSpeed, Rule->RadarEventMinRadius);
+		Radius = std::max<float>(Radius - Rule->RadarEventSpeed, Rule->RadarEventMinRadius);
 		float normalized_angle = RotationAngle + (M_PI / 4) - (int)((RotationAngle + (M_PI / 4)) * (2 / M_PI)) * M_PI / 2;
 		if (IsRotating) {
 			if (fabs(Radius - Rule->RadarEventMinRadius) < 0.01) {
@@ -168,7 +170,7 @@ void RadarEventClass::Process(void)
 					DurationTimer = Get_Duration();
 				} else {
 					RotationAngle += RotationSpeed;
-					RotationSpeed = MAX(Rule->RadarEventRotationSpeed * (1.0f / 3.0f), RotationSpeed - Rule->RadarEventRotationSpeed * 0.02f);
+					RotationSpeed = std::max(Rule->RadarEventRotationSpeed * (1.0f / 3.0f), RotationSpeed - Rule->RadarEventRotationSpeed * 0.02f);
 				}
 			} else {
 				RotationAngle = RotationSpeed + RotationAngle;
@@ -228,7 +230,7 @@ void RadarEventClass::Draw(void)
 
 	int dy = abs(event_rect[0].Y - event_rect[1].Y);
 	int dx = abs(event_rect[0].X - event_rect[1].X);
-	int maxdist = MAX(dx, dy);
+	int maxdist = std::max(dx, dy);
 
 	float rate = (Radius * 2) * M_SQRT_2 / (float)maxdist * ColorSpeed;
 

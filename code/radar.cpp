@@ -105,6 +105,8 @@
 #include "vox.h"
 #include "vqa.h"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Should this tracked object go at the head of its hash bucket?
@@ -1053,11 +1055,11 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 	 */
 	int surf_left = (int)(update_rect.X * zoom_scale);
 	int surf_right = (int)((update_rect.X + update_rect.Width) * zoom_scale);
-	surf_right = min(surf_right + 1, surface_width);
+	surf_right = std::min(surf_right + 1, surface_width);
 
 	int surf_top = (int)(update_rect.Y * zoom_scale);
 	int surf_bottom = (int)((update_rect.Y + update_rect.Height) * zoom_scale);
-	surf_bottom = min(surf_bottom + 1, surface_height);
+	surf_bottom = std::min(surf_bottom + 1, surface_height);
 
 	float src_x = surf_left / zoom_scale;
 	float src_y = surf_top / zoom_scale;
@@ -1070,9 +1072,9 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 			/*
 			 * Compute vertical source range for this surface row.
 			 */
-			int src_y_min = MIN(RadarCellHeight, (int)src_y);
+			int src_y_min = std::min(RadarCellHeight, (int)src_y);
 			float src_y_end = src_y + pixels_per_cell_y;
-			int src_y_max = MIN(RadarCellHeight, (int)src_y_end + 1);
+			int src_y_max = std::min(RadarCellHeight, (int)src_y_end + 1);
 
 			if (surf_left < surf_right) {
 
@@ -1087,9 +1089,9 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 					float accum_g = 0.0f;
 					float accum_b = 0.0f;
 
-					int src_x_min = MIN(RadarCellWidth, (int)src_x);
+					int src_x_min = std::min(RadarCellWidth, (int)src_x);
 					float src_x_end = src_x + pixels_per_cell_x;
-					int src_x_max = MIN(RadarCellWidth, (int)src_x_end + 1);
+					int src_x_max = std::min(RadarCellWidth, (int)src_x_end + 1);
 
 					for (int srcy = src_y_min; srcy < src_y_max; ++srcy) {
 
@@ -1142,7 +1144,7 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 					/*
 					 * Clamp final color values to 0-255 and write to surface.
 					 */
-					*pixel_data++ = DSurface::Build_Hicolor_Pixel(MIN(255, (int)(accum_r + 0.5)), MIN(255, (int)(accum_g + 0.5)), MIN(255, (int)(accum_b + 0.5)));
+					*pixel_data++ = DSurface::Build_Hicolor_Pixel(std::min(255, (int)(accum_r + 0.5)), std::min(255, (int)(accum_g + 0.5)), std::min(255, (int)(accum_b + 0.5)));
 					src_x = src_x_end;
 				}
 			}
@@ -1709,16 +1711,16 @@ void RadarClass::Compute_Foundations(void)
 
 		int zw;
 		if (bwidth == 1) {
-			zw = max(1.0, ZoomFactor + 0.5);
+			zw = std::max(1.0, ZoomFactor + 0.5);
 		} else {
-			zw = max(2.0, bwidth * ZoomFactor + 0.5);
+			zw = std::max(2.0, bwidth * ZoomFactor + 0.5);
 		}
 
 		int zh;
 		if (bheight == 1) {
-			zh = max(1.0, ZoomFactor + 0.5);
+			zh = std::max(1.0, ZoomFactor + 0.5);
 		} else {
-			zh = max(2.0, bheight * ZoomFactor + 0.5);
+			zh = std::max(2.0, bheight * ZoomFactor + 0.5);
 		}
 
 		int fy = 0;
@@ -1798,11 +1800,11 @@ void RadarClass::Radar_Cell(Cell const & cell)
 
 			int zx = (int)(r1.X * ZoomFactor);
 			int startx = (zx - 1) & ((zx - 1 < 0) - 1);
-			int width = min((int)((double)(r1.X + r1.Width) * ZoomFactor) + 1, swidth);
+			int width = std::min((int)((double)(r1.X + r1.Width) * ZoomFactor) + 1, swidth);
 
 			int zy = (int)(r1.Y * ZoomFactor);
 			int starty = (zy - 1) & ((zy - 1 < 0) - 1);
-			int height = min((int)((double)(r1.Y + r1.Height) * ZoomFactor) + 1, sheight);
+			int height = std::min((int)((double)(r1.Y + r1.Height) * ZoomFactor) + 1, sheight);
 
 			for (int y = starty; y < height; y++) {
 				for (int x = startx; x < width; x++) {

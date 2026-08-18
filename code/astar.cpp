@@ -33,6 +33,7 @@
 
 #include "tube.hh"
 
+#include <algorithm>
 #include <utility>
 
 
@@ -432,7 +433,7 @@ PathStruct * AStarClass::Find_Path_Regular(Cell const & from, Cell const & to, F
 				CellClass & to_cell = *neighbor_cell;
 				int dx = ((int)from_cell.CellID.X - (int)to_cell.CellID.X);
 				int dy = ((int)from_cell.CellID.Y - (int)to_cell.CellID.Y);
-				movement_cost = max(abs(dy), abs(dx));
+				movement_cost = std::max(abs(dy), abs(dx));
 			}
 
 			if (move < MOVE_NO) {
@@ -1270,7 +1271,7 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 			max_dev_x = abs(new_candidate_offset.X);
 			max_dev_y = abs(new_candidate_offset.Y);
 
-			max_axis = max(abs(new_offset.X), abs(new_offset.Y));
+			max_axis = std::max(abs(new_offset.X), abs(new_offset.Y));
 
 			cursor_cell = Adjacent_Cell(cursor_cell, step);
 			if (max_axis_extent < max_axis) {
@@ -1298,7 +1299,7 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 				max_dev_x = 0;
 				max_dev_y = 0;
 				candidate_offset = Cell(0, 0);
-				max_axis_extent = max(abs(path_offset.X), abs(path_offset.Y));
+				max_axis_extent = std::max(abs(path_offset.X), abs(path_offset.Y));
 				last_turn_cell = cursor_cell;
 				last_turn_index = scan_index;
 			}
@@ -1311,7 +1312,7 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 	 */
 	if (last_turn_cell != Cell(0, 0)) {
 		Cell diff = cursor_cell - last_turn_cell;
-		max_axis = max(abs(diff.X), abs(diff.Y));
+		max_axis = std::max(abs(diff.X), abs(diff.Y));
 		if ((scan_index - last_turn_index - 1) > max_axis) {
 			scan_index--;
 			int splice_index;
@@ -1375,7 +1376,7 @@ void AStarClass::Splice_Path(FacingType * moves, int start_index, int end_index,
 			base = ::Adjacent_Cell(base, back);
 			int abs_y = abs(displacement.Y);
 			int abs_x = abs(displacement.X);
-			int radius = MAX(abs_x, abs_y);
+			int radius = std::max(abs_x, abs_y);
 			if (radius > max_radius) {
 				if (found) {
 					splice_index = cur_index + 1;
@@ -1438,8 +1439,8 @@ bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell con
 	int y_dist = abs(y);
 	int x_dist = abs(x);
 
-	int min_dist = MIN(x_dist, y_dist);
-	int max_dist = MAX(x_dist, y_dist);
+	int min_dist = std::min(x_dist, y_dist);
+	int max_dist = std::max(x_dist, y_dist);
 
 	int first_dist = min_dist;
 	int second_dist = max_dist - min_dist;
@@ -2010,7 +2011,7 @@ int AStarClass::Test_Cell_Walk(Cell const & from, Cell const & to, FootClass con
 	}
 
 	if (Find_Path_Hierarchical(hs_from, hs_to, mzone, foot)) {
-		int radius = MAX(abs(from.X - to.X), abs(from.Y - to.Y));	/// The Chebyshev distance between the cells
+		int radius = std::max(abs(from.X - to.X), abs(from.Y - to.Y));	/// The Chebyshev distance between the cells
 		int node_count = HierSubzonePathCount[SUBZONE_FINE];		/// Number of nodes in the finest level path graph
 		int distance = 2 * node_count - 2;							/// Number of edges between these nodes
 
@@ -2036,7 +2037,7 @@ int AStarClass::Test_Cell_Walk(Cell const & from, Cell const & to, FootClass con
 					bridge_end = hs_to;
 				}
 				if (bridge_end != CELL_NONE) {
-					distance += MAX(abs(to.X - bridge_end.X), abs(to.Y - bridge_end.Y));
+					distance += std::max(abs(to.X - bridge_end.X), abs(to.Y - bridge_end.Y));
 				}
 			}
 
@@ -2052,7 +2053,7 @@ int AStarClass::Test_Cell_Walk(Cell const & from, Cell const & to, FootClass con
 					bridge_end = hs_from;
 				}
 				if (bridge_end != CELL_NONE) {
-					distance += MAX(abs(from.X - bridge_end.X), abs(from.Y - bridge_end.Y));
+					distance += std::max(abs(from.X - bridge_end.X), abs(from.Y - bridge_end.Y));
 				}
 			}
 

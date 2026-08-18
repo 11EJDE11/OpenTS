@@ -65,6 +65,8 @@
 #include "house.hh"
 #include "special.hh"
 
+#include <algorithm>
+
 
 /*
  * Various world globals. These are defined here rather than in a header, so that every
@@ -438,7 +440,7 @@ int NewMaxAheadFrame2;
 **	the class itself is 140 bytes.
 */
 IPXManagerClass Ipx(
-	MAX (sizeof (GlobalPacketType), sizeof(RemoteFileTransferType) - 32),		// size of Global Channel packets
+	std::max(sizeof (GlobalPacketType), sizeof(RemoteFileTransferType) - 32),		// size of Global Channel packets
 	MAX_IPX_PACKET_SIZE,
 	160,                                        // # entries in Global Queue
 	32,                                         // # entries in Private Queues

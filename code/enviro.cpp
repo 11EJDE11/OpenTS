@@ -20,6 +20,8 @@
 #include "savestream.h"
 #include "scenario.h"
 
+#include <algorithm>
+
 EnvironmentClass Environment;
 
 
@@ -85,7 +87,7 @@ void EnvironmentClass::Restore(void)
 	double money = (double)CarryOverMoney * Scen->CarryOverPercent;
 
 	if (cap != -1) {
-		money = MIN(money, cap);
+		money = std::min<double>(money, cap);
 	}
 
 	PlayerPtr->Refund_Money((int)money);

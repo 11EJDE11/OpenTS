@@ -26,6 +26,8 @@
 
 #include "layer.hh"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Creates a jumpjet locomotor.
@@ -502,11 +504,11 @@ void JumpjetLocomotionClass::Movement_AI(void)
 
 	if (TargetSpeed > CurrentSpeed) {
 		CurrentSpeed += Rule->JumpjetAcceleration;
-		CurrentSpeed = MIN(CurrentSpeed, Rule->JumpjetSpeed);
+		CurrentSpeed = std::min<double>(CurrentSpeed, Rule->JumpjetSpeed);
 	}
 	if (TargetSpeed < CurrentSpeed) {
 		CurrentSpeed -= Rule->JumpjetAcceleration * 1.5;
-		CurrentSpeed = MAX(CurrentSpeed, 0);
+		CurrentSpeed = std::max(CurrentSpeed, 0.0);
 	}
 
 	LinkedTo->Set_Speed(CurrentSpeed / Rule->JumpjetSpeed);
@@ -555,7 +557,7 @@ void JumpjetLocomotionClass::Movement_AI(void)
 			height = ground_height;
 		}
 		moved = true;
-		height_diff = MAX(height_diff, 0);
+		height_diff = std::max(height_diff, 0);
 	}
 
 	if (LinkedTo->Get_Cell() != HeadToCoord.As_Cell()) {

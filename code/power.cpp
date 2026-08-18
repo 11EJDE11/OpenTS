@@ -63,6 +63,8 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 /*
 **	Points to the shape to use for the "desired" power level indicator.
 */
@@ -229,8 +231,8 @@ int PowerClass::Desired_Power_Height(void)
 	}
 
 	int empty_pips = (400.0 / ((drain + power) + 400.0) * max_pips);
-	empty_pips = MAX(empty_pips, 0);
-	empty_pips = MIN(empty_pips, max_pips - 1);
+	empty_pips = std::max(empty_pips, 0);
+	empty_pips = std::min(empty_pips, max_pips - 1);
 
 	return(max_pips - empty_pips);
 }

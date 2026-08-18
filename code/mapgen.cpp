@@ -64,6 +64,8 @@
 
 #include "ramp.hh"
 
+#include <algorithm>
+
 
 bool (*RMGCallback)() = MapGen_Call_Back;
 
@@ -1201,7 +1203,7 @@ bool MapRegionClass::Split_Region(void)
 DynamicVectorClass<Cell> *MapRegionClass::Build_Border_Cell_List2(void)
 {
 	DynamicVectorClass<Cell> *cells = new DynamicVectorClass<Cell>;
-	cells->Set_Growth_Step(MAX(10, CellCount / 2));
+	cells->Set_Growth_Step(std::max(10, CellCount / 2));
 
 	for (int i = Cells.Count() - 1; i >= 0; i--) {
 		Cell cell = Cells[i];
@@ -2143,7 +2145,7 @@ bool MapRegionClass::Build_South_Ramp(Cell const & cell1, Cell const & cell2, in
 	/*
 	 * Compute a bounding rect around the ramp area and validate it.
 	 */
-	Rect rect(cell1.X - 5, MIN(cell1.Y, cell2.Y) - 3, cell2.X - cell1.X + 9, MAX(cell1.Y, cell2.Y) - MIN(cell1.Y, cell2.Y) + 11);
+	Rect rect(cell1.X - 5, std::min(cell1.Y, cell2.Y) - 3, cell2.X - cell1.X + 9, std::max(cell1.Y, cell2.Y) - std::min(cell1.Y, cell2.Y) + 11);
 	if (!Is_Ramp_Area_Clear(rect, region_id)) {
 		return(false);
 	}
@@ -2263,8 +2265,8 @@ bool MapRegionClass::Build_East_Ramp(Cell const & cell1, Cell const & cell2, int
 	/*
 	 * Compute a bounding rect around the ramp area and validate it.
 	 */
-	int x_max = MAX(cell1.X, cell2.X);
-	int x_min = MIN(cell1.X, cell2.X);
+	int x_max = std::max(cell1.X, cell2.X);
+	int x_min = std::min(cell1.X, cell2.X);
 
 	Rect rect;
 	rect.X      = x_min - 3;
@@ -2389,7 +2391,7 @@ bool MapRegionClass::Build_North_Ramp(Cell const & cell1, Cell const & cell2, in
 	/*
 	 * Compute a bounding rect around the ramp area and validate it.
 	 */
-	Rect rect(cell2.X - 4, MIN(cell1.Y, cell2.Y) - 7, cell1.X - cell2.X + 8, MAX(cell1.Y, cell2.Y) - MIN(cell1.Y, cell2.Y) + 11);
+	Rect rect(cell2.X - 4, std::min(cell1.Y, cell2.Y) - 7, cell1.X - cell2.X + 8, std::max(cell1.Y, cell2.Y) - std::min(cell1.Y, cell2.Y) + 11);
 	if (!Is_Ramp_Area_Clear(rect, region_id)) {
 		return(false);
 	}
@@ -2512,8 +2514,8 @@ bool MapRegionClass::Build_West_Ramp(Cell const & cell1, Cell const & cell2, int
 	/*
 	 * Compute a bounding rect around the ramp area and validate it.
 	 */
-	int x_max = MAX(cell1.X, cell2.X);
-	int x_min = MIN(cell1.X, cell2.X);
+	int x_max = std::max(cell1.X, cell2.X);
+	int x_min = std::min(cell1.X, cell2.X);
 
 	Rect rect;
 	rect.X      = x_min - 7;
@@ -2994,7 +2996,7 @@ bool Generate_Starting_Points(void)
 {
 	int zone = Map.Zone_Reset();
 
-	int region_size_threshold = MAX(600, ((double)RandomMapGen.LocalHeight * (double)RandomMapGen.LocalWidth * 0.06));
+	int region_size_threshold = std::max(600.0, ((double)RandomMapGen.LocalHeight * (double)RandomMapGen.LocalWidth * 0.06));
 
 	DynamicVectorClass<Cell> *cells = new DynamicVectorClass<Cell>;
 	cells->Set_Growth_Step(200);
@@ -5475,8 +5477,8 @@ bool MapGeneratorClass::Seed_Lake(const Cell & cell)
 		return(false);
 	}
 
-	CellNode *nodes = new CellNode[MAX((2 * spread_limit) + 2, 100)];
-	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(MAX((2 * spread_limit) + 2, 100));
+	CellNode *nodes = new CellNode[std::max((2 * spread_limit) + 2, 100)];
+	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(std::max((2 * spread_limit) + 2, 100));
 
 	Map.Reset_Iterator();
 	CellClass *iter = Map.Iterate();
@@ -5697,8 +5699,8 @@ void MapGeneratorClass::Generate_Swamp(DynamicVectorClass<Cell> &cells, int last
 	DynamicVectorClass<Cell> swamp_cells;
 	swamp_cells.Set_Growth_Step(500);
 
-	int max_spread = MIN(last / 2, 200);
-	int min_spread = MIN(last / 8, 50);
+	int max_spread = std::min(last / 2, 200);
+	int min_spread = std::min(last / 8, 50);
 
 	int spread_count = Pick_Random_UInt(min_spread, max_spread);
 	queue->Clear();
@@ -5836,8 +5838,8 @@ bool MapGeneratorClass::Seed_Arctic_Lake(const Cell & cell)
 		return(false);
 	}
 
-	CellNode *nodes = new CellNode[MAX((2 * spread_limit) + 2, 100)];
-	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(MAX((2 * spread_limit) + 2, 100));
+	CellNode *nodes = new CellNode[std::max((2 * spread_limit) + 2, 100)];
+	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(std::max((2 * spread_limit) + 2, 100));
 
 	Map.Reset_Iterator();
 	CellClass *cptr = Map.Iterate();
@@ -5874,7 +5876,7 @@ bool MapGeneratorClass::Seed_Arctic_Lake(const Cell & cell)
 	bool success = true;
 	int seeded_count = 0;
 
-	int max_spread = MAX(spread_limit, 76);
+	int max_spread = std::max(spread_limit, 76);
 	double scale = (double)(spread_limit / 6);
 	double mean = (double)(spread_limit / 4);
 
@@ -5982,8 +5984,8 @@ void MapGeneratorClass::Seed_Ice(DynamicVectorClass<Cell> & cells, IsometricTile
 
 	int seed_count = Pick_Random_UInt(0, 15);
 
-	CellNode * nodes = new CellNode[MAX(cells.Count() * 2, 64)];
-	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(MAX(cells.Count() * 2, 64));
+	CellNode * nodes = new CellNode[std::max(cells.Count() * 2, 64)];
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(std::max(cells.Count() * 2, 64));
 
 	for (int i = cells.Count() - 1; i >= 0; i--) {
 		MapRegionClass::Get_Cell_Data(cells[i]).Iced = false;
@@ -5991,7 +5993,7 @@ void MapGeneratorClass::Seed_Ice(DynamicVectorClass<Cell> & cells, IsometricTile
 
 	while (seed_count > 0) {
 		int spread_step = 0;
-		int spread_limit = MAX(4, cells.Count() / 20);
+		int spread_limit = std::max(4, cells.Count() / 20);
 		int spread_count = Pick_Random_UInt(3, spread_limit);
 		queue->Clear();
 
@@ -7212,8 +7214,8 @@ DynamicVectorClass<Cell> *MapGeneratorClass::Build_Region_Border_Cell_List(int i
 /// <returns>True if the region grew without colliding with another region.</returns>
 bool MapGeneratorClass::Grow_Water_Region(int region_id, float spread_scale, Rect const & bounds, Cell const & origin, bool claim_frontier)
 {
-	CellNode * nodes = new CellNode[MAX(2 * LocalHeight * LocalWidth, 100)];
-	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(MAX(2 * LocalHeight * LocalWidth, 100));
+	CellNode * nodes = new CellNode[std::max(2 * LocalHeight * LocalWidth, 100)];
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(std::max(2 * LocalHeight * LocalWidth, 100));
 
 	int marker_index = 0;
 	bool result_flag = true;
@@ -8554,7 +8556,7 @@ void MapGeneratorClass::Generate_Mold(void)
 	cells.Set_Growth_Step(500);
 
 	int spread_count = Pick_Random_UInt(30, 150);
-	int heap_size = MAX(100, 6 * spread_count);
+	int heap_size = std::max(100, 6 * spread_count);
 
 	CellNode * nodes = new CellNode[heap_size];
 	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(heap_size);
@@ -8985,7 +8987,7 @@ double MapGeneratorClass::Get_Urban_Score(const Cell & cell1, const Cell & cell2
 
 	int x = cell1.X - cell2.X;
 	int y = cell1.Y - cell2.Y;
-	double dist = MAX(abs(x), abs(y));
+	double dist = std::max(abs(x), abs(y));
 	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
 }
 
@@ -9506,7 +9508,7 @@ Cell MapGeneratorClass::Plan_Paved_Road_Junction(Cell const & cell, Rect const &
 		wcell = Adjacent_Cell(wcell, dir);
 	}
 
-	int length = MAX(wcell.Y - cell.Y, wcell.X - cell.X);
+	int length = std::max(wcell.Y - cell.Y, wcell.X - cell.X);
 	if (length > 0) {
 		int shorten = Pick_Random_UInt(0, length);
 		while (shorten > 0) {
@@ -9559,7 +9561,7 @@ Cell MapGeneratorClass::Plan_Paved_Road(Cell const & cell, Rect const & rect, Fa
 
 	wcell = Adjacent_Cell(wcell, Facing_Sub(dir, FACING_180));
 
-	int length = MAX(wcell.X - cell.X, wcell.Y - cell.Y);
+	int length = std::max(wcell.X - cell.X, wcell.Y - cell.Y);
 	if (length > 6) {
 		int shorten = Pick_Random_UInt(0, 3);
 		while (shorten > 0) {
@@ -9700,10 +9702,10 @@ Rect MapGeneratorClass::Get_Cell_Bounding_Rect(const DynamicVectorClass<Cell> & 
 	cmax.Y = 0;
 	for (int i = cells.Count() - 1; i >= 0; i--) {
 		Cell cell = cells[i];
-		cmin.X = MIN(cell.X, cmin.X);
-		cmin.Y = MIN(cell.Y, cmin.Y);
-		cmax.X = MAX(cell.X, cmax.X);
-		cmax.Y = MAX(cell.Y, cmax.Y);
+		cmin.X = std::min(cell.X, cmin.X);
+		cmin.Y = std::min(cell.Y, cmin.Y);
+		cmax.X = std::max(cell.X, cmax.X);
+		cmax.Y = std::max(cell.Y, cmax.Y);
 	}
 	return(Rect(cmin.X, cmin.Y, (cmax.X - cmin.X) + 1, (cmax.Y - cmin.Y) + 1));
 }

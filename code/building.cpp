@@ -1434,11 +1434,11 @@ int BuildingClass::Shape_Number(void) const
 			} else {
 				int last1 = Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count;
 				int last2 = Class->Anims[BSTATE_ACTIVE].Start + Class->Anims[BSTATE_ACTIVE].Count;
-				int largest = MAX(last1, last2);
+				int largest = std::max(last1, last2);
 				last2 = Class->Anims[BSTATE_AUX1].Start + Class->Anims[BSTATE_AUX1].Count;
-				largest = MAX(largest, last2);
+				largest = std::max(largest, last2);
 				last2 = Class->Anims[BSTATE_AUX2].Start + Class->Anims[BSTATE_AUX2].Count;
-				largest = MAX(largest, last2);
+				largest = std::max(largest, last2);
 				shapenum += largest;
 			}
 		}
@@ -2260,7 +2260,7 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 			for (i = 0; i < House->SuperWeapon.Count(); i++) {
 				if (House->SuperWeapon[i]->Class->Type == SUPER_FIRESTORM) {
 					double delay = House->SuperWeapon[i]->Control - (double)damage * Rule->DamageToFirestormDamageCoefficient;
-					House->SuperWeapon[i]->Control = max<double>(0.0, delay);
+					House->SuperWeapon[i]->Control = std::max<double>(0.0, delay);
 					return(RESULT_NONE);
 				}
 			}
@@ -4997,7 +4997,7 @@ int BuildingClass::Do_MISSION_DECONSTRUCTION(void)
 						Dir256 dir = Class->Deploy_Facing();
 						if (unit->Unlimbo(place, dir)) {
 							unit->Strength = (int)(unit->Class_Of()->MaxStrength * ratio);
-							unit->Strength = max(unit->Strength, 1);
+							unit->Strength = std::max(unit->Strength, 1);
 							unit->ActLike = ActLike;
 							unit->Group = Group;
 							unit->Veterancy.Experience = Veterancy.Experience;
@@ -5405,7 +5405,7 @@ int BuildingClass::Do_MISSION_REPAIR(void)
 				BuildingStage.Set_Stage(0);
 				BuildingStage.Set_Rate(1);
 				Ammo--;
-				Ammo = MAX(Ammo, 0);
+				Ammo = std::max(Ammo, 0);
 				break;
 
 			case DURING:
@@ -5445,7 +5445,7 @@ int BuildingClass::Do_MISSION_REPAIR(void)
 				BuildingStage.Set_Stage(0);
 				BuildingStage.Set_Rate(1);
 				Ammo--;
-				Ammo = MAX(Ammo, 0);
+				Ammo = std::max(Ammo, 0);
 				break;
 
 			case DURING:
@@ -7001,7 +7001,7 @@ void BuildingClass::Read_INI(CCINIClass const & ini)
 				b->IsToRepair = repair;
 				b->IsNominal = nominal;
 
-				strength = MIN(strength, 256);
+				strength = std::min(strength, 256);
 				strength = b->Class->MaxStrength * (strength / 256.0);
 				b->Strength = strength;
 				if (b->Strength > b->Class->MaxStrength-3) b->Strength = b->Class->MaxStrength;
@@ -8229,7 +8229,7 @@ BuildingClass * BuildingClass::Find_Laser_Fence_Post(FacingType dir, bool connec
 	if (xrange < 0) {
 		if (Class->IsLaserFencePost) {
 			range = Class->ThreatRange >> 8;
-			range = MAX(range, 1);
+			range = std::max(range, 1);
 		}
 	} else {
 		range = xrange;
@@ -8293,7 +8293,7 @@ void BuildingClass::Connect_Laser_Fence(FacingType dir)
 		int range;
 		if (Class->IsLaserFencePost) {
 			range = Class->ThreatRange >> 8;
-			range = MAX(range, 1);
+			range = std::max(range, 1);
 		} else {
 			range = 1;
 		}
@@ -8353,7 +8353,7 @@ void BuildingClass::Disconnect_Laser_Fence(FacingType dir, bool explode)
 {
 	if (Class->IsLaserFencePost) {
 		int range = Class->ThreatRange >> 8;
-		range = MAX(range, 1);
+		range = std::max(range, 1);
 		unsigned face = (unsigned)dir % 4;
 		Cell working_cell = Center_Coord().As_Cell();
 
@@ -8451,7 +8451,7 @@ void BuildingClass::Toggle_Laser_Fence_Post(bool force)
 	if (Class->IsLaserFencePost && IsActive && !IsInLimbo) {
 
 		int range = Class->ThreatRange >> 8;
-		range = MAX(range, 1);
+		range = std::max(range, 1);
 
 		/*
 		 * The fence should be up only if this post is powered up, online, and

@@ -136,6 +136,8 @@
 #include "waypoint.h"
 #include "weapon.h"
 
+#include <algorithm>
+
 
 char const * const AircraftClass::INI_NAME = "Aircraft";
 
@@ -3050,8 +3052,8 @@ int AircraftClass::Do_MISSION_ENTER(void)
 					Coord pos = PositionCoord;
 					int x = nav.X - pos.X;
 					int y = nav.Y - pos.Y;
-					x = x > 0 ? min(5, x) : max(-5, x);
-					y = y > 0 ? min(5, y) : max(-5, y);
+					x = x > 0 ? std::min(5, x) : std::max(-5, x);
+					y = y > 0 ? std::min(5, y) : std::max(-5, y);
 					pos += Coord(x, y, 0);
 					PositionCoord = pos;
 				}

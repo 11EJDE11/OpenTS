@@ -26,6 +26,8 @@
 #include "tracker.h"
 #include "vector.h"
 
+#include <algorithm>
+
 
 DynamicVectorClass<LightSourceClass *> LightSources;
 DynamicVectorClass<LightSourceClass::PendingCellClass *> LightSourceClass::PendingCells;
@@ -251,7 +253,7 @@ void LightSourceClass::Process_Lighting(int time_budget_ms, bool force)
 	time_left = time_budget_ms - (MillisecondTimer - update_start_time);
 
 	if (time_left > 0.0 && _update_frames > (_last_update_frame + _update_interval)) {
-		bool more_to_free = IsometricTileTypeClass::Free_Unused_Drawers(MIN(time_left * 0.5, 1.0), false);
+		bool more_to_free = IsometricTileTypeClass::Free_Unused_Drawers(std::min(time_left * 0.5, 1.0), false);
 		_last_update_frame = _update_frames;
 		_update_interval = more_to_free ? 1 : 50;
 	}

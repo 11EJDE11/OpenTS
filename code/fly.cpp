@@ -70,6 +70,8 @@
 
 #include "layer.hh"
 
+#include <algorithm>
+
 static const int const1 = 16;
 static const int const2 = 16;
 static const int const3 = 6;
@@ -620,16 +622,16 @@ void FlyLocomotionClass::Movement_AI(void)
 		} else if (is_hunter_seeker) {
 			if (IsTakingOff) {
 				int climb = FlightLevel - current_height;
-				climb = MIN(Rule->HunterSeekerEmergeSpeed, climb);
+				climb = std::min(Rule->HunterSeekerEmergeSpeed, climb);
 				LinkedTo->Set_Height_AGL(bridge_height + current_height + climb);
 			} else {
 				int climb = FlightLevel - current_height;
-				climb = MIN(Rule->HunterSeekerAscentSpeed, climb);
+				climb = std::min(Rule->HunterSeekerAscentSpeed, climb);
 				LinkedTo->Set_Height_AGL(bridge_height + current_height + climb);
 			}
 		} else {
 			int climb = FlightLevel - current_height;
-			climb = MIN(is_loaded ? 10 : 20, climb);
+			climb = std::min(is_loaded ? 10 : 20, climb);
 			LinkedTo->Set_Height_AGL(bridge_height + current_height + climb);
 		}
 
@@ -642,7 +644,7 @@ void FlyLocomotionClass::Movement_AI(void)
 		if (is_dropship) {
 			if (IsLanding) {
 				int limit = descent / 20 + 10;
-				descent = MIN(MIN(limit, 48), descent);
+				descent = std::min(std::min(limit, 48), descent);
 			} else if (FlightLevel == LinkedTo->TClass->Flight_Level()) {
 				if (current_height > 16) {
 					descent = 16;
@@ -657,7 +659,7 @@ void FlyLocomotionClass::Movement_AI(void)
 				}
 			}
 		} else if (is_hunter_seeker) {
-			descent = MIN(Rule->HunterSeekerDescentSpeed, current_height);
+			descent = std::min(Rule->HunterSeekerDescentSpeed, current_height);
 		} else {
 			if (descent / 20 < descent) {
 				descent /= 20;
@@ -755,9 +757,9 @@ void FlyLocomotionClass::Movement_AI(void)
 
 	if (LinkedTo->Strength > 0) {
 		if (CurrentSpeed < TargetSpeed) {
-			CurrentSpeed = MIN(CurrentSpeed + 0.1, TargetSpeed);
+			CurrentSpeed = std::min(CurrentSpeed + 0.1, TargetSpeed);
 		} else if (CurrentSpeed > TargetSpeed) {
-			CurrentSpeed = MAX(CurrentSpeed - 0.1, TargetSpeed);
+			CurrentSpeed = std::max(CurrentSpeed - 0.1, TargetSpeed);
 		}
 	}
 
@@ -842,7 +844,7 @@ void FlyLocomotionClass::Rotation_AI(void)
 		if (!Is_Powered()) {
 			DirType newdir = DirType(LinkedTo->PrimaryFacing.Current()) + DirType((Dir256)CurrentROT);
 			LinkedTo->PrimaryFacing.Set(newdir);
-			int diff = MIN(abs(CurrentROT), 1);
+			int diff = std::min(abs(CurrentROT), 1);
 			if (CurrentROT < 0) {
 				CurrentROT += diff;
 			} else {
@@ -953,7 +955,7 @@ bool FlyLocomotionClass::Process_Landing(void)
 	if (LinkedTo->TClass->IsDropship && height == 0) {
 		if (LinkedTo->PitchAngle > 0) {
 			static const double _dropship_pitch_rate = 0.02;
-			LinkedTo->PitchAngle = MAX(0, LinkedTo->PitchAngle - _dropship_pitch_rate);
+			LinkedTo->PitchAngle = std::max(0.0, LinkedTo->PitchAngle - _dropship_pitch_rate);
 		}
 	}
 

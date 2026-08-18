@@ -133,6 +133,8 @@
 #include "color.hh"
 #include "tube.hh"
 
+#include <algorithm>
+
 
 DynamicVectorClass<FootClass *> Feet;
 
@@ -257,7 +259,7 @@ void FootClass::Debug_Dump(MonoClass * mono) const
 	}
 
 	static char	const * _p2c[9] = {"-","0","1","2","3","4","5","6","7"};
-	for (int index = 0; index < MIN(12, ARRAY_SIZE(Path)); index++) {
+	for (int index = 0; index < std::min(12, ARRAY_SIZE(Path)); index++) {
 		mono->Set_Cursor(54+index, 3);
 		mono->Printf("%s", _p2c[((abs((int)Path[index]+1)) % ARRAY_SIZE(_p2c))]);
 	}
@@ -453,7 +455,7 @@ bool FootClass::Basic_Path(Cell cell, int path_offset, int avoidance)
 		bool check = TClass->IsSubterranean && Map[cell].Can_Burrow_Here() ? true : false;
 
 		Cell nearby = Map.Nearby_Location(cell, TClass->Speed, Map.Get_Cell_Zone(PositionCell, mzone, IsOnBridge), mzone, IsOnBridge, Point2D(1, 1), false, true, check, true, PositionCell);
-		maxdist = MAX(abs(nearby.X - cell.X), abs(nearby.Y - cell.Y));
+		maxdist = std::max(abs(nearby.X - cell.X), abs(nearby.Y - cell.Y));
 
 		if (nearby != CELL_NONE && ::Distance(Coord(cell), Coord(nearby)) < dist) {
 
@@ -508,7 +510,7 @@ bool FootClass::Basic_Path(Cell cell, int path_offset, int avoidance)
 		*/
 		if (found) {
 			Fixup_Path(&path1);
-			memcpy(&Path[path_offset], &workpath[0], MIN(path->Length, ARRAY_SIZE(Path) - path_offset) * sizeof(Path[0]));
+			memcpy(&Path[path_offset], &workpath[0], std::min(path->Length, ARRAY_SIZE(Path) - path_offset) * sizeof(Path[0]));
 		}
 
 		Mark(MARK_DOWN);
@@ -552,7 +554,7 @@ bool FootClass::Basic_Path(Cell cell, int path_offset, int avoidance)
 	Stop_Driver();
 
 	Cell mycell = PositionCoord;
-	maxdist = MAX(abs(mycell.X - cell.X), abs(mycell.Y - cell.Y));
+	maxdist = std::max(abs(mycell.X - cell.X), abs(mycell.Y - cell.Y));
 	if (maxdist > 1 || (!IsOnBridge && Map[cell].IsUnderBridge)) {
 		if (Team != NULL) {
 			Locomotion->Lock();
@@ -1212,7 +1214,7 @@ void FootClass::Approach_Target(void)
 						trycell = trycoord.As_Cell();
 						if (Map.In_Local_Radar(trycell) && Map[trycell].Is_Clear_To_Move(TClass->Speed, false, false, Map.Get_Cell_Zone(Destination_Coord().As_Cell(), mzone, IsOnBridge), mzone)) {
 
-							int maxdist = MAX(abs(trycell.X - tcell.X), abs(trycell.Y - tcell.Y));
+							int maxdist = std::max(abs(trycell.X - tcell.X), abs(trycell.Y - tcell.Y));
 							CellClass * cellptr = &Map[trycell];
 
 							if (flyer) {
@@ -1226,7 +1228,7 @@ void FootClass::Approach_Target(void)
 							}
 
 							Cell destcell = Destination_Coord().As_Cell();
-							int destdist = MAX(abs(destcell.X - trycell.X), abs(destcell.Y - trycell.Y));
+							int destdist = std::max(abs(destcell.X - trycell.X), abs(destcell.Y - trycell.Y));
 							if (Search.Test_Cell_Walk(destcell, trycell, this, Is_Moving_Onto_Bridge(), cellptr->IsUnderBridge, MZONE_NONE) <= destdist + 8) {
 								found = true;
 								break;
@@ -2478,14 +2480,14 @@ int FootClass::Rescue_Mission(AbstractClass * tarcom)
 		**	Next we need to figure out how fast the unit moves because this
 		**	decreases the distance penalty.
 		*/
-		speed = MAX((unsigned)Get_Max_Speed(), (unsigned)1);
+		speed = std::max((unsigned)Get_Max_Speed(), (unsigned)1);
 
-		int ratio = (speed > 0) ? MAX(dist / speed, 1) : 1;
+		int ratio = (speed > 0) ? std::max(dist / speed, 1) : 1;
 
 		/*
 		**	Finally modify the threat by the distance the unit is away.
 		*/
-		threat = MAX(threat/ratio, 1);
+		threat = std::max(threat/ratio, 1);
 	}
 	return(threat);
 }
@@ -3251,7 +3253,7 @@ void FootClass::AI(void)
 				if (Map[Center_Coord()].Land_Type() == LAND_TIBERIUM) {
 					if ((Frame % int(Rule->TiberiumHeal * TICKS_PER_MINUTE)) == 0) {
 						int step = TClass->Repair_Step();
-						step = max(step, 1);
+						step = std::max(step, 1);
 						Strength += step;
 						if (HealthRatio > Rule->ConditionGreen) {
 							Strength = Techno_Type_Class()->MaxStrength;
@@ -3339,9 +3341,9 @@ int FootClass::Get_Z_Adjust(void) const
 		bridge = TClass->ZFudgeBridge;
 	}
 
-	int max_fudge = MAX(column, tunnel);
-	max_fudge = MAX(max_fudge, cliff);
-	max_fudge = MAX(max_fudge, bridge);
+	int max_fudge = std::max(column, tunnel);
+	max_fudge = std::max(max_fudge, cliff);
+	max_fudge = std::max(max_fudge, bridge);
 
 	adjust += BASECLASS::Get_Z_Adjust();
 	adjust += max_fudge;
@@ -3987,8 +3989,8 @@ void FootClass::Execute_Waypoint_Path(WaypointClass * waypoint)
 			entry_result = Can_Enter_Cell(adjusted_cell, FACING_NONE,
 				adjusted_cell->Height + (BRIDGE_CELL_HEIGHT * adjusted_cell->IsUnderBridge), 0, true);
 
-			walk_distance_limit = MAX(abs((int)waypoint_offset.X), abs((int)waypoint_offset.Y));
-			walk_distance_limit = MIN(5, walk_distance_limit + 3);
+			walk_distance_limit = std::max(abs((int)waypoint_offset.X), abs((int)waypoint_offset.Y));
+			walk_distance_limit = std::min(5, walk_distance_limit + 3);
 
 			if (waypoint_action != adjusted_action && is_direct_waypoint ||
 				entry_result != MOVE_OK ||

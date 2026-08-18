@@ -106,6 +106,8 @@
 #include "xpipe.h"
 #include "xstraw.h"
 
+#include <algorithm>
+
 
 char const * const ActionName[ACTION_COUNT] = {
 	"None",
@@ -342,10 +344,10 @@ int CCINIClass::Save(Pipe & pipe, bool withdigest) const
 /// <returns>Returns with the scaled value, which will lie between 0 and 255.</returns>
 static inline int _Scale_To_256(int val)
 {
-	val = MIN(val, 100);
-	val = MAX(val, 0);
+	val = std::min(val, 100);
+	val = std::max(val, 0);
 	val = ((val * (MPH_LIGHT_SPEED + 1)) / 100);
-	val = MIN(val, MPH_LIGHT_SPEED);
+	val = std::min<int>(val, MPH_LIGHT_SPEED);
 	return(val);
 }
 

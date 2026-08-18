@@ -35,6 +35,7 @@
 
 #include "dsurface.h"
 
+#include <algorithm>
 #include <cstdlib>
 
 /***************************************************************************
@@ -103,7 +104,7 @@ Surface * Read_PCX_File(FileClass & file_handle, PaletteClass * palette, void * 
 
 	if (Buff != NULL) {
 		i = Size / width;
-		height = MIN ((int)(i - 1), (int)height);
+		height = std::min((int)(i - 1), (int)height);
 		Buffer b(Buff, Size);
 		pic = new BSurface(width, height, bytes_per_pixel, &b);
 	} else {

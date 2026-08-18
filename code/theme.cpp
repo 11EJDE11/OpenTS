@@ -60,6 +60,8 @@
 #include "session.h"
 #include "vector.h"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Constructs a nameless and unavailable theme control.
@@ -681,7 +683,7 @@ ThemeType ThemeClass::From_Name(char const * name) const
 /// volume is quietly clipped.</param>
 void ThemeClass::Set_Volume(int volume)
 {
-	Volume = MIN(volume, 255);
+	Volume = std::min(volume, 255);
 
 	if (Current != -1) {
 		Audio.Set_Handle_Volume(Current, Volume);

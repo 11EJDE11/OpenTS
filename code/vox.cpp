@@ -21,6 +21,8 @@
 #include "stimer.h"
 #include "timer.h"
 
+#include <algorithm>
+
 CDTimerClass<SystemTimerClass> SpeakTimer;
 
 /*
@@ -808,7 +810,7 @@ bool Is_Speaking(void)
 /// <param name="volume">The desired volume, where 255 is the loudest.</param>
 void Set_Speech_Volume(int volume)
 {
-	SpeechVolume = MIN(volume, 255);
+	SpeechVolume = std::min(volume, 255);
 	if (!Debug_Quiet && Audio_Available()) {
 		Audio.Set_Sample_Volume(SpeechBuffer[SpeechBufferIndex], SpeechVolume);
 	}

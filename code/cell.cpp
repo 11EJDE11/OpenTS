@@ -138,6 +138,8 @@
 #include "ramp.hh"
 #include "tube.hh"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Fetches the ground height at a point within this cell.
@@ -2033,13 +2035,13 @@ void CellClass::Draw_Shroud_Or_Fog_Shape(Point2D const & drawpoint, Rect const &
 	if (drawpoint.X + shaperect.X + shaperect.Width < cliprect.X + 1) return;
 	if (drawpoint.X >= cliprect.X + cliprect.Width) return;
 
-	int inter_top = MAX(cliprect.Y, drawpoint.Y + shaperect.Y);
+	int inter_top = std::max(cliprect.Y, drawpoint.Y + shaperect.Y);
 	int src_y = inter_top - drawpoint.Y - shaperect.Y;
-	int inter_bottom = MIN(cliprect.Y + cliprect.Height, drawpoint.Y + shaperect.Y + shaperect.Height);
+	int inter_bottom = std::min(cliprect.Y + cliprect.Height, drawpoint.Y + shaperect.Y + shaperect.Height);
 
-	int inter_left = MAX(cliprect.X, drawpoint.X + shaperect.X);
+	int inter_left = std::max(cliprect.X, drawpoint.X + shaperect.X);
 	int src_x = inter_left - drawpoint.X - shaperect.X;
-	int inter_right = MIN(drawpoint.X + shaperect.X + shaperect.Width, cliprect.X + cliprect.Width);
+	int inter_right = std::min(drawpoint.X + shaperect.X + shaperect.Width, cliprect.X + cliprect.Width);
 
 	int shape_skip = drawpoint.X - inter_right + shaperect.X + shaperect.Width + src_x;
 	int alpha_skip = inter_left - inter_right + AlphaBuffer->Get_Buffer_Width();
@@ -2104,13 +2106,13 @@ void CellClass::Draw_Fog_Shape(Point2D const & drawpoint, Rect const & cliprect,
 	if (drawpoint.X + shaperect.X + shaperect.Width < cliprect.X + 1) return;
 	if (drawpoint.X >= cliprect.X + cliprect.Width) return;
 
-	int inter_top = MAX(cliprect.Y, drawpoint.Y + shaperect.Y);
+	int inter_top = std::max(cliprect.Y, drawpoint.Y + shaperect.Y);
 	int src_y = inter_top - drawpoint.Y - shaperect.Y;
-	int inter_bottom = MIN(cliprect.Y + cliprect.Height, drawpoint.Y + shaperect.Y + shaperect.Height);
+	int inter_bottom = std::min(cliprect.Y + cliprect.Height, drawpoint.Y + shaperect.Y + shaperect.Height);
 
-	int inter_left = MAX(cliprect.X, drawpoint.X + shaperect.X);
+	int inter_left = std::max(cliprect.X, drawpoint.X + shaperect.X);
 	int src_x = inter_left - drawpoint.X - shaperect.X;
-	int inter_right = MIN(drawpoint.X + shaperect.X + shaperect.Width, cliprect.X + cliprect.Width);
+	int inter_right = std::min(drawpoint.X + shaperect.X + shaperect.Width, cliprect.X + cliprect.Width);
 
 	int shape_skip = drawpoint.X - inter_right + shaperect.X + shaperect.Width + src_x;
 	int alpha_skip = inter_left - inter_right + AlphaBuffer->Get_Buffer_Width();
@@ -2412,10 +2414,10 @@ Rect CellClass::Cell_Render_Rect(void) const
 		if (image == NULL) {
 			return(Rect());
 		}
-		subtile = MIN(subtile, image->Tile_Count() - 1);
+		subtile = std::min(subtile, image->Tile_Count() - 1);
 		IsoTileRecord const * tile = image->Fetch_Record_Pointer_Unsafe(subtile);
 		if (tile->IsHasExtraData) {
-			int dy = MAX(0, tile->Y - tile->ExtraY);
+			int dy = std::max(0, tile->Y - tile->ExtraY);
 			rect.Y -= dy;
 			rect.Height += dy;
 		}
@@ -4741,12 +4743,12 @@ void CellClass::Init_Light(int & intensity, int & ambient, int & brightness, int
 
 		alt_brightness = (alt_brightness * intensity) >> 16;
 
-		brightness = MIN(brightness, 2000);
-		alt_brightness = MIN(alt_brightness, 2000);
+		brightness = std::min(brightness, 2000);
+		alt_brightness = std::min(alt_brightness, 2000);
 
-		brightness = MAX(brightness, 0);
-		tile_brightness = MAX(tile_brightness, 0);
-		alt_brightness = MAX(alt_brightness, 0);
+		brightness = std::max(brightness, 0);
+		tile_brightness = std::max(tile_brightness, 0);
+		alt_brightness = std::max(alt_brightness, 0);
 
 	} else {
 		intensity = 0x10000;
@@ -4783,13 +4785,13 @@ void CellClass::Recalc_Light(void)
 	TileBrightness = (Brightness * Intensity) >> 16;
 	AltBrightness = (AltBrightness * Intensity) >> 16;
 
-	Brightness = MIN(Brightness, 2000);
-	TileBrightness = MIN(TileBrightness, 2000);
-	AltBrightness = MIN(AltBrightness, 2000);
+	Brightness = std::min<int>(Brightness, 2000);
+	TileBrightness = std::min<int>(TileBrightness, 2000);
+	AltBrightness = std::min<int>(AltBrightness, 2000);
 
-	Brightness = MAX(Brightness, 0);
-	TileBrightness = MAX(TileBrightness, 0);
-	AltBrightness = MAX(AltBrightness, 0);
+	Brightness = std::max<int>(Brightness, 0);
+	TileBrightness = std::max<int>(TileBrightness, 0);
+	AltBrightness = std::max<int>(AltBrightness, 0);
 }
 
 
@@ -6092,7 +6094,7 @@ bool CellClass::Place_Tiberium(TiberiumType tib, int data)
 		if (Can_Tiberium_Grow()) {
 			if (Tiberium_Type_Here() == tib) {
 				OverlayData += data;
-				OverlayData = MIN(OverlayData, tiberium->FrameCount - 1);
+				OverlayData = std::min<int>(OverlayData, tiberium->FrameCount - 1);
 				Rect rect = Union(Union(Cell_Render_Rect(), Overlay_Render_Rect()), Overlay_Shadow_Render_Rect());
 				TacticalMap->Register_Dirty_Area(rect - TacticalRect.TopLeft);
 				tiberium->Queue_Spread(CellID);

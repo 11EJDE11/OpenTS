@@ -35,6 +35,8 @@
 
 #include "color.hh"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Creates an empty map preview.
@@ -75,7 +77,7 @@ void MapPreviewClass::Blit_Preview(HWND window)
 		Rect framerect(winrect.left, winrect.top, winrect.right - winrect.left, winrect.bottom - winrect.top);
 		Rect destrect;
 		Rect srcrect = SurfacePtr->Get_Rect();
-		int scale = min(1000 * framerect.Width / srcrect.Width, 1000 * framerect.Height / srcrect.Height);
+		int scale = std::min(1000 * framerect.Width / srcrect.Width, 1000 * framerect.Height / srcrect.Height);
 
 		destrect.X = framerect.X + framerect.Width / 2 - (scale * srcrect.Width) / 2000;
 		destrect.Y = framerect.Y + framerect.Height / 2 - (scale * srcrect.Height) / 2000;

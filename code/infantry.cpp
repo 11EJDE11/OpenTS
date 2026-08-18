@@ -140,6 +140,8 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 
 int const InfantryClass::HumanShape[32] = {7,7,6,6,6,6,5,5,5,5,4,4,4,4,3,3,3,3,2,2,2,2,1,1,1,1,0,0,0,0,7,7};
 
@@ -379,7 +381,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 		damage = 0;
 		int variation = Random_Pick(-warhead->WebDurationVariation, warhead->WebDurationVariation);
 		int duration = warhead->WebDuration + variation;
-		ProneStruggleTimer = MAX((int)ProneStruggleTimer, duration);
+		ProneStruggleTimer = std::max((int)ProneStruggleTimer, duration);
 
 		Do_Action(DO_STRUGGLE, true, true);
 
@@ -525,7 +527,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 				int morefear = FEAR_ANXIOUS;
 				if (HealthRatio > Rule->ConditionRed) morefear /= 2;
 				if (HealthRatio > Rule->ConditionYellow) morefear /= 2;
-				Fear = FearType(MIN((int)Fear + morefear, FEAR_MAXIMUM));
+				Fear = FearType(std::min<int>((int)Fear + morefear, FEAR_MAXIMUM));
 			}
 		}
 	}
@@ -563,7 +565,7 @@ int InfantryClass::Shape_Number(void) const
 	**	The infantry shape is always modulo the number of animation frames
 	**	of the action stage that the infantry is doing.
 	*/
-	int shapenum = Fetch_Stage() % MAX(Class->DoControls[doit].Count, 1);
+	int shapenum = Fetch_Stage() % std::max(Class->DoControls[doit].Count, 1);
 
 	if (Is_JumpJet() && TarCom != NULL) {
 
@@ -817,7 +819,7 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 
 						if (Session.Type != GAME_NORMAL && Session.Options.CrapEngineers && tech->HealthRatio > Rule->ConditionRed) {
 							int maxdamage = tech->Strength - int(tech->TClass->MaxStrength * Rule->ConditionRed / 2);
-							int damage = MIN((tech->TClass->MaxStrength) * ((1 - Rule->ConditionRed / 2) / 2), maxdamage);
+							int damage = std::min<double>((tech->TClass->MaxStrength) * ((1 - Rule->ConditionRed / 2) / 2), maxdamage);
 							tech->Take_Damage(damage, 0, Rule->C4Warhead, this, true);
 						} else if (iscapturable) {
 							if (tech->Tag) {
@@ -2289,7 +2291,7 @@ bool InfantryClass::Do_Action(DoType todo, bool force, bool randomize)
 			Set_Rate(MasterDoControls[Doing].Rate);
 		}
 		if (randomize) {
-			Set_Stage(Sim_Random_Pick(0,MAX((int)Class->DoControls[todo].Count, 1) - 1));
+			Set_Stage(Sim_Random_Pick(0,std::max((int)Class->DoControls[todo].Count, 1) - 1));
 		} else {
 			Set_Stage(0);
 		}
@@ -4268,7 +4270,7 @@ bool InfantryClass::Should_JumpJet_Fly(Cell const & from, Cell const & to)
 		if (from == to) {
 			return(false);
 		}
-		int dist = MAX(abs(to.X - from.X), abs(to.Y - from.Y));
+		int dist = std::max(abs(to.X - from.X), abs(to.Y - from.Y));
 		if (dist == 1) {
 			return(false);
 		}

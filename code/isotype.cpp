@@ -50,6 +50,8 @@
 #include "vector.h"
 #include "zbuffer.h"
 
+#include <algorithm>
+
 enum {
 	ISO_WIDTH = 48,
 	ISO_HEIGHT = 24,
@@ -1775,7 +1777,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 					int startcol = first_col;
 					do {
 						_iso_start_cols[cell_offset + col] = startcol < 0 ? 0 : startcol;
-						*shortp++ = (unsigned short)(base + max(0, col - first_col));
+						*shortp++ = (unsigned short)(base + std::max(0, col - first_col));
 						++col;
 						--startcol;
 					} while (col < ISO_DRAW_WIDTH);
@@ -1785,8 +1787,8 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 					int left_clip = span_count + first_col - ISO_DRAW_WIDTH;
 					for (int rowcount = ISO_DRAW_WIDTH; rowcount != 0; --rowcount) {
 						for (int i = 0; i < ISO_DRAW_WIDTH; ++i) {
-							int run = span_count - max(0, i - first_col) - max(0, left_clip);
-							runp[i] = max(0, run);
+							int run = span_count - std::max(0, i - first_col) - std::max(0, left_clip);
+							runp[i] = std::max(0, run);
 						}
 						runp -= (ISO_DRAW_WIDTH*ISO_DRAW_HEIGHT);
 						++left_clip;
@@ -1885,7 +1887,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 						int table_off = clip_x + ISO_DRAW_WIDTH * clip_y;
 						IsoDrawData.RowSrcOffset = &_iso_row_offsets[table_off];
 						IsoDrawData.RowStartCol = (unsigned char *)&_iso_start_cols[table_off];
-						IsoDrawData.RowRunLength = (unsigned char *)&_iso_run_lengths[MAX(0, right_clip)][table_off];
+						IsoDrawData.RowRunLength = (unsigned char *)&_iso_run_lengths[std::max(0, right_clip)][table_off];
 					}
 					IsoDrawData.SurfacePitch = surface.Stride();
 					IsoDrawData.DestPtr = (unsigned short *)surface.Lock(Point2D(lock_x, work.Y));

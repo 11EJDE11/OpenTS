@@ -94,6 +94,8 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 
 /***********************************************************************************************
  * AnimClass::AnimClass -- The constructor for animation objects.                              *
@@ -224,9 +226,9 @@ AnimClass::AnimClass(AnimTypeClass const * type, Coord const & coord, int timede
 		Map.Sight_From(coord, Rule->DropZoneRadius / CELL_LEPTON_W, PlayerPtr, false);
 	}
 
-	loop = MAX(loop, 1) * Class->Loops;
+	loop = std::max(loop, 1) * Class->Loops;
 	Loops = loop;
-	Loops = MAX(Loops, 1);
+	Loops = std::max<int>(Loops, 1);
 
 	/*
 	**	If the animation starts immediately, then play the associated sound effect now.

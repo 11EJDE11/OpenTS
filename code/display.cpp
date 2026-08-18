@@ -153,6 +153,8 @@
 #include "color.hh"
 #include "super.hh"
 
+#include <algorithm>
+
 /*
 **	These layer control elements are used to group the displayable objects
 **	so that proper overlap can be obtained.
@@ -767,16 +769,16 @@ Cell DisplayClass::Get_Occupy_Dimensions(Cell const * list) const
 			x = list->X;
 			y = list->Y;
 
-			max_x = MAX(max_x, x);
-			min_x = MIN(min_x, x);
-			max_y = MAX(max_y, y);
-			min_y = MIN(min_y, y);
+			max_x = std::max(max_x, x);
+			min_x = std::min(min_x, x);
+			max_y = std::max(max_y, y);
+			min_y = std::min(min_y, y);
 
 			list++;
 		}
 
-		cell.X = MAX(1, max_x - min_x + 1);
-		cell.Y = MAX(1, max_y - min_y + 1);
+		cell.X = std::max(1, max_x - min_x + 1);
+		cell.Y = std::max(1, max_y - min_y + 1);
 	}
 	return(cell);
 }
@@ -1509,11 +1511,11 @@ Cell DisplayClass::Calculated_Cell(SourceType dir, Cell const & waypoint, Cell c
 	Point2D trypoint = Cell_To_LocalRect_Point(Point2D(trycell.X, trycell.Y));
 	if (trycell != CELL_NONE) {
 		x = trypoint.X - LocalRect.X;
-		x = min(x, (-trypoint.X + (LocalRect.X+LocalRect.Width)));
+		x = std::min(x, (-trypoint.X + (LocalRect.X+LocalRect.Width)));
 		x *= 2;
 
 		y = trypoint.Y - 2 * LocalRect.Y;
-		y = min(y, (-trypoint.Y + 2 * (LocalRect.Y+LocalRect.Height)));
+		y = std::min(y, (-trypoint.Y + 2 * (LocalRect.Y+LocalRect.Height)));
 
 		if (x < y) {
 			vert = true;

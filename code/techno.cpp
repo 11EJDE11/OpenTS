@@ -798,7 +798,7 @@ int TechnoClass::Time_To_Build(void) const
 	if (power > 1.0) power = 1.0;
 	if (power < 1.0 && power > 0.75) power = 0.75;
 	if (power < 0.5) power = 0.5;
-	power = MAX(power, Rule->MinLowPowerProductionSpeed);
+	power = std::max(power, Rule->MinLowPowerProductionSpeed);
 	val /= power;
 
 	int divisor = House->Factory_Count(RTTI);
@@ -1061,7 +1061,7 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass * from, RadioMessageTyp
 			if (HealthRatio < Rule->ConditionGreen) {
 				int cost = TClass->Repair_Cost();
 				int step = TClass->Repair_Step();
-				step = MAX(step, 1);
+				step = std::max(step, 1);
 
 				/*
 				**	If there is sufficient money to repair the unit one step, then do so.
@@ -2221,7 +2221,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 	**	Lessen threat as a factor of distance.
 	*/
 	if (value) {
-		value = MAX(1, value);
+		value = std::max(1, value);
 		BEnd(BENCH_EVAL_OBJECT);
 		return(true);
 	}
@@ -2531,7 +2531,7 @@ AbstractClass * TechnoClass::Greatest_Threat(ThreatType method, Coord const & co
 
 		int crange = range / CELL_LEPTON;
 		if (range == 0) {
-			crange = MAX(Weapon_Range(0), Weapon_Range(1)) / CELL_LEPTON;
+			crange = std::max(Weapon_Range(0), Weapon_Range(1)) / CELL_LEPTON;
 			crange++;
 		}
 		Cell cell = coord.As_Cell();
@@ -3983,7 +3983,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 					AnimClass * anim = new AnimClass(a, anim_coord);
 					if (RTTI == RTTI_BUILDING) {
 						int zadjust = (anim_coord.Y - Render_Coord().Y) / -4;
-						anim->ZAdjust = MIN(zadjust, 0);
+						anim->ZAdjust = std::min(zadjust, 0);
 					}
 					if (anim != NULL && RTTI != RTTI_BUILDING) {
 						anim->Attach_To(this);
@@ -6533,7 +6533,7 @@ int TechnoClass::Threat_Range(int control) const
 	*/
 	int range = TClass->ThreatRange;
 	if (range == 0) {
-		range = MAX(Weapon_Range(0), Weapon_Range(1));
+		range = std::max(Weapon_Range(0), Weapon_Range(1));
 	}
 
 	range *= 2;
@@ -7749,7 +7749,7 @@ int TechnoClass::Anti_Armor(void) const
 		WeaponTypeClass const * weapon = PrimaryWeapon;
 		BulletTypeClass const * bullet = weapon->Bullet;
 		WarheadTypeClass const * warhead = weapon->WarheadPtr;
-		int mrange = MIN(weapon->Range, 4 * CELL_LEPTON);
+		int mrange = std::min(weapon->Range, 4 * CELL_LEPTON);
 
 		int value = ((weapon->Attack * warhead->Modifier[ARMOR_STEEL]) * mrange * warhead->SpreadFactor) / weapon->ROF;
 		if (TClass->Is_Two_Shooter()) {
@@ -7788,7 +7788,7 @@ int TechnoClass::Anti_Infantry(void) const
 		WeaponTypeClass const * weapon = PrimaryWeapon;
 		BulletTypeClass const * bullet = weapon->Bullet;
 		WarheadTypeClass const * warhead = weapon->WarheadPtr;
-		int mrange = MIN(weapon->Range, 4 * CELL_LEPTON);
+		int mrange = std::min(weapon->Range, 4 * CELL_LEPTON);
 
 		int value = ((weapon->Attack * warhead->Modifier[ARMOR_NONE]) * mrange * warhead->SpreadFactor) / weapon->ROF;
 		if (TClass->Is_Two_Shooter()) {
@@ -8492,7 +8492,7 @@ double TechnoClass::Target_Threat(TechnoClass * target, Coord const & firing_coo
 		dist = Center_Coord().Distance_To(target->Center_Coord()) / CELL_LEPTON;
 	}
 
-	threat += MAX(0, dist - range) * target_distance_coefficient;
+	threat += std::max(0, dist - range) * target_distance_coefficient;
 
 	return(threat + 100000.0);
 }

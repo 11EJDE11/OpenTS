@@ -163,7 +163,7 @@ void FactoryClass::AI(void)
 
 				int cost = Cost_Per_Tick();
 
-				cost = MIN(cost, Balance);
+				cost = std::min(cost, Balance);
 
 				/*
 				**	Enough time has expired so that another production step can occur.

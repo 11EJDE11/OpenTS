@@ -31,6 +31,8 @@
 #include "voc.h"
 #include "windlg.h"
 
+#include <algorithm>
+
 
 ProgressScreenClass Progress;
 
@@ -73,7 +75,7 @@ ProgressScreenClass::~ProgressScreenClass(void)
 void ProgressScreenClass::Initialize(double progress, int count, bool usedialog)
 {
 	MainProgress = progress;
-	PlayerCount = MAX(count, 1);
+	PlayerCount = std::max(count, 1);
 
 	for (int i = 0; i < PlayerCount; i++) {
 		PlayerProgress[i] = 0;

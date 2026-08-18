@@ -23,6 +23,8 @@
 
 #include "color.hh"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Prepares a tooltip for display.
@@ -40,8 +42,8 @@ bool CCToolTip::Update(ToolTipText * text)
 		font->String_Pixel_Bounds(text->Text, rect);
 		rect.Width += 4;
 		rect.Height += 3;
-		text->TextWidth = max(rect.Width, text->TextWidth);
-		text->TextHeight = max(rect.Height, text->TextHeight);
+		text->TextWidth = std::max(rect.Width, text->TextWidth);
+		text->TextHeight = std::max(rect.Height, text->TextHeight);
 
 		Rect * trect;
 		if (Options.IsSidebarOnRight == true) {
@@ -66,8 +68,8 @@ bool CCToolTip::Update(ToolTipText * text)
 				font->String_Pixel_Bounds(text->Text, rect);
 				rect.Width += 4;
 				rect.Height += 3;
-				text->TextWidth = max(rect.Width, text->TextWidth);
-				text->TextHeight = max(rect.Height, text->TextHeight);
+				text->TextWidth = std::max(rect.Width, text->TextWidth);
+				text->TextHeight = std::max(rect.Height, text->TextHeight);
 			}
 
 			int x = text->Pos.x + text->TextWidth - trect->Width - trect->X;

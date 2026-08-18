@@ -183,6 +183,7 @@
 #include "bench.hh"
 #include "scrnsel.hh"
 
+#include <algorithm>
 #include <conio.h>
 #include <ctime>
 #include <dos.h>
@@ -1584,13 +1585,13 @@ restart:
 		Session.Create_Connections();
 
 		if (Session.Type == GAME_IPX) {
-			Ipx.Set_Timing(MAX(TIMER_SECOND / 4, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
+			Ipx.Set_Timing(std::max<unsigned>(TIMER_SECOND / 4, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
 
-			Ipx.Set_External_Timing(MAX(TIMER_SECOND, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
+			Ipx.Set_External_Timing(std::max<unsigned>(TIMER_SECOND, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
 		} else {
 			if (Session.Type == GAME_INTERNET) {
 
-				Ipx.Set_Timing(MAX(TIMER_SECOND, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
+				Ipx.Set_Timing(std::max<unsigned>(TIMER_SECOND, Ipx.Global_Response_Time() + 2), (unsigned int) -1, 10 * TIMER_SECOND);
 			}
 		}
 	}
@@ -4773,8 +4774,8 @@ class ScreenCaptureCommandClass : public CommandClass
 				 * limited only by the surface it is copied into.
 				 */
 				Rect dest_rect = VisibleSurface->Get_Rect();
-				dest_rect.Width = MIN(dest_rect.Width, HiddenSurface->Get_Width());
-				dest_rect.Height = MIN(dest_rect.Height, HiddenSurface->Get_Height());
+				dest_rect.Width = std::min(dest_rect.Width, HiddenSurface->Get_Width());
+				dest_rect.Height = std::min(dest_rect.Height, HiddenSurface->Get_Height());
 
 				Hide_Mouse();
 
@@ -5494,7 +5495,7 @@ void Init_Theater(TheaterType theater)
 		int prog_step = ColorSchemes.Count() / (25 - 12);
 		for (int s = 0; s < ColorSchemes.Count(); s++) {
 			ColorSchemes[s]->Build_Light_Converters(SchemePalette, GamePalette);
-			int percent = (min(12 + (s / prog_step),25));
+			int percent = (std::min(12 + (s / prog_step),25));
 			if (percent != last_percent) {
 				Session.Update_Progress(percent);
 				last_percent = percent;

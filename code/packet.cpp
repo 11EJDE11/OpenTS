@@ -35,6 +35,7 @@
 
 #include "packet.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
@@ -450,7 +451,7 @@ bool PacketClass::Get_Field(char const *id, void *data, int &length)
 {
 	FieldClass *field = Find_Field(id);
 	if (field) {
-		memcpy (data, field->Data, MIN(field->Size, length));
+		memcpy (data, field->Data, std::min<int>(field->Size, length));
 		length = (int) field->Size;
 	}
 	return((field) ? true : false);

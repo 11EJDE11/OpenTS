@@ -26,6 +26,8 @@
 #include "scenario.h"
 #include "tactical.h"
 
+#include <algorithm>
+
 DynamicVectorClass<LaserDrawClass *> LaserDrawClass::LaserDraws;
 
 
@@ -206,16 +208,16 @@ void LaserDrawClass::Draw_It(void)
 				int blue = Sim_Random_Pick(-OuterSpread.Get_Blue(), OuterSpread.Get_Blue());
 
 				red += OuterColor.Get_Red();
-				red = MAX(0, red);
-				red = MIN(255, red);
+				red = std::max(0, red);
+				red = std::min(255, red);
 
 				green += OuterColor.Get_Green();
-				green = MAX(0, green);
-				green = MIN(255, green);
+				green = std::max(0, green);
+				green = std::min(255, green);
 
 				blue += OuterColor.Get_Blue();
-				blue = MAX(0, blue);
-				blue = MIN(255, blue);
+				blue = std::max(0, blue);
+				blue = std::min(255, blue);
 
 				outer_hicolor = DSurface::Build_Hicolor_Pixel(red, green, blue);
 				outer_color.Set_Red(red);

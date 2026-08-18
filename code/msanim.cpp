@@ -30,6 +30,8 @@
 #include "shapeset.h"
 #include "srfcache.h"
 
+#include <algorithm>
+
 
 ShapeFlags_Type FadeStages[4] = { ShapeFlags_Type(SHAPE_WIN_REL | SHAPE_TRANSLUCENT75),
 								  ShapeFlags_Type(SHAPE_WIN_REL | SHAPE_TRANSLUCENT50),
@@ -547,7 +549,7 @@ void MSOverlayAnim::Redraw(Surface * surface, Rect const * rect)
 		}
 	}
 
-	int fading_stage = MIN(CurFrame, 3);
+	int fading_stage = std::min(CurFrame, 3u);
 	Draw_Shape(*surface, *Drawer, Shape, Frame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
 }
 
@@ -559,7 +561,7 @@ void MSOverlayAnim::Redraw(Surface * surface, Rect const * rect)
 /// </summary>
 void MSOverlayAnim::Restore(Rect const & rect)
 {
-	int fading_stage = MIN(CurFrame, 3);
+	int fading_stage = std::min(CurFrame, 3u);
 
 	if (Active && Frame >= 0) {
 		Draw_Shape(*AlternateSurface, *Drawer, Shape, Frame, Point2D(XPos, YPos), AlternateSurface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
@@ -1128,7 +1130,7 @@ void MSPrintAnim::Redraw(Surface * surface, Rect const * rect)
 		int y = YPos;
 
 		unsigned printed = Get_Printed_Char_Count();
-		unsigned end = MIN(printed, strlen(String));
+		unsigned end = std::min(printed, strlen(String));
 
 		for (unsigned char_index = LineStart; char_index < end; char_index++) {
 			if (String[char_index] == '\n') {

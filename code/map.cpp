@@ -106,6 +106,7 @@
 #include "overlay.hh"
 #include "ramp.hh"
 
+#include <algorithm>
 #include <new>
 #include <utility>
 
@@ -988,10 +989,10 @@ void MapClass::Fresh_Map(void)
 void MapClass::Set_Local_Dimensions(Rect const & size)
 {
 	LocalRect = Intersect(size, PlayRect);
-	LocalRect.X = MAX(LocalRect.X, 2);
-	LocalRect.Y = MAX(LocalRect.Y, 2);
-	LocalRect.Width = MIN(LocalRect.Width, PlayRect.Width - LocalRect.X - 2);
-	LocalRect.Height = MIN(LocalRect.Height, PlayRect.Height - LocalRect.Y - (2 * 3));
+	LocalRect.X = std::max(LocalRect.X, 2);
+	LocalRect.Y = std::max(LocalRect.Y, 2);
+	LocalRect.Width = std::min(LocalRect.Width, PlayRect.Width - LocalRect.X - 2);
+	LocalRect.Height = std::min(LocalRect.Height, PlayRect.Height - LocalRect.Y - (2 * 3));
 
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
 	for (int i = 0; i < Technos.Count(); i++) {
@@ -1052,7 +1053,7 @@ void MapClass::Sight_From(Coord const & xcoord, int sightrange, HouseClass * hou
 	*/
 	if (!In_Radar(cell)) return;
 	if (!sightrange) return;
-	sightrange = MIN(sightrange, 10);
+	sightrange = std::min(sightrange, 10);
 
 	/*
 	**	Determine logical cell coordinate for center scan point.

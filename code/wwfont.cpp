@@ -47,6 +47,8 @@
 #include "_convert.h"
 #include "convert.h"
 
+#include <algorithm>
+
 
 #define FONTINFOMAXHEIGHT		4
 #define FONTINFOMAXWIDTH		5
@@ -134,13 +136,13 @@ int WWFontClass::String_Pixel_Width(char const * string) const
 	while (*string) {
 		if (*string == '\r' || *string == '\n') {
 			string++;
-			largest = MAX(largest, width);
+			largest = std::max(largest, width);
 			width = 0;
 		} else {
 			width += Char_Pixel_Width(*string++);	// add each char's width
 		}
 	}
-	largest = MAX(largest, width);
+	largest = std::max(largest, width);
 	return(largest);
 }
 
@@ -181,14 +183,14 @@ void WWFontClass::String_Pixel_Bounds(const char * string, Rect& bounds) const
 
 			string++;
 			height += Get_Height();
-			bounds.Width = MAX( bounds.Width, width );
+			bounds.Width = std::max( bounds.Width, width );
 			width = 0;
 		} else {
 			width += Char_Pixel_Width(*string++);	// add each char's width
 		}
 	}
 
-	bounds.Width	= MAX( bounds.Width, width );
+	bounds.Width	= std::max( bounds.Width, width );
 	bounds.Height	= height;
 }
 

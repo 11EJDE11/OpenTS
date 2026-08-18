@@ -32,6 +32,8 @@
 #include "vector3.h"
 #include "zbuffer.h"
 
+#include <algorithm>
+
 int SpiralIndexToSurfaceLUT[289];
 int BlastSurfaceStride = 0;
 
@@ -518,7 +520,7 @@ int Point_To_Spiral_Index(Point2D point)
 	 * Determine which concentric square layer the point lies in.
 	 * Each layer `n` surrounds the previous one and spans from -n to +n in both X and Y.
 	 */
-	int layer = MAX(abs(point.X), abs(point.Y));
+	int layer = std::max(abs(point.X), abs(point.Y));
 
 	int index = 1;
 

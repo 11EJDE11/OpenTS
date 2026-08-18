@@ -27,6 +27,7 @@
 
 #include "color.hh"
 
+#include <algorithm>
 #include <climits>
 
 
@@ -255,8 +256,8 @@ void MSEngine::Add_Update_Rect(Rect const & rect)
 			int i_rect_bottom = update_rect.Y + update_rect.Height;
 
 			Rect new_rect;
-			new_rect.X = MIN(rect.X, update_rect.X);
-			new_rect.Y = MIN(rect.Y, update_rect.Y);
+			new_rect.X = std::min(rect.X, update_rect.X);
+			new_rect.Y = std::min(rect.Y, update_rect.Y);
 			new_rect.Width = rect_right > i_rect_right ? rect_right - new_rect.X : i_rect_right - new_rect.X;
 			new_rect.Height = rect_bottom > i_rect_bottom ? rect_bottom - new_rect.Y : i_rect_bottom - new_rect.Y;
 
@@ -290,12 +291,12 @@ void MSEngine::Add_Update_Rect(Rect const & rect)
 		int i_rect_height = Rects[index].Height;
 		int i_rect_bottom = i_rect_top + i_rect_height;
 
-		int union_x = MIN(rect.X, i_rect_left);
-		int union_y = MIN(rect.Y, i_rect_top);
-		int union_width = MAX(rect.X + rect.Width, i_rect_right);
+		int union_x = std::min(rect.X, i_rect_left);
+		int union_y = std::min(rect.Y, i_rect_top);
+		int union_width = std::max(rect.X + rect.Width, i_rect_right);
 		int union_height = i_rect_bottom;
 		union_rect.Width = union_width - union_x;
-		union_height = MAX(rect.Y + rect.Height, union_height);
+		union_height = std::max(rect.Y + rect.Height, union_height);
 		union_height -= union_y;
 		union_rect.Height = union_height;
 		union_width = union_rect.Width;

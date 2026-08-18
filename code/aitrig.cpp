@@ -33,6 +33,8 @@
 #include "unittype.h"
 #include "vector.h"
 
+#include <algorithm>
+
 char const *TRIG_DIFFICULTIES[DIFF_COUNT] = {
 	"Easy",
 	"Medium",
@@ -852,11 +854,11 @@ bool AITriggerTypeClass::Read_INI(CCINIClass const & ini)
 		}
 
 		if (TeamTypeOne != NULL) {
-			TechLevelNeeded = MAX(TechLevelNeeded, TeamTypeOne->TaskForce->Needed_Tech_Level());
+			TechLevelNeeded = std::max(TechLevelNeeded, TeamTypeOne->TaskForce->Needed_Tech_Level());
 		}
 
 		if (TeamTypeTwo != NULL) {
-			TechLevelNeeded = MAX(TechLevelNeeded, TeamTypeTwo->TaskForce->Needed_Tech_Level());
+			TechLevelNeeded = std::max(TechLevelNeeded, TeamTypeTwo->TaskForce->Needed_Tech_Level());
 		}
 
 		return(true);

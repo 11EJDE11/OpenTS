@@ -159,7 +159,10 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 CDTimerClass<SystemTimerClass> ScenUnusedTimer;
+
 
 static void Remove_AI_Players(void);
 static void Create_Units(bool official);
@@ -1520,8 +1523,8 @@ void Multiplayer_Last_Minute_Fixups(bool official)
 	**	this scenario.
 	*/
 	if (Session.Options.Goodies) {
-		int count = MAX(Rule->CrateMinimum, Session.NumPlayers);
-		count = MIN(count, Rule->CrateMaximum);
+		int count = std::max(Rule->CrateMinimum, Session.NumPlayers);
+		count = std::min(count, Rule->CrateMaximum);
 		for (int index = 0; index < count; index++) {
 			Map.Place_Random_Crate();
 		}
@@ -2271,7 +2274,7 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
 	**	if there are 4 or fewer players. Unofficial maps will pick from all the
 	**	available waypoints.
 	*/
-	int look_for = MAX(num_waypts, Session.Players.Count() + Session.Options.AIPlayers);
+	int look_for = std::max(num_waypts, Session.Players.Count()+Session.Options.AIPlayers);
 	if (!official) {
 		look_for = 8;
 	}
@@ -3114,7 +3117,7 @@ int ScenarioClass::Global_From_Name(char const * variable_name)
 bool ScenarioClass::Read_Global_INI(CCINIClass const & ini)
 {
 	char const * const SECTION = "VariableNames";
-	int length = MIN(ini.Entry_Count(SECTION), ARRAY_SIZE(GlobalFlags));
+	int length = std::min(ini.Entry_Count(SECTION), ARRAY_SIZE(GlobalFlags));
 	for (int i = 0; i < length; i++) {
 		char const * entry = ini.Get_Entry(SECTION, i);
 		int index = atoi(entry);
@@ -3230,7 +3233,7 @@ bool ScenarioClass::Read_Local_INI(CCINIClass const & ini)
 	}
 
 	char const * const SECTION = "VariableNames";
-	int length = MIN(ini.Entry_Count(SECTION), ARRAY_SIZE(LocalFlags));
+	int length = std::min(ini.Entry_Count(SECTION), ARRAY_SIZE(LocalFlags));
 	for (index = 0; index < length; index++) {
 		char const * entry = ini.Get_Entry(SECTION, index);
 		int index = atoi(entry);
@@ -3337,7 +3340,7 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 	TransitTheme = ini.Get_ThemeType(BASIC, "Theme", TransitTheme);
 	NewINIFormat = ini.Get_Int(BASIC, "NewINIFormat", 0);
 	CarryOverPercent = ini.Get_Float(BASIC, "CarryOverMoney", CarryOverPercent);
-	CarryOverPercent = MIN(CarryOverPercent, 1.0);
+	CarryOverPercent = std::min(CarryOverPercent, 1.0);
 	CarryOverCap = ini.Get_Int(BASIC, "CarryOverCap", CarryOverCap);
 	IsSkipScore = ini.Get_Bool(BASIC, "SkipScore", IsSkipScore);
 	IsOneTimeOnly = ini.Get_Bool(BASIC, "OneTimeOnly", IsOneTimeOnly);

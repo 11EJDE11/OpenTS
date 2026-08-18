@@ -67,6 +67,8 @@
 
 #include "bench.hh"
 
+#include <algorithm>
+
 GadgetClass * GScreenClass::Buttons = NULL;
 
 
@@ -509,7 +511,7 @@ void Update_Visible_Surface(Surface *surface, Rect *rect)
 
 	/// Adjust for sidebar position
 	if (!Options.IsSidebarOnRight && !Debug_Map) {
-		dest_rect.X += MAX(MIN(SidebarSurface->Get_Width(), VisibleRect.Width - dest_rect.Width), 0);
+		dest_rect.X += std::max(std::min(SidebarSurface->Get_Width(), VisibleRect.Width - dest_rect.Width), 0);
 	}
 
 	/*

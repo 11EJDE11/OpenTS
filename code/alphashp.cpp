@@ -25,6 +25,8 @@
 #include "tracker.h"
 #include "vector.h"
 
+#include <algorithm>
+
 DynamicVectorClass<AlphaShapeClass *> AlphaShapes;
 
 unsigned char AlphaShapeClass::BrightnessTable[256][256];
@@ -243,12 +245,12 @@ void AlphaShapeClass::Draw_In_Area(Point2D const & point, Rect const & cliprect)
 				ShapeSet const * shape = AlphaShapes[i]->ImageData;
 				Rect shape_rect = shape->Get_Rect(0);
 
-				int top = MAX(r4.Y, shape_rect.Y + r1.Y);
+				int top = std::max(r4.Y, shape_rect.Y + r1.Y);
 				int src_y = top - shape_rect.Y - r1.Y;
-				int bottom = MIN(r4.Y + r4.Height, shape_rect.Y + shape_rect.Height + r1.Y);
-				int left = MAX(r4.X, shape_rect.X + r1.X);
+				int bottom = std::min(r4.Y + r4.Height, shape_rect.Y + shape_rect.Height + r1.Y);
+				int left = std::max(r4.X, shape_rect.X + r1.X);
 				int src_x = left - shape_rect.X - r1.X;
-				int right = MIN(r4.X + r4.Width, shape_rect.X + shape_rect.Width + r1.X);
+				int right = std::min(r4.X + r4.Width, shape_rect.X + shape_rect.Width + r1.X);
 
 				int shape_skip = shape_rect.Width - right + shape_rect.X + src_x + r1.X;
 				int alpha_skip = AlphaBuffer->Get_Buffer_Width() - right + left;
@@ -323,12 +325,12 @@ void AlphaShapeClass::Draw_All(Rect const & cliprect)
 				}
 				Rect shape_rect = shape->Get_Rect(0);
 
-				int top = MAX(r2.Y, shape_rect.Y + y1);
+				int top = std::max(r2.Y, shape_rect.Y + y1);
 				int src_y = top - shape_rect.Y - y1;
-				int bottom = MIN(clip.Y + clip.Height, shape_rect.Y + shape_rect.Height + y1);
-				int left = MAX(r2.X, shape_rect.X + x1);
+				int bottom = std::min(clip.Y + clip.Height, shape_rect.Y + shape_rect.Height + y1);
+				int left = std::max(r2.X, shape_rect.X + x1);
 				int src_x = left - shape_rect.X - x1;
-				int right = MIN(clip.X + clip.Width, shape_rect.X + shape_rect.Width + x1);
+				int right = std::min(clip.X + clip.Width, shape_rect.X + shape_rect.Width + x1);
 
 				int shape_skip = shape_rect.Width - right + shape_rect.X + x1 + src_x;
 				int alpha_skip = AlphaBuffer->Get_Buffer_Width() - right + left;
@@ -379,7 +381,7 @@ void AlphaShapeClass::Calculate_Brightness_Table(void)
 	for (int i = 0; i < 256*256; i++) {
 		int low = i % 256;
 		int high = i / 256;
-		int brightness = MAX(0, MIN(255, low * high / 127));
+		int brightness = std::max(0, std::min(255, low * high / 127));
 		BrightnessTable[0][i] = brightness;
 	}
 }

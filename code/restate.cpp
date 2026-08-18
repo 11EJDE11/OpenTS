@@ -41,6 +41,8 @@
 
 #include "dialog.hh"
 
+#include <algorithm>
+
 class MyButton : public TextButtonClass {
 	public:
 		MyButton(MSEngine *engine, unsigned id, int text, TextPrintType style, int x, int y, int w=-1, int h=-1, bool black_border=false, bool no_background=false) :
@@ -494,7 +496,7 @@ bool RestateMission::Init(ScenarioClass * scen)
 		resume->X = CenterX + (640 - resume->Width) / 2;
 		resume->Y += CenterY;
 	} else {
-		int width = MAX(resume->Width, video->Width);
+		int width = std::max(resume->Width, video->Width);
 		int xx = (2 * (320 - width) / 4);
 
 		resume->X = xx + CenterX;

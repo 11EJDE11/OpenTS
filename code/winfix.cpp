@@ -40,6 +40,7 @@
 #include "ownrdraw.h"
 #include "trim.h"
 
+#include <algorithm>
 #include <commctrl.h>
 
 char *TreeView_Text;
@@ -230,13 +231,13 @@ void TreeView_handle_item_drag(int timer_id)
 		LONG i1 = rect.top - cursor.y;
 		LONG i2 = cursor.y - rect.bottom;
 
-		i2 = MAX(rect.top - cursor.y, cursor.y - rect.bottom);
+		i2 = std::max(rect.top - cursor.y, cursor.y - rect.bottom);
 
-		int i3 = MAX(i2, 0);
+		int i3 = std::max(i2, 0L);
 
 		if (i3 > 0) {
 			int time = 500 - 40 * i3;
-			time = MAX(time, 5);
+			time = std::max(time, 5);
 			SetTimer((HWND)GetWindowLong(TreeView_LastHandle, GWL_HWNDPARENT), 1, time, NULL);
 			HTREEITEM item;
 			HTREEITEM visible;

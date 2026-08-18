@@ -38,6 +38,8 @@
 #include "globals.h"
 #include "rules.h"
 
+#include <algorithm>
+
 static const char *AbilityName[ABILITY_COUNT] = {
 	"FASTER",
 	"STRONGER",
@@ -109,7 +111,7 @@ VeterancyClass::~VeterancyClass(void)
 void VeterancyClass::Made_A_Kill(int cost, int value)
 {
 	Experience += value / (cost * Rule->VeteranRatio);
-	Experience = MIN(Experience, Rule->VeteranCap);
+	Experience = std::min(Experience, Rule->VeteranCap);
 }
 
 

@@ -15,6 +15,8 @@
 #include "goptions.h"
 #include "sun.h"
 
+#include <algorithm>
+
 
 /// <summary>
 /// Normalizes a tile lighting tint to its strongest channel.
@@ -34,9 +36,9 @@ void Adjust_Tile_RGB(int & intensity, int & light, int & red, int & green, int &
 {
 	double temp;
 
-	red = max(red, 0);
-	green = max(green, 0);
-	blue = max(blue, 0);
+	red = std::max(red, 0);
+	green = std::max(green, 0);
+	blue = std::max(blue, 0);
 
 	intensity = 65536;
 
@@ -116,13 +118,13 @@ void Adjust_Tile_RGB(int & intensity, int & light, int & red, int & green, int &
 /// <param name="blue">The blue tint level, where 1000 is full strength.</param>
 void Clamp_Tile_RGB(int & red, int & green, int & blue)
 {
-	red = min(red, NORMAL_LIGHT);
-	green = min(green, NORMAL_LIGHT);
-	blue = min(blue, NORMAL_LIGHT);
+	red = std::min(red, NORMAL_LIGHT);
+	green = std::min(green, NORMAL_LIGHT);
+	blue = std::min(blue, NORMAL_LIGHT);
 
-	red = max(red, 0);
-	green = max(green, 0);
-	blue = max(blue, 0);
+	red = std::max(red, 0);
+	green = std::max(green, 0);
+	blue = std::max(blue, 0);
 
 	/// Apply quantization based on DetailLevel
 	switch (Options.DetailLevel) {

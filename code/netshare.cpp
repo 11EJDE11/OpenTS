@@ -41,6 +41,7 @@
 #include "xpipe.h"
 #include "xstraw.h"
 
+#include <algorithm>
 #include <ctime>
 
 
@@ -1272,7 +1273,7 @@ int CALLBACK Scenario_DlgProc(HWND window, UINT message, WPARAM wparam, LPARAM l
 
 				case IDOK: {
 					int index = SendDlgItemMessage(window, IDC_AILEVEL_SLIDER, LB_GETCURSEL, 0, 0);
-					Session.Options.ScenarioIndex = MAX(0, index);
+					Session.Options.ScenarioIndex = std::max(0, index);
 					WS_Destroy_Dialog(window, IDOK);
 					SendDlgItemMessage(GameoptWindow(), IDC_SCENARIONAME, WM_SETTEXT, 0, (LPARAM)Session.Scenarios[Session.Options.ScenarioIndex]);
 					break;

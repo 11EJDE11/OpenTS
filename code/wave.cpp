@@ -39,6 +39,8 @@
 #include "weapon.h"
 #include "zbuffer.h"
 
+#include <algorithm>
+
 
 FacingType Facing_Between_Points(Point2D const & pt1, Point2D const & pt2);
 
@@ -167,7 +169,7 @@ void WaveClass::Set_Sonic_Pixel(int x, int xoff, int y, unsigned short * buffer)
 	green += ((green * mult) >> 8);
 	blue += ((blue * mult) >> 8);
 
-	*buffer = DSurface::Build_Hicolor_Pixel(red, MIN(255, green), MIN(255, blue));
+	*buffer = DSurface::Build_Hicolor_Pixel(red, std::min(255, green), std::min(255, blue));
 }
 
 
@@ -186,7 +188,7 @@ void WaveClass::Set_Laser_Pixel(unsigned short * buffer, int mult) const
 	int green = rgb.Get_Green();
 	int blue = rgb.Get_Blue();
 	red += ((red * mult) >> 8);
-	*buffer = DSurface::Build_Hicolor_Pixel(MIN(255, red), green, blue);
+	*buffer = DSurface::Build_Hicolor_Pixel(std::min(255, red), green, blue);
 }
 
 
@@ -612,7 +614,7 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 		if (DrawData.Points != NULL) {
 
 			int starty = yoff + TacticalRect.Y + DrawData.BaseY;
-			int endy = MIN(DrawData.Count + starty - 1, cliprect.Height + cliprect.Y);
+			int endy = std::min(DrawData.Count + starty - 1, cliprect.Height + cliprect.Y);
 
 			Init_Offset_Tables();
 
@@ -817,7 +819,7 @@ void WaveClass::Draw_Laser(Point2D const & point, Rect const & cliprect)
 			if (DrawData.Points != NULL) {
 
 				int ystart = yoff + DrawData.BaseY;
-				int yend = MIN(DrawData.Count + ystart - 1, cliprect.Y + cliprect.Height);
+				int yend = std::min(DrawData.Count + ystart - 1, cliprect.Y + cliprect.Height);
 
 				unsigned short base_z = DepthBuffer->Get_Scroll_Delta(zpix);
 				unsigned short depth = base_z - ystart - 2;

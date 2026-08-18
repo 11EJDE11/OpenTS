@@ -70,6 +70,8 @@
 
 #include "color.hh"
 
+#include <algorithm>
+
 
 Surface * EightBitSurface = NULL;
 ConvertClass * EightBitDrawer = NULL;
@@ -296,9 +298,9 @@ Point3D UnitTypeClass::Pixel_Dimensions(void) const
 	int height;
 
 	width = MaxSize-(MaxSize/4);
-	width = min(width, CELL_PIXEL_H);
+	width = std::min(width, CELL_PIXEL_H);
 	height = MaxSize-(MaxSize/4);
-	height = min(height, CELL_PIXEL_H);
+	height = std::min(height, CELL_PIXEL_H);
 	return(Point3D(width, width, height));
 }
 

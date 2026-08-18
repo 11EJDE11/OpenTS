@@ -28,6 +28,8 @@
 #include "swizzle.h"
 #include "tracker.h"
 
+#include <algorithm>
+
 #define MAX_SPREAD_DELAY	50
 #define MAX_GROWTH_DELAY	50
 #define MAX_GROWTH_STAGE	11
@@ -340,7 +342,7 @@ void TiberiumClass::Spread_AI(void)
 		 * The amount we spread depends on how many spreads are enqueued.
 		 * Randomize it so that it feels more natural.
 		 */
-		int count = MIN(25, MAX(5, (int)(SpreadQueue->Count() * SpreadPercentage)));
+		int count = std::min(25, std::max(5, (int)(SpreadQueue->Count() * SpreadPercentage)));
 		count = (abs(Scen->RandomNumber()) % count) + 1;
 
 		/*
@@ -566,7 +568,7 @@ void TiberiumClass::Growth_AI(void)
 		 * The amount we grow depends on how many growths are enqueued.
 		 * Randomize it so that it feels more natural.
 		 */
-		int count = MIN(50, MAX(5, (int)(GrowthQueue->Count() * GrowthPercentage)));
+		int count = std::min(50, std::max(5, (int)(GrowthQueue->Count() * GrowthPercentage)));
 		count = (abs(Scen->RandomNumber()) % count) + 1;
 
 		/*

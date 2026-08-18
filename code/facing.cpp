@@ -38,6 +38,8 @@
 
 #include "facing.h"
 
+#include <algorithm>
+
 
 /***********************************************************************************************
  * FacingClass::FacingClass -- Default constructor for the facing class.                       *
@@ -235,5 +237,5 @@ DirType FacingClass::Difference(DirType const & facing)
 /// <param name="rate">The rate of turn, expressed in binary angle units.</param>
 void FacingClass::Set_ROT(int rate)
 {
-	ROT.From_Dir256((Dir256)MIN(rate, DIR_S - 1));
+	ROT.From_Dir256((Dir256)std::min(rate, DIR_S - 1));
 }

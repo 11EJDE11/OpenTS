@@ -47,6 +47,8 @@
 #include "wonline.h"
 #include "wsproto.h"
 
+#include <algorithm>
+
 
 /*
 ******************************** Prototypes *********************************
@@ -929,9 +931,9 @@ bool Net2Remote_Connect(void)
 			Session.PrecalcDesiredFrameRate = 0;
 			Session.FrameSendRate = 3;
 			if (Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP) {
-				Session.MaxAhead = MAX(((((Ipx.Global_Response_Time() / 8) + (Session.FrameSendRate - 1)) / Session.FrameSendRate) * Session.FrameSendRate), NETWORK_MIN_MAX_AHEAD * 3);
+				Session.MaxAhead = std::max<unsigned int>(((((Ipx.Global_Response_Time() / 8) + (Session.FrameSendRate - 1)) / Session.FrameSendRate) * Session.FrameSendRate), NETWORK_MIN_MAX_AHEAD * 3);
 			} else {
-				Session.MaxAhead = MAX(((int)Ipx.Global_Response_Time() / 8), NETWORK_MIN_MAX_AHEAD);
+				Session.MaxAhead = std::max(((int)Ipx.Global_Response_Time() / 8), NETWORK_MIN_MAX_AHEAD);
 			}
 
 			break;
@@ -973,12 +975,12 @@ bool Net2Remote_Connect(void)
 				Session.PrecalcMaxAhead = 0;
 				Session.PrecalcDesiredFrameRate = 0;
 				if (Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP) {
-					Session.MaxAhead = MAX(((((Ipx.Global_Response_Time() / 8) + (Session.FrameSendRate - 1)) / Session.FrameSendRate) * Session.FrameSendRate), NETWORK_MIN_MAX_AHEAD * 3);
+					Session.MaxAhead = std::max<unsigned int>(((((Ipx.Global_Response_Time() / 8) + (Session.FrameSendRate - 1)) / Session.FrameSendRate) * Session.FrameSendRate), NETWORK_MIN_MAX_AHEAD * 3);
 				} else {
-					Session.MaxAhead = MAX(((int)Ipx.Global_Response_Time() / 8), NETWORK_MIN_MAX_AHEAD);
+					Session.MaxAhead = std::max(((int)Ipx.Global_Response_Time() / 8), NETWORK_MIN_MAX_AHEAD);
 				}
 
-				Ipx.Set_Timing(MAX(TIMER_SECOND / 2, (unsigned int)Ipx.Global_Response_Time() + 2), (unsigned int)-1, 10 * TIMER_SECOND);
+				Ipx.Set_Timing(std::max<unsigned>(TIMER_SECOND / 2, (unsigned int)Ipx.Global_Response_Time() + 2), (unsigned int)-1, 10 * TIMER_SECOND);
 
 				//.....................................................................
 				// Send all players the NET_GO packet.  Wait until all ACK's have been
@@ -1054,7 +1056,7 @@ bool Net2Remote_Connect(void)
 				// Init network timing values, using previous response times as a measure
 				// of what our retry delta & timeout should be.
 				//------------------------------------------------------------------------
-				Ipx.Set_Timing(MAX(Ipx.Global_Response_Time() + 2, TIMER_SECOND / 2), (unsigned int)-1, MAX(2 * TIMER_SECOND, Ipx.Global_Response_Time() * 8));
+				Ipx.Set_Timing(std::max<unsigned>(Ipx.Global_Response_Time() + 2, TIMER_SECOND / 2), (unsigned int)-1, std::max<unsigned>(2 * TIMER_SECOND, Ipx.Global_Response_Time() * 8));
 
 				//------------------------------------------------------------------------
 				// Restore screen
@@ -3258,7 +3260,7 @@ bool Net2ReadyToGo(int load_game)
 	// Init network timing values, using previous response times as a measure
 	// of what our retry delta & timeout should be.
 	//------------------------------------------------------------------------
-	Ipx.Set_Timing(retrydelta, (unsigned int) -1, max (2 * TIMER_SECOND, (int)retrydelta * 8));
+	Ipx.Set_Timing(retrydelta, (unsigned int) -1, std::max(2 * TIMER_SECOND, (int)retrydelta * 8));
 	Ipx.Set_External_Timing(TIMER_SECOND, -1, 10 * TIMER_SECOND);
 
 	return(true);

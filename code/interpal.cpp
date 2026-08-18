@@ -47,6 +47,8 @@
 #include "palette.h"
 #include "surface.h"
 
+#include <algorithm>
+
 bool	InterpolationPaletteChanged = false;
 extern "C" {
 extern void __cdecl Asm_Interpolate (unsigned char* src_ptr ,
@@ -269,8 +271,8 @@ void Increase_Palette_Luminance (PaletteClass & palette , double percentage)
 		HSVClass hsv = palette[i];
 
 		int value = int(hsv.Get_Value() * percentage);
-		value = MIN(value, 255);
-		value = MAX(value, 0);
+		value = std::min(value, 255);
+		value = std::max(value, 0);
 		hsv.Set_Value(value);
 		palette[i] = hsv;
 

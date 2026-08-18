@@ -61,6 +61,7 @@
 #include "dsurface.h"
 #include "zbuffer.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 
@@ -451,7 +452,7 @@ class BlitTransXlatMultWriteAlpha : public Blitter {
 				source = (unsigned char *)source + 1;
 
 				if (value != 0) {
-					*(unsigned short *)ap = MIN(z_min + alpha_level * value, 255);
+					*(unsigned short *)ap = std::min(z_min + alpha_level * value, 255);
 				}
 
 				ap = ap + 1;
@@ -487,7 +488,7 @@ class BlitTransXlatWriteAlpha : public Blitter {
 				source = (unsigned char *)source + 1;
 
 				if (value != 0) {
-					*(unsigned short *)ap = MIN(z_min + value, 255);
+					*(unsigned short *)ap = std::min(z_min + value, 255);
 				}
 
 				ap = ap + 1;
@@ -2286,7 +2287,7 @@ class BlitTranslucentWriteAlpha : public Blitter {
 					int g = ((rgb1.Get_Green() * alpha1) + (rgb2.Get_Green() * alpha2)) >> 8;
 					int b = ((rgb1.Get_Blue() * alpha1) + (rgb2.Get_Blue() * alpha2)) >> 8;
 
-					*(T *)dest = DSurface::Build_Hicolor_Pixel(min(255, r), min(255, g), min(255, b));
+					*(T *)dest = DSurface::Build_Hicolor_Pixel(std::min(255, r), std::min(255, g), std::min(255, b));
 				}
 
 				dest = (T *)dest + 1;

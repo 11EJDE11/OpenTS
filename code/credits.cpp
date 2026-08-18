@@ -205,7 +205,7 @@ void CreditClass::AI(bool forced)
 	/*
 	**	Make sure that the credit counter doesn't drop below zero.
 	*/
-	Credits = MAX(Credits, 0L);
+	Credits = std::max(Credits, 0);
 
 	if (Scen->MissionTimer.Is_Active() || Scen->MissionTimer) {
 		IsToRedraw = true;

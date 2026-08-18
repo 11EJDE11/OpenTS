@@ -119,6 +119,8 @@
 #include "bench.hh"
 #include "color.hh"
 
+#include <algorithm>
+
 ShapeSet const * SidebarClass::SidebarShape = NULL;
 ShapeSet const * SidebarClass::SidebarMiddleShape = NULL;
 ShapeSet const * SidebarClass::SidebarBottomShape = NULL;
@@ -2026,7 +2028,7 @@ bool SidebarClass::StripClass::Recalc(void)
 
 		if (got_old && got_new) {
 			TopIndex = newpos - oldpos;
-			TopIndex = MAX(0, MIN(TopIndex, BuildableCount - max_visible));
+			TopIndex = std::max(0, std::min(TopIndex, BuildableCount - max_visible));
 		} else {
 			TopIndex = 0;
 		}
@@ -2654,7 +2656,7 @@ int SidebarClass::Max_Visible(void)
 	if (SidebarSurface != NULL && SidebarShape != NULL) {
 		Rect r = SidebarRect;
 		int fits = (r.Height - SidebarBottomShape->Get_Height() - SidebarShape->Get_Height()) / SidebarMiddleShape->Get_Height();
-		return(MIN(fits, int(StripClass::MAX_SLOTS)));
+		return(std::min(fits, int(StripClass::MAX_SLOTS)));
 	}
 	return(StripClass::MAX_VISIBLE);
 }

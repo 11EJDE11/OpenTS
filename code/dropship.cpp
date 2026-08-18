@@ -48,6 +48,7 @@
 #include "weapon.h"
 #include "zbuffer.h"
 
+#include <algorithm>
 #include <climits>
 #include <cstring>
 
@@ -866,7 +867,7 @@ void Dropship_Screen(void)
 						--j;
 					}
 
-					int alpha = MIN(255, (_dissolve_rate * timeGetTime() - _dissolve_rate * effect->StartTime) / _dissolve_scale);
+					int alpha = std::min(255ul, (_dissolve_rate * timeGetTime() - _dissolve_rate * effect->StartTime) / _dissolve_scale);
 
 					if (alpha != effect->Alpha || overlap_drawn) {
 						effect->Alpha = alpha;
@@ -915,7 +916,7 @@ void Dropship_Screen(void)
 				int previous_display = money_display;
 				double distance = (double)abs(money - (int)money_display);
 				double elapsed_time = (double)elapsed;
-				double step = MIN(std::sqrt(distance) * elapsed_time * 0.04, distance);
+				double step = std::min(std::sqrt(distance) * elapsed_time * 0.04, distance);
 
 				int delta = (int)step;
 				if (money < (int)money_display) {

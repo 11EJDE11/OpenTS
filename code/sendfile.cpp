@@ -48,6 +48,8 @@
 #include "session.h"
 #include "stimer.h"
 
+#include <algorithm>
+
 bool Receive_Remote_File ( char *file_name, unsigned int file_length, bool show_progress);
 bool Send_Remote_File ( char const *file_name );
 
@@ -437,7 +439,7 @@ bool Send_Remote_File ( char const *file_name, bool send_to_all, bool show_progr
 
 				((RemoteFileTransferType &)send_packet).Command = NET_FILE_CHUNK;
 				((RemoteFileTransferType &)send_packet).BlockNumber = block_number;
-				((RemoteFileTransferType &)send_packet).BlockLength = MIN (file_length, max_chunk_size);
+				((RemoteFileTransferType &)send_packet).BlockLength = std::min(file_length, max_chunk_size);
 
 				file_length -= ((RemoteFileTransferType &)send_packet).BlockLength;
 

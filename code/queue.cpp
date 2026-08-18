@@ -172,6 +172,7 @@
 
 #include "special.hh"
 
+#include <algorithm>
 #include <ctime>
 
 
@@ -913,7 +914,7 @@ static void Queue_AI_Multiplayer(void)
 	//------------------------------------------------------------------------
 	rc = Wait_For_Players (0, net,
 	TIMER_SECOND, /// (Session.MaxAhead << 3),
-	MAX ((int) net->Response_Time() * 3, _timings[Session.Type].FRAMESYNC_TIMEOUT ),
+	std::max((int) net->Response_Time() * 3, _timings[Session.Type].FRAMESYNC_TIMEOUT ),
 	_timings[Session.Type].MIXFILE_TIMEOUT,
 	multi_packet_buf, SentCommandCount, TheirFrameSync);
 
@@ -1562,7 +1563,7 @@ static void Generate_Timing_Event(ConnManClass *net, int my_sent)
 			// multiple of the FrameSendRate.
 			//..................................................................
 			if (Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP) {
-				ev.Data.FrameInfo.Delay = MAX( ((((resp_time / 8) +
+				ev.Data.FrameInfo.Delay = std::max( ((((resp_time / 8) +
 					(Session.FrameSendRate - 1)) / Session.FrameSendRate) *
 					Session.FrameSendRate), (Session.FrameSendRate * 2) );
 			}
@@ -1572,7 +1573,7 @@ static void Generate_Timing_Event(ConnManClass *net, int my_sent)
 			//..................................................................
 			else {
 				if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
-					ev.Data.FrameInfo.Delay = MAX( (resp_time / 8),
+					ev.Data.FrameInfo.Delay = std::max<unsigned int>( (resp_time / 8),
 						 NETWORK_MIN_MAX_AHEAD );
 				}
 			}
@@ -1659,7 +1660,7 @@ static void Generate_Real_Timing_Event(ConnManClass *net, int my_sent)
 	if (highest_ticks == 0) {
 		Session.DesiredFrameRate = 60;
 	} else {
-		Session.DesiredFrameRate = MAX(1, 1000 / highest_ticks);
+		Session.DesiredFrameRate = std::max(1, 1000 / highest_ticks);
 	}
 
 	switch (Options.GameSpeed) {
@@ -1674,7 +1675,7 @@ static void Generate_Real_Timing_Event(ConnManClass *net, int my_sent)
 			break;
 	}
 
-	Session.DesiredFrameRate = MIN (Session.DesiredFrameRate, specified_frame_rate);
+	Session.DesiredFrameRate = std::min(Session.DesiredFrameRate, specified_frame_rate);
 
 	//
 	// Measure the current connection response time.  This time will be in
@@ -1730,8 +1731,8 @@ static void Generate_Real_Timing_Event(ConnManClass *net, int my_sent)
 	// (Isn't "thrice" a cool word?)
 	//
 	maxahead = ((maxahead + fudge - 1) / frame_send_rate) * frame_send_rate;
-	maxahead = MAX (maxahead, (int)frame_send_rate * 3);
-	maxahead = MIN (maxahead, frame_send_rate * ((frame_send_rate + 249) / frame_send_rate));
+	maxahead = std::max(maxahead, (int)frame_send_rate * 3);
+	maxahead = std::min(maxahead, frame_send_rate * ((frame_send_rate + 249) / frame_send_rate));
 
 	ev.Type = EventClass::TIMING;
 	ev.Data.Timing.DesiredFrameRate = Session.DesiredFrameRate;
@@ -1748,7 +1749,7 @@ static void Generate_Real_Timing_Event(ConnManClass *net, int my_sent)
 	if (Session.Players.Count() == 1 && resp_time == 0) {
 		resp_time = TIMER_SECOND / 2;
 	}
-	net->Set_Timing (resp_time + TIMER_SECOND / 6, -1, MAX(2 * TIMER_SECOND, (resp_time*8) + TIMER_SECOND / 4), false);
+	net->Set_Timing (resp_time + TIMER_SECOND / 6, -1, std::max<unsigned>(2 * TIMER_SECOND, (resp_time*8) + TIMER_SECOND / 4), false);
 }
 
 
@@ -1803,7 +1804,7 @@ static void Generate_Process_Time_Event(ConnManClass *net)
 			DebugString("Response time = %d\n", resp_time);
 			break;
 	}
-	net->Set_Timing (resp_time + TIMER_SECOND / 6, -1, MAX(2 * TIMER_SECOND, (resp_time * 8) + TIMER_SECOND / 4), false);
+	net->Set_Timing (resp_time + TIMER_SECOND / 6, -1, std::max<unsigned>(2 * TIMER_SECOND, (resp_time * 8) + TIMER_SECOND / 4), false);
 
 	if (IsMono) {
 		MonoClass::Enable();
@@ -2492,8 +2493,8 @@ void Draw_Sync_Bars(HWND window)
 			}
 		}
 
-		int w = MAX(100 - (int)(100 * progress / 1200), 0) * bar_rect.Width;
-		bar_rect.Width = MAX(6, w / 100);
+		int w = std::max(100 - (int)(100 * progress / 1200), 0) * bar_rect.Width;
+		bar_rect.Width = std::max(6, w / 100);
 
 		AlternateSurface->Fill_Rect(AlternateSurface->Get_Rect(), bar_rect, color);
 	}

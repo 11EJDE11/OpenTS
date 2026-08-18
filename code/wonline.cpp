@@ -63,6 +63,7 @@
 #include "wsproto.h"
 #include "wstring.h"
 
+#include <algorithm>
 #include <atlbase.h>  /// ERROR: atlimpl.cpp is obsolete. Please remove it from your project.
 extern CComModule _Module;  // Required for COM - must be between atlbase.h and atlcom.h.  Funky, no?
 #include <atlcom.h>
@@ -2012,7 +2013,7 @@ void Draw_Player_List(int keep_selection)
 				}
 			}
 
-			house = MAX(house, HOUSE_FIRST);
+			house = std::max<int>(house, HOUSE_FIRST);
 
 			ladder_name.set((char *)user.name);
 			ladder_name.toLower();
@@ -7699,7 +7700,7 @@ BOOL CALLBACK WOL_Ladder_Dialog_Proc(HWND win, UINT uMsg, WPARAM wParam, LPARAM 
 
 				case IDBACK: {
 					g_LadderPos -= _ladder_step;
-					g_LadderPos = MAX(1, g_LadderPos);
+					g_LadderPos = std::max(1, g_LadderPos);
 					char ladder_search_key[10];
 					sprintf(ladder_search_key, "%d", g_LadderPos);
 
@@ -9798,7 +9799,7 @@ void Sync_Scenario_With_Guests(void)
 	**	Init network timing values, using previous response times as a measure
 	**	of what our retry delta & timeout should be.
 	*/
-	Ipx.Set_Timing (Ipx.Global_Response_Time () + 2, (unsigned int) -1, MAX(2 * TIMER_SECOND, Ipx.Global_Response_Time () * 8));
+	Ipx.Set_Timing (Ipx.Global_Response_Time () + 2, (unsigned int) -1, std::max<unsigned>(2 * TIMER_SECOND, Ipx.Global_Response_Time () * 8));
 }
 
 /// <summary>

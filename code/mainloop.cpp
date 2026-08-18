@@ -64,6 +64,8 @@
 #include "bench.hh"
 #include "special.hh"
 
+#include <algorithm>
+
 //
 // Special module globals for recording and playback
 //
@@ -345,7 +347,7 @@ bool Main_Loop(void)
 	//
 	// Measure how long it took to process the AI
 	//
-	Session.ProcessTicks += min<int>(1000, (timeGetTime() - Session.ProcessTimer)); /// (TickCount - Session.ProcessTimer)
+	Session.ProcessTicks += std::min<int>(1000, (timeGetTime() - Session.ProcessTimer)); /// (TickCount - Session.ProcessTimer)
 	Session.ProcessFrames++;
 
 	/*

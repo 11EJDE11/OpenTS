@@ -54,6 +54,8 @@
 
 #include "dialog.hh"
 
+#include <algorithm>
+
 
 /***********************************************************************************************
  * SliderClass::SliderClass -- Normal constructor for a slider (with thumb) gadget.            *
@@ -165,8 +167,8 @@ int SliderClass::Set_Maximum(int value)
  *=============================================================================================*/
 void SliderClass::Set_Thumb_Size(int value)
 {
-	Thumb = MIN(value, MaxValue);
-	Thumb = MAX(Thumb, 1);
+	Thumb = std::min(value, MaxValue);
+	Thumb = std::max(Thumb, 1);
 	Flag_To_Redraw();
 	Recalc_Thumb();
 }
@@ -186,7 +188,7 @@ void SliderClass::Set_Thumb_Size(int value)
  *=============================================================================================*/
 int SliderClass::Set_Value(int value)
 {
-	value = MIN(value, MaxValue-Thumb);
+	value = std::min(value, MaxValue-Thumb);
 
 	if (BASECLASS::Set_Value(value)) {
 		Recalc_Thumb();
@@ -212,9 +214,9 @@ void SliderClass::Recalc_Thumb(void)
 {
 	int length = IsHorizontal ? Width : Height;
 	int size   = int(length * ((double)Thumb / MaxValue));
-	ThumbSize  = MAX(size, 4);
+	ThumbSize  = std::max(size, 4);
 	int start  = int(length * ((double)CurValue / MaxValue));
-	ThumbStart = MIN(start, length-ThumbSize);
+	ThumbStart = std::min(start, length-ThumbSize);
 }
 
 

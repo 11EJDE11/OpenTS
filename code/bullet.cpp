@@ -90,6 +90,8 @@
 #include "warhead.h"
 #include "weapon.h"
 
+#include <algorithm>
+
 
 extern ULONG COMRefCount;
 
@@ -853,7 +855,7 @@ void BulletClass::AI(void)
 							target_distance /= 3;
 						}
 
-						if (fuse == FUSE_EXPLODE_CLOSE || target_distance <= MAX(CELL_LEPTON / 2, Velocity.Speed() * 2)) {
+						if (fuse == FUSE_EXPLODE_CLOSE || target_distance <= std::max(CELL_LEPTON / 2.0, Velocity.Speed() * 2)) {
 							PositionCoord = TarCom->Center_Coord();
 						}
 					}
@@ -1075,15 +1077,15 @@ bool BulletClass::Unlimbo(Coord const & coord, TVelocity3D<double> const & veloc
 			*/
 			if (/*Class->ROT != 0 ||*/ Class->IsArcing) {
 				int scatterdist = (::Distance(coord, tcoord)/16)-CELL_LEPTON / 4;
-				scatterdist = MIN(scatterdist, Rule->HomingScatter);
-				scatterdist = MAX(scatterdist, 0);
+				scatterdist = std::min(scatterdist, Rule->HomingScatter);
+				scatterdist = std::max(scatterdist, 0);
 
 				dir = (Dir256)((dir + (Random_Pick(0, 10)-5)) & DIR_MAX);
 				tcoord = Coord_Scatter(tcoord, Random_Pick(0, scatterdist));
 			} else {
 				int scatterdist = (::Distance(coord, tcoord)/16)-CELL_LEPTON / 4;
-				scatterdist = MIN(scatterdist, Rule->BallisticScatter);
-				scatterdist = MAX(scatterdist, 0);
+				scatterdist = std::min(scatterdist, Rule->BallisticScatter);
+				scatterdist = std::max(scatterdist, 0);
 				tcoord = Move_Coord(tcoord, dir, Random_Pick(0, scatterdist));
 			}
 #endif

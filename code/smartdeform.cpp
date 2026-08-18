@@ -25,6 +25,8 @@
 
 #include "ramp.hh"
 
+#include <algorithm>
+
 #define MAX_TERRAIN_HEIGHT (12)
 
 #define NUM_CORNERS 4
@@ -300,11 +302,11 @@ void Init_Deform_Grid(Cell center, bool forced)
 	Cell top_left = center - Cell(MAX_TERRAIN_HEIGHT + 2, MAX_TERRAIN_HEIGHT + 2);
 	Cell bottom_right = center + Cell(MAX_TERRAIN_HEIGHT + 2, MAX_TERRAIN_HEIGHT + 2);
 
-	top_left.X = MAX(0, top_left.X);
-	top_left.Y = MAX(0, top_left.Y);
+	top_left.X = std::max<int>(0, top_left.X);
+	top_left.Y = std::max<int>(0, top_left.Y);
 
-	bottom_right.X = MIN(Map.MapRect.Width - Map.MapRect.X, bottom_right.X);
-	bottom_right.Y = MIN(Map.MapRect.Height - Map.MapRect.Y, bottom_right.Y);
+	bottom_right.X = std::min<int>(Map.MapRect.Width - Map.MapRect.X, bottom_right.X);
+	bottom_right.Y = std::min<int>(Map.MapRect.Height - Map.MapRect.Y, bottom_right.Y);
 
 	for (int y = top_left.Y; y <= bottom_right.Y; y++) {
 		for (int x = top_left.X; x <= bottom_right.X; x++) {
@@ -441,11 +443,11 @@ bool Commit_Deform_Grid(Cell center, bool forced)
 	Cell top_left = center - Cell(MAX_TERRAIN_HEIGHT + 2, MAX_TERRAIN_HEIGHT + 2);
 	Cell bottom_right = center + Cell(MAX_TERRAIN_HEIGHT + 2, MAX_TERRAIN_HEIGHT + 2);
 
-	top_left.X = MAX(0, top_left.X);
-	top_left.Y = MAX(0, top_left.Y);
+	top_left.X = std::max<int>(0, top_left.X);
+	top_left.Y = std::max<int>(0, top_left.Y);
 
-	bottom_right.X = MIN(Map.MapRect.Width - Map.MapRect.X, bottom_right.X);
-	bottom_right.Y = MIN(Map.MapRect.Height - Map.MapRect.Y, bottom_right.Y);
+	bottom_right.X = std::min<int>(Map.MapRect.Width - Map.MapRect.X, bottom_right.X);
+	bottom_right.Y = std::min<int>(Map.MapRect.Height - Map.MapRect.Y, bottom_right.Y);
 
 	Rect bound_rect(0, 0, 0, 0);
 

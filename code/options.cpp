@@ -86,6 +86,8 @@
 
 #include "diff.hh"
 
+#include <algorithm>
+
 
 char const * const OptionsClass::HotkeyName = "WinHotkeys";
 
@@ -231,7 +233,7 @@ void OptionsClass::Set_Repeat(bool on)
  *=============================================================================================*/
 void OptionsClass::Set_Score_Volume(float volume, bool feedback)
 {
-	ScoreVolume = MIN(volume, 1.0);
+	ScoreVolume = std::min(volume, 1.0f);
 	Theme.Set_Volume(ScoreVolume * 255.0);
 	if (feedback && !Theme.Still_Playing()) {
 		Sound_Effect(Rule->GenericBeep, ScoreVolume);
@@ -260,7 +262,7 @@ void OptionsClass::Set_Score_Volume(float volume, bool feedback)
  *=============================================================================================*/
 void OptionsClass::Set_Sound_Volume(float volume, bool feedback)
 {
-	SoundVolume = MIN(volume, 1.0);
+	SoundVolume = std::min(volume, 1.0f);
 	if (feedback) {
 		Sound_Effect(Rule->GenericBeep);
 	}
@@ -278,7 +280,7 @@ void OptionsClass::Set_Sound_Volume(float volume, bool feedback)
 /// <param name="feedback">Should a feedback sound be generated?</param>
 void OptionsClass::Set_Voice_Volume(float volume, bool feedback)
 {
-	VoiceVolume = MIN(volume, 1.0);
+	VoiceVolume = std::min(volume, 1.0f);
 	Set_Speech_Volume(VoiceVolume * 255.0);
 	if (feedback) {
 		if (GameActive == true) {
@@ -357,8 +359,8 @@ void OptionsClass::Load_Settings(void)
 	DebugString("GameSpeed = %d\n", GameSpeed);
 
 	Difficulty = ConfigINI.Get_Int("Options", "Difficulty", Difficulty);
-	Difficulty = MIN(Difficulty, 4);
-	Difficulty = MAX(Difficulty, 0);
+	Difficulty = std::min(Difficulty, 4);
+	Difficulty = std::max(Difficulty, 0);
 	DebugString("Difficulty = %d\n", Difficulty);
 
 	ScrollMethod = ConfigINI.Get_Int("Options", "ScrollMethod", ScrollMethod);
@@ -371,8 +373,8 @@ void OptionsClass::Load_Settings(void)
 	DebugString("AutoScroll is %s\n", AutoScroll == true ? "ON" : "OFF");
 
 	DetailLevel = ConfigINI.Get_Int("Options", "DetailLevel", DetailLevel);
-	DetailLevel = MIN(DetailLevel, 2);
-	DetailLevel = MAX(DetailLevel, 0);
+	DetailLevel = std::min(DetailLevel, 2);
+	DetailLevel = std::max(DetailLevel, 0);
 	DebugString("DetailLevel = %d\n", DetailLevel);
 
 	IsSidebarOnRight = true;

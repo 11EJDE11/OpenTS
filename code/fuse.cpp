@@ -38,6 +38,8 @@
 
 #include "fuse.h"
 
+#include <algorithm>
+
 
 /***********************************************************************************************
  * FuseClass::FuseClass -- Constructor.                                                        *
@@ -90,7 +92,7 @@ FuseClass::FuseClass(void) :
  *=============================================================================================*/
 void FuseClass::Arm_Fuse(Coord const & location, Coord const & target, int arming, int timeto)
 {
-	timeto = MAX(timeto, arming);
+	timeto = std::max(timeto, arming);
 	Timer = timeto;
 	Arming = arming;
 	HeadTo = target;

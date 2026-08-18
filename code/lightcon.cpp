@@ -17,6 +17,8 @@
 #include "scenario.h"
 #include "sun.h"
 
+#include <algorithm>
+
 extern "C" {
 	void __cdecl Adjust_Color_555(void * palette, void * translator, int red_tint, int green_tint, int blue_tint, int intensity, bool * tint_mask);
 	void __cdecl Adjust_Color_556(void * palette, void * translator, int red_tint, int green_tint, int blue_tint, int intensity, bool * tint_mask);
@@ -118,12 +120,12 @@ void LightConvertClass::Apply_Tint(int red_tint, int green_tint, int blue_tint, 
 		}
 
 		if (red_tint != -1) {
-			red_tint = MIN(red_tint, 2000);
-			red_tint = MAX(red_tint, 0);
-			green_tint = MIN(green_tint, 2000);
-			green_tint = MAX(green_tint, 0);
-			blue_tint = MIN(blue_tint, 2000);
-			blue_tint = MAX(blue_tint, 0);
+			red_tint = std::min(red_tint, 2000);
+			red_tint = std::max(red_tint, 0);
+			green_tint = std::min(green_tint, 2000);
+			green_tint = std::max(green_tint, 0);
+			blue_tint = std::min(blue_tint, 2000);
+			blue_tint = std::max(blue_tint, 0);
 		}
 
 		if (ion_light) {
@@ -158,8 +160,8 @@ void LightConvertClass::Apply_Tint(int red_tint, int green_tint, int blue_tint, 
 
 		int level_count = IntensityLevels - 1;
 
-		int max_level = MAX(30 * IntensityLevels / 200 - 1, 0);
-		max_level = MIN(max_level, level_count >> 1);
+		int max_level = std::max(30 * IntensityLevels / 200 - 1, 0);
+		max_level = std::min(max_level, level_count >> 1);
 
 		int level = 0;
 
@@ -227,9 +229,9 @@ void LightConvertClass::Apply_Tint(int red_tint, int green_tint, int blue_tint, 
 								green_tint = (interp_intensity * (unsigned char)ArtPalette[i].Get_Green()) >> 16;
 								blue_tint  = (interp_intensity * (unsigned char)ArtPalette[i].Get_Blue()) >> 16;
 							}
-							red_tint = MIN(red_tint, 255);
-							green_tint = MIN(green_tint, 255);
-							blue_tint = MIN(blue_tint, 255);
+							red_tint = std::min(red_tint, 255);
+							green_tint = std::min(green_tint, 255);
+							blue_tint = std::min(blue_tint, 255);
 							*translator = DSurface::Build_Hicolor_Pixel(red_tint, green_tint, blue_tint);
 							translator++;
 						}

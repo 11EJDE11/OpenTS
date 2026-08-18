@@ -81,6 +81,8 @@
 #include "wsproto.h"
 #include "wspudp.h"
 
+#include <algorithm>
+
 
 /***************************************************************************
  * IPXManagerClass::IPXManagerClass -- class constructor                   *
@@ -1397,10 +1399,10 @@ void IPXManagerClass::Store_Stats(void)
 			}
 
 			int maxtime = Connection[i]->Queue->Max_Response_Time();
-			stats.MaxRoundTrip = MAX(Session.ConnectionStats[i].MaxRoundTrip, 1000 * maxtime / TIMER_SECOND);
+			stats.MaxRoundTrip = std::max(Session.ConnectionStats[i].MaxRoundTrip, 1000 * maxtime / TIMER_SECOND);
 
 			unsigned int avgtime = Connection[i]->Queue->Avg_Response_Time();
-			stats.MaxAvgRoundTrip = MAX(int(1000 * avgtime / TIMER_SECOND), Session.ConnectionStats[i].MaxAvgRoundTrip);
+			stats.MaxAvgRoundTrip = std::max(int(1000 * avgtime / TIMER_SECOND), Session.ConnectionStats[i].MaxAvgRoundTrip);
 
 			stats.Resends = Connection[i]->Num_Resends();
 			stats.Lost = Connection[i]->Num_Lost();
@@ -1457,7 +1459,7 @@ void IPXManagerClass::Multiplayer_Debug_Print(void)
 			sprintf(buffer, "Resends  : %d", resends);
 			Fancy_Text_Print(buffer, *VisibleSurface, VisibleSurface->Get_Rect(), Point2D((i + 1) * 100, 425), ColorSchemes[scheme], TBLACK, TextPrintType(TPF_EFNT|TPF_NOSHADOW));
 
-			int numlost = MAX(0, Connection[i]->Num_Lost());
+			int numlost = std::max(0, Connection[i]->Num_Lost());
 			sprintf(buffer, "Num lost : %d", numlost);
 			Fancy_Text_Print(buffer, *VisibleSurface, VisibleSurface->Get_Rect(), Point2D((i + 1) * 100, 432), ColorSchemes[scheme], TBLACK, TextPrintType(TPF_EFNT|TPF_NOSHADOW));
 

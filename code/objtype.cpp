@@ -36,6 +36,8 @@
 #include "vector.h"
 #include "voc.h"
 
+#include <algorithm>
+
 /*
 **	Selected objects have a special marking box around them. This is the shapes that are
 **	used for this purpose.
@@ -496,7 +498,7 @@ void ObjectTypeClass::Fetch_Voxel_Image(void)
 				largest = Voxel.VoxLib->Get_Layer_Info(i, 0).ZSize;
 			}
 		}
-		MaxSize = max(largest, 8);
+		MaxSize = std::max(largest, 8);
 		Clear_Voxel_Index();
 	} else {
 		delete Voxel.VoxLib;
@@ -617,8 +619,8 @@ void ObjectTypeClass::Fetch_Normal_Image(void)
 	ShapeSet const * image = (ShapeSet const *)MFCD::Retrieve(fullname);
 	if (image) {
 		ImageData = image;
-		int maxsize = MAX(image->Get_Width(), image->Get_Height());
-		maxsize = MAX(maxsize, 8);
+		int maxsize = std::max(image->Get_Width(), image->Get_Height());
+		maxsize = std::max(maxsize, 8);
 		MaxSize = maxsize;
 	}
 }

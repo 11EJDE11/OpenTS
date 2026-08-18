@@ -594,7 +594,7 @@ void BuildingTypeClass::Init(TheaterType theater)
 	for (StructType sindex = STRUCT_FIRST; sindex < BuildingTypes.Count(); sindex++) {
 		BuildingTypeClass * classptr = BuildingTypes[sindex];
 
-		maxcloak = MAX(maxcloak, classptr->CloakRadiusInCells);
+		maxcloak = std::max<int>(maxcloak, classptr->CloakRadiusInCells);
 
 		if (classptr->IsTheater) {
 
@@ -819,7 +819,7 @@ int BuildingTypeClass::Raw_Cost(void) const
 	}
 	if (FreeUnit != NULL) {
 		cost -= FreeUnit->Raw_Cost();
-		cost = MAX(cost, 0);
+		cost = std::max(cost, 0);
 	}
 	return(cost);
 }
@@ -848,7 +848,7 @@ int BuildingTypeClass::Cost_Of(HouseClass * house) const
 	}
 	if (FreeUnit != NULL) {
 		cost += FreeUnit->Cost_Of(house);
-		cost = MAX(cost, 0);
+		cost = std::max(cost, 0);
 	}
 	return(cost);
 }
@@ -1904,7 +1904,7 @@ void BuildingTypeClass::Post_Load_Game(void)
 
 	for (int sindex = 0; sindex < BuildingTypes.Count(); sindex++) {
 		BuildingTypeClass * classptr = BuildingTypes[sindex];
-		maxcloak = MAX(maxcloak, classptr->CloakRadiusInCells);
+		maxcloak = std::max<int>(maxcloak, classptr->CloakRadiusInCells);
 	}
 
 	if (maxcloak != 0) {
@@ -2070,12 +2070,12 @@ void BuildingTypeClass::Calculate_Base_Defense_Values(void)
 			int damage = weapon->Attack / (weapon->ROF * 0.025);
 
 			if (weapon->Bullet->IsAntiAircraft) {
-				AntiAirValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
+				AntiAirValue = std::min((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
 			}
 
 			if (weapon->Bullet->IsAntiGround) {
-				AntiArmorValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
-				AntiInfantryValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_NONE]);
+				AntiArmorValue = std::min((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
+				AntiInfantryValue = std::min((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_NONE]);
 			}
 		}
 	}

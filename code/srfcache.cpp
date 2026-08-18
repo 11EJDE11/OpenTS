@@ -20,6 +20,7 @@
 #include "ownrdraw.h"
 #include "pcx.h"
 
+#include <algorithm>
 #include <new>
 
 
@@ -51,7 +52,7 @@ struct MSBitmap
 int SurfaceCacheConvertPixel(int red, int green, int blue)
 {
 	int boosted = (green * 15) / 10;
-	green = MIN(255, boosted);
+	green = std::min(255, boosted);
 	return(DSurface::Build_Hicolor_Pixel(green, red, blue / 4));
 }
 
@@ -70,7 +71,7 @@ void SurfaceCacheConvertPalette(unsigned char *pal)
 		int green = p[1];
 		int blue = p[2];
 
-		p[0] = MIN(255, ((green * 15) / 10));
+		p[0] = std::min(255, ((green * 15) / 10));
 		p[1] = red;
 		p[2] = blue / 4;
 		p += 3;

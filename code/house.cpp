@@ -196,6 +196,7 @@
 #include "color.hh"
 #include "strategy.hh"
 
+#include <algorithm>
 #include <cassert>
 
 
@@ -1296,8 +1297,8 @@ void HouseClass::AI(void)
 	**	and the fixed point fractional math involved with power adjustments. If the
 	**	power rating drops below zero, then make it zero.
 	*/
-	Power = MAX(Power, 0);
-	Drain = MAX(Drain, 0);
+	Power = std::max(Power, 0);
+	Drain = std::max(Drain, 0);
 
 #if NEVER
 	/*
@@ -3523,7 +3524,7 @@ bool HouseClass::Flag_To_Die(void)
 		IsToDie = true;
 		BorrowedTime = TICKS_PER_MINUTE * Rule->SavourDelay;
 		if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-			int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
+			int time = Frame + std::max((int)BorrowedTime, (int)Session.MaxAhead);
 			BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 		}
 		DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);
@@ -3554,7 +3555,7 @@ bool HouseClass::Flag_To_Win(bool silent)
 		if (!silent) {
 			BorrowedTime = int(TICKS_PER_MINUTE * Rule->SavourDelay);
 			if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-				int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
+				int time = Frame + std::max((int)BorrowedTime, (int)Session.MaxAhead);
 				BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 			}
 			DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);
@@ -3598,7 +3599,7 @@ bool HouseClass::Flag_To_Lose(bool silent)
 		if (!silent) {
 			BorrowedTime = int(TICKS_PER_MINUTE * Rule->SavourDelay);
 			if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-				int time = Frame + MAX((int)BorrowedTime, (int)Session.MaxAhead);
+				int time = Frame + std::max((int)BorrowedTime, (int)Session.MaxAhead);
 				BorrowedTime = 10 * ((time + 9) / 10) - Frame;
 			}
 			DebugString("Frame %d, BorrowedTime == %d\n", Frame, (int)BorrowedTime);
@@ -3930,7 +3931,7 @@ void HouseClass::Recalc_Center(void)
 					radius += Distance(Center, b->Center_Coord());
 				}
 			}
-			Radius = MAX(radius / count, 2 * CELL_LEPTON_W);
+			Radius = std::max(radius / count, 2 * CELL_LEPTON_W);
 
 			/*
 			**	Determine the relative strength of each base defense zone.
@@ -5919,7 +5920,7 @@ Cell HouseClass::Random_Cell_In_Zone(ZoneType zone) const
 	Coord coord;
 	int maxdist = 0;
 
-	int radius = MAX(3 * CELL_LEPTON, MIN(Radius, 8 * CELL_LEPTON));
+	int radius = std::max(3 * CELL_LEPTON, std::min(Radius, 8 * CELL_LEPTON));
 	maxdist = radius*2;
 
 	switch (zone) {
@@ -6990,7 +6991,7 @@ int HouseClass::Base_Cell_Weight_By_Distance(HouseClass const & house, Cell cons
 	int x = cell.X - house.Base.PlacementCenter.X;
 	int y = cell.Y - house.Base.PlacementCenter.Y;
 
-	int size = MAX(abs(x), abs(y));
+	int size = std::max(abs(x), abs(y));
 	return(tie_breaker + size * 1000);
 }
 
@@ -7255,10 +7256,10 @@ void HouseClass::Calculate_Defense_Values(BuildingClass const * building, int va
 
 	Cell center = building->PositionCoord.As_Cell();
 
-	int x_min = MAX(center.X - 6, area.X);
-	int x_max = MIN(area.X + area.Width, center.X + 6);
-	int y_min = MAX(center.Y - 6, area.Y);
-	int y_max = MIN(area.Y + area.Height, center.Y + 6);
+	int x_min = std::max(center.X - 6, area.X);
+	int x_max = std::min(area.X + area.Width, center.X + 6);
+	int y_min = std::max(center.Y - 6, area.Y);
+	int y_max = std::min(area.Y + area.Height, center.Y + 6);
 
 	for (int y = y_min; y < y_max; ++y) {
 		for (int x = x_min; x < x_max; ++x) {

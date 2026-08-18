@@ -148,11 +148,11 @@ int Modify_Damage(int damage, WarheadTypeClass const * warhead, ArmorType armor,
 		**	that at least one damage point is done.
 		*/
 		if (distance < 4) {
-			damage = MAX(damage, Rule->MinDamage);
+			damage = std::max(damage, Rule->MinDamage);
 		}
 	}
 
-	damage = MIN(damage, Rule->MaxDamage);
+	damage = std::min(damage, Rule->MaxDamage);
 	return(damage);
 }
 
@@ -410,7 +410,7 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 		}
 	}
 
-	double rocking_force = MIN(strength * 0.01, 4.0);
+	double rocking_force = std::min(strength * 0.01, 4.0);
 	if (warhead->IsRocker && rocking_force > 0.3) {
 		for (int x = cell.X - 3; x <= cell.X + 3; x++) {
 			for (int y = cell.Y - 3; y <= cell.Y + 3; y++) {
@@ -637,7 +637,7 @@ AnimTypeClass const * Combat_Anim(int damage, WarheadTypeClass const * warhead, 
 
 	if (land == LAND_WATER && warhead->IsConventional && !(Map[coord].IsUnderBridge && coord.Z >= BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(coord))) {
 		if (Rule->SplashList.Count()) {
-			int val = MIN(damage, DAMAGE_PER_SPLASH_ANIM * Rule->SplashList.Count() - 1);
+			int val = std::min(damage, DAMAGE_PER_SPLASH_ANIM * Rule->SplashList.Count() - 1);
 			return(Rule->SplashList[val / DAMAGE_PER_SPLASH_ANIM]);
 		}
 		return(NULL);
@@ -647,7 +647,7 @@ AnimTypeClass const * Combat_Anim(int damage, WarheadTypeClass const * warhead, 
 		if (warhead->IsEMEffect) {
 			return(warhead->ExplosionSet[Random_Pick(0, warhead->ExplosionSet.Count() - 1)]);
 		}
-		int val = MIN(damage, DAMAGE_PER_EXPLOSION_ANIM * warhead->ExplosionSet.Count() - 1);
+		int val = std::min(damage, DAMAGE_PER_EXPLOSION_ANIM * warhead->ExplosionSet.Count() - 1);
 		return(warhead->ExplosionSet[val / DAMAGE_PER_EXPLOSION_ANIM]);
 	}
 

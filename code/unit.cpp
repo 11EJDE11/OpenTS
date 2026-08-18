@@ -166,6 +166,8 @@
 #include "color.hh"
 #include "tube.hh"
 
+#include <algorithm>
+
 char const * const UnitClass::INI_NAME = "Units";
 
 Rect UnitCompositeDirtyRect(RECT_NONE);
@@ -479,7 +481,7 @@ void UnitClass::AI(void)
 		return;
 	}
 
-	FiringSyncDelay = MAX(-1, FiringSyncDelay - 1);
+	FiringSyncDelay = std::max(-1, FiringSyncDelay - 1);
 
 	if (Class->DeploysInto == Rule->BuildConst[0]) {
 		if (House->IsBaseBuilding && !House->Is_Human_Player()) {
@@ -2011,7 +2013,7 @@ bool UnitClass::Try_To_Deploy(void)
 					**	ratio as the MCV that deployed into it.
 					*/
 					building->Strength = HealthRatio * building->Class->MaxStrength;
-					building->Strength = max(building->Strength, 1);
+					building->Strength = std::max(building->Strength, 1);
 
 					if (selected) building->Select();
 
@@ -3027,7 +3029,7 @@ bool UnitClass::Harvesting(void)
 			**	than the harvester can carry.
 			*/
 			TiberiumType tib = ptr->Tiberium_Type_Here();
-			int reducer = MIN(1, Class->Capacity - Storage.Get_Total_Amount());
+			int reducer = std::min(1, Class->Capacity - Storage.Get_Total_Amount());
 			reducer = ptr->Reduce_Tiberium(reducer);
 			if (reducer <= 0) {
 				return(false);
@@ -6490,7 +6492,7 @@ bool UnitClass::Is_Route_Broken(Cell const & from, Cell const & to) const
 		if (from == to) {
 			return(false);
 		}
-		int dist = MAX(abs(to.X - from.X), abs(to.Y - from.Y));
+		int dist = std::max(abs(to.X - from.X), abs(to.Y - from.Y));
 		if (dist == 1) {
 			return(false);
 		}
@@ -6603,7 +6605,7 @@ void UnitClass::Explode(void)
 		*/
 		if (Class->MaxStrength > Rule->ShakeScreen) {
 			int shakes = Class->MaxStrength / (Rule->ShakeScreen / 2) + 3;
-			shakes = MIN(shakes, 6);
+			shakes = std::min(shakes, 6);
 			Shake_The_Screen(shakes);
 		}
 	}

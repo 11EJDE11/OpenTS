@@ -98,6 +98,7 @@
 
 #include "bench.hh"
 
+#include <algorithm>
 #include <cstring>
 
 
@@ -121,7 +122,7 @@ void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const *
 static inline int _Scale_To_256(int val)
 {
 	val = 100.0 / (MPH_LIGHT_SPEED + 1) * val;
-	val = MIN(val, MPH_LIGHT_SPEED);
+	val = std::min<int>(val, MPH_LIGHT_SPEED);
 	return(val);
 }
 
@@ -1078,8 +1079,8 @@ bool RulesClass::General(CCINIClass const & ini)
 		DropPodHeight = ini.Get_Int(GENERAL, "DropPodHeight", DropPodHeight);
 		DropPodSpeed = ini.Get_Int(GENERAL, "DropPodSpeed", DropPodSpeed);
 		DropPodAngle = ini.Get_Float(GENERAL, "DropPodAngle", DropPodAngle);
-		DropPodAngle = MIN(DropPodAngle, DEG_TO_RAD(67.5));
-		DropPodAngle = MAX(DropPodAngle, DEG_TO_RAD(22.5));
+		DropPodAngle = std::min(DropPodAngle, DEG_TO_RAD(67.5));
+		DropPodAngle = std::max(DropPodAngle, DEG_TO_RAD(22.5));
 		CrewEscape = ini.Get_Float(GENERAL, "CrewEscape", CrewEscape);
 		TunnelSpeed = ini.Get_Float(GENERAL, "TunnelSpeed", TunnelSpeed);
 		HoverDampen = ini.Get_Float(GENERAL, "HoverDampen", HoverDampen);
@@ -1841,7 +1842,7 @@ bool RulesClass::Land_Types(CCINIClass const & ini)
 
 		if (ini.Is_Present(_lands[land])) {
 			for (int speed = 0; speed < SPEED_COUNT; speed++) {
-				gptr->Cost[speed] = MIN(ini.Get_Float(_lands[land], _speeds[speed], gptr->Cost[speed]), 1.0);
+				gptr->Cost[speed] = std::min(ini.Get_Float(_lands[land], _speeds[speed], gptr->Cost[speed]), 1.0);
 			}
 			gptr->Build = ini.Get_Bool(_lands[land], "Buildable", gptr->Build);
 		}

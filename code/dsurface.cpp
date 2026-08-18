@@ -54,6 +54,7 @@
 #include "misc.h"
 #include "video.h"
 
+#include <algorithm>
 #include <math.h>
 #include <utility>
 
@@ -708,9 +709,9 @@ void DSurface::Build_Remap_Table(unsigned short * table, int count, PaletteClass
 					int g = (rgb->Get_Green() * intensity) >> 16;
 					int b = (rgb->Get_Blue() * intensity) >> 16;
 
-					r = MIN(r, 255);
-					g = MIN(g, 255);
-					b = MIN(b, 255);
+					r = std::min(r, 255);
+					g = std::min(g, 255);
+					b = std::min(b, 255);
 
 					*table = Build_Hicolor_Pixel(r, g, b);
 					table++;
@@ -1426,7 +1427,7 @@ bool DSurface::Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const 
 									outnb = (cov * (blue * nf + neighbor.Get_Blue() * nbk)) >> 15;
 								}
 
-								int wb = MIN(255, outlb);
+								int wb = std::min(255, outlb);
 								if (outlg > 255) {
 									outlg = 255;
 								}
@@ -1538,7 +1539,7 @@ bool DSurface::Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const 
 									outnb = (cov * (blue * lf + neighbor.Get_Blue() * lbk)) >> 15;
 								}
 
-								int wb = MIN(255, outnb);
+								int wb = std::min(255, outnb);
 								if (outng > 255) {
 									outng = 255;
 								}

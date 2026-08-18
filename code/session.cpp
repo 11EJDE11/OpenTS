@@ -69,6 +69,7 @@
 #include "wonline.h"
 #include "xstraw.h"
 
+#include <algorithm>
 #include <ctime> // for station ID computation
 #include <dos.h> // for station ID computation
 
@@ -1278,7 +1279,7 @@ void SessionClass::Init_Fixed_Alliances(void)
 	DynamicVectorClass<HouseClass *> squad1;
 	DynamicVectorClass<HouseClass *> squad2;
 
-	char * buffer = new char [MAX(strlen(names1), strlen(names2)) + 32];
+	char * buffer = new char [std::max(strlen(names1), strlen(names2)) + 32];
 
 	strcpy(buffer, names1);
 	char * token = strtok(buffer, ",");

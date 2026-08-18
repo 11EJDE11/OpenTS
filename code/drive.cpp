@@ -77,6 +77,7 @@
 #include "layer.hh"
 #include "tube.hh"
 
+#include <algorithm>
 #include <cassert>
 
 static const double _deaccel = 0.3f;
@@ -957,21 +958,21 @@ bool DriveLocomotionClass::While_Moving(bool just_started)
 
 			if (distance < tclass->SlowdownDistance) {
 				forced_speed = true;
-				speed = MAX(_deaccel, speed - maxspeed * tclass->DeaccelerationFactor);
+				speed = std::max(_deaccel, speed - maxspeed * tclass->DeaccelerationFactor);
 			} else if (LinkedTo->IsSinking) {
-				speed = MAX(_sinking, speed - maxspeed * _sinking_scale);
+				speed = std::max(_sinking, speed - maxspeed * _sinking_scale);
 				forced_speed = true;
 			}
 
 			if (LinkedTo->IsCrushing) {
-				TargetSpeed = MIN(TargetSpeed, 0.2);
+				TargetSpeed = std::min(TargetSpeed, 0.2);
 				LinkedTo->Set_Speed(TargetSpeed);
 			} else if (forced_speed) {
 				LinkedTo->Set_Speed(speed);
 			} else if (LinkedTo->Speed < TargetSpeed) {
-				LinkedTo->Set_Speed(MIN(TargetSpeed, LinkedTo->Speed + tclass->AccelerationFactor));
+				LinkedTo->Set_Speed(std::min(TargetSpeed, LinkedTo->Speed + tclass->AccelerationFactor));
 			} else if (LinkedTo->Speed > TargetSpeed) {
-				LinkedTo->Set_Speed(MAX(TargetSpeed, LinkedTo->Speed - maxspeed * tclass->DeaccelerationFactor));
+				LinkedTo->Set_Speed(std::max(TargetSpeed, LinkedTo->Speed - maxspeed * tclass->DeaccelerationFactor));
 			}
 
 			if (LinkedTo->RTTI == RTTI_UNIT) {

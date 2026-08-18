@@ -37,6 +37,7 @@
 
 #include "rle.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 
@@ -88,7 +89,7 @@ int RLEEngine::Compress(void const * source, void * dest, int length) const
 			/*
 			**	Limit the run to 255 characters maximum.
 			*/
-			runcount = MIN(runcount, 255);
+			runcount = std::min(runcount, 255);
 			if (dptr != NULL) {
 				*dptr++ = '\0';
 				*dptr++ = (unsigned char)runcount;
