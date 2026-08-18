@@ -50,8 +50,9 @@ export function historyHeading(
 }
 
 export function latestStateFor(events: LifecycleEvent[]): LifecycleEvent | undefined {
-	return [...events].reverse().find((event) =>
-		event.effect === 'deprecated' || event.effect === 'removed');
+	const recent = [...events].reverse();
+	return recent.find((event) => event.effect === 'deprecated' || event.effect === 'removed')
+		?? recent.find((event) => event.effect === 'changed');
 }
 
 export const effectLabels: Record<LifecycleEffect, string> = {

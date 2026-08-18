@@ -33,19 +33,19 @@ const parentCrumb = format.route.startsWith('/mapping/')
 	? { label: UI.navigation.mapping, href: '/mapping/' }
 	: { label: UI.navigation.formats, href: '/formats/' };
 const pageHeadings = [
-	...historyHeading(await getCollection('changes'), { type: 'format', id: format.format_id }),
 	...(format.kind === 'registry' ? [{ depth: 2, slug: 'registration-sections', text: 'Registration sections' }] : []),
 	...(format.kind === 'record' ? [{ depth: 2, slug: 'fields', text: 'Fields' }] : []),
 	...headings,
 	...(acceptedSettings.length > 0 ? [{ depth: 2, slug: 'accepted-settings', text: 'Accepted settings' }] : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
 	{ depth: 2, slug: 'source-files', text: 'Source files' },
+	...historyHeading(await getCollection('changes'), { type: 'format', id: format.format_id }),
 ];
 ---
 
 <StarlightPage frontmatter={{ title: format.title, description: format.summary }} headings={pageHeadings}>
 	<Breadcrumb crumbs={[parentCrumb]} />
-	<LifecycleHistory reference={{ type: 'format', id: format.format_id }} />
+	<LifecycleHistory reference={{ type: 'format', id: format.format_id }} showHistory={false} />
 	<p class="ots-lede">{format.summary}</p>
 	<FormatSpec format={format} />
 	<Content />
@@ -56,5 +56,6 @@ const pageHeadings = [
 	<ul class="ots-source-files">
 		{format.source_files.map((path) => <li><a href={sourceFileUrl(path)}><code>{path}</code></a></li>)}
 	</ul>
+	<LifecycleHistory reference={{ type: 'format', id: format.format_id }} showBadges={false} />
 	<Feedback title={format.title} path={format.route} />
 </StarlightPage>

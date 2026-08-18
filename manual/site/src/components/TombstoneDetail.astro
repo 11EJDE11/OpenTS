@@ -16,7 +16,7 @@ const replacementHref = record.replacement ? entityHref(record.replacement) : un
 ---
 
 <StarlightPage frontmatter={{ title: record.id, description: record.summary, tableOfContents: false }}>
-	<LifecycleHistory reference={{ type: record.type, id: record.id }} />
+	<LifecycleHistory reference={{ type: record.type, id: record.id }} showHistory={false} />
 	<p class="ots-lede">{record.summary}</p>
 
 	<div class="ots-aside ots-aside-danger">
@@ -46,5 +46,6 @@ const replacementHref = record.replacement ? entityHref(record.replacement) : un
 		</dl>
 	</div>
 
+	<LifecycleHistory reference={{ type: record.type, id: record.id }} showBadges={false} />
 	<Feedback title={`${record.id} (removed)`} path={record.route} />
 </StarlightPage>

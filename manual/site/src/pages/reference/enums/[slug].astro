@@ -37,12 +37,12 @@ const related = await relatedResourcesFor(
 	`Enum ${entry.data.enum_id}`,
 );
 const pageHeadings = [
-	...historyHeading(await getCollection('changes'), { type: 'enum', id: entry.data.enum_id }),
 	...headings,
 	{ depth: 2, slug: 'values', text: 'Values' },
 	{ depth: 2, slug: 'used-by', text: 'Used by' },
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
 	{ depth: 2, slug: 'source-files', text: 'Source files' },
+	...historyHeading(await getCollection('changes'), { type: 'enum', id: entry.data.enum_id }),
 ];
 ---
 
@@ -52,7 +52,7 @@ const pageHeadings = [
 		{ label: UI.navigation.enums, href: '/reference/enums/' },
 		{ label: entry.data.enum_id, code: true },
 	]} />
-	<LifecycleHistory reference={{ type: 'enum', id: entry.data.enum_id }} />
+	<LifecycleHistory reference={{ type: 'enum', id: entry.data.enum_id }} showHistory={false} />
 	<p class="ots-lede">{entry.data.summary}</p>
 	<dl class="ots-inline-contract">
 		<dt>Engine enum</dt><dd><code>{entry.data.enum_id}</code></dd>
@@ -72,5 +72,6 @@ const pageHeadings = [
 	<h2 id="source-files">Source files</h2>
 	<p class="ots-source-revision">Linked at revision <code>{revision.slice(0, 12)}</code>.</p>
 	<ul class="ots-source-files">{entry.data.source_files.map((path) => <li><a href={sourceFileUrl(path)}><code>{path}</code></a></li>)}</ul>
+	<LifecycleHistory reference={{ type: 'enum', id: entry.data.enum_id }} showBadges={false} />
 	<Feedback title={entry.data.title} path={`/reference/enums/${entry.data.slug}/`} />
 </StarlightPage>

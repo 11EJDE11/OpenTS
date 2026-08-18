@@ -28,18 +28,19 @@ const related = await relatedResourcesFor(
 	`Command ${record.id}`,
 );
 const pageHeadings = [
-	...historyHeading(await getCollection('changes'), { type: 'command', id: record.id }),
 	...(rendered?.headings ?? []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
+	...historyHeading(await getCollection('changes'), { type: 'command', id: record.id }),
 ];
 ---
 
 <StarlightPage frontmatter={{ title: record.title, description, tableOfContents: pageHeadings.length > 0 ? undefined : false }} headings={pageHeadings}>
 	<Breadcrumb crumbs={crumbs} />
-	<LifecycleHistory reference={{ type: 'command', id: record.id }} />
+	<LifecycleHistory reference={{ type: 'command', id: record.id }} showHistory={false} />
 	<p class="ots-lede ots-compact">{description}</p>
 	<CommandDetail record={record} />
 	{Content && <Content />}
 	<RelatedResources resources={related} />
+	<LifecycleHistory reference={{ type: 'command', id: record.id }} showBadges={false} />
 	<Feedback title={record.title} path={commandRoute(record)} />
 </StarlightPage>

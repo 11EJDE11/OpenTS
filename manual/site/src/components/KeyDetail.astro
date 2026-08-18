@@ -51,9 +51,9 @@ const related = await relatedResourcesFor(
 	`INI key ${record.key}`,
 );
 const headings = [
-	...historyHeading(await getCollection('changes'), { type: 'key', id: record.key }),
 	...(multi ? scopeParts.map((part) => ({ depth: 2, slug: `scope-${part.scope.route_id}`, text: part.heading })) : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: UI.related.title }] : []),
+	...historyHeading(await getCollection('changes'), { type: 'key', id: record.key }),
 ];
 ---
 
@@ -65,7 +65,7 @@ const headings = [
 	}}
 	headings={headings}
 >
-	<LifecycleHistory reference={{ type: 'key', id: record.key }} />
+	<LifecycleHistory reference={{ type: 'key', id: record.key }} showHistory={false} />
 	{keyLevel?.data.summary && <p class="ots-lede">{keyLevel.data.summary}</p>}
 
 	{noEffect && (
@@ -114,6 +114,7 @@ const headings = [
 		</div>
 	)}
 
+	<LifecycleHistory reference={{ type: 'key', id: record.key }} showBadges={false} />
 	<Feedback title={record.key} path={`/keys/${record.route_id}/`} />
 </StarlightPage>
 

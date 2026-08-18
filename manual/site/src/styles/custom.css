@@ -954,6 +954,10 @@ h1.ots-keytitle {
 	margin: 2rem 0;
 }
 
+.ots-history > h2 + ol {
+	margin-top: 1rem;
+}
+
 .ots-history ol {
 	display: grid;
 	gap: 0;
@@ -966,6 +970,10 @@ h1.ots-keytitle {
 .ots-history li {
 	position: relative;
 	padding: 0.2rem 0 1rem 1rem;
+}
+
+.ots-history li:last-child {
+	padding-bottom: 0;
 }
 
 .ots-history li::before {

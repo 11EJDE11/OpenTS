@@ -51,15 +51,15 @@ const related = await relatedResourcesFor(
 	`${entityType} ${record.id}`,
 );
 const pageHeadings = [
-	...historyHeading(await getCollection('changes'), { type: entityType, id: record.id }),
 	...(rendered?.headings ?? []),
 	...(authored && authored.data.valid_values.length > 0 ? [{ depth: 2, slug: 'valid-values', text: 'Valid values' }] : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
+	...historyHeading(await getCollection('changes'), { type: entityType, id: record.id }),
 ];
 ---
 
 <StarlightPage frontmatter={{ title, description, tableOfContents: pageHeadings.length > 0 ? undefined : false }} headings={pageHeadings}>
-	<LifecycleHistory reference={{ type: entityType, id: record.id }} />
+	<LifecycleHistory reference={{ type: entityType, id: record.id }} showHistory={false} />
 	{summary && <p class="ots-lede">{summary}</p>}
 	<div class="ots-spec"><div class="ots-spec-head">{UI.scripting.editorData}</div><dl>
 		<dt>Numeric ID</dt><dd><code>{record.index}</code></dd>
@@ -96,6 +96,7 @@ const pageHeadings = [
 	)}
 
 	<RelatedResources resources={related} />
+	<LifecycleHistory reference={{ type: entityType, id: record.id }} showBadges={false} />
 
 	<nav class="ots-detail-nav" aria-label="Adjacent entries">
 		{previous ? <a href={withBase(`/mapping/${record.kind}/${previous.route_id}/`)}>&larr; {previous.index}: {previous.editor_name}</a> : <span />}

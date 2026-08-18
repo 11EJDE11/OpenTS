@@ -17,6 +17,7 @@ import {
 	tombstones,
 	type TombstoneRecord,
 } from '../../lib/data';
+import { historyHeading } from '../../lib/lifecycle';
 import { requireRouteTail, withBase } from '../../lib/paths';
 import { relatedResourcesFor } from '../../lib/related';
 import { systemCategoryTitle, systemGroupForCategory } from '../../lib/taxonomy';
@@ -82,6 +83,7 @@ async function prepareSystem(system: CollectionEntry<'systems'>) {
 		...headings,
 		...(rows.length > 0 ? [{ depth: 2, slug: 'related-settings', text: 'Related settings' }] : []),
 		...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
+		...historyHeading(await getCollection('changes'), { type: 'system', id: system.id }),
 	];
 	return {
 		system,
@@ -115,7 +117,7 @@ const ActiveContent = page.kind === 'active' ? page.Content : undefined;
 			...(page.group ? [{ label: page.group.title }] : []),
 			{ label: systemCategoryTitle(page.system.data.category) },
 		]} />
-		<LifecycleHistory reference={{ type: 'system', id: page.system.id }} />
+		<LifecycleHistory reference={{ type: 'system', id: page.system.id }} showHistory={false} />
 		{ActiveContent && <ActiveContent />}
 		{page.rows.length > 0 && (
 			<>
@@ -124,6 +126,7 @@ const ActiveContent = page.kind === 'active' ? page.Content : undefined;
 			</>
 		)}
 		<RelatedResources resources={page.related} />
+		<LifecycleHistory reference={{ type: 'system', id: page.system.id }} showBadges={false} />
 		<Feedback title={page.system.data.title} path={`/systems/${page.system.id}/`} />
 	</StarlightPage>
 )}

@@ -61,4 +61,4 @@ Spellings that differ only by uppercase or lowercase letters are distinct keys, 
 
 ## Releases and history
 
-Everything the engine accepted before OpenTS versioning began is the vanilla baseline, so baseline entities have no **Added in** label. OpenTS additions and behavior changes link to versioned change records. Removed entities remain available at their established routes for exact searches and compatibility work.
+Everything the engine accepted before OpenTS versioning began is the vanilla baseline, so baseline entities have no **Added in** label. An entity that OpenTS has added or changed carries an **Added in** or **Changed in** label, and the full timeline behind it sits at the foot of the page. Removed entities remain available at their established routes for exact searches and compatibility work.

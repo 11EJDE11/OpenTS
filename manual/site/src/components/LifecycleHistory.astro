@@ -15,9 +15,10 @@ import { withBase } from '../lib/paths';
 interface Props {
 	reference: EntityReference;
 	showBadges?: boolean;
+	showHistory?: boolean;
 }
 
-const { reference, showBadges = true } = Astro.props;
+const { reference, showBadges = true, showHistory = true } = Astro.props;
 const events = lifecycleFor(await getCollection('changes'), reference);
 const introduction = introductionFor(events);
 const latestState = latestStateFor(events);
@@ -41,7 +42,7 @@ const statusBadge = latestState?.effect === 'removed'
 	</div>
 )}
 
-{events.length > 0 && (
+{showHistory && events.length > 0 && (
 	<section class="ots-history" aria-labelledby="entity-history">
 		<h2 id="entity-history">History</h2>
 		<ol>
