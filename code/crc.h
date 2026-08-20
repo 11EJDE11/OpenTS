@@ -119,7 +119,6 @@ class CRCEngine {
 			}
 			StagingBuffer.Buffer[Index++] = datum;
 			if (Index == sizeof(int)) {
-				Add_Padding();
 				int composite = StagingBuffer.Composite;
 				CRC = CRC::Memory((unsigned char *)&composite, sizeof(StagingBuffer.Composite), CRC);
 				Index = 0;
