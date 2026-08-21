@@ -153,7 +153,7 @@ void CCToolTip::Draw(const ToolTipText * text)
 		int offset = TacticalRect.X + TacticalRect.Width;
 		if (point.X + text->TextWidth <= offset) {
 			surface = CompositeSurface;
-		} else if (UseSidebarSurface == true && point.X > offset) {
+		} else if (UseSidebarSurface == true && point.X >= offset) {
 			surface = SidebarSurface;
 			point.X -= offset;
 			Map.IsToBlitSidebar = true;
@@ -163,7 +163,7 @@ void CCToolTip::Draw(const ToolTipText * text)
 		if (point.X >= offset) {
 			surface = CompositeSurface;
 			point.X -= offset;
-		} else if (UseSidebarSurface == true && point.X + text->TextWidth < offset) {
+		} else if (UseSidebarSurface == true && point.X + text->TextWidth <= offset) {
 			surface = SidebarSurface;
 			Map.IsToBlitSidebar = true;
 		}
