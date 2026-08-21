@@ -18,6 +18,7 @@
 #include <source_location>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
 
 class SaveStreamClass;
 
@@ -165,6 +166,38 @@ class SaveStreamClass
 					} else {
 						Serialize(array[index]);
 					}
+				}
+			}
+		}
+
+		/*
+		 * A vector travels as its length followed by its elements. Loading sizes it in
+		 * full before any element is read, because an element holding a pointer
+		 * registers the slot it occupies with the swizzle manager and a reallocation
+		 * afterwards would leave that address behind.
+		 */
+		template<typename T>
+		void Serialize(std::vector<T> & value, std::source_location const & where = std::source_location::current())
+		{
+			int count = (int)value.size();
+			Serialize(count);
+
+			if (Is_Loading()) {
+				value.clear();
+				if (count > 0) {
+					value.resize(count);
+				}
+			}
+
+			for (int index = 0; index < count; index++) {
+				/*
+				 * The elements are serialized against the vector's own call site, so a
+				 * pointer that nothing answers for names the member rather than this loop.
+				 */
+				if constexpr (std::is_pointer_v<T>) {
+					Serialize(value[index], where);
+				} else {
+					Serialize(value[index]);
 				}
 			}
 		}

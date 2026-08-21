@@ -82,7 +82,7 @@ bool PassabilityPrint = false;
 
 
 Rect TacticalDimensions(0,0,0,0);	/// the rectangle the tactical view occupies, set by Set_View_Dimensions
-Tactical::Selectable Tactical::SelectableObjects[MAX_SELECTABLE_OBJECTS];
+std::vector<Tactical::Selectable> Tactical::SelectableObjects;
 
 
 DynamicVectorClass<DirtyAreaStruct> Tactical::DirtyAreas;
@@ -105,12 +105,10 @@ Tactical::Tactical(void) :
 	LastTacPixelX(0),
 	LastTacPixelY(0),
 	ZoomFactor(1.0),
-	SelectableCount(0),
 	MoveFrom(COORD_NONE),
 	MoveTo(COORD_NONE),
 	MoveSpeed(0),
 	MoveFactor(0),
-	CellRedrawCount(0),
 	TacticalCoord(0,0),
 	LastTacticalCoord(0,0),
 	DesiredTacticalCoord(0,0),
@@ -123,10 +121,6 @@ Tactical::Tactical(void) :
 	WaypointAnimCounter(0),
 	WaypointAnimTimer()
 {
-	for (int i = 0; i < ARRAY_SIZE(CellRedraw); i++) {
-		CellRedraw[i] = NULL;
-	}
-
 	ScreenText[0] = '\0';
 
 	CoordToPixelMatrix.Make_Identity();
@@ -560,8 +554,8 @@ void Tactical::Wipe_Depth(bool fullredraw, int xoff, int yoff, Rect const & clip
 		}
 	}
 
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = CellRedraw[i]->Cell_Coord();
 			coord.Z = 0;
 			Point2D pixel;
@@ -605,8 +599,8 @@ void Tactical::Render_Tiles(Rect const & xpanrect, Rect const & ypanrect, bool f
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -671,8 +665,8 @@ void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect,
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -737,8 +731,8 @@ void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, boo
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -799,8 +793,8 @@ void Tactical::Render_Fogged_Objects(Rect const & xpanrect, Rect const & ypanrec
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -847,8 +841,8 @@ void Tactical::Render_Shroud(Rect const & xpanrect, Rect const & ypanrect, Rect 
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0 && !fullredraw) {
-		for (int i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty() && !fullredraw) {
+		for (int i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = CellRedraw[i]->Cell_Coord();
 			coord.Z = 0;
 			Point2D pixel;
@@ -906,8 +900,8 @@ void Tactical::Render_Buildings(Rect const & xpanrect, Rect const & ypanrect, bo
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0) {
-		for (i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty()) {
+		for (i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -974,8 +968,8 @@ void Tactical::Render_Terrain(Rect const & xpanrect, Rect const & ypanrect, bool
 	/*
 	 * The cells that were flagged for redraw.
 	 */
-	if (CellRedrawCount > 0) {
-		for (i = 0; i < CellRedrawCount; i++) {
+	if (!CellRedraw.empty()) {
+		for (i = 0; i < (int)CellRedraw.size(); i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
@@ -1051,7 +1045,7 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 	 */
 	Surface * composite = &surface;
 
-	SelectableCount = 0;
+	SelectableObjects.clear();
 	bool has_selectable_buildings = Contains_Selectable_Buildings(TacticalRect);
 
 	/*
@@ -1232,7 +1226,7 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 
 			LogicalSurface->Unlock();
 			LogicalSurface = prevlogical;
-			CellRedrawCount = 0;
+			CellRedraw.clear();
 		}
 	}
 
@@ -2926,20 +2920,16 @@ void Tactical::Add_Buildings_To_Selectable(Rect rect)
 /// Adds an object to the list of clickable objects.
 /// Objects register themselves here as they render, which gives the click handler a cheap
 /// list of what is on screen and where. An object drawn well outside the tactical view is
-/// turned away, as is any object beyond the capacity of the list.
+/// turned away.
 /// </summary>
 /// <param name="object">The object that has just been drawn.</param>
 /// <param name="point">The pixel, relative to the tactical view, it was drawn at.</param>
 /// <returns>bool; Was the object added to the list?</returns>
 bool Tactical::Add_To_Selectables(ObjectClass * object, Point2D point)
 {
-	if (SelectableCount != MAX_SELECTABLE_OBJECTS) {
-		if (point.X >= -32 && point.X <= TacticalRect.Width + 32 && point.Y >= -32 && point.Y <= TacticalRect.Height + 32) {
-			SelectableObjects[SelectableCount].Object = object;
-			SelectableObjects[SelectableCount].Position = point + Point2D(TacPixelX, TacPixelY);
-			SelectableCount++;
-			return(true);
-		}
+	if (point.X >= -32 && point.X <= TacticalRect.Width + 32 && point.Y >= -32 && point.Y <= TacticalRect.Height + 32) {
+		SelectableObjects.push_back({object, point + Point2D(TacPixelX, TacPixelY)});
+		return(true);
 	}
 	return(false);
 }
@@ -3135,7 +3125,7 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 	pixel.X = point.X + TacPixelX;
 	pixel.Y = point.Y + TacPixelY;
 
-	for (int index = 0; index < SelectableCount; index++) {
+	for (int index = 0; index < (int)SelectableObjects.size(); index++) {
 		Selectable & sel = SelectableObjects[index];
 		ObjectClass * obj = sel.Object;
 
@@ -3188,7 +3178,7 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 /// </summary>
 void Tactical::Detach(AbstractClass const * target, bool all)
 {
-	for (int index = 0; index < MAX_SELECTABLE_OBJECTS; index++) {
+	for (int index = 0; index < (int)SelectableObjects.size(); index++) {
 		Selectable & sel = SelectableObjects[index];
 		if (sel.Object == (ObjectClass *)target) {
 			sel.Object = NULL;
@@ -3226,7 +3216,7 @@ void Tactical::Select_These(Rect const & rect, void (*select_callback)(ObjectCla
 		 * Sweep through all selectable objects and select the ones within the
 		 * bounding box.
 		 */
-		for (int index = 0; index < SelectableCount; index++) {
+		for (int index = 0; index < (int)SelectableObjects.size(); index++) {
 			Selectable & sel = SelectableObjects[index];
 			ObjectClass * obj = sel.Object;
 
@@ -3308,10 +3298,7 @@ void Tactical::Flag_Cell(CellClass & cell)
 			&& pixel.X <= TacticalRect.X + TacticalRect.Width + ISO_TILE_PIXEL_W / 2
 			&& pixel.Y <= TacticalRect.Y + TacticalRect.Height + ISO_TILE_PIXEL_H / 2) {
 
-			if (CellRedrawCount < ARRAY_SIZE(CellRedraw) - 1) {
-				CellRedraw[CellRedrawCount] = &cell;
-				CellRedrawCount++;
-			}
+			CellRedraw.push_back(&cell);
 			IsToRedraw = true;
 		}
 	}
@@ -3713,22 +3700,12 @@ void Tactical::Serialize(SaveStreamClass & stream)
 	stream.Serialize(LastTacPixelX);
 	stream.Serialize(LastTacPixelY);
 	stream.Serialize(ZoomFactor);
-	// SelectableCount -- the click list is built afresh by the next render pass.
-	// SelectableObjects
+	// SelectableObjects -- the click list is built afresh by the next render pass.
 	stream.Serialize(MoveFrom);
 	stream.Serialize(MoveTo);
 	stream.Serialize(MoveSpeed);
 	stream.Serialize(MoveFactor);
-
-	/*
-	 * Only the cells actually flagged travel. The rest of the array is whatever the last
-	 * render left behind and is never looked at beyond the count.
-	 */
-	stream.Serialize(CellRedrawCount);
-	for (int index = 0; index < CellRedrawCount; index++) {
-		stream.Serialize(CellRedraw[index]);
-	}
-
+	stream.Serialize(CellRedraw);
 	stream.Serialize(TacticalCoord);
 	stream.Serialize(LastTacticalCoord);
 	stream.Serialize(DesiredTacticalCoord);

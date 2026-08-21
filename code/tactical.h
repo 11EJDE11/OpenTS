@@ -19,6 +19,8 @@
 #include "stimer.h"
 #include "timer.h"
 
+#include <vector>
+
 template<class T> class DynamicVectorClass;
 class CellClass;
 class Cell;
@@ -257,10 +259,6 @@ class Tactical : public AbstractClass
 		void Noop(int);
 
 	public:
-		enum {
-			MAX_SELECTABLE_OBJECTS = 500
-		};
-
 		/*
 		 * This is the caption text drawn across the middle of the tactical view. It is empty
 		 * whenever there is no caption to show, which is how the message is taken down again.
@@ -312,16 +310,10 @@ class Tactical : public AbstractClass
 
 		/*
 		 * These are the objects that drew themselves during the last render pass and can
-		 * therefore be clicked on, in the order they rendered. The list holds at most
-		 * MAX_SELECTABLE_OBJECTS entries; anything drawn beyond that is simply not clickable.
+		 * therefore be clicked on, in the order they rendered. It is emptied at the start
+		 * of every pass, since the objects build it up again as they draw.
 		 */
-		static Selectable SelectableObjects[MAX_SELECTABLE_OBJECTS];
-
-		/*
-		 * This is the number of entries in the selectable object list. It is zeroed at the
-		 * start of every render pass, since the objects build the list up again as they draw.
-		 */
-		int SelectableCount;
+		static std::vector<Selectable> SelectableObjects;
 
 		/*
 		 * These carry a trigger driven scroll of the view. The position is interpolated from
@@ -334,12 +326,11 @@ class Tactical : public AbstractClass
 		float MoveFactor;
 
 		/*
-		 * These are the cells flagged for redraw since the last render, and the count of
-		 * them. A pass that is not a full redraw refreshes only these cells, which keeps an
-		 * ordinary frame off the cost of redrawing the whole view.
+		 * These are the cells flagged for redraw since the last render. A pass that is
+		 * not a full redraw refreshes only these cells, which keeps an ordinary frame
+		 * off the cost of redrawing the whole view.
 		 */
-		int CellRedrawCount;
-		CellClass * CellRedraw[800];
+		std::vector<CellClass *> CellRedraw;
 
 		/*
 		 * The tactical map display position is expressed in absolute pixels, taken about
