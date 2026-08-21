@@ -35,6 +35,20 @@ SaveStreamClass::SaveStreamClass(IStream * stream, ModeType mode) :
 
 
 /// <summary>
+/// Stops the pass, as though the stream itself had failed.
+/// This is for a record that reads back as something no save could hold -- a length that
+/// is negative, or one that does not fit the object waiting for it. An earlier failure is
+/// left in place, since it is the one that explains the rest.
+/// </summary>
+void SaveStreamClass::Fail(void)
+{
+	if (SUCCEEDED(ErrorCode)) {
+		ErrorCode = E_FAIL;
+	}
+}
+
+
+/// <summary>
 /// Moves a block of bytes between the object and the stream.
 /// Every other Serialize reaches the stream through this one. Once something has gone
 /// wrong the block is left alone and the failure is kept, so the rest of the pass runs

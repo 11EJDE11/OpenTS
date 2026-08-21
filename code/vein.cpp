@@ -927,7 +927,8 @@ bool VeinholeMonsterClass::Load_All(IStream * stream)
 			return(false);
 		}
 
-		if (!monster->GrowthQueue->Load(stream, monster->GrowthNodes)) {
+		monster->GrowthQueue->Serialize(savestream, monster->GrowthNodes);
+		if (FAILED(savestream.Result())) {
 			return(false);
 		}
 
@@ -1003,7 +1004,8 @@ bool VeinholeMonsterClass::Save_All(IStream * stream)
 			return(false);
 		}
 
-		if (!VeinholeMonsters[i]->GrowthQueue->Save(stream, VeinholeMonsters[i]->GrowthNodes)) {
+		VeinholeMonsters[i]->GrowthQueue->Serialize(savestream, VeinholeMonsters[i]->GrowthNodes);
+		if (FAILED(savestream.Result())) {
 			return(false);
 		}
 	}

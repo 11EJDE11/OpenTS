@@ -58,6 +58,7 @@
 #include <cstring>
 #include <initializer_list>
 #include <ranges>
+#include <source_location>
 #include <span>
 #include <type_traits>
 #include <utility>
@@ -110,6 +111,43 @@ class VectorClass
 
 		operator std::span<T>(void) noexcept {return(std::span<T>(Vector, (std::size_t)VectorMax));};
 		operator std::span<T const>(void) const noexcept {return(std::span<T const>(Vector, (std::size_t)VectorMax));};
+
+		/*
+		 * Carries the vector to or from a save game, its length first and then the
+		 * elements. Loading sizes it before any element registers the slot it occupies.
+		 */
+		template<typename S>
+		void Serialize(S & stream, std::source_location const & where = std::source_location::current())
+		{
+			int count = VectorMax;
+			stream.Serialize(count);
+
+			if (stream.Is_Loading()) {
+				if (count < 0) {
+					stream.Fail();
+					return;
+				}
+				Clear();
+				if (count > 0) {
+					Resize(count);
+				}
+			}
+
+			if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
+				if (count > 0) {
+					stream.Serialize_Bytes(Vector, (int)(sizeof(T) * count));
+				}
+			} else {
+				for (int index = 0; index < count; index++) {
+					// Elements report against the member's call site, not against this loop.
+					if constexpr (requires { stream.Serialize(Vector[index], where); }) {
+						stream.Serialize(Vector[index], where);
+					} else {
+						stream.Serialize(Vector[index]);
+					}
+				}
+			}
+		}
 
 	protected:
 
@@ -471,26 +509,39 @@ class DynamicVectorClass : public VectorClass<T>
 
 		/*
 		 * Carries the active elements to or from a save game, the count first and then the
-		 * elements themselves. Loading sizes the vector before any element is read, because
-		 * an element holding a pointer registers the slot it occupies with the swizzle
-		 * manager and a later reallocation would leave that address behind.
+		 * elements. Loading sizes it before any element registers the slot it occupies.
 		 */
 		template<typename S>
-		void Serialize(S & stream)
+		void Serialize(S & stream, std::source_location const & where = std::source_location::current())
 		{
 			int count = ActiveCount;
 			stream.Serialize(count);
 
 			if (stream.Is_Loading()) {
-				Clear();
-				if (count > 0 && !Resize(count)) {
+				if (count < 0) {
+					stream.Fail();
 					return;
+				}
+				Clear();
+				if (count > 0) {
+					Resize(count);
 				}
 				ActiveCount = count;
 			}
 
-			for (int index = 0; index < count; index++) {
-				stream.Serialize((*this)[index]);
+			if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
+				if (count > 0) {
+					stream.Serialize_Bytes(&(*this)[0], (int)(sizeof(T) * count));
+				}
+			} else {
+				for (int index = 0; index < count; index++) {
+					// Elements report against the member's call site, not against this loop.
+					if constexpr (requires { stream.Serialize((*this)[index], where); }) {
+						stream.Serialize((*this)[index], where);
+					} else {
+						stream.Serialize((*this)[index]);
+					}
+				}
 			}
 		}
 

@@ -491,19 +491,10 @@ HRESULT MouseClass::Load(IStream * stream)
 			}
 		}
 
-		int zcount = 0;
-		result = stream->Read(&zcount, sizeof(zcount), NULL);
+		savestream.Serialize(ZoneConnections);
+		result = savestream.Result();
 		if (FAILED(result)) {
 			return(result);
-		}
-		ZoneConnections.Clear();
-		for (i = 0; i < zcount; i++) {
-			ZoneConnectionClass zcon;
-			result = stream->Read(&zcon, sizeof(zcon), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			ZoneConnections.Add(zcon);
 		}
 
 		for (i = 0; i < Array.Length(); i++) {
@@ -579,17 +570,10 @@ HRESULT MouseClass::Save(IStream * stream)
 			}
 		}
 
-		int zcount = ZoneConnections.Count();
-		result = stream->Write(&zcount, sizeof(zcount), NULL);
+		savestream.Serialize(ZoneConnections);
+		result = savestream.Result();
 		if (FAILED(result)) {
 			return(result);
-		}
-		for (i = 0; i < zcount; i++) {
-			ZoneConnectionClass zcon = ZoneConnections[i];
-			result = stream->Write(&zcon, sizeof(zcon), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
 		}
 
 		count = 0;

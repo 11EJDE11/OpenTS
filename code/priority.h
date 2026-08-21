@@ -13,7 +13,6 @@
 
 #include <cassert>
 #include <climits>
-#include <objidl.h>
 
 
 #define PARENT(index) (index >> 1)
@@ -45,13 +44,10 @@ class PriorityQueueClass
 
 		int Count(void) const { return(ActiveCount); }
 
-		bool Load(IStream * stream, T * nodes);
-		bool Save(IStream * stream, T * nodes);
-
 		/*
-		 * Carries the queue to or from a save game. The heap holds pointers into the caller's
-		 * node array, so each slot travels as its index into that array rather than as an
-		 * address, and the array has to be handed back in on the way in.
+		 * Carries the queue to or from a save game. The heap holds pointers into the
+		 * caller's node array, so each slot travels as its index into that array and the
+		 * array has to be handed back in on the way in.
 		 */
 		template<typename S>
 		void Serialize(S & stream, T * nodes);
@@ -250,64 +246,26 @@ inline void PriorityQueueClass<T>::Heapify(int index)
 
 
 template<typename T>
-bool PriorityQueueClass<T>::Load(IStream * stream, T * nodes)
-{
-	if (FAILED(stream->Read(&ActiveCount, sizeof(ActiveCount), NULL))) {
-		return(false);
-	}
-
-	if (FAILED(stream->Read(&Size, sizeof(Size), NULL))) {
-		return(false);
-	}
-
-	for (int slot = 0; slot < Size; slot++) {
-		int index;
-		if (FAILED(stream->Read(&index, sizeof(index), NULL))) {
-			return(false);
-		}
-
-		Heap[slot] = &nodes[index];
-
-		if ((unsigned &)Heap[slot] > MaxNodePointer) {
-			MaxNodePointer = (unsigned &)Heap[slot];
-		}
-		if ((unsigned &)Heap[slot] < MinNodePointer) {
-			MinNodePointer = (unsigned &)Heap[slot];
-		}
-	}
-
-	return(true);
-}
-
-
-template<typename T>
-bool PriorityQueueClass<T>::Save(IStream * stream, T * nodes)
-{
-	if (FAILED(stream->Write(&ActiveCount, sizeof(ActiveCount), NULL))) {
-		return(false);
-	}
-
-	if (FAILED(stream->Write(&Size, sizeof(Size), NULL))) {
-		return(false);
-	}
-
-	for (int slot = 0; slot < Size; slot++) {
-		int index = (int)(Heap[slot] - nodes);
-		if (FAILED(stream->Write(&index, sizeof(index), NULL))) {
-			return(false);
-		}
-	}
-
-	return(true);
-}
-
-
-template<typename T>
 template<typename S>
 void PriorityQueueClass<T>::Serialize(S & stream, T * nodes)
 {
-	stream.Serialize(ActiveCount);
-	stream.Serialize(Size);
+	int count = ActiveCount;
+	int size = Size;
+
+	stream.Serialize(count);
+	stream.Serialize(size);
+
+	/*
+	 * The heap was sized when the queue was built and never grows, so a save describing
+	 * a different one, or more nodes than fit, cannot be read into this queue.
+	 */
+	if (stream.Is_Loading()) {
+		if (size != Size || count < 0 || count > Size) {
+			stream.Fail();
+			return;
+		}
+		ActiveCount = count;
+	}
 
 	for (int slot = 0; slot < Size; slot++) {
 		int index = stream.Is_Saving() ? (int)(Heap[slot] - nodes) : 0;

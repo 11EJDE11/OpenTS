@@ -14,10 +14,14 @@
 #include "swizzle.h"
 #include "win.h"
 
+#include <array>
+#include <deque>
 #include <optional>
 #include <source_location>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 #include <vector>
 
 class SaveStreamClass;
@@ -35,9 +39,13 @@ concept HasSerializeMember = requires(T & object, SaveStreamClass & stream) {
 	object.Serialize(stream);
 };
 
+/*
+ * A container takes the caller's source location, so that an unresolved pointer names
+ * the member it belongs to rather than the loop inside the container.
+ */
 template<typename T>
-concept HasSerializeOverload = requires(T & object, SaveStreamClass & stream) {
-	Serialize_Custom(stream, object);
+concept HasSerializeMemberWhere = requires(T & object, SaveStreamClass & stream, std::source_location const & where) {
+	object.Serialize(stream, where);
 };
 
 
@@ -79,6 +87,12 @@ class SaveStreamClass
 		bool Was_Error(void) const {return(FAILED(ErrorCode));}
 
 		/*
+		 * Stops the pass here. A container that reads back a length no honest save could
+		 * have written calls this rather than sizing itself from it.
+		 */
+		void Fail(void);
+
+		/*
 		 * The version stamp of the save being read, or the one being written. A member
 		 * added to a later format is serialized only when this reaches the version that
 		 * introduced it.
@@ -112,10 +126,9 @@ class SaveStreamClass
 		}
 
 		/*
-		 * A pointer to a game object is written as the address the object occupied when
-		 * the game was saved, which is the identity it announces on the way back in.
-		 * Loading leaves the slot registered with the swizzle manager, which clears it
-		 * until every object has arrived and the real address is known.
+		 * A pointer travels as the address the object occupied when the game was saved,
+		 * the identity it announces on the way back in. Loading leaves the slot with the
+		 * swizzle manager until the object says where it landed.
 		 */
 		template<SwizzleTarget T>
 		void Serialize(T * & pointer, std::source_location const & where = std::source_location::current())
@@ -130,20 +143,19 @@ class SaveStreamClass
 		/*
 		 * Anything that describes its own members.
 		 */
-		template<typename T> requires HasSerializeMember<T>
+		template<typename T> requires (HasSerializeMember<T> && !HasSerializeMemberWhere<T>)
 		void Serialize(T & object)
 		{
 			object.Serialize(*this);
 		}
 
 		/*
-		 * A type that cannot be given a member of its own is served by a global
-		 * Serialize_Custom overload instead.
+		 * The same, for one that wants the call site to report its elements against.
 		 */
-		template<typename T> requires (!HasSerializeMember<T> && HasSerializeOverload<T>)
-		void Serialize(T & object)
+		template<typename T> requires HasSerializeMemberWhere<T>
+		void Serialize(T & object, std::source_location const & where = std::source_location::current())
 		{
-			Serialize_Custom(*this, object);
+			object.Serialize(*this, where);
 		}
 
 		/*
@@ -157,47 +169,54 @@ class SaveStreamClass
 				Serialize_Bytes(array, sizeof(array));
 			} else {
 				for (int index = 0; index < N; index++) {
-					/*
-					 * The elements are serialized against the array's own call site, so a
-					 * pointer that nothing answers for names the member rather than this loop.
-					 */
-					if constexpr (std::is_pointer_v<T>) {
-						Serialize(array[index], where);
-					} else {
-						Serialize(array[index]);
-					}
+					Serialize_Element(array[index], where);
+				}
+			}
+		}
+
+		/*
+		 * The standard library's fixed size array travels as the built in one does.
+		 */
+		template<typename T, std::size_t N>
+		void Serialize(std::array<T, N> & value, std::source_location const & where = std::source_location::current())
+		{
+			if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
+				if constexpr (N > 0) {
+					Serialize_Bytes(value.data(), (int)(sizeof(T) * N));
+				}
+			} else {
+				for (std::size_t index = 0; index < N; index++) {
+					Serialize_Element(value[index], where);
 				}
 			}
 		}
 
 		/*
 		 * A vector travels as its length followed by its elements. Loading sizes it in
-		 * full before any element is read, because an element holding a pointer
-		 * registers the slot it occupies with the swizzle manager and a reallocation
-		 * afterwards would leave that address behind.
+		 * full before any element registers the slot address it occupies.
 		 */
-		template<typename T>
+		template<typename T> requires (!std::is_same_v<T, bool>)
 		void Serialize(std::vector<T> & value, std::source_location const & where = std::source_location::current())
 		{
 			int count = (int)value.size();
 			Serialize(count);
 
 			if (Is_Loading()) {
-				value.clear();
-				if (count > 0) {
-					value.resize(count);
+				if (count < 0) {
+					Fail();
+					return;
 				}
+				value.clear();
+				value.resize(count);
 			}
 
-			for (int index = 0; index < count; index++) {
-				/*
-				 * The elements are serialized against the vector's own call site, so a
-				 * pointer that nothing answers for names the member rather than this loop.
-				 */
-				if constexpr (std::is_pointer_v<T>) {
-					Serialize(value[index], where);
-				} else {
-					Serialize(value[index]);
+			if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
+				if (count > 0) {
+					Serialize_Bytes(value.data(), (int)(sizeof(T) * count));
+				}
+			} else {
+				for (int index = 0; index < count; index++) {
+					Serialize_Element(value[index], where);
 				}
 			}
 		}
@@ -206,7 +225,7 @@ class SaveStreamClass
 		 * An optional value is a flag followed by the value itself when there is one.
 		 */
 		template<typename T>
-		void Serialize(std::optional<T> & value)
+		void Serialize(std::optional<T> & value, std::source_location const & where = std::source_location::current())
 		{
 			bool present = value.has_value();
 			Serialize(present);
@@ -219,11 +238,105 @@ class SaveStreamClass
 			}
 
 			if (present) {
-				Serialize(*value);
+				Serialize_Element(*value, where);
 			}
 		}
 
+		/*
+		 * A deque travels as a vector does, and is the safest of these to keep pointers
+		 * in, since adding to either end leaves the elements already in it where they are.
+		 */
+		template<typename T>
+		void Serialize(std::deque<T> & value, std::source_location const & where = std::source_location::current())
+		{
+			int count = (int)value.size();
+			Serialize(count);
+
+			if (Is_Loading()) {
+				if (count < 0) {
+					Fail();
+					return;
+				}
+				value.clear();
+				value.resize(count);
+			}
+
+			for (int index = 0; index < count; index++) {
+				Serialize_Element(value[index], where);
+			}
+		}
+
+		/*
+		 * A vector of bool holds its elements packed and hands out a proxy rather than an
+		 * element, so each one is unpacked into an ordinary variable for the trip and put
+		 * back afterwards. Assigning it back is harmless while saving.
+		 */
+		void Serialize(std::vector<bool> & value)
+		{
+			int count = (int)value.size();
+			Serialize(count);
+
+			if (Is_Loading()) {
+				if (count < 0) {
+					Fail();
+					return;
+				}
+				value.assign((std::size_t)count, false);
+			}
+
+			for (int index = 0; index < count; index++) {
+				bool element = value[(std::size_t)index];
+				Serialize(element);
+				value[(std::size_t)index] = element;
+			}
+		}
+
+		/*
+		 * A string travels as its length followed by its characters.
+		 */
+		void Serialize(std::string & value)
+		{
+			int count = (int)value.size();
+			Serialize(count);
+
+			if (Is_Loading()) {
+				if (count < 0) {
+					Fail();
+					return;
+				}
+				value.resize(count);
+			}
+
+			if (count > 0) {
+				Serialize_Bytes(value.data(), count);
+			}
+		}
+
+		/*
+		 * A pair travels as its two halves, in order.
+		 */
+		template<typename A, typename B>
+		void Serialize(std::pair<A, B> & value, std::source_location const & where = std::source_location::current())
+		{
+			Serialize_Element(value.first, where);
+			Serialize_Element(value.second, where);
+		}
+
 	private:
+		/*
+		 * One element of a container, handed the owning call site if it can take one --
+		 * a container nested inside another included.
+		 */
+		template<typename T>
+		void Serialize_Element(T & element, std::source_location const & where)
+		{
+			if constexpr (requires { Serialize(element, where); }) {
+				Serialize(element, where);
+			} else {
+				Serialize(element);
+			}
+		}
+
 		IStream * Stream;
 		ModeType Mode;
 		HRESULT ErrorCode;

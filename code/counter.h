@@ -12,8 +12,6 @@
 #include "vector.h"
 #include "win.h"
 
-struct IStream;
-
 class CounterClass : protected VectorClass<int>
 {
 public:
@@ -26,31 +24,16 @@ public:
 
 	int Total(void) const;
 
-	HRESULT Save(IStream * stream);
-	HRESULT Load(IStream * stream);
-
 	bool Reserve(int index);
 
 	/*
-	 * Carries the counters, how many of them there are first and then the values
-	 * themselves. Loading resizes the counter list before any value is read.
+	 * Carries the counters, which are only the elements of the vector underneath. This
+	 * reaches that past the protected inheritance.
 	 */
 	template<typename S>
 	void Serialize(S & stream)
 	{
-		int count = Length();
-		stream.Serialize(count);
-
-		if (stream.Is_Loading()) {
-			VectorClass<int>::Clear();
-			if (count > 0 && !Resize(count)) {
-				return;
-			}
-		}
-
-		for (int index = 0; index < count; index++) {
-			stream.Serialize(Vector[index]);
-		}
+		VectorClass<int>::Serialize(stream);
 	}
 
 	int operator[](int index) {return(Vector[index]);};

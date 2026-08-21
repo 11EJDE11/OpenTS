@@ -15,8 +15,6 @@
 
 #include "counter.h"
 
-#include <comdef.h>
-
 
 /// <summary>
 /// Adds one to the counter specified.
@@ -86,60 +84,6 @@ int CounterClass::Total(void) const
 		}
 	}
 	return(total);
-}
-
-
-/// <summary>
-/// Saves the counters to the save game stream.
-/// </summary>
-/// <returns>Returns with S_OK if the counters were written, otherwise with the error
-/// code.</returns>
-HRESULT CounterClass::Save(IStream * stream)
-{
-	int count = Length();
-
-	HRESULT hr = stream->Write(&count, sizeof(count), NULL);
-	if (SUCCEEDED(hr)) {
-		for (int index = 0; index < count; index++) {
-			hr = stream->Write(&Vector[index], sizeof(int), NULL);
-			if (FAILED(hr)) {
-				return(hr);
-			}
-		}
-		return(S_OK);
-	}
-	return(hr);
-}
-
-
-/// <summary>
-/// Loads the counters from the save game stream.
-/// This routine will reset the counter object before reading, so whatever it
-/// was tallying beforehand is discarded.
-/// </summary>
-/// <returns>Returns with S_OK if the counters were read, otherwise with the error code.</returns>
-HRESULT CounterClass::Load(IStream * stream)
-{
-	VectorClass<int>::Clear();
-
-	int count;
-
-	HRESULT result = stream->Read(&count, sizeof(count), NULL);
-	if (SUCCEEDED(result)) {
-		if (count < 0 || !Resize(count)) {
-			return(E_FAIL);
-		}
-
-		for (int index = 0; index < count; index++) {
-			result = stream->Read(&Vector[index], sizeof(int), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		return(S_OK);
-	}
-	return(result);
 }
 
 
