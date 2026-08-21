@@ -254,7 +254,7 @@ void Ingame_Menu_Dialog(void)
 							if (Session.Type == GAME_NORMAL) {
 								PlayerRestarts = true;
 							} else {
-								OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::DESTRUCT));
+								OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::DESTRUCT));
 								_special_dialog_flag = false;
 							}
 							break;
@@ -268,7 +268,7 @@ void Ingame_Menu_Dialog(void)
 						if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
 							PlayerPtr->Flag_To_Lose();
 						} else {
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::DESTRUCT));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::DESTRUCT));
 							_special_dialog_flag = false;
 						}
 					}

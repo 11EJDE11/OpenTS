@@ -164,7 +164,7 @@ BOOL CALLBACK Game_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 							ShowWindow(window, SW_SHOW);
 							UpdateWindow(window);
 						} else {
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SAVEGAME));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SAVEGAME));
 							*retval = IDC_SAVE_GAME;
 						}
 					}
@@ -207,7 +207,7 @@ BOOL CALLBACK Game_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 							if (handle) {
 								int fudge = 3 - SendMessage(handle, TBM_GETPOS, 0, 0);
 								if (fudge != Session.LatencyFudge) {
-									OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::LATENCYFUDGE, fudge));
+									OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::LATENCYFUDGE, fudge));
 									DebugString("LATENCYFUDGE event created - %d\n", fudge);
 								}
 							}
@@ -215,7 +215,7 @@ BOOL CALLBACK Game_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 							if (handle) {
 								int speed = (OptionsClass::MAX_SPEED_SETTING-1) - SendMessage(handle, TBM_GETPOS, 0, 0);
 								if (Options.GameSpeed != speed) {
-									OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::GAMESPEED, speed));
+									OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::GAMESPEED, speed));
 								}
 							}
 						}

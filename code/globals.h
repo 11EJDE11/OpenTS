@@ -30,12 +30,13 @@
 #include "theater.hh"
 #include "vox.hh"
 
+#include <deque>
+
 /*
 **	Forward declarations.
 */
 template<class T> class DynamicVectorClass;
 template<class I, class T> class IndexClass;
-template<class T, int> class QueueClass;
 template<class T> class CDTimerClass;
 class AITriggerTypeClass;
 class AbstractTypeClass;
@@ -203,12 +204,8 @@ extern DynamicVectorClass<AbstractTypeClass *>			AbstractTypes;
 
 extern DynamicVectorClass<AnimClass *>					MoveFlashes;
 
-extern QueueClass<EventClass, MAX_EVENTS>				OutList;
-extern QueueClass<EventClass, (MAX_EVENTS * 64)>		DoList;
-
-#ifdef MIRROR_QUEUE
-extern QueueClass<EventClass, (MAX_EVENTS * 64)>		MirrorList;
-#endif
+extern std::deque<EventClass>							OutList;
+extern std::deque<EventClass>							DoList;
 
 extern DynamicVectorClass<ObjectClass *>				CurrentObject;
 extern DynamicVectorClass<TagClass *>					LogicTags;

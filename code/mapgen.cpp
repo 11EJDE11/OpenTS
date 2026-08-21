@@ -44,7 +44,6 @@
 #include "ownrdraw.h"
 #include "pcx.h"
 #include "progress.h"
-#include "queue.h"
 #include "rules.h"
 #include "smartdeform.h"
 #include "smudtype.h"
@@ -65,6 +64,7 @@
 #include "ramp.hh"
 
 #include <algorithm>
+#include <deque>
 
 
 bool (*RMGCallback)() = MapGen_Call_Back;
@@ -10189,7 +10189,7 @@ void MapGeneratorClass::Generate_Rural_Units(const Cell & cell)
 /// <returns>bool; Was anything more than a lone junction laid down?</returns>
 bool MapGeneratorClass::Generate_Rural_Roads(const Cell & cell)
 {
-	QueueClass<DirtRoadNode, 1024> queue;
+	std::deque<DirtRoadNode> queue;
 
 	int processed = 0;
 
@@ -10216,18 +10216,15 @@ bool MapGeneratorClass::Generate_Rural_Roads(const Cell & cell)
 	 * back link, since there is no road leading into it yet.
 	 */
 	DirtRoadNode root(junction, cell, ISOTILE_NONE, cell, -1);
-	queue.Add(root);
-	if (queue.Count == 0) {
-		return(false);
-	}
+	queue.push_back(root);
 
 	/*
-	 * Grow the road network breadth-first until the queue runs dry or comes
-	 * close to overflowing.
+	 * Grow the road network breadth-first until the queue runs dry or the
+	 * pending road count reaches its limit.
 	 */
-	while (queue.Count < 1020) {
+	while ((int)queue.size() < 1020) {
 		bool success = true;
-		DirtRoadNode node = queue.First();
+		DirtRoadNode node = queue.front();
 
 		int child_count = 0;
 		DirtRoadNode * children = NULL;
@@ -10295,7 +10292,7 @@ bool MapGeneratorClass::Generate_Rural_Roads(const Cell & cell)
 			if (children != NULL) {
 				DirtRoadNode * src = children;
 				for (int j = 0; j < child_count; j++) {
-					queue.Add(*src);
+					queue.push_back(*src);
 					src++;
 				}
 			}
@@ -10326,24 +10323,24 @@ bool MapGeneratorClass::Generate_Rural_Roads(const Cell & cell)
 		}
 
 		if (children != NULL) {
-			delete [] children;
+			delete[] children;
 		}
 
-		queue.Next();
+		queue.pop_front();
 		processed++;
-		if (queue.Count == 0) {
+		if (queue.empty()) {
 			return(processed > 1);
 		}
 	}
 
 	/*
-	 * The queue filled up before the road network was finished. Every pending
-	 * road gets sealed off with its cap tile.
+	 * The pending road count reached its limit before the network was
+	 * finished. Every pending road gets sealed off with its cap tile.
 	 */
-	while (queue.Count != 0) {
-		DirtRoadNode node = queue.First();
+	while (!queue.empty()) {
+		DirtRoadNode node = queue.front();
 		Place_Tile(node.CapTile, node.CapOrigin);
-		queue.Next();
+		queue.pop_front();
 	}
 	return(processed > 1);
 }

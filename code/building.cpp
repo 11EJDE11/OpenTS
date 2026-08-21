@@ -2609,14 +2609,14 @@ bool BuildingClass::Active_Click_With(ActionType action, ObjectClass * object, b
 
 	if (action == ACTION_SELF) {
 		if (Class->Is_Factory()) {
-			OutList.Add(EventClass(Owner(), EventClass::PRIMARY, TargetClass(this)));
+			OutList.push_back(EventClass(Owner(), EventClass::PRIMARY, TargetClass(this)));
 			return(true);
 		}
 		return(true);
 	}
 
 	if (action == ACTION_MOVE) {
-		OutList.Add(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(object)));
+		OutList.push_back(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(object)));
 		return(true);
 	}
 
@@ -2657,7 +2657,7 @@ bool BuildingClass::Active_Click_With(ActionType action, Cell const & cell, bool
 	if (action == ACTION_MOVE && (!Class->IsConstructionYard || House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy)) {
 		if (Class->UndeploysInto != NULL) {
 			Assign_Rally_Point(cell);
-			OutList.Add(EventClass(Owner(), EventClass::SELL, TargetClass(this)));
+			OutList.push_back(EventClass(Owner(), EventClass::SELL, TargetClass(this)));
 		}
 		return(true);
 	}
@@ -2695,10 +2695,10 @@ void BuildingClass::Assign_Rally_Point(Cell const & cell)
 	Cell nearbyloc = Map.Nearby_Location(cell, speed, zone, mzone, underbridge);
 
 	if (nearbyloc != CELL_NONE) {
-		OutList.Add(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(&Map[nearbyloc])));
+		OutList.push_back(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(&Map[nearbyloc])));
 	} else {
 		if (Class->IsConstructionYard && House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy) {
-			OutList.Add(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(&Map[Center_Coord()])));
+			OutList.push_back(EventClass(Owner(), EventClass::ARCHIVE, TargetClass(this), TargetClass(&Map[Center_Coord()])));
 		}
 	}
 }

@@ -1024,13 +1024,8 @@ restart:
 	*/
 	GameActive = true;
 	PlayerPtr = NULL;
-	DoList.Init();
-
-#ifdef MIRROR_QUEUE
-	MirrorList.Init();
-#endif
-
-	OutList.Init();
+	DoList.clear();
+	OutList.clear();
 	Frame = 0;
 	Scen->MissionTimer = 0;
 	Scen->MissionTimer.Stop();
@@ -3704,7 +3699,7 @@ class StopCommandClass : public CommandClass
 					ObjectClass const * tech = CurrentObject[index];
 
 					if (tech != NULL && (tech->Can_Player_Move() || tech->Can_Player_Fire())) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::IDLE, TargetClass(tech)));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::IDLE, TargetClass(tech)));
 					}
 				}
 				Sound_Effect(Rule->StopSound);
@@ -3738,7 +3733,7 @@ class DeployCommandClass : public CommandClass
 					if (obj != NULL && (obj->Can_Player_Move() || obj->Can_Player_Fire())) {
 						TechnoClass * tech = dynamic_cast<TechnoClass *>(obj);
 						if (tech == NULL || (tech->Can_Attack_Now() && tech->Can_Deploy_Now())) {
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::DEPLOY, TargetClass(obj)));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::DEPLOY, TargetClass(obj)));
 							done = true;
 							AllowVoice = false;
 						}
@@ -3808,7 +3803,7 @@ class ScatterCommandClass : public CommandClass
 					ObjectClass const * tech = CurrentObject[index];
 
 					if (tech != NULL && tech->Can_Player_Move()) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SCATTER, TargetClass(tech)));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SCATTER, TargetClass(tech)));
 					}
 				}
 				Sound_Effect(Rule->ScatterSound);
@@ -3937,7 +3932,7 @@ class AllianceCommandClass : public CommandClass
 			if (Session.Type != GAME_NORMAL && !Scen->Special.IsAllianceFixed && Session.Options.AlliesAllowed) {
 				if (CurrentObject.Count() && !PlayerPtr->IsDefeated) {
 					if (CurrentObject[0]->Owner_HouseClass() != PlayerPtr && CurrentObject[0]->Owner_HouseClass()->IsHuman) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
 					}
 				}
 			}

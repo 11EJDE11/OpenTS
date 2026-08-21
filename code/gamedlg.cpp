@@ -158,7 +158,7 @@ void GameControlsClass::Set(void)
 		int gamespeed = (OptionsClass::MAX_SPEED_SETTING-1) - Slider_GetPos(handle);
 		if (Options.GameSpeed != gamespeed) {
 			if (GameActive == true && Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-				OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::GAMESPEED, gamespeed));
+				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::GAMESPEED, gamespeed));
 			} else {
 				Options.GameSpeed = gamespeed;
 			}

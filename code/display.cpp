@@ -2278,7 +2278,7 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 		**	Try to place the pending object onto the map.
 		*/
 		if (ProximityCheck && ShroudCheck) {
-			OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::PLACE, PendingObjectPtr->RTTI, cell + ZoneOffset));
+			OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::PLACE, PendingObjectPtr->RTTI, cell + ZoneOffset));
 		} else {
 			Speak(VOX_DEPLOY);
 		}
@@ -2349,9 +2349,9 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 					if (object->RTTI == RTTI_BUILDING) {
 						BuildingClass *building = ((BuildingClass *)object);
 						if (building->IsOn) {
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::POWEROFF, TargetClass(building)));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::POWEROFF, TargetClass(building)));
 						} else {
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::POWERON, TargetClass(building)));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::POWERON, TargetClass(building)));
 						}
 					}
 				}
@@ -2402,14 +2402,14 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 				}
 
 				if (action == ACTION_REPAIR && object->RTTI == RTTI_BUILDING) {
-					OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::REPAIR, TargetClass(object)));
+					OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::REPAIR, TargetClass(object)));
 				}
 
 				if (action == ACTION_SELL_UNIT && object) {
 					switch ((RTTIType)object->RTTI) {
 						case RTTI_AIRCRAFT:
 						case RTTI_UNIT:
-							OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SELL, TargetClass(object)));
+							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SELL, TargetClass(object)));
 							break;
 
 						default:
@@ -2419,15 +2419,15 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 				}
 				if (action == ACTION_SELL) {
 					if (object) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SELL, TargetClass(object)));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SELL, TargetClass(object)));
 					} else {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SELLCELL, cell));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SELLCELL, cell));
 					}
 				}
 
 				SuperWeaponTypeClass *stype = SuperWeaponTypeClass::From_Action(action);
 				if (stype != NULL) {
-					OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SPECIAL_PLACE, stype->HeapID, cell));
+					OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SPECIAL_PLACE, stype->HeapID, cell));
 				}
 			}
 

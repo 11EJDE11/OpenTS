@@ -283,7 +283,7 @@ void Destroy_Connection(int id, int error)
 	Ipx.Delete_Connection(id);
 
 	if (error) {
-		OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::REMOVEPLAYER, id));
+		OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::REMOVEPLAYER, id));
 	} else if (Session.Type == GAME_INTERNET && WestwoodOnline_Tournament) {
 		housep->Flag_To_Die();
 	} else {

@@ -49,15 +49,6 @@
 
 
 /**********************************************************************
-**	If this is defined, the DoList is "mirrored", for memory trasher
-**	detection.
-*/
-#ifdef _DEBUG
-//#define MIRROR_QUEUE
-#endif
-
-
-/**********************************************************************
 **	Defines for verifying free disk space
 */
 #define	INIT_FREE_DISK_SPACE		8192

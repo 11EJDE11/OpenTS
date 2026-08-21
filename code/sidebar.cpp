@@ -1617,7 +1617,7 @@ bool SidebarClass::StripClass::AI(KeyNumType & input, Point2D const & xy)
 						switch ((RTTIType)pending->RTTI) {
 							case RTTI_UNIT:
 							case RTTI_AIRCRAFT:
-								OutList.Add(EventClass(pending->Owner(), EventClass::PLACE, pending->RTTI, CELL_NONE));
+								OutList.push_back(EventClass(pending->Owner(), EventClass::PLACE, pending->RTTI, CELL_NONE));
 								Speak(VOX_UNIT_READY);
 								break;
 
@@ -1626,7 +1626,7 @@ bool SidebarClass::StripClass::AI(KeyNumType & input, Point2D const & xy)
 								break;
 
 							case RTTI_INFANTRY:
-								OutList.Add(EventClass(pending->Owner(), EventClass::PLACE, pending->RTTI, CELL_NONE));
+								OutList.push_back(EventClass(pending->Owner(), EventClass::PLACE, pending->RTTI, CELL_NONE));
 								Speak(VOX_UNIT_READY);
 								break;
 						}
@@ -2156,7 +2156,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 			if ((unsigned)spc < (unsigned)PlayerPtr->SuperWeapon.Count()) {
 				if (PlayerPtr->SuperWeapon[spc]->Can_Place()) {
 					if (PlayerPtr->SuperWeapon[spc]->Class->Action == ACTION_NONE) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SPECIAL_PLACE, PlayerPtr->SuperWeapon[spc]->Class->HeapID, Cell(0, 0)));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SPECIAL_PLACE, PlayerPtr->SuperWeapon[spc]->Class->HeapID, Cell(0, 0)));
 					} else {
 						Map.IsTargettingMode = spc;
 						Unselect_All();
@@ -2205,10 +2205,10 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 
 					if (!factory->Is_Building()) {
 						Speak(VOX_CANCELED);
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::ABANDON, otype, oid));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ABANDON, otype, oid));
 					} else {
 						Speak(VOX_SUSPENDED);
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::SUSPEND, otype, oid));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SUSPEND, otype, oid));
 						Map.Column[0].IsToRedraw = true;
 						Map.Column[1].IsToRedraw = true;
 					}
@@ -2219,7 +2219,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 					 */
 					FactoryClass * fptr = PlayerPtr->Fetch_Factory(otype);
 					if (fptr != NULL && fptr->Is_Queued(choice)) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::ABANDON, otype, oid));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ABANDON, otype, oid));
 					}
 				}
 			}
@@ -2242,7 +2242,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 						} else {
 							BuildingClass * builder = pending->Who_Can_Build_Me(false, false);
 							if (!builder) {
-								OutList.Add(EventClass(pending->Owner(), EventClass::ABANDON, otype, oid));
+								OutList.push_back(EventClass(pending->Owner(), EventClass::ABANDON, otype, oid));
 								Speak(VOX_NO_FACTORY);
 							} else {
 
@@ -2261,7 +2261,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 									**	power, queue this event and process through normal house
 									**	production channels.
 									*/
-									OutList.Add(EventClass(pending->Owner(), EventClass::PLACE, otype, CELL_NONE));
+									OutList.push_back(EventClass(pending->Owner(), EventClass::PLACE, otype, CELL_NONE));
 								}
 							}
 						}
@@ -2276,7 +2276,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 						} else {
 							Speak(VOX_BUILDING);
 						}
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::PRODUCE, Strip->Buildables[index].BuildableType, Strip->Buildables[index].BuildableID));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::PRODUCE, Strip->Buildables[index].BuildableType, Strip->Buildables[index].BuildableID));
 					}
 
 				} else {
@@ -2309,7 +2309,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType & k
 						produce = true;
 					}
 					if (produce) {
-						OutList.Add(EventClass(PlayerPtr->HeapID, EventClass::PRODUCE, Strip->Buildables[index].BuildableType, Strip->Buildables[index].BuildableID));
+						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::PRODUCE, Strip->Buildables[index].BuildableType, Strip->Buildables[index].BuildableID));
 					}
 				}
 			}

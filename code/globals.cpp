@@ -379,12 +379,8 @@ HouseClass * PlayerPtr;
 **	sent to the remote computer for processing. The other list is for incoming events
 **	that need to be executed when the correct frame has been reached.
 */
-QueueClass<EventClass, MAX_EVENTS> OutList;
-QueueClass<EventClass, (MAX_EVENTS * 64)> DoList;
-
-#ifdef MIRROR_QUEUE
-QueueClass<EventClass, (MAX_EVENTS * 64)> MirrorList;
-#endif
+std::deque<EventClass> OutList;
+std::deque<EventClass> DoList;
 
 
 /***************************************************************************
