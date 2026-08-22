@@ -55,7 +55,8 @@ EnvironmentClass::~EnvironmentClass(void)
 /// Captures the state that carries over into the next mission.
 /// This routine is called as a campaign mission is won, before the next scenario is
 /// started. The global flags, spare money, mission timer, difficulty and stage are
-/// remembered here so that Restore can hand them to the new mission.
+/// remembered here. The next scenario assigns house handicaps while reading its houses;
+/// Restore hands the remaining campaign state to the new mission afterward.
 /// </summary>
 void EnvironmentClass::Store(void)
 {
@@ -74,8 +75,7 @@ void EnvironmentClass::Store(void)
 /// Applies the remembered carry over state to the new mission.
 /// This routine is called once the next scenario in the campaign has been started. It
 /// restores the global flags, grants the player whatever share of the previous mission's
-/// money the scenario allows, re-applies the difficulty handicap and resumes an
-/// inherited mission timer.
+/// money the scenario allows and resumes an inherited mission timer.
 /// </summary>
 void EnvironmentClass::Restore(void)
 {
@@ -92,7 +92,6 @@ void EnvironmentClass::Restore(void)
 
 	PlayerPtr->Refund_Money((int)money);
 	PlayerPtr->Control.InitialCredits += (int)money;
-	PlayerPtr->Assign_Handicap(Difficulty);
 
 	if (Scen->IsInheritTimer) {
 		if (MissionTimer > 0) {

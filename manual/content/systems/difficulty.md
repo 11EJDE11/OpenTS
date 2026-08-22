@@ -59,7 +59,7 @@ Outside a campaign game the right-hand column reaches computer houses only. Ever
 In a campaign the handicap is given to each house as the scenario's `[Houses]` list is read, one house at a time, and the only thing that puts a house in the left-hand column is [`PlayerControl=yes`](/keys/playercontrol/) in that house's own section. More than one house may carry it, and each one that does takes the player's column.
 
 :::caution[A campaign map that omits `PlayerControl` leaves the player wearing the computer handicap]
-The house named by the map's `[Basic] Player=` entry is not resolved until after every house has been created and handicapped, and the player-control flag that entry sets arrives too late for the test. A campaign map that names a player house without also setting `PlayerControl=yes` in that house's own section therefore runs the whole mission with the player's own house in the right-hand column — on `[Difficult]` at the Easy setting. Nothing re-assigns it during the mission, and a carry-over into the next mission re-applies the slot it recorded rather than correcting it.
+The house named by the map's `[Basic] Player=` entry is not resolved until after every house has been created and handicapped, and the player-control flag that entry sets arrives too late for the test. A campaign map that names a player house without also setting `PlayerControl=yes` in that house's own section therefore runs the whole mission with the player's own house in the right-hand column — on `[Difficult]` at the Easy setting. Nothing re-assigns it during that mission; the next scenario reads and handicaps its own houses again.
 :::
 
 ## What one difficulty section sets
@@ -117,9 +117,8 @@ The country's own multipliers sit in its HouseType section and each default to 1
 
 ## When a house is re-handicapped
 
-- **Campaign start.** Each house in the scenario's `[Houses]` list, as it is created.
+- **Campaign scenario load or restart.** Each house in the scenario's `[Houses]` list, as it is created. Applying carry-over state afterward does not replace that handicap.
 - **Every other mode.** As the session's houses are assigned: humans to slot 1, computer houses to the inverted slot minus the bonus below. The `Neutral` and `Special` houses created alongside them are never handicapped and keep a multiplier of 1 throughout.
-- **Between campaign missions.** The player's slot is recorded at the end of a mission and re-applied to the player's house in the next one, after the money carry-over.
 - **A house passing to the computer.** The house is re-handicapped with `2` minus the slot it already holds.
 
 That last one runs only on a house a person was playing, and it is the same inversion applied a second time. The table traces a campaign house through it. The right-hand column is exactly what [the table above](#from-the-setting-to-a-slot) gives every other house at the same setting, so a base captured from the player ends up handicapped as though the computer had held it from the start.

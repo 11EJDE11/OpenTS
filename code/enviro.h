@@ -53,8 +53,9 @@ class EnvironmentClass
 		int MissionTimer;
 
 		/*
-		 * This is the difficulty handicap the player was under, re-applied to the player's
-		 * house so that a campaign keeps the difficulty it was begun at.
+		 * This is the difficulty handicap the player was under when the previous mission ended.
+		 * It remains part of the serialized carry over record, while each scenario assigns the
+		 * house handicap from its own difficulty as its houses are read.
 		 */
 		DiffType Difficulty;
 
