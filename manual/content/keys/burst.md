@@ -26,6 +26,6 @@ A weapon that draws a wave or a particle system — [`IsSonic`](/keys/issonic/),
 Once a structure has anything plugged into its first upgrade slot, it stops choosing between its two weapons. It fires both slots in the same frame when the plugged-in type counts as a two shooter — which means that type's own weapons name the same weapon in both slots, or either of them sets a burst above one — and fires neither slot at all when it does not.
 :::
 
-:::danger[`Burst=0` crashes the game]
-The running count is wrapped by dividing by this figure, and nothing guards against zero. A vehicle crashes as soon as it lines up a shot with such a weapon in its first slot, and any other object crashes the moment the shot goes off.
+:::caution[Nonpositive values become one]
+`0` and every negative value are stored as `1` when the WeaponType is read from the rules.
 :::

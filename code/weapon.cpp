@@ -170,6 +170,9 @@ bool WeaponTypeClass::Read_INI(CCINIClass const & ini)
 		IsSonic = ini.Get_Bool(IniName, "IsSonic", IsSonic);
 		IsSupressed = ini.Get_Bool(IniName, "Supress", IsSupressed);
 		Burst = ini.Get_Int(IniName, "Burst", Burst);
+		if (Burst < 1) {
+			Burst = 1;
+		}
 		Attack = ini.Get_Int(IniName, "Damage", Attack);
 		MaxSpeed = ini.Get_MPHType(IniName, "Speed", MaxSpeed);
 		ROF = ini.Get_Int(IniName, "ROF", ROF);
