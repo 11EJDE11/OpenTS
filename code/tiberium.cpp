@@ -111,10 +111,6 @@ bool TiberiumClass::Read_INI(CCINIClass const & ini)
 		Color = ini.Get_Scheme_Index(IniName, "Color", Color);
 		Debris = TGet_TypeList<AnimTypeClass>(ini, IniName, "Debris", Debris);
 
-		if (!strcmpi(IniName, "Vinifera")) {
-			Power = 17;
-		}
-
 		switch (ini.Get_Int(IniName, "Image", -1)) {
 			case -1:
 				break;
