@@ -6144,7 +6144,7 @@ void TechnoClass::Draw_Voxel(VoxelDataStruct const & voxeldata, int frame, int k
 /// <param name="force_cache">Force rendering even when a cache key is supplied.</param>
 void TechnoClass::Techno_Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache) const
 {
-	if (Cloak != UNCLOAKED || ((FlashCount / 2) % 2 == 1) || voxeldata.VoxLib->Load_Failed()) {
+	if (Cloak != UNCLOAKED || voxeldata.VoxLib->Load_Failed()) {
 		return;
 	}
 
