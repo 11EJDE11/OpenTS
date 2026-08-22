@@ -470,13 +470,15 @@ void VoxelAnimClass::AI(void)
 				if ((unsigned char)Class->BounceSound != (unsigned char)VOC_NONE) {
 					Sound_Effect(Class->BounceSound, Coord(Position.X, Position.Y, Position.Z));
 				}
-				for (ObjectClass * occupier = Map[Get_Bounce_Coord()].Cell_Occupier(); occupier != NULL; occupier = occupier->Next) {
-					Coord occoord = occupier->PositionCoord;
-					Coord mycoord = Get_Bounce_Coord();
-					int lepton = abs(mycoord.X - occoord.X) + abs(mycoord.Y - occoord.Y);
-					if (lepton <= Class->DamageRadius) {
-						int damage = Class->Damage;
-						occupier->Take_Damage(damage, Tactical::Z_Lepton_To_Pixel(lepton), Class->Warhead, 0, 0, 0);
+				if (Class->Warhead != NULL) {
+					for (ObjectClass * occupier = Map[Get_Bounce_Coord()].Cell_Occupier(); occupier != NULL; occupier = occupier->Next) {
+						Coord occoord = occupier->PositionCoord;
+						Coord mycoord = Get_Bounce_Coord();
+						int lepton = abs(mycoord.X - occoord.X) + abs(mycoord.Y - occoord.Y);
+						if (lepton <= Class->DamageRadius) {
+							int damage = Class->Damage;
+							occupier->Take_Damage(damage, Tactical::Z_Lepton_To_Pixel(lepton), Class->Warhead, 0, 0, 0);
+						}
 					}
 				}
 			}
