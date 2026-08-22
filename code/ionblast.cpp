@@ -394,7 +394,6 @@ void IonBlastClass::Draw_It(void)
 	if (Options.DetailLevel == 2 && TacticalMap->Coord_To_Pixel(Position, point)) {
 		Surface * dest_surface = LogicalSurface;
 		Rect dcliprect = TacticalRect;
-		dcliprect.Height -= 7;
 		Surface * source_surface = BlastSurfaces[Lifetime];
 		int stride = LogicalSurface->Stride();
 		Rect srect(0, 0, 256, 128);
