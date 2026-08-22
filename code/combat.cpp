@@ -196,7 +196,10 @@ void Chain_Reaction_Damage(Cell const & cell)
 			cellptr->OverlayData -= amount;
 			cellptr->Register_For_Redraw();
 
-			new AnimClass(Combat_Anim(4 * damage, Rule->C4Warhead, cellptr->Land_Type(), coord), coord);
+			AnimTypeClass const * anim = Combat_Anim(4 * damage, Rule->C4Warhead, cellptr->Land_Type(), coord);
+			if (anim != NULL) {
+				new AnimClass(anim, coord);
+			}
 			Explosion_Damage(coord, damage, 0, Rule->C4Warhead, false);
 
 			for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++){
