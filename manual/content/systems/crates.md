@@ -229,11 +229,7 @@ The armor value is not clamped. Ordinary positive damage divides by the stored m
 
 The heal result restores every object belonging to the collector's house to its maximum strength, wherever it stands. It applies no distance test at all, so `CrateRadius` has no bearing on it and the reach is the whole house rather than the crate's surroundings. [`HealCrateSound`](/keys/healcratesound/) plays at the collector when the collector belongs to the local player.
 
-The darkness result reshrouds the whole map, and the reveal result reveals it, both only when the collecting house is the one controlled from the local machine. A crate of either kind collected by a computer house is consumed and plays its animation without changing anyone's vision.
-
-:::caution[A reveal crate can shroud the map]
-The reveal result checks first whether the collecting house already sees the whole map, and reshrouds it if so. A player who has already collected a reveal crate, or who has been given full vision by a trigger, loses all of it to the next reveal crate.
-:::
+The darkness result reshrouds the whole map, and the reveal result reveals it, both only when the collecting house is the one controlled from the local machine. Repeated reveal results call the same reveal operation and leave an already revealed map revealed; darkness is the only crate result that restores shroud. A crate of either kind collected by a computer house is consumed and plays its animation without changing anyone's vision.
 
 The missile result grants the collector's house a [one-time superweapon](/systems/superweapons/#one-shot-at-a-time), which is where the lookup that chooses it is covered. A house that already holds that weapon gains nothing at all, and the sidebar button appears only when the collector belongs to the local player.
 

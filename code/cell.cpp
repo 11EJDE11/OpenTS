@@ -3677,11 +3677,7 @@ bool CellClass::Goodie_Check(FootClass * object)
 			case CRATE_REVEAL:
 				DebugString("Crate at %d,%d contains 'reveal'\n", CellID.X, CellID.Y);
 				if (object->House->Is_Player_Control()) {
-					if (object->House->IsVisionary) {
-						Map.Shroud_The_Map();
-					} else {
-						Map.Reveal_The_Map();
-					}
+					Map.Reveal_The_Map();
 				}
 				break;
 
