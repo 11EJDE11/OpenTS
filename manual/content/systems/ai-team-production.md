@@ -327,9 +327,9 @@ Structures are chosen by [the base planner](/systems/ai-base-building/). Vehicle
 
 The uniform draw is not restricted to the types in most demand. The candidate list is emptied only when a type whose demand exceeds every demand seen so far is reached, so it holds every candidate found since the last such type, including candidates with less demand. Which candidates those are depends on the order the types are registered in.
 
-:::danger[The demand tally is limited to 100 types]
-Each routine tallies into fixed arrays of 100 entries, indexed by each type's position in its own list and never bounds-checked. A rules file registering more than 100 InfantryTypes, UnitTypes or AircraftTypes writes and reads past the end of them.
-:::
+The tally is sized from the current InfantryType, UnitType or AircraftType list. A team or
+runtime object whose type position lies outside that list is ignored instead of indexing
+unrelated storage.
 
 ## Parsed settings without effect
 

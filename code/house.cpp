@@ -198,6 +198,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <vector>
 
 
 DynamicVectorClass<HouseClass::BuildChoiceClass *> HouseClass::BuildChoice;
@@ -4577,19 +4578,14 @@ int HouseClass::AI_Unit(void)
 		}
 	}
 
-	int i;
-	int counter[100];
-	int value[ARRAY_SIZE(counter)];
-	memset(counter, 0x00, sizeof(counter));
-	for (i = 0; i < ARRAY_SIZE(value); i++) {
-		value[i] = 0x7FFFFFFF;
-	}
+	std::vector<int> counter(UnitTypes.Count(), 0);
+	std::vector<int> value(UnitTypes.Count(), 0x7FFFFFFF);
 
 	/*
 	**	Build a list of the maximum of each type we wish to produce. This will be
 	**	twice the number required to fill all teams.
 	*/
-	for (i = 0; i < Teams.Count(); i++) {
+	for (int i = 0; i < Teams.Count(); i++) {
 		TeamClass * tptr = Teams[i];
 		if (tptr != NULL) {
 
@@ -4603,7 +4599,8 @@ int HouseClass::AI_Unit(void)
 
 					UnitTypeClass const * memtype = (UnitTypeClass const *)_members[subindex];
 
-					if (memtype->RTTI == RTTI_UNITTYPE) {
+					if (memtype->RTTI == RTTI_UNITTYPE
+						&& static_cast<unsigned>(memtype->HeapID) < counter.size()) {
 						counter[memtype->HeapID]++;
 						if (val < value[memtype->HeapID]) {
 							value[memtype->HeapID] = val;
@@ -4620,7 +4617,9 @@ int HouseClass::AI_Unit(void)
 	*/
 	for (int oindex = 0; oindex < Units.Count(); oindex++) {
 		UnitClass * obj = Units[oindex];
-		if (obj != NULL && obj->Is_Recruitable(this) && counter[obj->Class->HeapID] > 0) {
+		if (obj != NULL && obj->Is_Recruitable(this)
+			&& static_cast<unsigned>(obj->Class->HeapID) < counter.size()
+			&& counter[obj->Class->HeapID] > 0) {
 			counter[obj->Class->HeapID]--;
 		}
 	}
@@ -4630,17 +4629,17 @@ int HouseClass::AI_Unit(void)
 	**	can't be built because of scenario restrictions or insufficient cash.
 	*/
 	int bestval = -1;
-	int bestcount = 0;
 	UnitType lasttype = UNIT_NONE;
 	int lastval = 0x7FFFFFFF;
-	UnitType bestlist[ARRAY_SIZE(counter)];
+	std::vector<UnitType> bestlist;
+	bestlist.reserve(UnitTypes.Count());
 	for (UnitType type = UnitType(0); type < UnitTypes.Count(); type++) {
 		if (counter[type] > 0 && Can_Build(UnitTypes[type], false, false) && UnitTypes[type]->Cost_Of(this) <= Available_Money()) {
 			if (bestval == -1 || bestval < counter[type]) {
 				bestval = counter[type];
-				bestcount = 0;
+				bestlist.clear();
 			}
-			bestlist[bestcount++] = type;
+			bestlist.push_back(type);
 
 			if (lasttype == UNIT_NONE || value[type] < lastval) {
 				lasttype = type;
@@ -4655,8 +4654,8 @@ int HouseClass::AI_Unit(void)
 		/*
 		**	The object type to build is now known. Fetch a pointer to the techno type class.
 		*/
-		if (bestcount) {
-			BuildUnit = bestlist[Random_Pick(0, bestcount-1)];
+		if (!bestlist.empty()) {
+			BuildUnit = bestlist[Random_Pick(0, static_cast<int>(bestlist.size()) - 1)];
 		}
 	}
 
@@ -4683,19 +4682,14 @@ int HouseClass::AI_Infantry(void)
 {
 	if (BuildInfantry != INFANTRY_NONE) return(TICKS_PER_SECOND);
 
-	int i;
-	int counter[100];
-	int value[ARRAY_SIZE(counter)];
-	memset(counter, 0x00, sizeof(counter));
-	for (i = 0; i < ARRAY_SIZE(value); i++) {
-		value[i] = 0x7FFFFFFF;
-	}
+	std::vector<int> counter(InfantryTypes.Count(), 0);
+	std::vector<int> value(InfantryTypes.Count(), 0x7FFFFFFF);
 
 	/*
 	**	Build a list of the maximum of each type we wish to produce. This will be
 	**	twice the number required to fill all teams.
 	*/
-	for (i = 0; i < Teams.Count(); i++) {
+	for (int i = 0; i < Teams.Count(); i++) {
 		TeamClass * tptr = Teams[i];
 		if (tptr != NULL) {
 
@@ -4709,7 +4703,8 @@ int HouseClass::AI_Infantry(void)
 
 					InfantryTypeClass const * memtype = (InfantryTypeClass const *)_members[subindex];
 
-					if (memtype->RTTI == RTTI_INFANTRYTYPE) {
+					if (memtype->RTTI == RTTI_INFANTRYTYPE
+						&& static_cast<unsigned>(memtype->HeapID) < counter.size()) {
 						counter[memtype->HeapID]++;
 						if (val < value[memtype->HeapID]) {
 							value[memtype->HeapID] = val;
@@ -4726,7 +4721,9 @@ int HouseClass::AI_Infantry(void)
 	*/
 	for (int oindex = 0; oindex < Infantry.Count(); oindex++) {
 		InfantryClass * obj = Infantry[oindex];
-		if (obj != NULL && obj->Is_Recruitable(this) && counter[obj->Class->HeapID] > 0) {
+		if (obj != NULL && obj->Is_Recruitable(this)
+			&& static_cast<unsigned>(obj->Class->HeapID) < counter.size()
+			&& counter[obj->Class->HeapID] > 0) {
 			counter[obj->Class->HeapID]--;
 		}
 	}
@@ -4736,17 +4733,17 @@ int HouseClass::AI_Infantry(void)
 	**	can't be built because of scenario restrictions or insufficient cash.
 	*/
 	int bestval = -1;
-	int bestcount = 0;
 	InfantryType lasttype = INFANTRY_NONE;
 	int lastval = 0x7FFFFFFF;
-	InfantryType bestlist[ARRAY_SIZE(counter)];
+	std::vector<InfantryType> bestlist;
+	bestlist.reserve(InfantryTypes.Count());
 	for (InfantryType type = InfantryType(0); type < InfantryTypes.Count(); type++) {
 		if (counter[type] > 0 && Can_Build(InfantryTypes[type], false, false) && InfantryTypes[type]->Cost_Of(this) <= Available_Money()) {
 			if (bestval == -1 || bestval < counter[type]) {
 				bestval = counter[type];
-				bestcount = 0;
+				bestlist.clear();
 			}
-			bestlist[bestcount++] = type;
+			bestlist.push_back(type);
 
 			if (lasttype == INFANTRY_NONE || value[type] < lastval) {
 				lasttype = type;
@@ -4761,8 +4758,8 @@ int HouseClass::AI_Infantry(void)
 		/*
 		**	The object type to build is now known. Fetch a pointer to the techno type class.
 		*/
-		if (bestcount) {
-			BuildInfantry = bestlist[Random_Pick(0, bestcount-1)];
+		if (!bestlist.empty()) {
+			BuildInfantry = bestlist[Random_Pick(0, static_cast<int>(bestlist.size()) - 1)];
 		}
 	}
 
@@ -4788,19 +4785,14 @@ int HouseClass::AI_Aircraft(void)
 {
 	if (BuildAircraft != AIRCRAFT_NONE) return(TICKS_PER_SECOND);
 
-	int i;
-	int counter[100];
-	int value[ARRAY_SIZE(counter)];
-	memset(counter, 0x00, sizeof(counter));
-	for (i = 0; i < ARRAY_SIZE(value); i++) {
-		value[i] = 0x7FFFFFFF;
-	}
+	std::vector<int> counter(AircraftTypes.Count(), 0);
+	std::vector<int> value(AircraftTypes.Count(), 0x7FFFFFFF);
 
 	/*
 	**	Build a list of the maximum of each type we wish to produce. This will be
 	**	twice the number required to fill all teams.
 	*/
-	for (i = 0; i < Teams.Count(); i++) {
+	for (int i = 0; i < Teams.Count(); i++) {
 		TeamClass * tptr = Teams[i];
 		if (tptr != NULL) {
 
@@ -4814,7 +4806,8 @@ int HouseClass::AI_Aircraft(void)
 
 					AircraftTypeClass const * memtype = (AircraftTypeClass const *)_members[subindex];
 
-					if (memtype->RTTI == RTTI_AIRCRAFTTYPE) {
+					if (memtype->RTTI == RTTI_AIRCRAFTTYPE
+						&& static_cast<unsigned>(memtype->HeapID) < counter.size()) {
 						counter[memtype->HeapID]++;
 						if (val < value[memtype->HeapID]) {
 							value[memtype->HeapID] = val;
@@ -4831,7 +4824,9 @@ int HouseClass::AI_Aircraft(void)
 	*/
 	for (int oindex = 0; oindex < Aircraft.Count(); oindex++) {
 		AircraftClass * obj = Aircraft[oindex];
-		if (obj != NULL && obj->Is_Recruitable(this) && counter[obj->Class->HeapID] > 0) {
+		if (obj != NULL && obj->Is_Recruitable(this)
+			&& static_cast<unsigned>(obj->Class->HeapID) < counter.size()
+			&& counter[obj->Class->HeapID] > 0) {
 			counter[obj->Class->HeapID]--;
 		}
 	}
@@ -4841,17 +4836,17 @@ int HouseClass::AI_Aircraft(void)
 	**	can't be built because of scenario restrictions or insufficient cash.
 	*/
 	int bestval = -1;
-	int bestcount = 0;
 	AircraftType lasttype = AIRCRAFT_NONE;
 	int lastval = 0x7FFFFFFF;
-	AircraftType bestlist[ARRAY_SIZE(counter)];
+	std::vector<AircraftType> bestlist;
+	bestlist.reserve(AircraftTypes.Count());
 	for (AircraftType type = AircraftType(0); type < AircraftTypes.Count(); type++) {
 		if (counter[type] > 0 && Can_Build(AircraftTypes[type], false, false) && AircraftTypes[type]->Cost_Of(this) <= Available_Money()) {
 			if (bestval == -1 || bestval < counter[type]) {
 				bestval = counter[type];
-				bestcount = 0;
+				bestlist.clear();
 			}
-			bestlist[bestcount++] = type;
+			bestlist.push_back(type);
 
 			if (lasttype == AIRCRAFT_NONE || value[type] < lastval) {
 				lasttype = type;
@@ -4866,8 +4861,8 @@ int HouseClass::AI_Aircraft(void)
 		/*
 		**	The object type to build is now known. Fetch a pointer to the techno type class.
 		*/
-		if (bestcount) {
-			BuildAircraft = bestlist[Random_Pick(0, bestcount-1)];
+		if (!bestlist.empty()) {
+			BuildAircraft = bestlist[Random_Pick(0, static_cast<int>(bestlist.size()) - 1)];
 		}
 	}
 
