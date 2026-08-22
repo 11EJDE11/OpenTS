@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-The flag is what makes a building answer a docking request from a vehicle or an aircraft, offer the player a move cursor onto its pad, and run [the repair cycle](/systems/repair/#one-step-at-a-time). It is also what a computer house's damaged vehicles look for when they go to be repaired, and what makes a docked object sellable where it stands.
+The flag is what makes a building answer a docking request from a vehicle or an aircraft, offer a selected player-controlled vehicle or aircraft the enter cursor onto its pad, and run [the repair cycle](/systems/repair/#one-step-at-a-time). A helipad also offers that cursor to an aircraft without this flag. `UnitRepair` is what a computer house's damaged vehicles look for when they go to be repaired, and what makes a docked object sellable where it stands.
 
 It is read independently of [`RepairBay`](/keys/repairbay/), which names the one type a repair order steers toward. A building with this flag that `RepairBay` does not name still serves whatever reaches it; a `RepairBay` type without this flag refuses every docking request it receives.
 

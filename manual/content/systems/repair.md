@@ -123,12 +123,12 @@ With no `RepairBay=` in the rules the setting names no building type at all, and
 
 ### Reaching the pad
 
-Five routes end on a pad, and they do not agree about which of the two settings decides that a building will do. That is what the middle column holds; the last column carries the conditions the route then imposes. What the middle column settles is the split above: two routes accept any `UnitRepair=yes` building, and three steer toward the one type `RepairBay` names, so a depot the key does not name still serves whatever arrives at it, while the named type without the flag turns everything away at the door.
+Five routes end on a pad, and they do not agree about which of the two settings decides that a building will do. That is what the middle column holds; the last column carries the conditions the route then imposes. What the middle column settles is the split above: three routes accept any `UnitRepair=yes` building, and two steer toward the one type `RepairBay` names, so a depot the key does not name still serves whatever arrives at it, while the named type without the flag turns everything away at the door.
 
 | Route | Keys on | Conditions |
 | --- | --- | --- |
 | Player moves a vehicle onto a depot | `UnitRepair` | The building is allied, idle, and holds nothing; damage is not required |
-| Player sends an aircraft in | `RepairBay` or a helipad | The building is idle and holds nothing |
+| Player sends an aircraft in | `UnitRepair` or a helipad | The building is idle and holds nothing |
 | Repair order | `RepairBay` | The nearest building of exactly that type that answers, own house or allied, in the same [movement zone](/glossary/#movement-zone) as the cell the vehicle is heading for. The scan runs at all only while the vehicle's own house owns one of the type. A building carrying its house's [primary-factory flag](/systems/production/#the-primary-factory) is taken whatever its distance, and its own distance then becomes the figure to beat, so it displaces every building scanned before it and is displaced in turn by any building scanned after it that is strictly nearer. Which of them the scan reaches first follows the order the engine holds its buildings in, which nothing on the map shows. A depot carries that flag only if its type also produces something |
 | Computer vehicle, every 16 frames | `UnitRepair` | Own house only, below maximum strength, on guard or guard-area duty, not a harvester or weeder, within twenty cell diagonals of the building — a little over 28 cells |
 | Computer aircraft | `RepairBay` | At or below [`ConditionYellow`](/keys/conditionyellow/) with at least 100 credits in hand, a floor fixed in the engine |

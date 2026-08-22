@@ -2023,9 +2023,9 @@ ActionType AircraftClass::What_Action(ObjectClass const * target, bool disallow_
 	/*
 	**	Special return to friendly repair factory action.
 	*/
-	if (House->Is_Player_Control() && action == ACTION_SELECT && target->RTTI == RTTI_BUILDING) {
+	if (House->Is_Player_Control() && (action == ACTION_SELECT || action == ACTION_MOVE) && target->RTTI == RTTI_BUILDING) {
 		BuildingClass * building = (BuildingClass *)target;
-		if ((building->Class == Rule->RepairBay || building->Class->IsHelipad) && !building->In_Radio_Contact() && !building->Cargo.Is_Something_Attached()) {
+		if ((building->Class->IsCanUnitRepair || building->Class->IsHelipad) && !building->In_Radio_Contact() && !building->Cargo.Is_Something_Attached()) {
 			if (((AircraftClass *)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER) {
 				action = ACTION_ENTER;
 			}
