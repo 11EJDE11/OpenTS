@@ -67,7 +67,7 @@ The attempt is then refused by any of the following:
 - a rearming delay still running;
 - holding a target inside the range of its primary weapon;
 - the [`CloakDelay`](/keys/cloakdelay/) countdown still running;
-- for a structure, an object of another house whose type is [`Sensors=yes`](/keys/sensors/) standing within one cell of its footprint.
+- for a structure, an object whose owner does not consider the structure allied and whose type is [`Sensors=yes`](/keys/sensors/) standing within one cell of its footprint.
 
 An object that clears all of that begins hiding immediately while its health is above [`ConditionRed`](/keys/conditionred/). At or below that fraction each frame's attempt instead succeeds with a 4% chance, so hiding starts at an unpredictable moment.
 
@@ -90,7 +90,7 @@ Every event below drops the cloak outright and starts the fade back into view. N
 - **Losing cover.** An object hidden only because a field covered its cell, the moment that cover is lifted.
 - **Being immobilized.** An [EM pulse](/systems/emp-pulse/) and anything else that stuns. The cloak ability and standing in cloaking cover both override this.
 - **Critical damage part way out.** While the fade out sits in its darkened band and health is at or below `ConditionRed`, a 10% chance on each frame gives the cloak up. The fade holds that band for several frames, so a critically damaged object more often abandons a cloak than finishes one. This is the one uncloak that starts without `CloakSound`.
-- **A detector beside a structure.** A hidden structure with an object of another house whose type is `Sensors=yes` within one cell of its footprint.
+- **A detector beside a structure.** A hidden structure with a `Sensors=yes` object whose owner does not consider the structure allied within one cell of its footprint.
 
 Sensor coverage is not on the list. Marking a cell as sensed never touches the cloak state of anything standing on it.
 
@@ -129,7 +129,7 @@ The disc is stamped into a working area whose side is the largest `CloakRadiusIn
 
 ### Detector objects
 
-[`Sensors=yes`](/keys/sensors/) makes an object reveal a hidden object of another house standing beside it, through the two proximity tests listed under [losing a cloak](#losing-a-cloak). Neither test marks a cell, so a detector grants its house nothing at all beyond the eight cells around it. Every InfantryType carries the flag unless its section switches it off.
+[`Sensors=yes`](/keys/sensors/) makes an object reveal a nearby hidden object whose house its owner does not consider allied, through the two proximity tests listed under [losing a cloak](#losing-a-cloak). The detector owner's alliance list decides this even when the hidden object's owner considers the detector allied. Neither test marks a cell, so a detector grants its house nothing at all beyond the eight cells around it. Every InfantryType carries the flag unless its section switches it off.
 
 ### Sensor arrays
 

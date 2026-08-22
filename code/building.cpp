@@ -10047,7 +10047,7 @@ bool BuildingClass::Is_Ready_To_Cloak(void) const
 				if (tech == (TechnoClass *)this) {
 					tech = Map[cell + Cell(x, y)].Cell_Infantry();
 				}
-				if (tech != NULL && tech->House != House) {
+				if (tech != NULL && !tech->House->Is_Ally(this)) {
 					if (tech->TClass->IsScanner) {
 						return(false);
 					}
@@ -10078,7 +10078,7 @@ bool BuildingClass::Should_Uncloak(void) const
 				if (tech == (TechnoClass *)this) {
 					tech = Map[cell + Cell(x, y)].Cell_Infantry();
 				}
-				if (tech != NULL && tech->House != House) {
+				if (tech != NULL && !tech->House->Is_Ally(this)) {
 					if (tech->TClass->IsScanner) {
 						return(true);
 					}
