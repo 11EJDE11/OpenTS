@@ -1309,14 +1309,10 @@ int AircraftClass::Do_MISSION_MOVE_Normal(void)
 			}
 
 			if (Locomotion->Is_Moving()) {
-				if (NavCom == NULL || NavCom->Destination_Coord().As_Cell() != PositionCell) {
-					if (NavCom != NULL && !Cell_Seems_Ok(NavCom->Destination_Coord().As_Cell(), false)) {
-						Status = VALIDATE_LZ;
-					} else {
-						Status = LAND;
-					}
+				if (NavCom != NULL && !Cell_Seems_Ok(NavCom->Destination_Coord().As_Cell(), false)) {
+					Status = VALIDATE_LZ;
 				} else {
-					Status = IDLE;
+					Status = LAND;
 				}
 			} else {
 				Status = IDLE;
@@ -1332,12 +1328,8 @@ int AircraftClass::Do_MISSION_MOVE_Normal(void)
 		*/
 		case LAND:
 			if (Locomotion->Is_Moving()) {
-				if ((NavCom == NULL || NavCom->Destination_Coord().As_Cell() != PositionCell)) {
-					if (NavCom != NULL && !Cell_Seems_Ok(NavCom->Destination_Coord().As_Cell(), true)) {
-						Status = VALIDATE_LZ;
-					}
-				} else {
-					Status = IDLE;
+				if (NavCom != NULL && !Cell_Seems_Ok(NavCom->Destination_Coord().As_Cell(), true)) {
+					Status = VALIDATE_LZ;
 				}
 			} else {
 				Status = IDLE;

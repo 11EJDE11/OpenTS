@@ -20,3 +20,7 @@ A destination held by another active aircraft also blocks the cell in either of 
 - each aircraft's house considers the other aircraft allied.
 
 A hostile aircraft's destination does not reserve the cell, and neither does a one-way alliance. The aircraft may still be unable to land there for another reason, and an aircraft that actually reaches the cell blocks it like any other occupant.
+
+## Completing a normal move
+
+An aircraft on the normal move path finishes only after its movement controller reports that it has stopped. Entering the destination cell while movement is still in progress does not make the aircraft idle: the approach advances to landing, the landing zone continues to be checked, and the aircraft remains in that phase until movement finishes or the cell must be validated again. Carryall pickup and drop-off use their own move path instead.
