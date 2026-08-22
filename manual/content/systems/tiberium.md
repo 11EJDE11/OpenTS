@@ -84,6 +84,8 @@ An overlay declared [`Tiberium=yes`](/keys/tiberium/#scope-overlaytype) whose ow
 
 When a scenario finishes loading, and again whenever a Tiberium overlay is placed onto the map directly, the cell's stage is replaced by a smoothing lookup on the number of its eight neighbors holding the same type, running on a twelve-stage set from stage 0 with no matching neighbor up to stage 11 with all eight. A stage stored in the map file does not survive that pass.
 
+Drawing a cell uses that stage as a frame number in the selected flat or slope overlay. If the selected SHP does not carry that frame, the overlay is omitted from both the tactical view and its redraw rectangle instead of reading beyond the artwork's frame table.
+
 ## Growth
 
 The main game logic offers every type a growth pass and then a spread pass each frame. Both are gated by the scenario's [`TiberiumGrowthEnabled`](/keys/tiberiumgrowthenabled/) switch, which the [Tiberium growth](/mapping/actions/taction-tib-growth/) trigger action turns on and off during play.

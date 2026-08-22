@@ -2161,6 +2161,20 @@ void CellClass::Draw_Fog_Shape(Point2D const & drawpoint, Rect const & cliprect,
 }
 
 
+static ShapeSet const * Tiberium_Overlay_Image(CellClass const & cell, TiberiumClass const & tiberium)
+{
+	int overlay = tiberium.Overlay->HeapID;
+	if (cell.Ramp != RAMP_NONE) {
+		overlay += tiberium.Variety
+			+ tiberium.RampVariety / 4 * (cell.Ramp - 1)
+			+ cell.CellID.X * cell.CellID.Y % (tiberium.RampVariety / 4);
+	} else {
+		overlay += cell.CellID.X * cell.CellID.Y % tiberium.Variety;
+	}
+	return((ShapeSet const *)OverlayTypes[overlay]->Get_Image_Data());
+}
+
+
 /// <summary>
 /// Draws the shadow cast by the overlay on this cell.
 /// This routine is the darkened companion pass to Draw_Overlay, drawing the shadow artwork
@@ -2172,7 +2186,15 @@ void CellClass::Draw_Overlay_Shadow(Point2D const & xpoint, Rect const & cliprec
 {
 	int yoffset = LEVEL_PIXEL_H_1 * Height;
 
-	ShapeSet *shape = (ShapeSet *)OverlayTypes[Overlay]->Get_Image_Data();
+	OverlayTypeClass const * overlay = OverlayTypes[Overlay];
+	if (overlay->IsTiberium) {
+		TiberiumType tibtype = Tiberium_Type_Here();
+		if (tibtype == TIBERIUM_NONE) return;
+		ShapeSet const * tiberium_image = Tiberium_Overlay_Image(*this, *Tiberiums[tibtype]);
+		if (tiberium_image == NULL || OverlayData >= tiberium_image->Get_Count() / 2) return;
+	}
+
+	ShapeSet *shape = (ShapeSet *)overlay->Get_Image_Data();
 
 	Point2D point = Overlay_Draw_Offset();
 
@@ -2262,14 +2284,10 @@ void CellClass::Draw_Overlay(Point2D const & xpoint, Rect const & cliprect)
 		TiberiumClass * tiberium = Tiberiums[tibtype];
 		ColorScheme * scheme = ColorSchemes[tiberium->Color];
 
-		OverlayTypeClass * overlaytodisplay = NULL;
-		if (Ramp != RAMP_NONE) {
-			overlaytodisplay = OverlayTypes[tiberium->Overlay->HeapID + tiberium->Variety + tiberium->RampVariety / 4 * (Ramp - 1) + CellID.X * CellID.Y % (tiberium->RampVariety / 4)];
-		} else {
-			overlaytodisplay = OverlayTypes[tiberium->Overlay->HeapID + ((CellID.Y * CellID.X) % tiberium->Variety)];
+		ShapeSet const * tibshape = Tiberium_Overlay_Image(*this, *tiberium);
+		if (tibshape == NULL || OverlayData >= tibshape->Get_Count() / 2) {
+			return;
 		}
-
-		ShapeSet const * tibshape = (ShapeSet const *)overlaytodisplay->Get_Image_Data();
 
 		if (Ramp != RAMP_NONE) {
 			Draw_Shape(*LogicalSurface, *scheme->Converter, tibshape, OverlayData, point, cliprect, (ShapeFlags_Type)(SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_ALPHA | SHAPE_ZWRITE), 0, -2 - yoffset, ZGRAD_GROUND, NORMAL_LIGHT, SlopeZShapes[Ramp - 1]);
@@ -2316,13 +2334,7 @@ Rect CellClass::Overlay_Render_Rect(void) const
 		TiberiumType tib = Tiberium_Type_Here();
 		if (tib != TIBERIUM_NONE) {
 			TiberiumClass * tiberium = Tiberiums[tib];
-			OverlayTypeClass const * tib_overlay = NULL;
-			if (Ramp != 0) {
-				tib_overlay = OverlayTypes[tiberium->Overlay->HeapID + tiberium->Variety + tiberium->RampVariety / 4 * (Ramp - 1) + CellID.X * CellID.Y % (tiberium->RampVariety / 4)];
-			} else {
-				tib_overlay = OverlayTypes[tiberium->Overlay->HeapID + CellID.X * CellID.Y % tiberium->Variety];
-			}
-			image = (ShapeSet const *)tib_overlay->Get_Image_Data();
+			image = Tiberium_Overlay_Image(*this, *tiberium);
 		}
 	} else {
 		image = (ShapeSet const *)overlay->Get_Image_Data();
@@ -2334,7 +2346,7 @@ Rect CellClass::Overlay_Render_Rect(void) const
 	point += Overlay_Draw_Offset();
 	point.X -= ISO_TILE_PIXEL_W / 2;
 
-	if (image == NULL) {
+	if (image == NULL || (overlay->IsTiberium && OverlayData >= image->Get_Count() / 2)) {
 		return(Rect(0, 0, 0, 0));
 	}
 
@@ -2358,7 +2370,14 @@ Rect CellClass::Overlay_Shadow_Render_Rect(void) const
 	ShapeSet const * image = NULL;
 
 	if (Overlay != OVERLAY_NONE) {
-		image = (ShapeSet const *)OverlayTypes[Overlay]->Get_Image_Data();
+		OverlayTypeClass const * overlay = OverlayTypes[Overlay];
+		if (overlay->IsTiberium) {
+			TiberiumType tibtype = Tiberium_Type_Here();
+			if (tibtype == TIBERIUM_NONE) return(Rect(0, 0, 0, 0));
+			ShapeSet const * tiberium_image = Tiberium_Overlay_Image(*this, *Tiberiums[tibtype]);
+			if (tiberium_image == NULL || OverlayData >= tiberium_image->Get_Count() / 2) return(Rect(0, 0, 0, 0));
+		}
+		image = (ShapeSet const *)overlay->Get_Image_Data();
 	}
 
 	if (!image) {
