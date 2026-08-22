@@ -806,9 +806,9 @@ void WaveClass::Draw_Laser(Point2D const & point, Rect const & cliprect)
 		if (buffer != NULL) {
 
 			int top = cliprect.Y;
-			int bottom = cliprect.Y + cliprect.Height;
+			int bottom = cliprect.Y + cliprect.Height - 1;
 			int left = cliprect.X;
-			int right = cliprect.X + cliprect.Width;
+			int right = cliprect.X + cliprect.Width - 1;
 
 			int xoff = point.X - WaveStartMiddle.X;
 			int yoff = point.Y - WaveStartMiddle.Y + TacticalRect.Y;
@@ -818,7 +818,7 @@ void WaveClass::Draw_Laser(Point2D const & point, Rect const & cliprect)
 			if (DrawData.Points != NULL) {
 
 				int ystart = yoff + DrawData.BaseY;
-				int yend = std::min(DrawData.Count + ystart - 1, cliprect.Y + cliprect.Height);
+				int yend = std::min(DrawData.Count + ystart - 1, bottom);
 
 				unsigned short base_z = DepthBuffer->Get_Scroll_Delta(zpix);
 				unsigned short depth = base_z - ystart - 2;
@@ -877,14 +877,14 @@ void WaveClass::Draw_Laser(Point2D const & point, Rect const & cliprect)
 					 */
 					int i = 0;
 					for (int y = ystart; y <= yend; y++) {
-						if (y >= cliprect.Y + 2 && y <= cliprect.Y + cliprect.Height - 2) {
+						if (y >= top && y <= bottom) {
 
 							int xstop = DrawData.Points[i].Y + xoff;
-							if (xstop >= cliprect.Width + cliprect.X - 2) {
-								xstop = cliprect.Width + cliprect.X - 2;
+							if (xstop >= right) {
+								xstop = right;
 							}
-							int xstart = cliprect.X + 2;
-							if (DrawData.Points[i].X + xoff > cliprect.X + 2) {
+							int xstart = left;
+							if (DrawData.Points[i].X + xoff > left) {
 								xstart = DrawData.Points[i].X + xoff;
 							}
 
