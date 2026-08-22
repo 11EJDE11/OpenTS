@@ -466,11 +466,6 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		return(EXIT_SUCCESS);
 	}
 
-	if (!GetSystemMetrics(SM_MOUSEPRESENT) || !GetSystemMetrics(SM_CMOUSEBUTTONS)) {
-		MessageBox(NULL, Fetch_String(TXT_MOUSE_REQUIRED), Fetch_String(TXT_SHORT_TITLE), MB_ICONERROR);
-		exit(EXIT_FAILURE);
-	}
-
 	if (GetDllVersion("comctl32.dll") < PACKVERSION(4, 70)) {
 		sprintf(buffer, Fetch_String(TXT_DLL_INVALID), "comctl32.dll", 4, 70, "comctl32.dll");
 		MessageBox(NULL, buffer, Fetch_String(TXT_SHORT_TITLE), MB_ICONERROR);
