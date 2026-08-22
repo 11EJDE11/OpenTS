@@ -888,7 +888,7 @@ int FootClass::Do_MISSION_ATTACK(void)
 int FootClass::Do_MISSION_GUARD(void)
 {
 	bool renovator = Is_Renovator();
-	if (TarCom == NULL && !renovator) {
+	if (!renovator && (TarCom == NULL || RTTI != RTTI_AIRCRAFT || House->Is_Human_Player())) {
 		if (!Target_Something_Nearby(PositionCoord, THREAT_RANGE)) {
 			Random_Animate();
 		}

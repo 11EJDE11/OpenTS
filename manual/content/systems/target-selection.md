@@ -97,7 +97,7 @@ These are the entry points that scan: the object missions that run one, plus the
 
 | Mission | Scan | Notes |
 | --- | --- | --- |
-| Guard | Ring, guard radius | Skipped while the object already has a target, and on an engineer |
+| Guard | Ring, guard radius | Skipped on an engineer, and on a computer-controlled aircraft that already has a target. Other existing targets are validated and may be replaced |
 | Guard area | Ring, area radius, from the home position | Runs only while the object has no target |
 | Patrol | Ring, patrol radius, from the object, then re-scanned from the patrol cell | Also used by an aircraft that is patrolling with ammunition left |
 | Move | Ring, guard radius | Only while the object has no target, only for a computer [house](/glossary/#house), and never for a member of a [`Suicide=yes`](/keys/suicide/) team |
@@ -106,6 +106,8 @@ These are the entry points that scan: the object missions that run one, plus the
 | Guard, on an armed building | Ring, guard radius | Not run on an EM pulse cannon, or on a building holding a chemical missile |
 | Team attack | Whole map | The category comes from the team mission's [Quarry](/reference/enums/quarry/) |
 | Team patrol | Ring, guard radius | Re-scanned from the team leader every [`PatrolScan`](/keys/patrolscan/) minutes |
+
+On Guard, a non-engineer ground object and a human-controlled aircraft pass an existing target back through the range scan. A target that is no longer legal or within the guard radius is cleared before another candidate is considered, so the object does not keep chasing a stale target outside the area it guards. A computer-controlled aircraft keeps an existing target without this revalidation; with no target it scans normally.
 
 Three settings stop the scan before it starts. **Any of** them is enough, and each is read only on a human-owned object — a computer house ignores all three:
 
