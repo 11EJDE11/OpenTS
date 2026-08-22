@@ -1608,7 +1608,7 @@ void TeamClass::Took_Damage(FootClass * , ResultType result, TechnoClass * sourc
 			/*
 			** Respond to the attack, but not if we're an aircraft or a LST.
 			*/
-			if (source && !Is_A_Member(source) && Member && Member->RTTI != RTTI_AIRCRAFT && Member->PrimaryWeapon != NULL) {
+			if (source && !House->Is_Ally(source) && !Is_A_Member(source) && Member && Member->RTTI != RTTI_AIRCRAFT && Member->PrimaryWeapon != NULL) {
 				if (Target != source) {
 
 					if (Class->IsAnnoyance) {

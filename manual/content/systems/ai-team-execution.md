@@ -155,7 +155,7 @@ The dispatch that selects a handler has no fallback: a line whose mission has no
 
 ## Answering damage
 
-Damage to a member is handed to its team, and what the team does with it turns on whether it is under way. A team that is not under way drops its center and raises the reforming flag, wherever the damage came from. A team that is under way normally turns on the attacker instead, and raises the reforming flag only where its type sets [`Annoyance=yes`](/keys/annoyance/) — which owns the ordering that decides whether the retarget then happens at all. [`Suicide=yes`](/keys/suicide/) switches the whole response off.
+Damage to a member is handed to its team, and what the team does with it turns on whether it is under way. A team that is not under way drops its center and raises the reforming flag, wherever the damage came from. A team that is under way normally turns on a non-allied attacker instead, using the team's house to test the alliance; damage from an allied house leaves the team's target and its members' orders alone. The team raises the reforming flag only where its type sets [`Annoyance=yes`](/keys/annoyance/) — which owns the ordering that decides whether the retarget then happens at all. [`Suicide=yes`](/keys/suicide/) switches the whole response off.
 
 ## Leaving the map
 
