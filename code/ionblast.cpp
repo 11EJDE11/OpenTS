@@ -35,6 +35,7 @@
 #include <algorithm>
 
 int SpiralIndexToSurfaceLUT[289];
+Point2D SpiralIndexToScreenLUT[289];
 int BlastSurfaceStride = 0;
 
 BSurface * BlastSurfaces[80];
@@ -360,6 +361,24 @@ void IonBlastClass::Clear_All(void)
 
 
 /// <summary>
+/// Decides whether a displaced pixel may be fetched for the shockwave.
+/// The neighbor a warped pixel is replaced by must itself lie within the view, or the
+/// warp would carry interface pixels or memory past the frame into the blast.
+/// </summary>
+/// <param name="x">The view-relative column of the pixel being drawn.</param>
+/// <param name="y">The view-relative row of the pixel being drawn.</param>
+/// <param name="index">The spiral index of the displacement.</param>
+/// <returns>bool; Does the displaced fetch stay inside the view?</returns>
+static bool Fetch_In_View(int x, int y, int index)
+{
+	// The blast drawer works in view-relative coordinates — the pixel behind (x, y) sits
+	// TacticalRect.Y rows lower on the surface — so the view's own extent is the bound.
+	Point2D const & offset = SpiralIndexToScreenLUT[index];
+	return(Rect(0, 0, TacticalRect.Width, TacticalRect.Height).Is_Point_Within(Point2D(x + offset.X, y + offset.Y)));
+}
+
+
+/// <summary>
 /// Draws this blast's shockwave onto the tactical view.
 /// Nothing of the wave is actually drawn; instead the scene already on the surface is
 /// warped, each pixel the ripple band covers being replaced by a neighbor pulled from
@@ -406,7 +425,7 @@ void IonBlastClass::Draw_It(void)
 					short * dptr = dest_row;
 					for (x = 0; x < srect.Width; ++x) {
 						int index = *sptr++;
-						if (index > 0 && *zptr > draw_z) {
+						if (index > 0 && *zptr > draw_z && Fetch_In_View(drect.X + x, drect.Y + y, index)) {
 							*dptr = dptr[SpiralIndexToSurfaceLUT[index]];
 						}
 						dptr++;
@@ -423,7 +442,7 @@ void IonBlastClass::Draw_It(void)
 					short * dptr = dest_row;
 					for (int x = 0; x < srect.Width; ++x) {
 						int index = *sptr++;
-						if (index > 0 && *(unsigned short *)DepthBuffer->Get_Buffer_Offset(Point2D(drect.X + x, drect.Y + y)) > draw_z) {
+						if (index > 0 && *(unsigned short *)DepthBuffer->Get_Buffer_Offset(Point2D(drect.X + x, drect.Y + y)) > draw_z && Fetch_In_View(drect.X + x, drect.Y + y, index)) {
 							*dptr = dptr[SpiralIndexToSurfaceLUT[index]];
 						}
 						dptr++;
@@ -569,6 +588,7 @@ void Calculate_Index_To_Surface_LUT(int stride)
 	 * Spiral center offset is always zero.
 	 */
 	SpiralIndexToSurfaceLUT[0] = 0;
+	SpiralIndexToScreenLUT[0] = Point2D(0, 0);
 
 	/*
 	 * Store the stride used.
@@ -578,5 +598,9 @@ void Calculate_Index_To_Surface_LUT(int stride)
 	for (int index = 1; index < ARRAY_SIZE(SpiralIndexToSurfaceLUT); index++) {
 		Point2D point = Spiral_Index_To_Point(index);
 		SpiralIndexToSurfaceLUT[index] = point.X + point.Y * stride;
+
+		// The surface offset is built from the byte stride but applied to 16-bit pixels,
+		// so the fetch truly lands twice the point's Y away; the screen table records that.
+		SpiralIndexToScreenLUT[index] = Point2D(point.X, 2 * point.Y);
 	}
 }
