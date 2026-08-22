@@ -158,6 +158,7 @@ TechnoTypeClass::TechnoTypeClass(char const * ininame, SpeedType speed) :
 	Capacity(0),
 	TurretNotExportedOnGround(false),
 	IsTypeImmune(false),
+	IsDetectDisguise(false),
 	IsMoveToShroud(true),
 	IsTrainable(true),
 	IsDamageSparks(true),
@@ -458,6 +459,7 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 	if (BASECLASS::Read_INI(ini)) {
 
 		IsTypeImmune = ini.Get_Bool(Name(), "TypeImmune", IsTypeImmune);
+		IsDetectDisguise = ini.Get_Bool(Name(), "DetectDisguise", IsDetectDisguise);
 		WalkRate = ini.Get_Int(Name(), "WalkRate", WalkRate);
 		IsMoveToShroud = ini.Get_Bool(Name(), "MoveToShroud", IsMoveToShroud);
 		IsTrain = ini.Get_Bool(Name(), "IsTrain", IsTrain);
@@ -940,6 +942,7 @@ void TechnoTypeClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(TurretNotExportedOnGround);
 	stream.Serialize(Weapons);
 	stream.Serialize(IsTypeImmune);
+	stream.Serialize(IsDetectDisguise);
 	stream.Serialize(IsMoveToShroud);
 	stream.Serialize(IsTrainable);
 	stream.Serialize(IsDamageSparks);
@@ -1046,6 +1049,7 @@ void TechnoTypeClass::Compute_CRC(class CRCEngine & crc) const
 	crc(ShadowIndex);
 	crc(Capacity);
 	crc(IsTrain);
+	crc(IsDetectDisguise);
 	crc(IsDropship);
 	crc(IsToProtect);
 	crc(IsDisableable);

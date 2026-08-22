@@ -159,6 +159,24 @@ AIBuildsWalls:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+AIDetectDisguise:
+  key: AIDetectDisguise
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: AI
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: RulesClass
+      member: AIDetectDisguise
+      source: code/rules.cpp
+      guard: null
+    level: RulesClass
 AIHateDelays:
   key: AIHateDelays
   scopes:
@@ -6638,6 +6656,23 @@ DetailLevel:
       source: code/options.cpp
       guard: null
     level: OptionsClass
+DetectDisguise:
+  key: DetectDisguise
+  scopes:
+  - applies_to: *id002
+    file: rules.ini
+    section:
+      kind: identifier
+      source: object-type
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: TechnoTypeClass
+      member: IsDetectDisguise
+      source: code/techtype.cpp
+      guard: null
+    level: TechnoTypeClass
 Difficulty:
   key: Difficulty
   scopes:

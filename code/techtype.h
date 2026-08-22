@@ -416,6 +416,12 @@ class TechnoTypeClass : public ObjectTypeClass
 		bool IsTypeImmune;
 
 		/*
+		 * If this object sees a disguised object for what it really is when it scans for a
+		 * target, then this flag will be true.
+		 */
+		bool IsDetectDisguise;
+
+		/*
 		 * If this object may be ordered into shrouded territory, then this flag will be true.
 		 * Otherwise a shrouded destination is refused outright and the cursor shows the order
 		 * as illegal.

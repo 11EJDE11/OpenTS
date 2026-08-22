@@ -2055,12 +2055,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 		return(false);
 	}
 
-	/*
-	**	Never consider a spy to be a valid target, unless you're a dog
-	*/
+	// A disguise defeats the scan unless this type, or the rules for a computer house, see through it.
 	if (otype == RTTI_INFANTRY && ((InfantryTypeClass const *)tclass)->IsDisguised) {
+		if (!Techno_Type_Class()->IsDetectDisguise && (!Rule->AIDetectDisguise || House->Is_Human_Player())) {
 		BEnd(BENCH_EVAL_OBJECT);
 		return(false);
+	}
 	}
 
 	/*

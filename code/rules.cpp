@@ -525,6 +525,7 @@ RulesClass::RulesClass(void) :
 	NodBaseDefenseCoefficient(1),
 	GDIBaseDefenseCoefficient(1),
 	ComputerBaseDefenseResponse(3),
+	AIDetectDisguise(false),
 	MaximumBaseDefenseValue(60),
 	BaseUnit(NULL),
 	HarvesterUnit(),
@@ -1725,6 +1726,7 @@ bool RulesClass::AI(CCINIClass const & ini)
 		GDIBaseDefenseCoefficient = ini.Get_Float(AI, "GDIBaseDefenseCoefficient", GDIBaseDefenseCoefficient);
 		MaximumBaseDefenseValue = ini.Get_Int(AI, "MaximumBaseDefenseValue", MaximumBaseDefenseValue);
 		ComputerBaseDefenseResponse = ini.Get_Int(AI, "ComputerBaseDefenseResponse", ComputerBaseDefenseResponse);
+		AIDetectDisguise = ini.Get_Bool(AI, "AIDetectDisguise", AIDetectDisguise);
 		return(true);
 	}
 	return(false);
@@ -2221,6 +2223,7 @@ void RulesClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(NodBaseDefenseCoefficient);
 	stream.Serialize(GDIBaseDefenseCoefficient);
 	stream.Serialize(ComputerBaseDefenseResponse);
+	stream.Serialize(AIDetectDisguise);
 	stream.Serialize(MaximumBaseDefenseValue);
 	stream.Serialize(BaseUnit);
 	stream.Serialize(HarvesterUnit);

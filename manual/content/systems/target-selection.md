@@ -199,7 +199,7 @@ Every candidate the scan offers runs this gauntlet in order, and the first row t
 | Skirmish and multiplayer only: its house's country sets [`MultiplayPassive=yes`](/keys/multiplaypassive/) | |
 | Its type sets [`LegalTarget=no`](/keys/legaltarget/) | |
 | It is an `IsTrain=yes` type and this object is a vehicle thief | |
-| It is a [`Disguised=yes`](/keys/disguised/) infantry | |
+| It is a [`Disguised=yes`](/keys/disguised/) infantry | Unless this object's type sets [`DetectDisguise=yes`](/keys/detectdisguise/), or [`AIDetectDisguise=yes`](/keys/aidetectdisguise/) is set and the scanning house is not under player control |
 | This object's primary projectile is `AG=no` and the candidate is at ground level | This rejects every ground object, not only landed aircraft, and it reads the primary slot even when the secondary would be fired |
 | The request asked for civilians | |
 | The request asked for capturable buildings and this is not a [`Capturable=yes`](/keys/capturable/) building | |

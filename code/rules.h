@@ -1082,6 +1082,12 @@ class RulesClass
 		int ComputerBaseDefenseResponse;
 
 		/*
+		 * If a computer house is allowed to see through a disguise when it scans for a
+		 * target, then this flag will be true. A house a player controls never does.
+		 */
+		bool AIDetectDisguise;
+
+		/*
 		 * This caps the anti-air, anti-armor and anti-infantry ratings worked out for a
 		 * base defense, so one exceptional weapon cannot dominate the computer's choice.
 		 */
