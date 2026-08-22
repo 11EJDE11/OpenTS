@@ -20,8 +20,15 @@ Each theater carries a root name, and its control file is that root plus `.INI`:
 Numbered sections are read in order from `[TileSet0000]` upward, with the number zero-padded to four digits.
 
 :::caution[A numbering gap truncates the theater]
-Reading stops at the first missing [`TilesInSet`](/keys/tilesinset/), not at the highest number present. A set appended above a gap is never read and its tiles never join the theater's list; a `[General]` role naming a number above the gap stays unresolved, and one naming the gap number itself resolves to an index one past the last tile loaded.
+Reading stops at the first missing [`TilesInSet`](/keys/tilesinset/), not at the highest number present. A set appended above a gap is never read and its tiles never join the theater's list; a `[General]` role naming the gap or a number above it stays unresolved. A negative value other than the missing `-1` sentinel is reported and ends the same contiguous load.
 :::
+
+The numbered-set lookup grows with the sections and has no 255-set ceiling. A set's
+[`MarbleMadness`](/keys/marblemadness/) and
+[`NonMarbleMadness`](/keys/nonmarblemadness/) values name another numbered set; the tile's
+offset inside its own set is applied inside that target. An absent target or an offset past
+the target's `TilesInSet` becomes no alternate and is reported rather than crossing into
+the next set.
 
 Artwork for a set is named from its [`FileName`](/keys/filename/) plus a two-digit index starting at `01`, extended with the theater's file suffix: `FileName=RVCLIF` with `TilesInSet=8` loads `RVCLIF01.TEM` through `RVCLIF08.TEM` in the temperate theater, and the `.SNO` equivalents in snow. A trailing lowercase letter marks an alternate for the same tile — `RVCLIF01a`, then `RVCLIF01b` — and reading alternates stops at the first letter with no file. When a theater file is missing, the loader retries the same name with the marble-madness extension — `.MMT` in temperate and `.MMS` elsewhere — unless the set carries [`NonMarbleMadness=0`](/keys/nonmarblemadness/).
 

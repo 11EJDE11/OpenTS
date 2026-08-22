@@ -51,6 +51,8 @@
 #include "zbuffer.h"
 
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 enum {
 	ISO_WIDTH = 48,
@@ -73,19 +75,6 @@ enum {
 ShapeSet * SlopeZShapes[4];
 
 void * IsometricTileTypeClass::CellShadowShapes;
-
-/*
- * This is the running count of tile sets processed during Init, which doubles as the index
- * into TileSetIDLookup. It is reset to zero as Init starts and incremented per set loaded.
- */
-int TileSetLookupCount;
-
-/*
- * This maps a tile set's ordinal to its heap ID, and is populated during Init as the sets
- * are loaded. It is read to assign field_130 (the tile set base ID) and to remap the marble
- * madness indices against the ordinary ones.
- */
-int TileSetIDLookup[255];
 
 extern void Clamp_Tile_RGB(int & r, int & g, int & b);
 
@@ -863,7 +852,11 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	BridgeMiddle1 = (IsometricTileType)ini.Get_Int("General", "BridgeMiddle1", ISOTILE_INVALID);
 	BridgeMiddle2 = (IsometricTileType)ini.Get_Int("General", "BridgeMiddle2", ISOTILE_INVALID);
 
-	TileSetLookupCount = 0;
+	struct TileSetRange {
+		int BaseID;
+		int Count;
+	};
+	std::vector<TileSetRange> tile_set_lookup;
 	callback_timer = 4;
 
 	while (true) {
@@ -872,7 +865,20 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 			callback_timer = 4;
 		}
 
-		TileSetIDLookup[TileSetLookupCount++] = (IsometricTileType)heapid;
+		char section[64];
+		sprintf(section, "TileSet%04d", setid);
+		int tiles_in_set = ini.Get_Int(section, "TilesInSet", -1);
+		if (tiles_in_set == -1) {
+			break;
+		}
+		if (tiles_in_set < 0) {
+			DebugString("Tile set section %s has invalid TilesInSet value %d; ending the contiguous tile-set load.\n",
+				section, tiles_in_set);
+			break;
+		}
+
+		int const current_set_base_id = heapid;
+		tile_set_lookup.push_back({ current_set_base_id, tiles_in_set });
 
 		if (setid == _RampStart) RampStart = (IsometricTileType)heapid;
 		if (setid == _RampSmooth) RampSmooth = (IsometricTileType)heapid;
@@ -930,13 +936,6 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 		if (setid == _WaterToSwampLat) WaterToSwampLat = (IsometricTileType)heapid;
 		if (setid == _BlueMoldTile) BlueMoldTile = (IsometricTileType)heapid;
 		if (setid == _ClearToBlueMoldLat) ClearToBlueMoldLat = (IsometricTileType)heapid;
-
-		char section[64];
-		sprintf(section, "TileSet%04d", setid);
-		int tiles_in_set = ini.Get_Int(section, "TilesInSet", -1);
-		if (tiles_in_set == -1) {
-			break;
-		}
 
 		int last_tiles_in_set = ini.Get_Int(section, "LastTilesInSet", -1);
 		if (last_tiles_in_set == -1 || last_tiles_in_set == tiles_in_set) {
@@ -1024,7 +1023,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 					if (from_ccfile) {
 						tile->IsFileLoaded = true;
 					}
-					tile->TileSetBaseID = TileSetIDLookup[TileSetLookupCount - 1];
+					tile->TileSetBaseID = current_set_base_id;
 					tile->PreviewTiles.Clear();
 					if (has_section) {
 
@@ -1111,7 +1110,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 					if (is_shadow_caster && shadow_tiles) {
 						tile->IsShadowCaster = is_shadow_caster;
 					}
-					tile->TileSetBaseID = TileSetIDLookup[TileSetLookupCount - 1];
+					tile->TileSetBaseID = current_set_base_id;
 					tail_tile->NextTileTypeInSet = tile;
 					tile->PreviewTiles.Clear();
 					tail_tile = tile;
@@ -1154,12 +1153,32 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	for (j = 0; j < IsometricTileTypes.Count(); ++j) {
 		IsometricTileTypeClass * isotype = IsometricTileTypes[j];
 		int offset = isotype->HeapID - isotype->TileSetBaseID;
-		if (isotype->MarbleMadness != ISOTILE_NONE) {
-			isotype->MarbleMadness = (IsometricTileType)(TileSetIDLookup[isotype->MarbleMadness] + offset);
-		}
-		if (isotype->NonMarbleMadness != ISOTILE_NONE) {
-			isotype->NonMarbleMadness = (IsometricTileType)(TileSetIDLookup[isotype->NonMarbleMadness] + offset);
-		}
+		auto remap = [&](IsometricTileType & reference, char const * field) {
+			if (reference == ISOTILE_NONE) {
+				return;
+			}
+
+			int const referenced_set = static_cast<int>(reference);
+			bool valid = referenced_set >= 0
+				&& static_cast<std::size_t>(referenced_set) < tile_set_lookup.size();
+			if (valid) {
+				TileSetRange const & range = tile_set_lookup[referenced_set];
+				valid = range.BaseID >= 0 && range.Count >= 0
+					&& offset >= 0 && offset < range.Count
+					&& range.BaseID <= std::numeric_limits<int>::max() - offset;
+				if (valid) {
+					reference = static_cast<IsometricTileType>(range.BaseID + offset);
+				}
+			}
+			if (!valid) {
+				DebugString("Tile type %d has invalid %s reference %d at offset %d; using ISOTILE_NONE.\n",
+					static_cast<int>(isotype->HeapID), field, referenced_set, offset);
+				reference = ISOTILE_NONE;
+			}
+		};
+
+		remap(isotype->MarbleMadness, "MarbleMadness");
+		remap(isotype->NonMarbleMadness, "NonMarbleMadness");
 	}
 
 	/// Remap ice tiles to water
