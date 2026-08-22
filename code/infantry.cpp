@@ -926,6 +926,13 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 		if (Mission == MISSION_SABOTAGE) {
 			BuildingClass * building = cellptr->Cell_Building();
 			if (building != NULL && building == NavCom) {
+				if (!building->Class->IsRepairable) {
+					Assign_Target(NULL);
+					Assign_Destination(NULL);
+					Enter_Idle_Mode();
+					BEnd(BENCH_PCP);
+					return;
+				}
 				if (building->Tag) {
 					building->Tag->Spring(TEVENT_PLAYER_ENTERED, this);
 				}
@@ -2981,7 +2988,8 @@ const char * InfantryClass::Full_Name(void) const
  *=============================================================================================*/
 int InfantryClass::Do_MISSION_ATTACK(void)
 {
-	if ((Class->IsBomber || Has_Ability(ABILITY_C4)) && TarCom != NULL && TarCom->RTTI == RTTI_BUILDING) {
+	BuildingClass * building = dynamic_cast<BuildingClass *>(TarCom);
+	if ((Class->IsBomber || Has_Ability(ABILITY_C4)) && building != NULL && building->Class->IsRepairable) {
 		Assign_Destination(TarCom);
 		Assign_Mission(MISSION_SABOTAGE);
 		return(1);

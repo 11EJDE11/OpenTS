@@ -40,7 +40,7 @@ Six settings on an InfantryType decide what a soldier does when it reaches whate
 | Setting | What the soldier does on arrival |
 | --- | --- |
 | [`Engineer=yes`](/keys/engineer/#scope-infantrytype) | Restores an allied structure, takes or damages a non-allied one, repairs a bridge |
-| [`C4=yes`](/keys/c4/) | Arms a structure with a demolition charge and walks away |
+| [`C4=yes`](/keys/c4/) | Arms a [`Repairable=yes`](/keys/repairable/) structure with a demolition charge and walks away |
 | [`Agent=yes`](/keys/agent/) | Infiltrates a structure and reports what it holds |
 | [`Infiltrate=yes`](/keys/infiltrate/) | Nothing on its own. It is what lets a soldier be given a structure as a target and a destination at all |
 | [`VehicleThief=yes`](/keys/vehiclethief/) | Takes the vehicle it was sent at |
@@ -102,10 +102,10 @@ The three sections above each settle a cursor. This table takes over from there:
 | Repair, enter, or the damage action, over an object | The [capture mission](/reference/enums/mission/), with the object as the destination |
 | Demolitions | The sabotage mission, with the object as the destination |
 | Enter, over a cell | The capture mission, with the cell as the destination |
-| Area guard, over a non-allied structure, from a `C4=yes` soldier | The sabotage mission |
+| Area guard, over a non-allied `Repairable=yes` structure, from a `C4=yes` soldier | The sabotage mission |
 | Refusal | Nothing |
 
-Both missions are serviced on the cadence their own [`Rate`](/keys/rate/#scope-mission-behavior) sets in the `[Capture]` and `[Sabotage]` sections, plus a jitter of up to two frames. A vehicle handed either order converts it to an attack. An `Infiltrate=yes` soldier given a structure as an attack target converts that order into the capture mission, and one with `C4=yes` or the `C4` ability converts it into sabotage first.
+Both missions are serviced on the cadence their own [`Rate`](/keys/rate/#scope-mission-behavior) sets in the `[Capture]` and `[Sabotage]` sections, plus a jitter of up to two frames. A vehicle handed either order converts it to an attack. An `Infiltrate=yes` soldier given a structure as an attack target converts that order into the capture mission, and one with `C4=yes` or the `C4` ability converts it into sabotage first only when the structure is `Repairable=yes`.
 
 ## Walking in
 
@@ -214,7 +214,7 @@ Rank, abilities and the elite weapon [survive the change intact](/systems/vetera
 
 ### Arming a structure
 
-Arming needs only the sabotage mission and a structure as the destination. There is no flag test and no alliance test at the structure, so anything that reaches that mission with a structure destination arms it, including one of the soldier's own house. Unless the structure is already deconstructing, the charge is set, the structure begins flashing as a designated target, the countdown is set to [`C4Delay`](/keys/c4delay/) minutes' worth of frames — 27 frames, about 1.8 seconds, at the default — and the saboteur is recorded against it. The saboteur then clears its destination, uncloaks, takes a rearm delay and scatters away from the structure's center.
+Arming requires the sabotage mission, a `Repairable=yes` structure as the destination, and the type still carrying that flag when the soldier arrives. A stale or directly assigned sabotage mission against another structure is canceled and the soldier returns to idle behavior. There is no alliance test, so force fire can still send a saboteur against a qualifying structure belonging to its own house. Unless the structure is already deconstructing, the charge is set, the structure begins flashing as a designated target, the countdown is set to [`C4Delay`](/keys/c4delay/) minutes' worth of frames — 27 frames, about 1.8 seconds, at the default — and the saboteur is recorded against it. The saboteur then clears its destination, uncloaks, takes a rearm delay and scatters away from the structure's center.
 
 ### Detonation
 
@@ -255,7 +255,7 @@ A vehicle thief also loses its target outright when the vehicle it is chasing de
 A computer house aims engineers through [target selection](/systems/target-selection/#what-each-kind-of-object-considers), which covers the scanning rules, the fifteen-cell shortcut to the house's recapture target, and the filter that lets an engineer accept a damaged ally and reject everything else. Four mission conversions sit outside that:
 
 - A hunt becomes a capture order for an engineer that is neither `C4=yes` nor carrying the `C4` ability, and for a vehicle thief.
-- A hunt becomes a sabotage order for a `C4=yes` soldier whose target is a structure.
+- A hunt becomes a sabotage order for a `C4=yes` soldier whose target is a `Repairable=yes` structure.
 - Guard and area guard become a sabotage order under the same condition, for a computer house only.
 - A patrolling engineer drops an allied structure as a target once that structure climbs back above `ConditionRed`.
 
