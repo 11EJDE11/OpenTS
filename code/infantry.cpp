@@ -366,7 +366,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 	/*
 	**	Prone infantry take only half damage, but never below one damage point.
 	*/
-	if (IsProne && damage > 0 && !forced) {
+	if (warhead != NULL && IsProne && damage > 0 && !forced) {
 		damage = (int)(damage * warhead->ProneDamage);
 
 		if (damage < 1) {
@@ -377,7 +377,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 	/*
 	 * If the warhead is webby and we're not web immune, paralyze us.
 	 */
-	if (warhead->IsWebby && !Class->IsWebImmune) {
+	if (warhead != NULL && warhead->IsWebby && !Class->IsWebImmune) {
 		damage = 0;
 		int variation = Random_Pick(-warhead->WebDurationVariation, warhead->WebDurationVariation);
 		int duration = warhead->WebDuration + variation;
@@ -434,7 +434,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 			**	The type of warhead determines the animation the infantry
 			**	will perform when killed.
 			*/
-			int infdeath = warhead->InfantryDeath;
+			int infdeath = warhead != NULL ? warhead->InfantryDeath : 0;
 			if (source != NULL && source->RTTI == RTTI_BUILDING && reinterpret_cast<BuildingClass*>(source)->Class->IsLaserFence) {
 				infdeath = 5;
 			}
