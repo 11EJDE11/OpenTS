@@ -13,7 +13,3 @@ A whole number of leptons, 256 to a cell. On every frame the debris strikes the 
 The distance compared is the sum of the two horizontal separations rather than the straight line between them, so the reach is a diamond and not a circle, and `0` reaches only an object centered exactly on the point of impact. Height is not part of the comparison at all. Only occupants of the one cell struck are examined, so a reach wider than a cell still cannot touch anything standing next door.
 
 The blast at the end of the piece's life is a separate matter: it reaches every object in the impact cell and the eight around it, with the warhead's own [`Spread`](/keys/spread/#scope-warheadtype) deciding how the damage falls off across them, and it does not consult this setting at all.
-
-:::caution[Bounce damage rewrites the type's damage figure]
-The armor and distance reduction applied to a bounce is written back over the type's stored `Damage` rather than over a working copy. Every later bounce and every later blast — for every piece of the type, for the rest of the session — starts from the reduced figure, so the debris grows weaker each time it hurts something. A strike landing on the object itself cannot take the figure below [`MinDamage`](/keys/mindamage/); one landing further out can drive it to nothing — past about 100 leptons for a warhead of the usual single-cell `Spread`, and proportionately further for a wider one.
-:::

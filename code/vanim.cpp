@@ -475,7 +475,8 @@ void VoxelAnimClass::AI(void)
 					Coord mycoord = Get_Bounce_Coord();
 					int lepton = abs(mycoord.X - occoord.X) + abs(mycoord.Y - occoord.Y);
 					if (lepton <= Class->DamageRadius) {
-						occupier->Take_Damage(Class->Damage, Tactical::Z_Lepton_To_Pixel(lepton), Class->Warhead, 0, 0, 0);
+						int damage = Class->Damage;
+						occupier->Take_Damage(damage, Tactical::Z_Lepton_To_Pixel(lepton), Class->Warhead, 0, 0, 0);
 					}
 				}
 			}

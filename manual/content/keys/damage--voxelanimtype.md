@@ -8,4 +8,4 @@ when_omitted:
   value: "0"
 ---
 
-The damage a voxel animation deals where it bounces and lands, applied with its own [`Warhead`](/keys/warhead/).
+Sets the raw damage a voxel animation applies at each bounce and when it expires. Its [`Warhead`](/keys/warhead/) adjusts that value independently for every object reached, so each damage calculation begins with the configured figure.
