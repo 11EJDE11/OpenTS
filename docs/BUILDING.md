@@ -81,16 +81,19 @@ state:
 | `opents_build.h` | The commit, branch, commit date, whether tracked files were modified, and the version as it is displayed |
 
 The packed version number is the major, minor, and patch components in one byte
-each. The save game stamp and the network version are that number, so a build
-loads only its own version's saves and connects only to its own version. A
-prerelease is not distinguished there and carries the identity of the release it
-leads up to.
+each. The save game stamp and the network version are that number, so different
+release-cycle versions refuse one another. Development snapshots within one
+cycle share the number; their saves, replays, and network sessions are not
+promised to interoperate. A prerelease is not distinguished there and carries
+the identity of the release it leads up to.
 
 Everything that names a version to the player reads these headers: the version
 resources of `Game.exe` and `Language.dll`, the title screen, the version
 dialog, the crash report, and the debug log's opening banner. A build reports
 its version with the commit it came from, as in `0.1.0 (ab12cd3)`, and adds a
-modification marker when tracked files differ from that commit. Configuring with
+modification marker when tracked files differ from that commit. The commit is a
+diagnostic build identity, not an enforced save or network compatibility stamp.
+Configuring with
 `-DOPENTS_OFFICIAL_BUILD=ON` reports the version alone, for a build published
 under the version it declares.
 

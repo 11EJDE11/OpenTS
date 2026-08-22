@@ -28,7 +28,15 @@ The `CONTENTS` stream is a fixed sequence of records — the scenario, the envir
 
 ## What is checked
 
-The build version stamp decides whether a file is offered at all, and only the running build's stamp is accepted. The load dialog reads the property set of every `.SAV` in the game directory and skips every file stamped by anything else, the Tiberian Sun release and earlier OpenTS builds alike. A save that reaches the engine without passing through the dialog, as a network save does, is checked the same way and refused. A listed save that was not made in a campaign is marked with a leading `*`.
+The project-version stamp decides whether a file is offered at all, and only
+the running version's stamp is accepted. The load dialog reads the property set
+of every `.SAV` in the game directory and skips every file stamped by anything
+else, including the Tiberian Sun release and another OpenTS release-cycle
+version. A save that reaches the engine without passing through the dialog, as
+a network save does, is checked the same way and refused. Development snapshots
+within one cycle share the stamp; that mechanical match is not a promise that
+their save layouts or simulation state interoperate. A listed save that was not
+made in a campaign is marked with a leading `*`.
 
 Beyond that stamp and the add-on the scenario declares, nothing about a save is measured against the game it is being loaded into. A save made under one set of rules and loaded under another is not detected, and the type definitions stored in the file are simply restored over the ones the rules built.
 

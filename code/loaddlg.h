@@ -82,9 +82,8 @@ class LoadOptionsClass
 		 * current value loads; the per-member save format has no reader for anything
 		 * else, so every earlier stamp is refused outright.
 		 *
-		 * It is the packed project version, so opening the next development version is
-		 * what invalidates the saves of the version before it. A save format change
-		 * within a development version therefore has to open the next one.
+		 * It is the packed project version. Development snapshots within one version
+		 * share this value without promising that their saves interoperate.
 		 */
 		enum {
 			GAMEVER_OPENTS = OPENTS_VERSION_PACKED

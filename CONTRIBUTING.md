@@ -25,43 +25,55 @@ Separate mechanical cleanup from behavior changes. A formatting pass, rename,
 or ownership refactor must not conceal a gameplay, format, persistence, or
 network change.
 
-Classify a source change as one of the following:
+Classify what a change does to externally visible behavior:
 
-- **Preserved behavior:** internal implementation changes while relevant
-  external behavior remains the same.
-- **Bug fix:** OpenTS corrects behavior that is defective for the project's
-  goals, whether inherited or newly introduced.
-- **Intentional behavior change:** OpenTS chooses a different result and
-  documents its compatibility effects.
+- **Behavior preserved:** an internal improvement that leaves every
+  externally visible behavior the same. It needs no change record; state why
+  the existing documentation remains accurate.
+- **Bug fix:** the change corrects behavior that is defective for the
+  project's goals, whether inherited or newly introduced.
+- **Intentional change:** the change deliberately chooses a different
+  outcome — a feature, a balance or performance change, or a removal.
+
+A fix or intentional change that players or modders can see is documented by
+a change record in the manual, categorized as a feature, fix, balance,
+performance, or internal change, carrying its migration steps when it
+breaks compatibility — see [Documentation](#documentation).
 
 The TibSun reconstruction and original executable are historical evidence, not
 automatic correctness or acceptance criteria for active OpenTS development.
 
 ## Compatibility boundaries
 
-Treat documented configuration and modding behavior, game-data formats and
-defaults, saves and replays, network messages, deterministic simulation, COM
-interfaces, and layout-sensitive structures as external boundaries.
+A compatibility boundary is anything outside the engine that depends on how
+OpenTS behaves: mods, maps, and the documented configuration they rely on;
+game-data formats and their defaults; saved games and replays; the packets a
+network game exchanges and the deterministic simulation that keeps its
+players in sync; and the COM interfaces and layout-sensitive structures
+other code consumes. A change near a boundary can silently break someone's
+mod, save, or network game, so such changes are made deliberately, never in
+passing.
 
-Before changing one of these boundaries:
+Before changing behavior at a boundary:
 
-1. Establish the current behavior and supporting evidence.
-2. Identify affected versions, data, mods, saved state, peers, or consumers.
+1. Establish what the engine does today, with evidence.
+2. Work out who is affected: which versions, data, mods, saved state,
+   network peers, or consumers.
 3. Add focused tests or other reproducible evidence.
 4. Update the owning documentation in the same change.
-5. Provide practical migration guidance for an incompatible change.
+5. When the change is incompatible, give practical migration guidance.
 
-Cross-version save, replay, network, and ABI compatibility is not implied
-unless a documented contract explicitly provides it.
-
-Saves and network sessions are stamped with the packed project version, so each
-version accepts only its own saves and peers. Opening the next development
-version is therefore what retires the previous version's saves: a change to the
-save format or to deterministic simulation within a development version has to
-open the next one, which means raising the version in `CMakeLists.txt` and the
-manual's release registry together, as
-[Maintaining](manual/MAINTAINING.md) describes. See
-[Build identity](docs/BUILDING.md) for how the stamp is derived.
+Compatibility across versions is promised only where a documented contract
+provides it. In particular, saves and network sessions carry the project
+version, so different release versions refuse to load each other's saves or
+play together. Development snapshots within one cycle share that version
+stamp: they may accumulate incompatible save, replay, network, and
+simulation changes before the release, and no interchange between snapshots
+is promised. Test against the current snapshot, document what the change
+means for the release, and open a new development version only through the
+release lifecycle that [Maintaining](manual/MAINTAINING.md) describes.
+[Build identity](docs/BUILDING.md) explains how the version stamp differs
+from the diagnostic commit identity.
 
 ## Source changes
 
@@ -102,16 +114,20 @@ Document current behavior, supported inputs, relevant limitations, and
 migration requirements; do not turn plans or assumptions into current-state
 claims.
 
-AI tools can help draft, restructure, and review documentation. Contributors
-are encouraged to use them when useful, but remain responsible for checking
-every claim against current source or observed evidence, applying project
-style, and reviewing the final result. AI output is not evidence and must not
-receive commit attribution.
-
 For manual content, read [Authoring](manual/AUTHORING.md) and
 [Manual style](manual/STYLE.md). Changes to manual tooling, schemas, generated
 data contracts, lifecycle machinery, routes, or publication behavior also
 require [Maintaining](manual/MAINTAINING.md).
+
+## AI assistance
+
+AI tools can help throughout the project: exploring the engine, drafting and
+restructuring code and documentation, reverse engineering, and review.
+Contributors are encouraged to use them where they help, and remain fully
+responsible for the result: check every claim and behavior against current
+source or observed evidence, apply project style, and review what is
+submitted as their own work. AI output is not evidence — a build, a test, or
+a runtime observation is — and it must not receive commit attribution.
 
 ## Validation
 

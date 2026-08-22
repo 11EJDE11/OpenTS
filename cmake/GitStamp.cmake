@@ -14,7 +14,9 @@
 # and OPENTS_STAMP_HEADER to be set.
 
 # The packed form spends one byte on each component, and the save and network stamps are
-# compared for exact equality, so a component that does not fit would silently collide.
+# compared for exact equality. Development snapshots in one cycle deliberately share it;
+# the separate commit stamp identifies the build for diagnostics. A component that does not
+# fit would silently collide with another release-cycle version.
 foreach(part MAJOR MINOR PATCH)
     if(OPENTS_VERSION_${part} GREATER 255)
         message(FATAL_ERROR

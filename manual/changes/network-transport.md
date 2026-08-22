@@ -43,5 +43,7 @@ The network options screen is gone, along with the adapter, socket, and
 destination network it set. `sun.ini` no longer reads or writes `[Network]
 Socket`, `NetCard`, or `DestNet`, and entries left in the file are ignored.
 
-Network messages, save games, and recordings changed shape, so a game, a save, or
-a recording is only exchanged between machines running the same build.
+Network messages, save games, and recordings changed shape, so different OpenTS
+release-cycle versions refuse one another. Development snapshots within one
+cycle are not promised to interoperate and all players should run the same
+snapshot.

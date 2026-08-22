@@ -55,5 +55,6 @@ play are unaffected.
 `[PhoneBook]` sections, nor `[MultiPlayer] PhoneIndex`. Sections left in the file
 are ignored, and the game stops rewriting them when it saves its settings.
 
-Existing save games still load. The two session types the removed modes used keep
-their stored values, so a save written by another build is read exactly as before.
+The two session types the removed modes used keep their stored values, so this
+change does not itself alter how a same-snapshot save is restored. The ordinary
+release-version and development-snapshot compatibility rules still apply.

@@ -16,6 +16,11 @@ OpenTS uses the English Tiberian Sun 2.03 release as its inherited data and beha
 
 Every save file's header carries an internal version stamp. The load dialog lists a save only when its stamp matches the version the current build expects; files with any other stamp do not appear, and the multiplayer network save file is never listed. A save that reaches the engine without passing through the dialog is checked the same way and refused if its stamp does not match. A listed save that was not made in a campaign is marked with a `*` before its description.
 
-OpenTS no longer reads save games written by the vanilla game or by any earlier OpenTS build, and no converter is provided. Finish or abandon a game in progress before updating.
+OpenTS does not read save games written by the vanilla game or by a different
+OpenTS release-cycle version, and no converter is provided. Development
+snapshots within one cycle share a version stamp, so a save from an older
+snapshot can appear in the list even though loading it is unsupported and may
+fail. Finish or abandon a game in progress before replacing a development
+snapshot.
 
 A save game stores each object member by member rather than as a copy of its memory.

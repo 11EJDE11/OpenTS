@@ -107,9 +107,11 @@ CMake's `OPENTS_VERSION_PRERELEASE`, which is empty when the development version
 has no label. The private npm package version is tooling metadata, not the
 OpenTS release.
 
-The engine stamps its saves and network sessions with that version, so opening a
-cycle is also what retires the previous version's saves. See
-[Compatibility boundaries](../CONTRIBUTING.md).
+The engine stamps its saves and network sessions with that version. Opening a
+cycle therefore retires the previous cycle's saves, while snapshots produced
+during one active cycle share a stamp and have no interoperability promise.
+Several compatibility-breaking changes may accumulate before that cycle is
+released. See [Compatibility boundaries](../CONTRIBUTING.md).
 
 To open the next development cycle:
 
