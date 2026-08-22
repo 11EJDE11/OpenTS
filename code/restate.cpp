@@ -376,10 +376,9 @@ bool RestateMission::Presentation(ScenarioClass * scen)
 
 /// <summary>
 /// Prepares the mission restatement presentation.
-/// This routine fetches the briefing text -- from the mission INI database when the
-/// scenario has an entry there, and from the scenario itself otherwise -- creates the
-/// font and drawer the animations need, and lays out the buttons the player will be
-/// offered.
+/// This routine fetches the briefing text -- the scenario's own, and the mission INI
+/// database's entry for it when the scenario carries none -- creates the font and
+/// drawer the animations need, and lays out the buttons the player will be offered.
 /// </summary>
 /// <param name="scen">The scenario whose briefing is to be restated.</param>
 /// <returns>bool; Was the presentation successfully prepared?</returns>
@@ -400,6 +399,11 @@ bool RestateMission::Init(ScenarioClass * scen)
 	CenterY = (HiddenSurface->Get_Height() - 400) / 2;
 	file.Close();
 
+	if (strlen(Scenario->BriefingText)) {
+		DebugString("Restate: Fetching breifing text from %s\n", Scenario->ScenarioName);
+		strcpy(BriefingText, Scenario->BriefingText);
+
+	} else {
 	if (Scenario->RequiredAddOn > ADDON_BASE_GAME) {
 		sprintf(buffer, "MISSION%1d.INI",  Scenario->RequiredAddOn);
 		file.Set_Name(buffer);
@@ -416,6 +420,11 @@ bool RestateMission::Init(ScenarioClass * scen)
 			if (strlen(buffer)) {
 				ini.Get_TextBlock(buffer, BriefingText, sizeof(BriefingText));
 			}
+			}
+		}
+	}
+
+	// The presentation lays the text out itself, so the breaks the briefing carries are folded away.
 			char * string = BriefingText;
 			while (*string) {
 				if (*string != '\n' && *string != '@') {
@@ -432,15 +441,6 @@ bool RestateMission::Init(ScenarioClass * scen)
 					}
 				}
 			}
-		}
-
-	} else {
-		DebugString("Restate: Fetching breifing text from %s\n", Scenario->ScenarioName);
-
-		if (strlen(scen->BriefingText)) {
-			strcpy(BriefingText, scen->BriefingText);
-		}
-	}
 
 	Font = new MSFont;
 	if (Font == NULL) {
