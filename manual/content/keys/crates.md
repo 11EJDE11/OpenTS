@@ -9,6 +9,6 @@ when_omitted:
 
 The value seeds the match's crate option when a session begins, and the game setup screen then writes over it. The starting placement pass and the expiry sweep both read the resulting match option, not this setting.
 
-:::caution[One crate path reads this setting directly]
-The replacement crate placed after a crate is collected consults this key rather than the match option, so the two can disagree. `Crates=yes` in the rules with crates switched off for the match still produces a replacement whenever a crate dropped by a destroyed [`CarriesCrate=yes`](/keys/carriescrate/) vehicle is collected, and `Crates=no` in the rules with crates switched on suppresses that replacement while the expiry sweep keeps running.
+:::caution[Pickup replacement also checks this setting]
+A collected crate is replaced only when both this key and the match option are enabled. `Crates=no` in the rules with crates switched on for the match therefore suppresses pickup replacement while the expiry sweep keeps running; switching crates off for the match suppresses both paths whatever this key contains.
 :::

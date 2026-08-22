@@ -85,10 +85,10 @@ A tracked crate's lifetime is drawn at placement, uniformly, between half of [`C
 A crate lasts somewhere between half `CrateRegen` and twice it, so the setting is the lower quarter-point of the range rather than its middle, and the average life is a quarter longer than the figure written. Raising it stretches both ends at once.
 :::
 
-Outside a campaign, and while crates are enabled for the match, every logic frame sweeps the tracking slots. An expired slot has its crate removed and a fresh random crate placed. Collecting a crate also places a replacement, and the two paths do not read the same setting: the expiry sweep reads the match setting, while the replacement after a pickup reads [`Crates`](/keys/crates/) from the rules directly.
+Outside a campaign, and while crates are enabled for the match, every logic frame sweeps the tracking slots. An expired slot has its crate removed and a fresh random crate placed. Collecting a crate also places a replacement when both the match option and [`Crates`](/keys/crates/) in the rules are enabled. The two paths therefore still differ: the expiry sweep reads only the match option, while pickup replacement requires both switches.
 
-:::caution[The two crate switches disagree]
-`Crates=yes` seeds the match setting that the game setup screen then overwrites, so the two can end up opposed. With `Crates=yes` in the rules and crates switched off for the match, collecting a crate dropped by a destroyed [`CarriesCrate=yes`](/keys/carriescrate/) vehicle still spawns a random replacement. With `Crates=no` in the rules and crates switched on, collected crates are not replaced although the expiry sweep keeps working.
+:::caution[The rules can still suppress pickup replacements]
+`Crates=yes` seeds the match setting that the game setup screen then overwrites, so the two can end up opposed. With `Crates=no` in the rules and crates switched on for the match, collected crates are not replaced although the expiry sweep keeps working. Switching crates off for the match suppresses both replacement paths whatever the rules say.
 :::
 
 ### Crates dropped by destroyed vehicles
