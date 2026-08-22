@@ -55,6 +55,12 @@ unsigned short RadiusTable[_RADIUS_TABLE_SIZE][_RADIUS_TABLE_SIZE];
 short SineTable[_SINE_TABLE_SIZE];
 int IntensityTable[_INTENSITY_TABLE_SIZE];
 
+// How many whole strides the distortion lifts its replacement from, by ripple
+// amplitude, and the screen-space step one stride takes in each facing.
+int const _stride_counts[_INTENSITY_TABLE_SIZE] = {0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3};
+int const _facing_row_steps[FACING_COUNT] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int const _facing_col_steps[FACING_COUNT] = {0, 1, 1, 1, 0, -1, -1, -1};
+
 bool _tables_calculated = false;
 
 const float WaveStep = 0.05f;
@@ -154,12 +160,24 @@ WaveClass::~WaveClass(void)
 /// <param name="x">The screen column of the pixel.</param>
 /// <param name="xoff">The horizontal offset of the wave upon the screen.</param>
 /// <param name="y">The row of the pixel within the wave.</param>
+/// <param name="yscreen">The screen row of the pixel.</param>
 /// <param name="buffer">Pointer to the screen pixel to distort.</param>
-void WaveClass::Set_Sonic_Pixel(int x, int xoff, int y, unsigned short * buffer) const
+/// <param name="cliprect">The clipping rectangle the replacement may be lifted from.</param>
+void WaveClass::Set_Sonic_Pixel(int x, int xoff, int y, int yscreen, unsigned short * buffer, Rect const & cliprect) const
 {
 	int radius = RadiusTable[y][abs(x - WaveStartMiddle.X - xoff)];
 	int amplitude = abs(SineTable[WaveEC + radius]);
-	unsigned short color = buffer[WaveIntensityTable[amplitude]];
+
+	// A replacement lifted from outside the view would carry interface pixels or memory
+	// past the frame into the wave, so such a pixel keeps its own color and only tints.
+	int count = _stride_counts[amplitude];
+	int srow = yscreen + count * _facing_row_steps[Direction];
+	int scol = x + count * _facing_col_steps[Direction];
+
+	unsigned short color = *buffer;
+	if (cliprect.Is_Point_Within(Point2D(scol, srow))) {
+		color = buffer[WaveIntensityTable[amplitude]];
+	}
 	int mult = IntensityTable[amplitude];
 
 	RGBClass rgb = DSurface::Deconstruct_Hicolor_Pixel(color);
@@ -233,34 +251,13 @@ void WaveClass::Init_Offset_Tables(void)
 {
 	int stride = LogicalSurface->Stride() >> 1;
 
-	DirectionStrides[FACING_N]		= -stride;
-	DirectionStrides[FACING_NE]	= 1 - stride;
+	for (int facing = 0; facing < FACING_COUNT; facing++) {
+		DirectionStrides[facing] = _facing_row_steps[facing] * stride + _facing_col_steps[facing];
+	}
 
-	DirectionStrides[FACING_E]		= 1;
-	DirectionStrides[FACING_SE]	= stride + 1;
-
-	DirectionStrides[FACING_S]		= stride;
-	DirectionStrides[FACING_SW]	= stride - 1;
-
-	DirectionStrides[FACING_W]		= -1;
-	DirectionStrides[FACING_NW]	= -1 - stride;
-
-	WaveIntensityTable[0]	= 0;
-	WaveIntensityTable[1]	= 0;
-
-	WaveIntensityTable[2]	= 1 * DirectionStrides[Direction];
-	WaveIntensityTable[3]	= 1 * DirectionStrides[Direction];
-	WaveIntensityTable[4]	= 1 * DirectionStrides[Direction];
-	WaveIntensityTable[5]	= 1 * DirectionStrides[Direction];
-	WaveIntensityTable[6]	= 1 * DirectionStrides[Direction];
-
-	WaveIntensityTable[7]	= 2 * DirectionStrides[Direction];
-	WaveIntensityTable[8]	= 2 * DirectionStrides[Direction];
-	WaveIntensityTable[9]	= 2 * DirectionStrides[Direction];
-
-	WaveIntensityTable[10]	= 3 * DirectionStrides[Direction];
-	WaveIntensityTable[11]	= 3 * DirectionStrides[Direction];
-	WaveIntensityTable[12]	= 3 * DirectionStrides[Direction];
+	for (int i = 0; i < _INTENSITY_TABLE_SIZE; i++) {
+		WaveIntensityTable[i] = _stride_counts[i] * DirectionStrides[Direction];
+	}
 }
 
 
@@ -649,7 +646,7 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 							int ypos = abs(y - yoff - WaveStartMiddle.Y);
 							for (x = xstart; x <= xstop; x++) {
 								if (*(unsigned short *)zoffset > zval) {
-									Set_Sonic_Pixel(x, xoff, ypos, dest);
+									Set_Sonic_Pixel(x, xoff, ypos, y, dest, cliprect);
 								}
 								zoffset += 2;
 								dest++;
@@ -684,7 +681,7 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 							int ypos = abs(y - yoff - WaveStartMiddle.Y);
 							for (int x = xstart; x <= xstop; x++) {
 								if (*(unsigned short *)DepthBuffer->Get_Buffer_Offset(Point2D(xpos, zy)) > zval) {
-									Set_Sonic_Pixel(x, xoff, ypos, dest);
+									Set_Sonic_Pixel(x, xoff, ypos, y, dest, cliprect);
 								}
 								xpos++;
 								dest++;
@@ -729,7 +726,7 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 							int ypos = abs(y - yoff - WaveStartMiddle.Y);
 							for (x = xstart; x >= xstop; x--) {
 								if (*zptr > zval) {
-									Set_Sonic_Pixel(x, xoff, ypos, dest);
+									Set_Sonic_Pixel(x, xoff, ypos, y, dest, cliprect);
 								}
 								zptr--;
 								dest--;
@@ -766,7 +763,7 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 							int ypos = abs(y - yoff - WaveStartMiddle.Y);
 							for (int x = xstart; x >= xstop; x--) {
 								if (*(unsigned short *)DepthBuffer->Get_Buffer_Offset(Point2D(xpos, zy)) > zval) {
-									Set_Sonic_Pixel(x, xoff, ypos, dest);
+									Set_Sonic_Pixel(x, xoff, ypos, y, dest, cliprect);
 								}
 								xpos--;
 								dest--;

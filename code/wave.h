@@ -48,7 +48,7 @@ class WaveClass : public ObjectClass
 		static void Init_Statics(void);
 
 	private:
-		void Set_Sonic_Pixel(int x, int xoff, int y, unsigned short * buffer) const;
+		void Set_Sonic_Pixel(int x, int xoff, int y, int yscreen, unsigned short * buffer, Rect const & cliprect) const;
 		void Set_Laser_Pixel(unsigned short * buffer, int mult) const;
 
 		void Laser_AI(void);
