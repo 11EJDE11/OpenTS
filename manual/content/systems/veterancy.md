@@ -77,11 +77,11 @@ The clamp is applied to the total, not to the increment, so an elite object whos
 
 ## Promotion without kills
 
-Five settings-driven paths set a rank with no experience earned, and a map's placed-object records can write an experience figure directly besides. None of them consults `VeteranCap`, `Trainable`, or the kill formula.
+Five settings-driven paths set a rank with no experience earned, and a map's placed-object records can write an experience figure directly besides. None of them consults `VeteranCap` or the kill formula. The veterancy crate alone consults `Trainable`; the other four settings-driven paths do not.
 
 | Source | Result |
 | --- | --- |
-| [Veterancy crate](/reference/enums/crate/) | Every object on the ground within [`CrateRadius`](/keys/crateradius/) of the crate rises one rank, repeated as many times as the crate's `[Powerups]` data field says. |
+| [Veterancy crate](/reference/enums/crate/) | Every `Trainable=yes` object on the ground within [`CrateRadius`](/keys/crateradius/) of the crate rises one rank, repeated as many times as the crate's `[Powerups]` data field says. |
 | [`Armory=yes`](/keys/armory/) building | The infantry inside is promoted once the building's servicing counter runs out. |
 | [Drop Pods superweapon](/systems/drop-pods/#drop-pods-superweapon) | Each delivered passenger is created elite. |
 | TeamType [`VeteranLevel`](/keys/veteranlevel/) | Every member created for the team takes the rank the value names. |
@@ -89,8 +89,8 @@ Five settings-driven paths set a rank with no experience earned, and a map's pla
 
 The crate is the only path that steps a rank rather than assigning one: it lifts a below-rookie object to rookie, a rookie to veteran, and a veteran to elite, and leaves an elite where it is. The other four assign a rank outright — three write a fixed rank over whatever the object was carrying, and the armory picks between veteran and elite by the occupant that walked in.
 
-:::caution[A veterancy crate promotes everything nearby]
-The radius sweep tests position only. Enemy and neutral objects standing inside `CrateRadius` are promoted alongside the collector's own, and buildings within the radius are promoted too.
+:::caution[A veterancy crate promotes every trainable object nearby]
+The radius sweep tests position and `Trainable`, but not ownership. Enemy and neutral objects with `Trainable=yes` standing inside `CrateRadius` are promoted alongside the collector's own, and trainable buildings within the radius are promoted too.
 :::
 
 :::caution[An armory skips the veteran rank]

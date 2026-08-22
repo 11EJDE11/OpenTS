@@ -3840,7 +3840,8 @@ crate_money:
 				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
-					if (obj != NULL && obj->IsDown && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius) {
+					if (obj != NULL && obj->IsDown && obj->Is_Techno() &&
+						((TechnoClass *)obj)->TClass->IsTrainable && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius) {
 						for (int count = 0; count < data; count++) {
 							VeterancyClass * vet = &((TechnoClass *)obj)->Veterancy;
 							if (vet->Is_Veteran()) vet->Set_Elite(true);
