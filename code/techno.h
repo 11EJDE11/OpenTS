@@ -269,6 +269,13 @@ class TechnoClass :	public RadioClass,
 		int BurstIndex;
 
 		/*
+		 * Losing a target partway through a burst starts this countdown. The burst keeps its
+		 * next-shot index until a new target is acquired or the full rearm interval expires.
+		 */
+		bool IsBurstResetPending;
+		CDTimerClass<FrameTimerClass> BurstResetTimer;
+
+		/*
 		 * This is the countdown that keeps the targeting laser drawn from this object to
 		 * whatever it is shooting at. It is restarted with every shot, but only for the object
 		 * types that sport such a laser and only while the player is in control of them.

@@ -278,6 +278,8 @@ TechnoClass::TechnoClass(HouseClass * house) :
 	Door(),
 	BarrelPitch(3),
 	BurstIndex(0),
+	IsBurstResetPending(false),
+	BurstResetTimer(),
 	TargetingLaserTimer(),
 	SinkingYOffset(0),
 	IsSinking(false),
@@ -2907,6 +2909,14 @@ void TechnoClass::AI(void)
 	}
 
 	Cargo.AI();
+
+	if (IsBurstResetPending && BurstResetTimer == 0) {
+		IsBurstResetPending = false;
+		if (TarCom == NULL) {
+			BurstIndex = 0;
+		}
+	}
+
 	BASECLASS::AI();
 
 	if (!IsActive) return;
@@ -3540,6 +3550,8 @@ void TechnoClass::Stun(void)
  *=============================================================================================*/
 void TechnoClass::Assign_Target(AbstractClass * target)
 {
+	AbstractClass * old_target = TarCom;
+
 	if (target == TarCom) return;
 
 	if (target == NULL) {
@@ -3568,8 +3580,31 @@ void TechnoClass::Assign_Target(AbstractClass * target)
 	*/
 	TarCom = target;
 
-	if (target == NULL) {
+	if (target != NULL) {
+		IsBurstResetPending = false;
+		BurstResetTimer = 0;
+	} else if (old_target != NULL) {
+		IsBurstResetPending = false;
+		BurstResetTimer = 0;
+
+		if (BurstIndex != 0) {
+			int which = What_Weapon_Should_I_Use(old_target);
+			WeaponTypeClass const * weapon = Get_Class_Weapon_Data(which)->Weapon;
+			if (weapon != NULL && weapon->Burst > 1) {
+				int old_burst_index = BurstIndex;
+				BurstIndex = weapon->Burst;
+				BurstResetTimer = Rearm_Delay(which);
+				BurstIndex = old_burst_index;
+				IsBurstResetPending = true;
+			}
+		}
+
+		if (!IsBurstResetPending) {
 		BurstIndex = 0;
+	}
+	} else if (!IsBurstResetPending) {
+		BurstIndex = 0;
+		BurstResetTimer = 0;
 	}
 
 	if (ParticleSystems[ATTACHED_PARTICLE_FIRE]) {
@@ -8118,6 +8153,8 @@ void TechnoClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(PrimaryFacing);
 	stream.Serialize(SecondaryFacing);
 	stream.Serialize(BurstIndex);
+	stream.Serialize(IsBurstResetPending);
+	stream.Serialize(BurstResetTimer);
 	stream.Serialize(TargetingLaserTimer);
 	stream.Serialize(SoundRandomSeed);
 	stream.Serialize(SinkingYOffset);
@@ -8180,6 +8217,9 @@ void TechnoClass::Compute_CRC(CRCEngine & crc) const
 	crc((int)Arm);
 	crc(Ammo);
 	crc(PurchasePrice);
+	crc(BurstIndex);
+	crc(IsBurstResetPending);
+	crc((int)BurstResetTimer);
 	crc(AngleRotatedSideways);
 	crc(AngleRotatedForwards);
 	crc(RockingSidewaysPerFrame);
