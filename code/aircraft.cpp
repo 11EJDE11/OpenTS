@@ -2950,9 +2950,14 @@ bool AircraftClass::Cell_Seems_Ok(Cell const & cell, bool strict) const
 	*/
 	AbstractClass * astarget = &Map[cell];
 	for (int index = 0; index < Feet.Count(); index++) {
-		AircraftClass * air = (AircraftClass *)Feet[index];
-		if (air && (!is_toting || NavCom != air) && (strict || air != this) && !air->IsInLimbo && air->IsDown) {
-			if (air->PositionCell == cell || air->NavCom == astarget) {
+		FootClass * foot = Feet[index];
+		if (foot && (!is_toting || NavCom != foot) && (strict || foot != this) && !foot->IsInLimbo && foot->IsDown) {
+			if (foot->PositionCell == cell) {
+				return(false);
+			}
+
+			if (foot->IsActive && foot->RTTI == RTTI_AIRCRAFT && foot->NavCom == astarget &&
+				(foot->House == House || (House->Is_Ally(foot) && foot->House->Is_Ally(this)))) {
 				return(false);
 			}
 		}
