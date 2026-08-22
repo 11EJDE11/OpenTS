@@ -1620,6 +1620,10 @@ void TechnoClass::Draw_It(int x, int y, int /*WindowNumberType*/ window) const
 /// <returns>bool; Was the object limboed?</returns>
 bool TechnoClass::Limbo(void)
 {
+	if (IsRadarTracked) {
+		Radar_Untrack();
+	}
+
 	if (!IsInLimbo) {
 		House->Tracking_Active_Remove(this, false);
 		int risk = Risk();
@@ -1631,9 +1635,6 @@ bool TechnoClass::Limbo(void)
 			} else {
 				Get_Cell_Ptr()->Adjust_Threat(owner, -risk);
 			}
-		}
-		if (IsRadarTracked) {
-			Radar_Untrack();
 		}
 	}
 	return(BASECLASS::Limbo());
@@ -8813,6 +8814,13 @@ void TechnoClass::Scatter_Incoming_Infantry(void) const
 /// <param name="force_update">Should the radar position be recomputed even for a building?</param>
 void TechnoClass::Update_Radar_Position(bool force_update)
 {
+	if (IsInLimbo) {
+		if (IsRadarTracked) {
+			Radar_Untrack();
+		}
+		return;
+	}
+
 	if (!IsDiscoveredByPlayer && Session.Type == GAME_NORMAL) {
 		IsDiscoveredByPlayer = !Map.Is_Shrouded(Center_Coord());
 	}
