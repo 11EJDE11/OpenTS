@@ -708,6 +708,19 @@ int AircraftClass::Do_MISSION_UNLOAD(void)
 		*/
 		case SEARCH_FOR_LZ:
 			if (HeightAGL == 0 && (double)PitchAngle == 0 && (NavCom == NULL || (PositionCoord == NavCom->Center_Coord()))) {
+				if (Cargo.Is_Something_Attached() && Map[(Coord const &)PositionCoord].Cell_Building() != NULL) {
+					if (House->Is_Human_Player()) {
+						Assign_Destination(NULL);
+						Assign_Mission(MISSION_GUARD);
+						if (Ready_To_Commence()) {
+							Commence();
+						}
+					} else {
+						Assign_Destination(Good_LZ());
+						Status = TAKE_OFF;
+					}
+					return(1);
+				}
 				Status = UNLOAD_PASSENGERS;
 			} else {
 				if (NavCom == NULL && Class->IsDropship && HeightAGL > 0) {
@@ -801,6 +814,20 @@ int AircraftClass::Do_MISSION_UNLOAD(void)
 		**	transport gets changed to MISSION_RETREAT.
 		*/
 		case UNLOAD_PASSENGERS:
+			if (Cargo.Is_Something_Attached() && Map[(Coord const &)PositionCoord].Cell_Building() != NULL) {
+				if (House->Is_Human_Player()) {
+					Assign_Destination(NULL);
+					Assign_Mission(MISSION_GUARD);
+					if (Ready_To_Commence()) {
+						Commence();
+					}
+				} else {
+					Assign_Destination(Good_LZ());
+					Status = TAKE_OFF;
+				}
+				return(1);
+			}
+
 			if (!IsTethered) {
 				if (Cargo.Is_Something_Attached()) {
 					if (Class->IsCarryall) {
@@ -819,6 +846,8 @@ int AircraftClass::Do_MISSION_UNLOAD(void)
 
 						if (Exit_Object(unit)) {
 							unit->IsInTransport = false;
+						} else {
+							Cargo.Attach(unit);
 						}
 
 						/*
@@ -971,7 +1000,9 @@ int AircraftClass::Exit_Object(TechnoClass * unit)
 		if (unit->Can_Enter_Cell(&Map[cell]) == MOVE_OK) break;
 	}
 
-	// Should perform a check here to see if no cell could be found.
+	if (face == FACING_COUNT) {
+		return(false);
+	}
 
 	/*
 	**	If the passenger can be placed on the map, then start it moving toward the
@@ -2004,8 +2035,12 @@ ActionType AircraftClass::What_Action(ObjectClass const * target, bool disallow_
 		action = What_Action(target->Center_Coord().As_Cell(), false, disallow_force);
 	}
 
-	if (action == ACTION_SELF && !Cargo.How_Many()) {
+	if (action == ACTION_SELF) {
+		if (!Cargo.How_Many()) {
 		action = ACTION_NONE;
+		} else if (Map[(Coord const &)PositionCoord].Cell_Building() != NULL) {
+			action = ACTION_NO_DEPLOY;
+		}
 	}
 
 	if (action == ACTION_ATTACK && PrimaryWeapon == NULL) {

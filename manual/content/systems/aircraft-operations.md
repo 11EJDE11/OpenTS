@@ -24,3 +24,9 @@ A hostile aircraft's destination does not reserve the cell, and neither does a o
 ## Completing a normal move
 
 An aircraft on the normal move path finishes only after its movement controller reports that it has stopped. Entering the destination cell while movement is still in progress does not make the aircraft idle: the approach advances to landing, the landing zone continues to be checked, and the aircraft remains in that phase until movement finishes or the cell must be validated again. Carryall pickup and drop-off use their own move path instead.
+
+## Unloading cargo
+
+A loaded aircraft cannot accept its self-unload action while any building occupies its current cell. The check treats every building alike, including a helipad or repair facility, and is repeated when the unload mission reaches the ground. If a building appears after a human player issues the order, the unload is canceled; a computer-controlled aircraft instead chooses another landing zone. If the building is gone by the time the mission runs, the ordinary unload proceeds.
+
+A passenger aircraft removes one passenger from the front of its cargo chain for each placement attempt. A successful placement clears that passenger's transport state and leaves the remaining passengers for later attempts. If no adjacent cell accepts the passenger, the passenger is put back at the front of the chain with its transport state intact, so the same passenger remains next to unload rather than being lost from the cargo hold.
