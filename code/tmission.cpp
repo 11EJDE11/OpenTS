@@ -15,6 +15,7 @@
 
 #include "tmission.h"
 
+#include "globals.h"
 #include "mission.h"
 #include "quarry.h"
 #include "teamtype.h"
@@ -162,6 +163,8 @@ char const * const UnloadTypeNames[UNLOAD_COUNT] = {
 /// Fills in this team mission from its INI text form.
 /// This routine is used while a team type is being read from the scenario file. The
 /// entry carries the mission and its associated data value as a comma separated pair.
+/// A cell stated in the old narrow encoding is converted as it is read, because the
+/// scenario's format is not itself carried into a save game.
 /// </summary>
 /// <param name="entry">The INI text to parse. A NULL pointer leaves this mission
 /// untouched.</param>
@@ -173,6 +176,10 @@ void TeamMissionClass::Fill_In(char const * entry)
 		int value;
 
 		sscanf(entry, "%d,%d", &tmission, &value);
+
+		if (tmission == TMISSION_MOVECELL && NewINIFormat < 4) {
+			value = (value % 128) + ((value / 128) * 1000);
+		}
 
 		Mission = tmission;
 		Data.Value = value;

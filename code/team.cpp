@@ -2387,9 +2387,11 @@ void TeamClass::TMission_MOVECELL(TeamMissionClass * mission, bool first_time)
 {
 	if (first_time) {
 		Cell cell;
-		cell.X = mission->Data.Value % 128;
-		cell.Y = mission->Data.Value / 128;
+		cell.X = mission->Data.Value % 1000;
+		cell.Y = mission->Data.Value / 1000;
+		if (Map.In_Radar(cell)) {
 		Assign_Mission_Target(&Map[cell]);
+	}
 	}
 	Coordinate_Move();
 }
