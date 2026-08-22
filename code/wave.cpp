@@ -598,10 +598,12 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 	unsigned short * surfptr = (unsigned short *)LogicalSurface->Lock();
 	if (surfptr != NULL) {
 
-		int top = cliprect.Y + 3;
-		int bottom = cliprect.Y + cliprect.Height - 3;
-		int left = cliprect.X + 3;
-		int right = cliprect.X + cliprect.Width - 3;
+		// The walk may draw to the clip's very edge because a replacement pixel that
+		// would come from outside the view is refused where it is sampled.
+		int top = cliprect.Y;
+		int bottom = cliprect.Y + cliprect.Height - 1;
+		int left = cliprect.X;
+		int right = cliprect.X + cliprect.Width - 1;
 
 		int xoff = point.X - WaveStartMiddle.X;
 		int yoff = point.Y - WaveStartMiddle.Y;
@@ -664,14 +666,14 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 
 					int index = 0;
 					for (int y = starty; y <= endy; y++) {
-						if (y >= cliprect.Y + 2 && y <= cliprect.Y + cliprect.Height - 2) {
+						if (y >= top && y <= bottom) {
 							Point2D * entry = &DrawData.Points[index];
 							int xstop = xoff + entry->Y;
-							if (xstop >= cliprect.X + cliprect.Width - 2) {
-								xstop = cliprect.X + cliprect.Width - 2;
+							if (xstop >= right) {
+								xstop = right;
 							}
-							int xstart = cliprect.X + 2;
-							if (entry->X + xoff > cliprect.X + 2) {
+							int xstart = left;
+							if (entry->X + xoff > left) {
 								xstart = entry->X + xoff;
 							}
 
@@ -746,15 +748,15 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 					unsigned short zval = base_z - zpix - 2;
 					int index = rows;
 					for (int y = endy; y >= starty; y--) {
-						if (y >= cliprect.Y + 2 && y <= cliprect.Y + cliprect.Height - 2) {
+						if (y >= top && y <= bottom) {
 							Point2D * entry = &DrawData.Points[index];
 							int xstart = entry->Y + xoff;
-							if (xstart >= cliprect.X + cliprect.Width - 2) {
-								xstart = cliprect.X + cliprect.Width - 2;
+							if (xstart >= right) {
+								xstart = right;
 							}
 							int xstop = xoff + entry->X;
-							if (xstop <= cliprect.X + 2) {
-								xstop = cliprect.X + 2;
+							if (xstop <= left) {
+								xstop = left;
 							}
 
 							unsigned short * dest = surfptr + xstart + y * (LogicalSurface->Stride() >> 1);
