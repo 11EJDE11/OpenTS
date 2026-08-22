@@ -2972,7 +2972,12 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 							base->Assign_Mission(MISSION_GUARD_AREA);
 
 							cell = House->Where_To_Go((FootClass *)base);
-							base->Assign_Archive_Target((cell != CELL_NONE && Class->ToBuild != RTTI_NONE) ? &Map[cell] : NULL);
+							if (cell != CELL_NONE && Class->ToBuild != RTTI_NONE) {
+								base->Assign_Archive_Target(&Map[cell]);
+								((FootClass *)base)->Queue_Navigation_List(&Map[cell]);
+							} else {
+								base->Assign_Archive_Target(NULL);
+							}
 						}
 
 						ScenarioInit--;
