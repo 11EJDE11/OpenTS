@@ -128,7 +128,7 @@ This section carries the vocabulary every draw and conversion below is written i
 ```ini title="rules.ini"
 [Powerups]
 Money=55,MONEY,2000     ; share 55, plays the MONEY animation, pays 2000 credits before the bonus
-Armor=33,ARMOR,0.5      ; share 33, plays ARMOR, halves incoming damage inside the radius
+Armor=33,ARMOR,2        ; share 33, plays ARMOR, halves incoming damage inside the radius
 Explosion=38,<none>,500 ; share 38, no animation, 500 raw damage per blast
 Veteran=15,VETERAN,1    ; share 15, plays VETERAN, one promotion step per object
 ```
@@ -187,7 +187,7 @@ The third field of a result's `[Powerups]` row is the only per-result number the
 | `Napalm` | Raw damage of the direct hit on the collector and of the blast |
 | `Gas` | Raw damage applied to each of the nine cells |
 | `Veteran` | How many promotion steps each object takes |
-| `Armor` | Divided into 1 to give the armor multiplier |
+| `Armor` | The armor multiplier |
 | `Speed` | The speed multiplier |
 | `Firepower` | The firepower multiplier |
 | Every other result | Not read |
@@ -217,10 +217,12 @@ The chosen vehicle is created for the collector's house in [limbo](/glossary/#li
 
 `Cloak`, `Veteran`, `Armor`, `Speed`, and `Firepower` all sweep the ground layer and apply themselves to objects within [`CrateRadius`](/keys/crateradius/) of the center of the crate's cell. The cloak result marks each object as able to cloak, which [cloaking and detection](/systems/cloaking/) then acts on; the veterancy result steps each object up the [promotion ladder](/systems/veterancy/#promotion-without-kills) as many times as its third field says. None of the five tests ownership, so objects of every house inside the circle are affected alongside the collector's own.
 
-The armor multiplier divides incoming damage while the speed and firepower multipliers multiply their quantities directly. Only armor is stored as a reciprocal.
+The armor multiplier divides incoming damage while the speed and firepower multipliers multiply their quantities directly. All three store the third field as written: an armor value of `2` halves ordinary incoming damage, while `0.5` doubles it.
 
-:::caution[An armor value above 1 makes objects weaker]
-The armor result stores the third field divided into 1, so `0.5` becomes a multiplier of `2.0` and halves incoming damage, while `2.0` becomes `0.5` and doubles it. The other two multipliers are stored as written.
+The armor sweep changes only an object whose armor multiplier is exactly `1`. An earlier armor crate therefore leaves that object unchanged, and a collector whose armor multiplier has already changed can convert the whole result to money before this sweep runs.
+
+:::caution[An armor value of zero leaves a zero divisor]
+The armor value is not clamped. Ordinary positive damage divides by the stored multiplier, so do not set the `Armor` row's third field to `0`.
 :::
 
 ### Results that reach the whole map
@@ -261,4 +263,4 @@ The result animation named by the second `[Powerups]` field is created at the ce
 
 `Armor`, `Speed`, and `Firepower` each speak one EVA line per crate, and only when at least one affected object belongs to a locally controlled house.
 
-An object whose armor or firepower multiplier is above 1, or an infantryman, vehicle or aircraft whose speed multiplier is, draws a different selection bracket. That bracket is the only lasting on-map sign of the three multiplier crates — a veterancy crate shows its promotion insignia and a cloak crate shows itself by cloaking — and it is not shown on every object: buildings and [`IsCoreDefender=yes`](/keys/iscoredefender/) vehicles draw a pip bar instead of a bracket and so never carry it. Because the armor multiplier is stored as a reciprocal, an armor crate configured above `1` leaves the object weaker and shows no bracket either.
+An object whose armor or firepower multiplier is above 1, or an infantryman, vehicle or aircraft whose speed multiplier is, draws a different selection bracket. That bracket is the only lasting on-map sign of the three multiplier crates — a veterancy crate shows its promotion insignia and a cloak crate shows itself by cloaking — and it is not shown on every object: buildings and [`IsCoreDefender=yes`](/keys/iscoredefender/) vehicles draw a pip bar instead of a bracket and so never carry it.

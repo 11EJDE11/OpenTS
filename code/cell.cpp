@@ -3896,7 +3896,7 @@ crate_money:
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
 					if (obj != NULL && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && ((TechnoClass *)obj)->ArmorBias == 1) {
-						double val = ((TechnoClass *)obj)->ArmorBias * (1 / data);
+						double val = ((TechnoClass *)obj)->ArmorBias * data;
 						((TechnoClass *)obj)->ArmorBias = val;
 						if (obj->Owner_HouseClass()->Is_Player_Control()) tospeak = true;
 					}
