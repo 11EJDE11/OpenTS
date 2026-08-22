@@ -3483,6 +3483,21 @@ int AircraftClass::Do_MISSION_GUARD_AREA(void)
 }
 
 
+/// <summary>
+/// Determines whether the player may give this aircraft a fire order.
+/// A grounded aircraft with no ammunition must remain available for reloading instead of
+/// accepting an attack that it cannot begin.
+/// </summary>
+/// <returns>Can the player give this aircraft a fire order?</returns>
+bool AircraftClass::Can_Player_Fire(void) const
+{
+	if (Ammo == 0 && !In_Air()) {
+		return(false);
+	}
+	return(BASECLASS::Can_Player_Fire());
+}
+
+
 /***********************************************************************************************
  * AircraftClass::Can_Fire -- Checks to see if the aircraft can fire.                          *
  *                                                                                             *

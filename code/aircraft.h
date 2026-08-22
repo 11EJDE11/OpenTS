@@ -112,6 +112,7 @@ class AircraftClass : public FootClass, public IFlyControl
 		Dir256 Pose_Dir(void) const;
 		AbstractClass * Good_LZ(void) const;
 		virtual DirType Fire_Direction(void) const override;
+		virtual bool Can_Player_Fire(void) const override;
 		virtual FireErrorType Can_Fire(AbstractClass * target, int which) const override;
 		virtual bool Should_Delete_Off_Map(void) override;
 
