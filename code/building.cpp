@@ -1182,7 +1182,7 @@ void BuildingClass::Draw_Overlays(Point2D const & point, Rect const & cliprect) 
 		if (factory != NULL) {
 			TechnoClass * obj = factory->Get_Object();
 			if (obj != NULL) {
-				Draw_Shape(*LogicalSurface, *NormalDrawer, (ShapeSet const *)obj->TClass->Get_Cameo_Data(), 0, point, cliprect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA), NULL);
+				Draw_Shape(*LogicalSurface, *CameoDrawer, (ShapeSet const *)obj->TClass->Get_Cameo_Data(), 0, point, cliprect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA), NULL);
 			}
 		}
 	}

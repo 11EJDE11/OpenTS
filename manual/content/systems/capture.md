@@ -176,7 +176,7 @@ A structure that crosses the half-strength or the red-strength mark runs the fir
 
 ### Infiltrating it
 
-A soldier that is not an engineer does anything at the structure only when it is `Agent=yes`. EVA announces the infiltration for a player-controlled house, and the house is recorded as spying on that structure: a spied structure shows its status overlay and what its factory is producing whenever the spying player selects it.
+A soldier that is not an engineer does anything at the structure only when it is `Agent=yes`. EVA announces the infiltration for a player-controlled house, and the house is recorded as spying on that structure: a spied structure shows its status overlay whenever the spying player selects it, and a spied factory also draws its current product through the same cameo palette as the sidebar.
 
 A [`Radar=yes`](/keys/radar/) structure adds far more. Spying on one marks the whole owning house as radar-spied, and while that mark stands every sight the victim's objects take is credited to the local player instead — a standing share of the victim's vision rather than a single reveal. The mark is recomputed only when a spied radar structure is destroyed or changes hands, and capturing a structure clears the capturing house's own spy mark on it. Spying on a structure with positive [`Power`](/keys/power/#scope-buildingtype) adds nothing but a redraw of whichever spied structures the player has selected at that moment.
 
