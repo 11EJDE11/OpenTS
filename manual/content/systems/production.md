@@ -217,6 +217,8 @@ What letting the object out involves depends on the factory:
 - One object leaves at a time: a factory still in contact with the object that just left refuses the next attempt as a temporary blockage. [`Hospital=yes`](/keys/hospital/), [`Armory=yes`](/keys/armory/) and `WeaponsFactory=yes` structures are exempt from that rule.
 - A refinery or weeder puts a vehicle out one cell south-west and one further south of its center and sends it to harvest, then reports a permanent failure anyway; infantry leaving one of those is scattered and fails the same way.
 
+A jumpjet infantryman whose rally point calls for flight skips the adjacent exit cell, flies straight to the rally point, and releases the factory's radio contact immediately. A nearby rally point, no rally point, and every other kind of infantry keep the ordinary exit-cell movement and unload coordination.
+
 A vehicle produced for a computer house by a factory with `WeaponsFactory=no` keeps that adjacent exit cell as its immediate destination. The base position chosen for it is queued behind the exit and becomes the point it guards; when the house supplies no valid position, the vehicle only clears the factory.
 
 A computer house drives its factories from the structures themselves rather than from a sidebar, and treats the three outcomes differently: a temporary blockage arms a wait of [`PlacementDelay`](/keys/placementdelay/) minutes before the next attempt, and only a permanent failure abandons and refunds. A factory of its own that has stopped making progress with no wait armed is abandoned outright rather than left on hold. An idle one with more than 10 credits behind it asks its house what to build next and starts it.

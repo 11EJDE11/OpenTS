@@ -3033,8 +3033,19 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 							base->ArchiveTarget = ((FootClass *)base)->NavCom;
 						}
 
+						InfantryClass * flying_jumpjet = NULL;
+						if (base->Fetch_RTTI() == RTTI_INFANTRY && base->ArchiveTarget != NULL) {
+							InfantryClass * infantry = (InfantryClass *)base;
+							if (infantry->Class->IsJumpJet &&
+								infantry->Should_JumpJet_Fly(infantry->Get_Coord().As_Cell(), base->ArchiveTarget->Center_Coord().As_Cell())) {
+								flying_jumpjet = infantry;
+							}
+						}
+
 						base->Assign_Mission(MISSION_MOVE);
+						if (flying_jumpjet == NULL) {
 						base->Assign_Destination(&Map[exitcell]);
+						}
 
 						/*
 						 * When the computer produces infantry, it has the infantry guard
@@ -3058,6 +3069,9 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 						*/
 						if (Transmit_Message(RADIO_HELLO, base) == RADIO_ROGER) {
 							Transmit_Message(RADIO_UNLOAD);
+							if (flying_jumpjet != NULL) {
+								flying_jumpjet->Transmit_Message(RADIO_OVER_OUT);
+							}
 						}
 						ScenarioInit--;
 						return(2);
