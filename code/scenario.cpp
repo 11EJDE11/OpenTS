@@ -376,7 +376,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 	}
 
 	if (Scen->ActionMovie == VQ_NONE && Scen->TransitTheme != THEME_NONE) {
-		Theme.Play_Song(Scen->TransitTheme);
+		Theme.Queue_Song(Scen->TransitTheme);
 	} else {
 		Theme.Queue_Song(THEME_PICK_ANOTHER);
 	}
