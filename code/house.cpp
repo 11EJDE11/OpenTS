@@ -8723,7 +8723,7 @@ void HouseClass::Update_Present_Super_Weapons(void)
 
 				if (present && !IsDefeated) {
 					if (!enabled && SuperWeapon[s]->Is_Powered() && SuperWeapon[s]->Suspend(true)) {
-						if (Fetch_ID() == PlayerPtr->Fetch_ID()) {
+						if (PlayerPtr != NULL && Fetch_ID() == PlayerPtr->Fetch_ID()) {
 							if (Map.IsTargettingMode == s) {
 								Map.IsTargettingMode = SUPER_NONE;
 							}
@@ -8733,7 +8733,7 @@ void HouseClass::Update_Present_Super_Weapons(void)
 					}
 
 					if (enabled && SuperWeapon[s]->Suspend(false)) {
-						if (Fetch_ID() == PlayerPtr->Fetch_ID()) {
+						if (PlayerPtr != NULL && Fetch_ID() == PlayerPtr->Fetch_ID()) {
 							if (s == Map.IsTargettingMode) {
 								Map.IsTargettingMode = SUPER_NONE;
 							}
