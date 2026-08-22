@@ -104,7 +104,11 @@ boolean STDMETHODCALLTYPE JumpjetLocomotionClass::Process(void)
 
 		if (IonStormClass::Is_Ion_Storm_Active()) {
 			if (CurrentState != GROUNDED) {
-				LinkedTo->Take_Damage(LinkedTo->Strength, 0, Rule->C4Warhead, NULL, true, true);
+				int damage = LinkedTo->Strength;
+				ResultType result = LinkedTo->Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, true);
+				if (result == RESULT_DESTROYED || result == RESULT_ALREADY_DESTROYED || !LinkedTo->IsActive || LinkedTo->IsInLimbo) {
+					return(false);
+				}
 			}
 		}
 
