@@ -53,6 +53,8 @@ Both figures in the fraction are priced through the house that lost the object. 
 
 Only a killer whose type is [`Trainable=yes`](/keys/trainable/) accumulates anything; the check is on the killer's own type, and it gates earning alone. An object that was handed a rank some other way keeps every benefit of that rank whether or not its type is trainable. BuildingTypes start untrainable and must set the key explicitly to earn from their own kills.
 
+The house that lost the object also tests whether it considers the killer allied. An allied killer receives no experience, while the remaining score, loss, and trigger bookkeeping for the destroyed object still runs.
+
 A killer is credited separately for each occupant that dies with a transport it destroys, and a vehicle that crushes something is credited as that object's killer.
 
 :::caution[Capturing awards no experience]

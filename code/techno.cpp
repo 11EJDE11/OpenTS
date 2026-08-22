@@ -5235,7 +5235,7 @@ void TechnoClass::Record_The_Kill(TechnoClass * source)
 	}
 
 	if (source != NULL) {
-		if (source->TClass->IsTrainable) {
+		if (source->TClass->IsTrainable && !House->Is_Ally(source)) {
 			source->Veterancy.Made_A_Kill(source->TClass->Cost_Of(House), points);
 		}
 
