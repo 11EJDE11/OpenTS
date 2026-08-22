@@ -214,7 +214,7 @@ class BuildingTypeClass : public TechnoTypeClass
 				stream.Serialize(Rate);
 			}
 		};
-		AnimControlType Anims[BSTATE_COUNT];
+		AnimControlType Anims[BSTATE_COUNT] = {};
 
 		struct AnimDataType {
 			/*
