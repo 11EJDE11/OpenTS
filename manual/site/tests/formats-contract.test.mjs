@@ -37,7 +37,7 @@ const acceptedKeys = (format) => Object.entries(keys).flatMap(([key, record]) =>
 test('every authored format satisfies the canonical five-variant contract', () => {
 	const schema = JSON.parse(readManual('schema/authored-format.schema.json'));
 	const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema);
-	assert.equal(formats.length, 19);
+	assert.equal(formats.length, 20);
 	for (const format of formats) {
 		const { slug: _slug, source: _source, ...document } = format;
 		assert.equal(validate(document), true, `${format.slug}: ${JSON.stringify(validate.errors)}`);

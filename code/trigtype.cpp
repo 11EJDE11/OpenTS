@@ -497,15 +497,13 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 
 	if (ini.Get_String(INI_NAME, IniName, "", buffer, sizeof(buffer))) {
 		char * token = strtok(buffer, ",");
-		if (stricmp(token, "<none>") == 0) {
-			House = HouseTypes[HOUSE_FIRST];
-		} else {
-			House = HouseTypes[HouseTypeClass::From_Name(token)];
-		}
+		HousesType house = stricmp(token, "<none>") == 0 ? HOUSE_FIRST : HouseTypeClass::From_Name(token);
+		if (house == HOUSE_NONE || House_From_HousesType(house) == NULL) return(false);
+		House = HouseTypes[house];
 		token = strtok(NULL, ",");
 		LinkedTo = NULL;
 		if (stricmp(token, "<none>") != 0) {
-			LinkedTo = Find_Or_Make(token);
+			LinkedTo = From_Name(token);
 		}
 		GivenName = strtok(NULL, ",");
 
@@ -574,8 +572,8 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 
 /// <summary>
 /// Reads all trigger types from the INI database specified.
-/// This routine is used when a scenario is being loaded. Every trigger the database
-/// declares is created if it does not exist yet and then asked to read its own data.
+/// Every name is created before any body is read so forward links can resolve. Definitions
+/// whose owner is not live in the session are then discarded and the survivors renumbered.
 /// </summary>
 /// <param name="ini">The INI database to read the trigger types from.</param>
 void TriggerTypeClass::Read_All(CCINIClass const & ini)
@@ -587,7 +585,18 @@ void TriggerTypeClass::Read_All(CCINIClass const & ini)
 
 		TriggerTypeClass * trigger = Find_Or_Make(entry);
 		assert(trigger != NULL);
-		trigger->Read_INI(ini);
+	}
+
+	for (int index = 0; index < len; index++) {
+		char const * entry = ini.Get_Entry(INI_NAME, index);
+		TriggerTypeClass * trigger = From_Name(entry);
+		if (trigger != NULL && !trigger->Read_INI(ini)) {
+			delete trigger;
+		}
+	}
+
+	for (int index = 0; index < TriggerTypes.Count(); index++) {
+		TriggerTypes[index]->HeapID = index;
 	}
 }
 

@@ -224,7 +224,7 @@ bool TagTypeClass::Read_INI(CCINIClass const & ini)
 		GivenName = TStringID<48>(token);
 
 		token = strtok(NULL, ",");
-		FirstTrigger = TriggerTypeClass::Find_Or_Make(token);
+		FirstTrigger = TriggerTypeClass::From_Name(token);
 
 		return(true);
 	}

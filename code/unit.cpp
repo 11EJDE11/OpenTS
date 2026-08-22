@@ -167,6 +167,7 @@
 #include "tube.hh"
 
 #include <algorithm>
+#include <vector>
 
 char const * const UnitClass::INI_NAME = "Units";
 
@@ -5510,9 +5511,9 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 	HousesType	inhouse;        // Unit house.
 	UnitType		classid;    // Unit class.
 	char			buf[128];
-	DynamicVectorClass<int> followers;
-
 	int len = ini.Entry_Count(INI_NAME);
+	std::vector<int> followers(len, -1);
+	std::vector<UnitClass *> source_units(len, nullptr);
 
 	for (int index = 0; index < len; index++) {
 		char const * entry = ini.Get_Entry(INI_NAME, index);
@@ -5521,8 +5522,11 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 
 		inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
 		if (inhouse != HOUSE_NONE) {
-			classid = UnitTypeClass::From_Name(strtok(NULL, ","));
 			HouseClass * inhousep = House_From_HousesType(inhouse);
+			if (inhousep == NULL) {
+				continue;
+			}
+			classid = UnitTypeClass::From_Name(strtok(NULL, ","));
 
 			if (classid != UNIT_NONE) {
 
@@ -5578,7 +5582,7 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 
 					token = strtok(NULL, ",");
 					if (token != NULL) {
-						followers.Add(atoi(token));
+						followers[index] = atoi(token);
 					}
 
 					token = strtok(NULL, ",");
@@ -5603,6 +5607,7 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 						} else {
 							unit->Enter_Idle_Mode();
 						}
+						source_units[index] = unit;
 
 					} else {
 
@@ -5617,15 +5622,16 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 		}
 	}
 
-	for (int i = 0; i < Units.Count(); i++) {
-		int followerid = followers[i];
-		UnitClass * unit = Units[i];
-		if ((UnitType)followerid != UNIT_NONE && (unsigned)followerid < (unsigned)Units.Count()) {
-			UnitClass * follower = Units[followerid];
-			unit->FollowingMe = follower;
-			follower->IsFollowing = true;
-		} else {
-			unit->FollowingMe = NULL;
+	for (int index = 0; index < len; index++) {
+		UnitClass * unit = source_units[index];
+		if (unit != NULL) {
+			int followerid = followers[index];
+			if (followerid >= 0 && followerid < len && source_units[followerid] != NULL) {
+				unit->FollowingMe = source_units[followerid];
+				source_units[followerid]->IsFollowing = true;
+			} else {
+				unit->FollowingMe = NULL;
+			}
 		}
 	}
 }

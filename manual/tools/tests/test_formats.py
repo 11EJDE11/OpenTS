@@ -22,7 +22,7 @@ class CurrentFormatCatalogTests(unittest.TestCase):
         cls.catalog = formats.load_formats()
 
     def test_catalog_covers_every_variant_and_preserves_mapping_routes(self):
-        self.assertEqual(len(self.catalog), 19)
+        self.assertEqual(len(self.catalog), 20)
         self.assertEqual(
             {record["kind"] for record in self.catalog.values()},
             formats.FORMAT_KINDS,

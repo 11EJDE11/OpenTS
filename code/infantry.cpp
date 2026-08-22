@@ -3152,13 +3152,9 @@ void InfantryClass::Read_INI(CCINIClass const & ini)
 		*/
 		inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
 		if (inhouse != HOUSE_NONE) {
-
-			HouseClass * inhousep = NULL;
-			for (int h = 0; h < Houses.Count(); h++) {
-				if (Houses[h]->Class->House == inhouse) {
-					inhousep = Houses[h];
-					break;
-				}
+			HouseClass * inhousep = House_From_HousesType(inhouse);
+			if (inhousep == NULL) {
+				continue;
 			}
 
 			/*

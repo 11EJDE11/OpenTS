@@ -3796,12 +3796,13 @@ void AircraftClass::Read_INI(CCINIClass const & ini)
 
 		inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
 		if (inhouse != HOUSE_NONE) {
+			HouseClass * inhousep = House_From_HousesType(inhouse);
+			if (inhousep == NULL) {
+				continue;
+			}
 			classid = AircraftTypeClass::From_Name(strtok(NULL, ","));
 
 			if (classid != AIRCRAFT_NONE) {
-
-				HouseClass * inhousep = House_From_HousesType(inhouse);
-
 				air = new AircraftClass(AircraftTypes[classid], inhousep);
 				if (air) {
 
