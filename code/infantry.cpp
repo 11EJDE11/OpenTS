@@ -1627,9 +1627,6 @@ MoveType InfantryClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir
 			}
 		}
 
-		if (cellptr->Overlay >= OVERLAY_LARGE_TIBERIUM01 && cellptr->Overlay <= OVERLAY_LARGE_TIBERIUM12) {
-			return(MOVE_NO);
-		}
 	}
 
 	/*
