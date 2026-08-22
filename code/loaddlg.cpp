@@ -867,7 +867,7 @@ bool LoadOptionsClass::Save_File(const char * file_name, const char * descr)
 	if (dialog != 0) {
 		OwnerDraw::Display_Dialog(dialog);
 	}
-	bool saved = Save_Game(file_name, descr);
+	bool saved = Request_Save_Game(file_name, descr);
 	if (dialog != 0) {
 		OwnerDraw::End_Dialog(dialog);
 	}

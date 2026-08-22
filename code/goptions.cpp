@@ -45,6 +45,7 @@
 #include "ownrdraw.h"
 #include "queue.h"
 #include "restate.h"
+#include "saveload.h"
 #include "scenario.h"
 #include "wonline.h"
 
@@ -163,7 +164,7 @@ BOOL CALLBACK Game_Options_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 							Game_Options_On_INITDIALOG(window);
 							ShowWindow(window, SW_SHOW);
 							UpdateWindow(window);
-						} else {
+						} else if (Is_Multiplayer_Saving_Allowed()) {
 							OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::SAVEGAME));
 							*retval = IDC_SAVE_GAME;
 						}
@@ -301,6 +302,13 @@ void Game_Options_On_INITDIALOG(HWND window)
 		handle = GetDlgItem(window, IDC_DELETE_GAME);
 		if (handle) {
 			EnableWindow(handle, present);
+		}
+	}
+
+	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
+		handle = GetDlgItem(window, IDC_SAVE_GAME);
+		if (handle) {
+			EnableWindow(handle, Is_Multiplayer_Saving_Allowed());
 		}
 	}
 

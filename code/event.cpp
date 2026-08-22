@@ -56,12 +56,10 @@
 #include "data.h"
 #include "dbgprint.h"
 #include "foot.h"
-#include "ftimer.h"
 #include "goptions.h"
 #include "house.h"
 #include "language\language.h"
 #include "mouse.h"
-#include "msgbox.h"
 #include "rules.h"
 #include "saveload.h"
 #include "scenario.h"
@@ -1104,30 +1102,7 @@ void EventClass::Execute(void)
 		**	Save a multiplayer game (this event is only generated in multiplayer mode)
 		*/
 		case SAVEGAME:
-			/*
-			**	Show the user what's going on with a message box (but only if
-			**	we're not already inside a dialog box routine!)
-			*/
-			if (SpecialDialog == SDLG_NONE) {
-				CDTimerClass<SystemTimerClass> timer;
-				//timer.Start();
-				timer = TICKS_PER_SECOND * 4;
-
-				WWMessageBox().Process(TXT_SAVING_GAME, TXT_NONE);
-
-				Save_Game (NET_SAVE_FILE_NAME, (char *)Fetch_String(TXT_MULTIPLAYER_GAME));
-
-				while (timer > 0) {
-					Call_Back();
-				}
-
-				HiddenSurface->Fill(0);
-				Map.Flag_To_Redraw(GS_REDRAW_ALL);
-				Map.Render();
-			}
-			else {
-				Save_Game (NET_SAVE_FILE_NAME, (char *)Fetch_String(TXT_MULTIPLAYER_GAME));
-			}
+			Request_Save_Game(NET_SAVE_FILE_NAME, Fetch_String(TXT_MULTIPLAYER_GAME));
 			break;
 
 		/*
@@ -1150,6 +1125,7 @@ void EventClass::Execute(void)
 
 		case REMOVEPLAYER:
 			DebugString("Executing REMOVEPLAYER event. Frame is %d\n", ::Frame);
+			Disable_Multiplayer_Saving();
 			index = Data.General.Value;
 
 			house = Houses[index];

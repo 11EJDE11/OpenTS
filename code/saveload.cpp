@@ -67,6 +67,7 @@
 #include "builtype.h"
 #include "bullet.h"
 #include "bullettype.h"
+#include "data.h"
 #include "dbgprint.h"
 #include "empulse.h"
 #include "enviro.h"
@@ -80,12 +81,14 @@
 #include "infatype.h"
 #include "init.h"
 #include "ion.h"
+#include "language\language.h"
 #include "loaddlg.h"
 #include "light.h"
 #include "logic.h"
 #include "overlay.h"
 #include "overtype.h"
 #include "ovrlight.h"
+#include "ownrdraw.h"
 #include "particle.h"
 #include "partsys.h"
 #include "psystype.h"
@@ -129,6 +132,8 @@
 #include "waypoint.h"
 #include "weapon.h"
 
+#include <string>
+
 //#define	SAVE_BLOCK_SIZE	512
 #define	SAVE_BLOCK_SIZE	4096
 //#define	SAVE_BLOCK_SIZE	1024
@@ -138,6 +143,10 @@
 */
 unsigned int ExpectedGameVersion = LoadOptionsClass::GAMEVER_OPENTS;
 
+static bool MultiplayerSavingAllowed = true;
+static bool MultiplayerSavePending = false;
+static std::string PendingSaveFileName;
+static std::string PendingSaveDescription;
 
 static int Reconcile_Players(void);
 
@@ -912,7 +921,7 @@ static bool Get_All(IStream *stream, bool save_net)
  *   12/28/1994 BR : Created.                                              *
  *   02/27/1996 JLB : Uses simpler game control value save operation.      *
  *=========================================================================*/
-bool Save_Game(const char *file_name, char const * descr, bool )
+static bool Save_Game(const char *file_name, char const * descr)
 {
 	WCHAR name[64];
 
@@ -1005,6 +1014,98 @@ bool Save_Game(const char *file_name, char const * descr, bool )
 
 	DebugString("SAVING GAME [%s - %s] - Complete\n\n", file_name, descr);
 	return(res);
+}
+
+
+/// <summary>
+/// Accepts a save request at the boundary shared by every engine caller.
+/// Solo and skirmish games save immediately. A synchronized multiplayer request is copied
+/// into module-owned storage and held until the frame has finished retiring dead objects.
+/// </summary>
+/// <returns>Returns true when the save completed or the multiplayer request was accepted.</returns>
+bool Request_Save_Game(char const * file_name, char const * descr)
+{
+	if (file_name == NULL || descr == NULL) return(false);
+
+	if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
+		return(Save_Game(file_name, descr));
+	}
+
+	if (!MultiplayerSavingAllowed) {
+		DebugString("Ignoring multiplayer save request because a player has left this match\n");
+		return(false);
+	}
+
+	if (MultiplayerSavePending) {
+		DebugString("Coalescing duplicate multiplayer save request\n");
+		return(true);
+	}
+
+	PendingSaveFileName = file_name;
+	PendingSaveDescription = descr;
+	MultiplayerSavePending = true;
+	return(true);
+}
+
+
+/// <summary>
+/// Writes the synchronized save request accepted during this frame, if any.
+/// The request is cleared before writing so a callback cannot cause it to be written twice.
+/// </summary>
+void Process_Pending_Save_Game(void)
+{
+	if (!MultiplayerSavePending) return;
+
+	std::string file_name;
+	std::string description;
+	file_name.swap(PendingSaveFileName);
+	description.swap(PendingSaveDescription);
+	MultiplayerSavePending = false;
+
+	if (MultiplayerSavingAllowed) {
+		HWND dialog = OwnerDraw::Custom_Message_Box(Fetch_String(TXT_SAVING_GAME), NULL, NULL);
+		if (dialog != 0) {
+			OwnerDraw::Display_Dialog(dialog);
+		}
+		Save_Game(file_name.c_str(), description.c_str());
+		if (dialog != 0) {
+			OwnerDraw::End_Dialog(dialog);
+		}
+	}
+}
+
+
+/// <summary>
+/// Opens the save boundary for a newly selected game and discards stale work from the last one.
+/// Mission restart deliberately does not call this routine.
+/// </summary>
+void Reset_Multiplayer_Save_State(void)
+{
+	MultiplayerSavingAllowed = true;
+	MultiplayerSavePending = false;
+	PendingSaveFileName.clear();
+	PendingSaveDescription.clear();
+}
+
+
+/// <summary>
+/// Closes multiplayer saving for the rest of the current match and cancels pending work.
+/// </summary>
+void Disable_Multiplayer_Saving(void)
+{
+	MultiplayerSavingAllowed = false;
+	MultiplayerSavePending = false;
+	PendingSaveFileName.clear();
+	PendingSaveDescription.clear();
+}
+
+
+/// <summary>
+/// Reports whether the current multiplayer match may still accept a save request.
+/// </summary>
+bool Is_Multiplayer_Saving_Allowed(void)
+{
+	return(MultiplayerSavingAllowed);
 }
 
 

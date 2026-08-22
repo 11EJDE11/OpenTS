@@ -23,6 +23,10 @@ int Load_Misc_Values(IStream * stream);
 int Save_Misc_Values(IStream * stream);
 bool Get_Savefile_Info(char const * name, SaveVersionInfo * info);
 bool Load_Game(const char *file_name);
-bool Save_Game(const char *file_name, char const * descr, bool bargraph=false);
+bool Request_Save_Game(char const * file_name, char const * descr);
+void Process_Pending_Save_Game(void);
+void Reset_Multiplayer_Save_State(void);
+void Disable_Multiplayer_Saving(void);
+bool Is_Multiplayer_Saving_Allowed(void);
 
 extern unsigned int ExpectedGameVersion;

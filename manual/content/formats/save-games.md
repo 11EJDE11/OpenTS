@@ -7,7 +7,12 @@ extensions:
   - .SAV
 role: persistence
 source_files:
+  - code/event.cpp
+  - code/goptions.cpp
+  - code/init.cpp
   - code/loaddlg.cpp
+  - code/mainloop.cpp
+  - code/netdlg.cpp
   - code/saveload.cpp
   - code/savestream.cpp
   - code/savever.cpp
@@ -19,6 +24,12 @@ source_files:
 The save dialog creates `.SAV` files. Each file is an OLE compound document: the listing details live in the document's own property set, and the game state goes into a single `CONTENTS` stream that is compressed as it is written.
 
 The dialog names a new save `SAVE` followed by four hexadecimal digits, drawing again until it finds a name no existing file answers to; saving over a listed game reuses that game's name. A multiplayer save is written under one fixed name instead and is never offered in the list.
+
+## When the file is written
+
+A campaign or skirmish save requested through the save dialog is written immediately while that dialog has the scenario paused. A multiplayer click instead submits a synchronized `SAVEGAME` command. When that command executes, each peer copies one pending filename and description; duplicate commands before the frame ends share that one request. The file is written only after the command queue has finished and the end-of-frame deletion pass has retired every object already marked for removal.
+
+Once a connection is destroyed or a synchronized `REMOVEPLAYER` command executes, multiplayer saving is disabled for the rest of that match and any pending request is cancelled. The options dialog disables its Save button in that state. Restarting the mission does not restore the button or accept another request; selecting and starting a new game does.
 
 ## What the file holds
 

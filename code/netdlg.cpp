@@ -116,6 +116,7 @@
 #include "list.h"
 #include "queue.h"
 #include "rules.h"
+#include "saveload.h"
 #include "session.h"
 #include "wonline.h"
 #include "wsproto.h"
@@ -240,6 +241,8 @@ void Destroy_Connection(int id, int error)
 	//------------------------------------------------------------------------
 	if (!housep || !housep->IsHuman)
 		return;
+
+	Disable_Multiplayer_Saving();
 
 	if (Debug_Print_Events) {
 		DebugString("Destroying connection for house %d (%s)\n",

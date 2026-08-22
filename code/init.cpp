@@ -147,6 +147,7 @@
 #include "revent.h"
 #include "rndstraw.h"
 #include "rules.h"
+#include "saveload.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "script.h"
@@ -1508,6 +1509,7 @@ restart:
 	**	Don't carry stray keystrokes into game.
 	*/
 	Keyboard->Clear();
+	Reset_Multiplayer_Save_State();
 
 	/*
 	**	Initialize the random number generator(s)
