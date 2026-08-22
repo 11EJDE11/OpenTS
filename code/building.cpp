@@ -417,10 +417,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass * from, RadioMessageT
 				}
 				return(RADIO_NEGATIVE);
 			}
-			if (Class->IsDockUnload && from->RTTI == RTTI_UNIT && ((UnitClass *)from)->Class->IsToHarvest && (ScenarioInit || !Cargo.Is_Something_Attached())) {
+			if (Class->IsDockUnload && from->RTTI == RTTI_UNIT && ((UnitClass *)from)->Class->IsToHarvest &&
+				((UnitClass *)from)->House->Is_Ally(House) && (ScenarioInit || !Cargo.Is_Something_Attached())) {
 				return(RADIO_ROGER);
 			}
-			if (Class->IsWeeder && from->RTTI == RTTI_UNIT && ((UnitClass *)from)->Class->IsToVeinHarvest && (ScenarioInit || !Cargo.Is_Something_Attached())) {
+			if (Class->IsWeeder && from->RTTI == RTTI_UNIT && ((UnitClass *)from)->Class->IsToVeinHarvest &&
+				((UnitClass *)from)->House->Is_Ally(House) && (ScenarioInit || !Cargo.Is_Something_Attached())) {
 				return(RADIO_ROGER);
 			}
 			return(RADIO_STATIC);

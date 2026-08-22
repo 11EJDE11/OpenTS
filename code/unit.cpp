@@ -3888,21 +3888,23 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 
 				/*
 				 * The bib of a refinery or weeder is a legal destination for a
-				 * harvester that is owned by an ally and is heading for the dock.
+				 * harvester whose house is mutually allied and that is heading for the dock.
 				 */
 				if (bptr->Class->IsBibbed) {
 					if (Map[Adjacent_Cell(cellptr->CellID, FACING_E)].Cell_Building() != bptr) {
 						obj = obj->Next;
 						continue;
 					}
-					if (Class->IsToHarvest && bptr->Class->IsRefinery && House->Is_Ally(bptr->House)) {
+					if (Class->IsToHarvest && bptr->Class->IsRefinery &&
+						House->Is_Ally(bptr->House) && bptr->House->Is_Ally(House)) {
 						Cell bcell = bptr->PositionCell;
 						if (cellptr->CellID == bcell + Cell(2, 1)) {
 							obj = obj->Next;
 							continue;
 						}
 					}
-					if (Class->IsToVeinHarvest && bptr->Class->IsWeeder && House->Is_Ally(bptr->House)) {
+					if (Class->IsToVeinHarvest && bptr->Class->IsWeeder &&
+						House->Is_Ally(bptr->House) && bptr->House->Is_Ally(House)) {
 						Cell bcell = bptr->PositionCell;
 						if (cellptr->CellID == bcell + Cell(2, 1)) {
 							obj = obj->Next;
