@@ -154,6 +154,8 @@
 #include "super.hh"
 
 #include <algorithm>
+#include <cstddef>
+#include <vector>
 
 /*
 **	These layer control elements are used to group the displayable objects
@@ -3250,13 +3252,24 @@ void DisplayClass::Read_INI(CCINIClass const & ini)
 	staging_buffer.Unlock();
 
 	static char const * const ISOMAPPACK5 = "IsoMapPack5";
-	len = ini.Get_UUBlock(ISOMAPPACK5, staging_buffer.Lock(), size);
-	if (len > 0) {
-		BufferStraw bstraw(staging_buffer.Lock(), len);
-		Map.Read_Binary_5(bstraw);
-		staging_buffer.Unlock();
+	std::size_t const record_size = sizeof(Cell) + sizeof(BlubCell.ITType)
+		+ sizeof(BlubCell.SubTile) + sizeof(BlubCell.Height)
+		+ sizeof(BlubCell.IsIceGrowthAllowed);
+	std::size_t const maximum_payload_size = static_cast<std::size_t>(MAP_CELL_TOTAL) * record_size + sizeof(Cell);
+	std::size_t const lzo_block_size = 8 * 1024;
+	std::size_t const maximum_block_count = (maximum_payload_size + lzo_block_size - 1) / lzo_block_size;
+	// Each block carries two 16-bit counts and has compressed storage twice its input size.
+	std::size_t const maximum_decoded_size = maximum_block_count * (2 * lzo_block_size + 2 * sizeof(unsigned short));
+	if (ini.Entry_Count(ISOMAPPACK5) > 0) {
+		std::vector<unsigned char> decoded(maximum_decoded_size + 1);
+		len = ini.Get_UUBlock(ISOMAPPACK5, decoded.data(), static_cast<int>(decoded.size()));
+		if (len > 0 && static_cast<std::size_t>(len) < decoded.size()) {
+			BufferStraw bstraw(decoded.data(), len);
+			Map.Read_Binary_5(bstraw);
+		} else if (len > 0) {
+			DebugString("IsoMapPack5 exceeds the maximum terrain payload; ignoring the section.\n");
+		}
 	}
-	staging_buffer.Unlock();
 
 	Session.Update_Progress(68);
 	Call_Back();
