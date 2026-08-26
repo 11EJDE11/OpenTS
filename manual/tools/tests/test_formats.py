@@ -22,7 +22,14 @@ class CurrentFormatCatalogTests(unittest.TestCase):
         cls.catalog = formats.load_formats()
 
     def test_catalog_covers_every_variant_and_preserves_mapping_routes(self):
-        self.assertEqual(len(self.catalog), 20)
+        # A page whose frontmatter omits format_id is skipped rather than rejected,
+        # so every authored file is required to arrive rather than counted.
+        authored = sorted((MANUAL / "content" / "formats").glob("*.md"))
+        self.assertTrue(authored)
+        self.assertEqual(
+            {record["_slug"] for record in self.catalog.values()},
+            {path.stem for path in authored},
+        )
         self.assertEqual(
             {record["kind"] for record in self.catalog.values()},
             formats.FORMAT_KINDS,
@@ -50,10 +57,20 @@ class CurrentFormatCatalogTests(unittest.TestCase):
 
         map_seed = matches("map-seed")
         theater = matches("theater-control")
-        self.assertEqual(len(map_seed), 21)
-        self.assertEqual(len(theater), 81)
+        self.assertTrue(map_seed)
+        self.assertTrue(theater)
         self.assertEqual(
             {scope["section"]["name"] for _, scope in map_seed}, {"RandomMap"})
+        # Every [RandomMap] scope in the tree has to be selected, not merely every
+        # selected scope be a [RandomMap] one, so the query cannot quietly narrow.
+        self.assertEqual(
+            len(map_seed),
+            sum(
+                scope["section"].get("name") == "RandomMap"
+                for record in self.keys.values()
+                for scope in record["scopes"]
+            ),
+        )
         self.assertEqual(
             {scope["section"]["kind"] for _, scope in theater},
             {"literal", "identifier"},

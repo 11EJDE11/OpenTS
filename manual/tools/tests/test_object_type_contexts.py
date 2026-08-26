@@ -16,27 +16,13 @@ import schema_validation
 import section_selectors
 
 
-OBJECT_TYPE_KEYS = (
-    'Image',
-    'AlphaImage',
-    'CrushSound',
-    'Crushable',
-    'RadarInvisible',
-    'Selectable',
-    'LegalTarget',
-    'Armor',
-    'Strength',
-    'Immune',
-    'Insignificant',
-    'HasRadialIndicator',
-    'RadialColor',
-    'IgnoresFirestorm',
-    'Theater',
-    'NewTheater',
-    'Voxel',
-)
+"""The keys ObjectTypeClass reads are discovered rather than transcribed, so a
+read added to objtype.cpp reaches these tests without an edit here."""
 
-GENERIC_OBJECT_TYPE_KEYS = OBJECT_TYPE_KEYS[:14]
+
+# Read from art.ini alone, under the section the Image= value names, rather than
+# through the rules-and-art caller pair every other ObjectTypeClass read takes.
+ART_QUALIFIED_KEYS = ('Theater', 'NewTheater', 'Voxel')
 
 RULES_OBJECT_TYPES = (
     'AircraftType',
@@ -89,32 +75,19 @@ def record(key, declared_in, member, receiver='ini', section='IniName', line=1):
 class RulesObjectsInventoryTests(unittest.TestCase):
     def test_current_inventory_and_object_contexts_are_exact(self):
         rows = extract_engine.discover_rules_objects_loaders()
-        self.assertEqual(len(rows), 17)
+        # Discovery already refuses an unmapped loader and a loader that has gone
+        # missing, so the mapping itself carries the roster and its order.
         self.assertEqual(
-            [(row['target'], row['receiver']) for row in rows],
-            [
-                ('HouseTypes', 'ini'),
-                ('SuperWeaponTypes', 'ini'),
-                ('AnimTypes', 'ArtINI'),
-                ('BuildingTypes', 'ini'),
-                ('AircraftTypes', 'ini'),
-                ('UnitTypes', 'ini'),
-                ('InfantryTypes', 'ini'),
-                ('Weapons', 'ini'),
-                ('BulletTypes', 'ini'),
-                ('::Warheads', 'ini'),
-                ('TerrainTypes', 'ini'),
-                ('SmudgeTypes', 'ini'),
-                ('OverlayTypes', 'ini'),
-                ('ParticleTypes', 'ini'),
-                ('ParticleSystemTypes', 'ini'),
-                ('VoxelAnimTypes', 'ini'),
-                ('miss', 'ini'),
-            ],
+            [row['target'] for row in rows],
+            list(extract_engine.RULES_OBJECTS_LOADERS),
+        )
+        # Art is the one loader reading a file other than the rules file.
+        self.assertEqual(
+            {row['target'] for row in rows if row['receiver'] != 'ini'},
+            {'AnimTypes'},
         )
 
         contexts = extract_engine.object_type_loader_contexts()
-        self.assertEqual(len(contexts), 12)
         self.assertEqual(
             {context['applies_to'] for context in contexts},
             set(RULES_OBJECT_TYPES) | {'AnimType'},
@@ -158,16 +131,23 @@ class CurrentObjectTypeContractTests(unittest.TestCase):
             ini_inventory.load_manifest())
 
     def test_complete_object_type_reader_surface_is_present(self):
+        code = Path(extract_engine.CODE_DIR)
         records, _ = extract_engine.extract_file(
-            Path(extract_engine.CODE_DIR, 'objtype.cpp'),
+            code / 'objtype.cpp',
             'ObjectTypeClass',
             extract_engine.load_hierarchy(),
         )
-        self.assertEqual(
-            tuple(record['key'] for record in records),
-            OBJECT_TYPE_KEYS,
-        )
-        for key in OBJECT_TYPE_KEYS:
+        # The extractor and the inventory scanner read objtype.cpp independently,
+        # so requiring them to agree catches a read either one stops seeing.
+        scanned = [
+            site.key
+            for site in ini_inventory.scan_source(code / 'objtype.cpp', code)
+            if (site.function or '').startswith('ObjectTypeClass::')
+        ]
+        keys = [record['key'] for record in records]
+        self.assertTrue(keys)
+        self.assertEqual(keys, scanned)
+        for key in keys:
             with self.subTest(key=key):
                 self.assertIn(key, self.keys)
                 all_types = {
@@ -192,13 +172,22 @@ class CurrentObjectTypeContractTests(unittest.TestCase):
             extract_engine.object_type_loader_contexts(tree=tree),
         )
         selector = section_selectors.identifier('object-type')
-        for key in GENERIC_OBJECT_TYPE_KEYS:
+
+        def caller_scopes(key):
+            return [
+                scope for scope in keys[key]['scopes']
+                if extract_engine._scope_identity(scope).startswith(
+                    'ObjectTypeClass::')
+            ]
+
+        generic = [
+            record['key'] for record in records
+            if record['key'] not in ART_QUALIFIED_KEYS
+        ]
+        self.assertTrue(generic)
+        for key in generic:
             with self.subTest(key=key):
-                scopes = [
-                    scope for scope in keys[key]['scopes']
-                    if extract_engine._scope_identity(scope).startswith(
-                        'ObjectTypeClass::')
-                ]
+                scopes = caller_scopes(key)
                 self.assertEqual(len(scopes), 2)
                 self.assertEqual(scopes[0]['applies_to'], list(RULES_OBJECT_TYPES))
                 self.assertEqual(scopes[0]['file'], 'rules.ini')
@@ -206,6 +195,15 @@ class CurrentObjectTypeContractTests(unittest.TestCase):
                 self.assertEqual(scopes[1]['applies_to'], ['AnimType'])
                 self.assertEqual(scopes[1]['file'], 'art.ini')
                 self.assertEqual(scopes[1]['section'], selector)
+
+        # The exceptions are named rather than sliced off, so each one has to earn
+        # its place by actually reading art alone under the Image= section.
+        for key in ART_QUALIFIED_KEYS:
+            with self.subTest(key=key):
+                scopes = caller_scopes(key)
+                self.assertEqual(len(scopes), 1)
+                self.assertEqual(scopes[0]['file'], 'art.ini')
+                self.assertEqual(scopes[0]['section'], section_selectors.image())
 
     def test_image_has_exactly_four_caller_correct_scopes(self):
         scopes = self.keys['Image']['scopes']

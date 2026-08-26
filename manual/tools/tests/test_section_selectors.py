@@ -183,29 +183,27 @@ class CurrentExtractionSelectorTests(unittest.TestCase):
                     section_selectors.require(source["section"])
 
     def test_source_backed_adapters_cover_every_identifier_kind(self):
-        expected = {
-            ("AA", "bullettype.cpp"): section_selectors.identifier("object-type"),
-            ("ActsLike", "house.cpp"): section_selectors.identifier("house"),
-            ("Airspeed", "rules.cpp"): section_selectors.identifier("difficulty"),
-            ("CD", "campaign.cpp"): section_selectors.identifier("campaign"),
-            ("Length", "theme.cpp"): section_selectors.identifier("theme"),
-            ("Priority", "voc.cpp"): section_selectors.identifier("sound"),
-            ("TilesInSet", "isotype.cpp"): section_selectors.identifier("tile-set"),
-            ("Buildable", "rules.cpp"): section_selectors.identifier("land-type"),
-            ("NodeCount", "base.cpp"): section_selectors.identifier("house"),
-            ("Size", "display.cpp"): section_selectors.literal("Map"),
-            ("Drag", "levitate.cpp"): section_selectors.literal("LEVITATION"),
-            ("Voxel", "objtype.cpp"): section_selectors.image(),
-            ("Zombie", "mission.cpp"): section_selectors.identifier("mission"),
-            ("MinPlayers", "session.cpp"):
-                section_selectors.identifier("multiplayer-map"),
-            # BulletTypeClass::Read_INI re-reads Image= with an empty default,
-            # so its own art reads have no object entry to fall back to.
-            ("AnimLow", "bullettype.cpp"): section_selectors.image(None),
+        # Coverage is the claim, so it is read off the extraction rather than from a
+        # roster of representative keys that rots whenever a read moves file.
+        exercised = {
+            scope["section"]["source"]
+            for entry in self.keys.values()
+            for scope in entry["scopes"]
+            if scope["section"]["kind"] == "identifier"
         }
-        for identity, selector in expected.items():
-            with self.subTest(identity=identity):
-                self.assertEqual(self.selector_from(*identity), selector)
+        self.assertEqual(
+            exercised,
+            set(section_selectors.IDENTIFIER_SOURCES) - {"base-owner-house"},
+        )
+
+    def test_image_sections_record_whether_an_object_entry_backs_them(self):
+        self.assertEqual(
+            self.selector_from("Voxel", "objtype.cpp"), section_selectors.image())
+        # BulletTypeClass::Read_INI re-reads Image= with an empty default,
+        # so its own art reads have no object entry to fall back to.
+        self.assertEqual(
+            self.selector_from("AnimLow", "bullettype.cpp"),
+            section_selectors.image(None))
 
 
 if __name__ == "__main__":

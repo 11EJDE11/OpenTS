@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { load } from 'js-yaml';
+import { slugify } from '../src/lib/reference.mjs';
 
 const site = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repository = resolve(site, '../..');
@@ -26,58 +27,15 @@ test('Image keeps four ordered public scopes and stable fragment identities', ()
 	const keys = load(readRepositoryFile('manual/data/ini-keys.yaml'));
 	const scopes = keys.Image?.scopes;
 	assert.ok(scopes, 'Image is missing from the generated INI catalog');
-	assert.equal(scopes.length, 4);
-	assert.deepEqual(
-		scopes.map((scope) => ({
-			file: scope.file,
-			section: scope.section,
-			value_type: scope.value_type,
-			first_type: scope.applies_to[0],
-		})),
-		[
-			{
-				file: 'rules.ini',
-				section: { kind: 'identifier', source: 'object-type' },
-				value_type: 'string',
-				first_type: 'AircraftType',
-			},
-			{
-				file: 'art.ini',
-				section: { kind: 'identifier', source: 'object-type' },
-				value_type: 'string',
-				first_type: 'AnimType',
-			},
-			{
-				file: 'rules.ini',
-				section: { kind: 'identifier', source: 'object-type' },
-				value_type: 'integer',
-				first_type: 'Tiberium',
-			},
-			{
-				file: 'art.ini',
-				section: { kind: 'image', fallback: 'object-type' },
-				value_type: 'string',
-				first_type: 'BuildingType',
-			},
-		],
-	);
-
-	const ordinary = [
-		'AircraftType',
-		'BuildingType',
-		'BulletType',
-		'InfantryType',
-		'OverlayType',
-		'ParticleSystemType',
-		'ParticleType',
-		'SmudgeType',
-		'TerrainType',
-		'UnitType',
-		'VoxelAnimType',
-	];
-	assert.deepEqual([...scopes[0].applies_to].sort(), ordinary.sort());
-	assert.deepEqual(scopes[1].applies_to, ['AnimType']);
-	assert.deepEqual(scopes[2].applies_to, ['Tiberium']);
-	assert.deepEqual(scopes[3].applies_to, ['BuildingType']);
+	/* Published #scope- fragments are addressed by each scope's leading type and are
+	   handed out in order, so this list is a route-stability contract rather than a
+	   copy of the extraction. What each scope reads is settled against the engine in
+	   the Python object-type tests; what a reader can link to is settled here. */
+	assert.deepEqual(scopes.map((scope) => slugify(scope.applies_to[0])), [
+		'aircrafttype',
+		'animtype',
+		'tiberium',
+		'buildingtype',
+	]);
 	assert.ok(scopes.every((scope) => !scope.applies_to.includes('IsometricTileType')));
 });

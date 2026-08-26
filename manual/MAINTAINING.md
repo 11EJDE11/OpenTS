@@ -202,6 +202,12 @@ together when changing either.
 
 ## Maintainer validation
 
+The rule [Public routes](#public-routes) states for artifact checks governs the
+Python and node contract suites too: an expectation that mirrors generated data
+is derived from it, and a value is written out only where it is a judgement, such
+as a frozen route, a stored enum value, or a forced key binding. A record count is
+never such a value; assert what every record satisfies instead.
+
 Run the narrowest affected tests first. Before handoff, run:
 
 ```powershell

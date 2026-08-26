@@ -11,9 +11,11 @@ const all = [
 ];
 
 test('registered command catalog reaches both builds', () => {
-	assert.equal(commands.registered_commands.length, 87);
+	assert.ok(commands.registered_commands.length > 0);
 	assert.ok(commands.registered_commands.every((record) =>
 		record.availability.builds.includes('release') && record.availability.builds.includes('debug')));
+	assert.ok(commands.registered_commands.every((record) =>
+		record.title.trim() && record.description.trim() && record.category.trim()));
 });
 
 test('command IDs and canonical routes are unique across every command kind', () => {

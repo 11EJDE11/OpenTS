@@ -136,15 +136,16 @@ class TrackedCatalogRouteTests(unittest.TestCase):
     def test_a_swapped_pair_is_reported_rather_than_silently_republished(self):
         shared = self.shared_route_keys()
         self.assertTrue(shared, "no key exercises a suffixed scope route")
-        distinguishable = 0
+        indistinguishable = set()
         for name in shared:
             scopes = list(reversed(self.keys[name]["scopes"]))
             errors = validate_manual.scope_route_order_errors(name, scopes)
             if errors:
-                distinguishable += 1
                 self.assertIn("route id", errors[0])
+            else:
+                indistinguishable.add(name)
         self.assertEqual(
-            distinguishable, len(shared) - 1,
+            indistinguishable, {"Official"},
             "only Official's two [Basic] reads agree on every published field")
 
 
