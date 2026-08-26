@@ -1,5 +1,7 @@
 """Dependency-light contributor commands and safe scaffold facade."""
 
+import sys
+
 import contributor_catalogs
 import contributor_engine as _engine
 from contributor_engine import *  # noqa: F401,F403 - preserve helper API
@@ -86,6 +88,20 @@ def scaffold_command(identifier):
 def scaffold_using(identifier, category):
     _sync()
     return contributor_catalogs.scaffold_using(_engine, identifier, category)
+
+
+def release_notes(version):
+    _sync()
+    return _engine.release_notes(version)
+
+
+def command_release_notes(arguments):
+    try:
+        sys.stdout.write(release_notes(arguments.version))
+    except (OSError, ValueError) as error:
+        print(f"ACTION REQUIRED\n  - {error}", file=sys.stderr)
+        return 1
+    return 0
 
 
 def scaffold_change(arguments):
@@ -178,6 +194,11 @@ def add_parsers(commands):
     scaffold.add_argument("--credit", action="append", default=[])
     scaffold.add_argument("--breaking", action="store_true")
     scaffold.add_argument("--migration", action="append", default=[])
+
+    notes = commands.add_parser(
+        "release-notes",
+        help="render one release's change records as Markdown on stdout")
+    notes.add_argument("version", help="release version, such as 0.1.0")
 
 
 def validate_scaffold_arguments(parser, arguments):

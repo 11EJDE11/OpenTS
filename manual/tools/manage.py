@@ -247,6 +247,8 @@ def main():
         return contributor.command_doctor(arguments)
     if arguments.command == "scaffold":
         return contributor.command_scaffold(arguments)
+    if arguments.command == "release-notes":
+        return contributor.command_release_notes(arguments)
 
     try:
         if arguments.command == "update":

@@ -279,3 +279,48 @@ def _development_release():
     if len(matches) != 1:
         raise ValueError("release registry must contain exactly one development release")
     return matches[0]
+
+
+RELEASE_NOTE_SECTIONS = (
+    ("feature", "New features"),
+    ("fix", "Bug fixes"),
+    ("balance", "Balance changes"),
+    ("performance", "Performance"),
+    ("internal", "Internal changes"),
+)
+
+
+def release_notes(version):
+    """Render the change records assigned to one release as Markdown."""
+    import validate_manual
+    records = []
+    for path in sorted((MANUAL / "changes").glob("*.md")):
+        data = validate_manual.frontmatter(path)
+        if data.get("release") == version:
+            records.append(data)
+    if not records:
+        raise ValueError(f"no change records target release {version!r}")
+
+    lines = []
+    breaking = sorted(
+        (row for row in records if row.get("breaking")),
+        key=lambda row: row["title"])
+    if breaking:
+        lines += ["### Breaking changes", ""]
+        for row in breaking:
+            lines.append(f"- {row['title']}")
+            lines.extend(
+                f"  - Migration: {step}" for step in row.get("migration", ()))
+        lines.append("")
+    for category, heading in RELEASE_NOTE_SECTIONS:
+        rows = sorted(
+            (row for row in records if row.get("category") == category),
+            key=lambda row: row["title"])
+        if not rows:
+            continue
+        lines += [f"### {heading}", ""]
+        for row in rows:
+            credit = ", ".join(row.get("credit") or ())
+            lines.append(f"- {row['title']}" + (f" (by {credit})" if credit else ""))
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"

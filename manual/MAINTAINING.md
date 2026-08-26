@@ -113,6 +113,24 @@ during one active cycle share a stamp and have no interoperability promise.
 Several compatibility-breaking changes may accumulate before that cycle is
 released. See [Compatibility boundaries](../CONTRIBUTING.md).
 
+To publish a release:
+
+1. Confirm the development entry names the version being released and that the
+   commit to be tagged carries everything the release ships.
+2. Create and publish the GitHub release from a tag `v<version>` on that
+   commit. The `Engine release` workflow builds the tag, attaches the packaged
+   zip, and appends the output of
+   `python manual/tools/manage.py release-notes <version>` to the release
+   body.
+3. Open the next development cycle only after tagging, so the tag points at a
+   commit whose CMake version still names the released version.
+
+`release-notes` renders the change records assigned to one release as
+Markdown on standard output: breaking changes with their migration steps
+first, then the remaining records grouped by category. It reads the same
+records the lifecycle checks validate and refuses a version no record
+targets.
+
 To open the next development cycle:
 
 1. Mark the current development entry `released` and add its ISO release date.

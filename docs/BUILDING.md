@@ -122,6 +122,16 @@ configures and builds Win32 Debug and Release with the commands above, runs the
 CTest suite, and uploads each configuration's executable, language library, and
 symbol file as an artifact named for the configuration and the short commit. The
 linker map is not uploaded, because the symbol file covers the same ground.
+After a successful pull-request build, the `Engine build comment` workflow
+keeps one comment on the pull request with direct nightly.link downloads of
+that build's artifacts.
+
+The `Engine release` workflow runs when a GitHub release is published. It
+builds the release's commit with `-DOPENTS_OFFICIAL_BUILD=ON`, packages
+`Game.exe`, `Language.dll`, and `Game.pdb` into a zip named for the release
+tag, attaches the zip to the release, and appends release notes generated from
+the manual's change records by `python manual/tools/manage.py release-notes`.
+[Maintaining](../manual/MAINTAINING.md) owns the release procedure around it.
 
 Continuous integration builds redirect `TS_RUN_DIR` to an empty directory, so an
 uploaded artifact holds only the files that build produced.

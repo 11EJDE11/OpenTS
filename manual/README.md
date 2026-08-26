@@ -78,6 +78,7 @@ The launcher has these exact roles:
 | `serve` | Runs `update` and validation, then starts the Astro development server. |
 | `check` | Regenerates into a temporary directory to detect drift, validates all contracts and lifecycle rules, runs the Python and site tests, and builds the site once with render, search, and link checks. It does not update the tracked catalogs. |
 | `scaffold` | Creates minimal authored content for a supported page or change type and refuses to overwrite an existing file. Scaffolds remain invalid until every `TODO:` is replaced. |
+| `release-notes` | Renders the change records assigned to one release as Markdown on standard output, for the release workflow and release authors. It changes nothing. |
 
 `update`, `serve`, and `check` accept `--base-ref <revision>`. Without it, the
 launcher compares against `HEAD`; continuous integration supplies the relevant
