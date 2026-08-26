@@ -819,6 +819,8 @@
 #define TXT_WDT_NO_ALLIANCE_CHANGE      1040
 #define TXT_UNKNOWN_STATUS              1041
 #define TXT_UNKNOWN_PING                1042
+#define TXT_MANUAL_PLACE                1043
+#define TXT_MANUAL_PLACE_DESC           1044
 #define IDC_LADDER_TYPE                 1043
 #define IDC_LADDER_LOCATION             1044
 #define IDC_FINDGAME_LOCATION           1046

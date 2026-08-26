@@ -2956,7 +2956,7 @@ BEGIN
     TXT_WDT_NOD_PLAYERS     "WDT Nod Players"
     TXT_WDT_GDI_PLAYERS     "WDT GDI Players"
     TXT_SELECT_TYPE         "Select Same Type"
-    TXT_SELECT_TYPE_DESC    "Selects all units of the same type as currently selected."
+    TXT_SELECT_TYPE_DESC    "Selects all on-screen units of the same types as currently selected. Press twice quickly to select across the whole map."
     TXT_FIRESTORM_REQUIRED  "Firestorm required to join this game."
     TXT_FIRESTORM_MUST_ENABLE "Firestorm must be enabled to join this game."
     TXT_FIRESTORM_NO_JOIN_TS 
@@ -3015,6 +3015,8 @@ BEGIN
                             "You cannot change alliances in a World Domination Tour game."
     TXT_UNKNOWN_STATUS      "Unknown Status"
     TXT_UNKNOWN_PING        "Unknown Ping"
+    TXT_MANUAL_PLACE        "Place Building"
+    TXT_MANUAL_PLACE_DESC   "Enters placement mode for the completed building waiting on the sidebar."
 END
 
 #endif    // English (U.S.) resources

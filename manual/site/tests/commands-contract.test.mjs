@@ -11,7 +11,7 @@ const all = [
 ];
 
 test('registered command catalog reaches both builds', () => {
-	assert.equal(commands.registered_commands.length, 86);
+	assert.equal(commands.registered_commands.length, 87);
 	assert.ok(commands.registered_commands.every((record) =>
 		record.availability.builds.includes('release') && record.availability.builds.includes('debug')));
 });

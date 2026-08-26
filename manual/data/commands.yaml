@@ -1264,7 +1264,8 @@ registered_commands:
   route_id: selecttype
   kind: registered
   title: Select Same Type
-  description: Selects all units of the same type as currently selected.
+  description: Selects all on-screen units of the same types as currently selected. Press twice quickly
+    to select across the whole map.
   category: Selection
   audience: player
   availability:
@@ -1274,6 +1275,21 @@ registered_commands:
   _provenance:
     source: code/init.cpp
     class: SelectSameTypeCommandClass
+    guard: null
+- id: ManualPlace
+  route_id: manualplace
+  kind: registered
+  title: Place Building
+  description: Enters placement mode for the completed building waiting on the sidebar.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ManualPlaceCommandClass
     guard: null
 - id: DeleteWaypoint
   route_id: deletewaypoint

@@ -20,7 +20,7 @@ class RegisteredCommandTests(unittest.TestCase):
         cls.registered = cls.catalog["registered_commands"]
 
     def test_current_registration_set_reaches_both_builds(self):
-        self.assertEqual(len(self.registered), 86)
+        self.assertEqual(len(self.registered), 87)
         self.assertTrue(all(
             record["availability"]["builds"] == ["release", "debug"]
             for record in self.registered))

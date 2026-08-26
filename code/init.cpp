@@ -188,6 +188,7 @@
 #include <conio.h>
 #include <ctime>
 #include <dos.h>
+#include <unordered_set>
 
 extern VoxelDataStruct DropPodVoxel;
 
@@ -4820,9 +4821,6 @@ class PageUserCommandClass : public CommandClass
 };
 
 
-extern TechnoTypeClass const * SelectSameType_Type;
-void SelectSameType_Callback(ObjectClass * obj);
-
 class SelectSameTypeCommandClass : public CommandClass
 {
 	public:
@@ -4840,27 +4838,97 @@ class SelectSameTypeCommandClass : public CommandClass
 		}
 
 		virtual void Execute(void) const {
-			DynamicVectorClass<TechnoTypeClass const *> types;
+			// A second press within half a second widens the sweep from the view to the whole map.
+			int now = TickCount;
+			bool widen = (LastTick >= 0) && (now - LastTick < TIMER_SECOND / 2);
+			LastTick = now;
+
+			SoughtTypes.clear();
 			for (int i = 0; i < CurrentObject.Count(); i++) {
-				TechnoTypeClass const * type = CurrentObject[i]->TClass;
-				bool contains = false;
-				for (int j = 0; j < types.Count(); j++) {
-					if (types[j] == type) {
-						contains = true;
-						break;
+				ObjectClass * obj = CurrentObject[i];
+				if (!obj->Is_Techno() || !((TechnoClass *)obj)->House->Is_Player_Control()) {
+					continue;
+				}
+				SoughtTypes.insert(obj->TClass);
+			}
+
+			if (SoughtTypes.empty()) {
+				return;
+			}
+
+			if (widen) {
+				for (int i = 0; i < Technos.Count(); i++) {
+					TechnoClass * techno = Technos[i];
+					if (techno != NULL && techno->IsActive && techno->IsDown && Map.In_Radar(techno->Center_Coord())) {
+						Select_Callback(techno);
 					}
 				}
-				if (!contains) {
-					types.Add(type);
+			} else {
+				TacticalMap->Select_These(TacticalRect, Select_Callback);
 				}
 			}
 
-			Unselect_All();
-
-			for (int j = 0; j < types.Count(); j++) {
-				SelectSameType_Type = types[j];
-				TacticalMap->Select_These(TacticalRect, SelectSameType_Callback);
+	private:
+		/// <summary>
+		/// Selects the object if it is one of the types being hunted for.
+		/// This routine is handed to Select_These, and is called directly for the whole-map
+		/// sweep, so that every object of a sought type under the player's control joins the
+		/// selection.
+		/// </summary>
+		/// <param name="obj">The object being considered for selection.</param>
+		/// <remarks>SoughtTypes must hold the desired types before calling this routine.</remarks>
+		static void Select_Callback(ObjectClass * obj)
+		{
+			if (obj != NULL && obj->Is_Techno() && obj->IsDown && !obj->IsSelected && SoughtTypes.contains(obj->TClass) && ((TechnoClass *)obj)->House->Is_Player_Control()) {
+				obj->Select();
 			}
+		}
+
+		inline static std::unordered_set<TechnoTypeClass const *> SoughtTypes;
+		inline static int LastTick = -1;
+};
+
+
+class ManualPlaceCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ManualPlace");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_MANUAL_PLACE));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_MANUAL_PLACE_DESC));
+		}
+
+		virtual void Execute(void) const {
+			FactoryClass * factory = PlayerPtr->Fetch_Factory(RTTI_BUILDING);
+			if (factory == NULL || !factory->Has_Completed()) {
+				return;
+			}
+
+			TechnoClass * pending = factory->Get_Object();
+			if (pending == NULL || pending->RTTI != RTTI_BUILDING) {
+				return;
+			}
+
+			if (Map.PendingObjectPtr == pending) {
+				return;
+			}
+
+			BuildingClass * builder = pending->Who_Can_Build_Me(false, false);
+			if (builder == NULL) {
+				return;
+			}
+
+			// Drop any superweapon cursor, so that placing the building does not return to it.
+			Map.IsTargettingMode = SUPER_NONE;
+
+			PlayerPtr->Manual_Place(builder, (BuildingClass *)pending);
 		}
 };
 
@@ -4901,25 +4969,6 @@ class DeleteWaypointCommandClass : public CommandClass
 			}
 		}
 };
-
-
-TechnoTypeClass const * SelectSameType_Type = NULL;
-
-
-/// <summary>
-/// Selects the object if it is of the type being hunted for.
-/// This routine is handed to Select_These by the select-same-type command, so that every
-/// visible object of the sought type under the player's control joins the selection.
-/// </summary>
-/// <param name="obj">The object being considered for selection.</param>
-/// <remarks>SelectSameType_Type must be set to the desired type before calling this
-/// routine.</remarks>
-void SelectSameType_Callback(ObjectClass * obj)
-{
-	if (obj != NULL && obj->Is_Techno() && obj->IsDown && !obj->IsSelected && obj->TClass == SelectSameType_Type && ((TechnoClass *)obj)->House->Is_Player_Control()) {
-		obj->Select();
-	}
-}
 
 
 /// <summary>
@@ -5038,6 +5087,8 @@ static void Init_Commands(void)
 	AllCommands.Add(new PageUserCommandClass);
 
 	AllCommands.Add(new SelectSameTypeCommandClass);
+
+	AllCommands.Add(new ManualPlaceCommandClass);
 
 	const CommandClass * delwpcmd = new DeleteWaypointCommandClass;
 	AllCommands.Add(delwpcmd);
