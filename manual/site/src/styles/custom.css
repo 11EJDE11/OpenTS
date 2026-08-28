@@ -944,7 +944,7 @@ h1.ots-keytitle {
 }
 
 .ots-release-date {
-	margin-top: -0.75rem;
+	margin-top: 0.35rem;
 	color: var(--ots-muted);
 	font-size: 0.85rem;
 }
