@@ -61,6 +61,46 @@ static bool Uses_Screen_Coordinates(UINT message)
 
 
 /// <summary>
+/// Finds the deepest descendant that owns a position, examining children topmost-first
+/// the way native hit-testing does. A window answering WM_NCHITTEST with HTTRANSPARENT
+/// passes the position to the sibling beneath it, which is what lets a click reach a
+/// control that a group box frames.
+/// </summary>
+/// <param name="parent">The window whose children to search.</param>
+/// <param name="parent_point">The position, in the parent's client space.</param>
+/// <param name="screen_point">The same position in screen coordinates, for the
+/// WM_NCHITTEST probe.</param>
+/// <returns>The descendant that owns the position, or NULL when no child does.</returns>
+static HWND Child_From_Logical_Point(HWND parent, POINT parent_point, POINT screen_point)
+{
+	for (HWND child = GetTopWindow(parent); child != NULL; child = GetWindow(child, GW_HWNDNEXT)) {
+		if (!IsWindowVisible(child) || !IsWindowEnabled(child)) {
+			continue;
+		}
+
+		RECT rect;
+		GetWindowRect(child, &rect);
+		MapWindowPoints(HWND_DESKTOP, parent, (POINT *)&rect, 2);
+		if (!PtInRect(&rect, parent_point)) {
+			continue;
+		}
+
+		if (SendMessage(child, WM_NCHITTEST, 0, MAKELPARAM((short)screen_point.x, (short)screen_point.y)) == HTTRANSPARENT) {
+			continue;
+		}
+
+		POINT child_point = parent_point;
+		MapWindowPoints(parent, child, &child_point, 1);
+
+		HWND descendant = Child_From_Logical_Point(child, child_point, screen_point);
+		return(descendant != NULL ? descendant : child);
+	}
+
+	return(NULL);
+}
+
+
+/// <summary>
 /// Finds the window that owns a position in the frame, walking the tree the way Windows
 /// would if the controls stood where the player sees them.
 /// A window holding the mouse capture keeps the message whatever the position, which is
@@ -75,21 +115,11 @@ static HWND Window_From_Logical_Point(POINT logical_point)
 		return(capture);
 	}
 
-	HWND current = MainWindow;
+	POINT screen_point = logical_point;
+	ClientToScreen(MainWindow, &screen_point);
 
-	while (true) {
-		POINT child_point = logical_point;
-		if (current != MainWindow) {
-			MapWindowPoints(MainWindow, current, &child_point, 1);
-		}
-
-		HWND child = ChildWindowFromPointEx(current, child_point, CWP_SKIPINVISIBLE | CWP_SKIPDISABLED);
-		if (child == NULL || child == current) {
-			return(current);
-		}
-
-		current = child;
-	}
+	HWND child = Child_From_Logical_Point(MainWindow, logical_point, screen_point);
+	return(child != NULL ? child : MainWindow);
 }
 
 
