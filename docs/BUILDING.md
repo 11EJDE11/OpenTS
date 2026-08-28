@@ -115,8 +115,10 @@ without one.
 
 The `Engine` workflow builds every pull request and every push to `main` that
 touches the engine, its build files, or the workflows themselves. The `Engine
-nightly` workflow builds on a daily schedule, and skips the build when nothing
-has been committed since the last one. Both call the same reusable
+nightly` workflow builds on a daily schedule; when nothing has been committed
+since the last one, the scheduled run cancels itself so that the latest
+successful nightly is always one that produced artifacts, which keeps the
+nightly download links resolvable. Both call the same reusable
 `Engine build` workflow, which on a Windows runner with Visual Studio 2022
 configures and builds Win32 Debug and Release with the commands above, runs the
 CTest suite, and uploads each configuration's executable, language library, and
