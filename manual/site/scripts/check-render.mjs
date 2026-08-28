@@ -68,7 +68,7 @@ const cases = [
 	['using/command-line/help/index.html', ['Command-line help', 'Syntax', 'Aliases', 'Release and Debug', 'ots-breadcrumb']],
 	['commands/fixed-map-zoom/index.html', ['Map zoom', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
 	['formats/mix/index.html', ['MIX archives', 'Binary format', '<dt>Role</dt>', 'code/ccfile.cpp', 'Source files', 'code/mixfile.h']],
-	['changes/opents-manual/index.html', ['OpenTS manual', 'Planned for', '0.1.0', 'reference pages for every']],
+	['changes/opents-manual/index.html', ['OpenTS manual', 'Released in', '0.1.0', 'reference pages for every']],
 	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'numerical results may differ', 'matching OpenTS versions']],
 	['changes/cd-search-path/index.html', ['Remove CD-ROM-dependent startup behavior', 'local data search path', 'PlayIntro']],
 	['changes/modem-play/index.html', ['Remove modem and null-modem play', 'SerialDefaults', 'keep their stored values']],
@@ -190,7 +190,7 @@ const indexContracts = [
 		['>Changes</h1>', 'Versioned behavior and compatibility changes, newest release first.', 'ots-release-badge', 'sl-badge', '0.1.0', 'Upgrade to 0.1.0', 'data-change-list'],
 		["What's new", 'A permanent, versioned record of deliberate OpenTS changes.']],
 	['changes/0.1.0/index.html',
-		['Upgrade to 0.1.0', 'In development', 'migration before existing content is used with this version.', 'Serialize save games member by member', 'View all changes for 0.1.0'],
+		['Upgrade to 0.1.0', 'Released', 'migration before existing content is used with this version.', 'Serialize save games member by member', 'View all changes for 0.1.0'],
 		['no recorded migration steps']],
 ];
 
