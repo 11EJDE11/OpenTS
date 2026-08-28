@@ -612,7 +612,15 @@ def validate_changes(
                         and current_release_row.get("status") == "released")):
                 for field in ("category", "targets", "breaking", "migration"):
                     default = False if field == "breaking" else [] if field == "migration" else None
-                    if data.get(field, default) != base_change.get(field, default):
+                    base_value = base_change.get(field, default)
+                    # Base snapshots carry raw frontmatter while the current
+                    # targets were normalized above, so compare one form.
+                    if field == "targets" and isinstance(base_value, list):
+                        base_value = [
+                            normalize_target(raw) for raw in base_value
+                            if isinstance(raw, dict)
+                        ]
+                    if data.get(field, default) != base_value:
                         errors.append(
                             f"{context}: released lifecycle field {field} is immutable")
 
