@@ -6,7 +6,7 @@ targets:
 - type: key
   id: Burst
   effect: changed
-credit: [ZivDero, ts-patches contributors]
+credit: [ZivDero, dkeeton]
 ---
 
 A WeaponType whose `Burst` is zero or negative now stores one when its rules section is

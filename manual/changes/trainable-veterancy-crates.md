@@ -9,7 +9,7 @@ targets:
 - type: key
   id: Trainable
   effect: changed
-credit: [ZivDero, ts-patches contributors, CCHyper]
+credit: [ZivDero, Iran, CCHyper]
 ---
 
 A veterancy crate now promotes only objects whose types have `Trainable=yes`. Its radius, number of promotion steps and lack of an ownership filter are unchanged.

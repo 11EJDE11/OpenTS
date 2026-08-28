@@ -10,7 +10,7 @@ targets:
 - type: system
   id: crates
   effect: changed
-credit: [ZivDero, ts-patches contributors]
+credit: [ZivDero, Iran]
 ---
 
 An armor crate now multiplies each eligible object's armor multiplier by the `Armor` row's third field. A value of `2` halves ordinary incoming damage, while `0.5` doubles it.

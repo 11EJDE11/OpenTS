@@ -3,7 +3,7 @@ title: Initialize every building animation state
 category: fix
 release: 0.1.0
 targets: []
-credit: [ZivDero, ts-patches contributors]
+credit: [ZivDero, AlexB]
 ---
 
 Every building type now begins with all six animation-control records initialized. The five

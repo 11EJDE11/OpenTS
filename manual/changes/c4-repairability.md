@@ -9,7 +9,7 @@ targets:
 - type: key
   id: Repairable
   effect: changed
-credit: [ZivDero, ts-patches contributors]
+credit: [ZivDero, dkeeton]
 ---
 
 Infantry with `C4=yes` or the C4 veteran ability now enter sabotage only for a `Repairable=yes` structure. Player clicks, attack and guard conversions, direct missions, and arrival all enforce the same requirement; a stale sabotage order against another structure is canceled without arming it.

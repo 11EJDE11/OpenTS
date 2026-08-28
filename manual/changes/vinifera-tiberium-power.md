@@ -7,7 +7,7 @@ targets:
   id: Power
   scope: tiberium
   effect: changed
-credit: [ZivDero, ts-patches contributors]
+credit: [ZivDero, AlexB, Rampastring]
 ---
 
 A Tiberium section named `Vinifera` now keeps the damage its section states. The value was

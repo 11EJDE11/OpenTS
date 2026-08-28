@@ -9,7 +9,7 @@ targets:
   effect: changed
 credit:
 - ZivDero
-- ts-patches contributors
+- AlexB
 ---
 
 Every object reached by a voxel-debris bounce now receives the type's configured `Damage` independently. Armor and distance still reduce each hit, but that reduction no longer overwrites the shared type value and weakens every later bounce and expiration blast from the same debris type.

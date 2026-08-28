@@ -9,7 +9,7 @@ targets:
   effect: changed
 credit:
 - ZivDero
-- ts-patches contributors
+- AlexB
 ---
 
 A voxel-debris bounce with no `Warhead` now skips only its damage pass. The piece continues through its bounce effects and physics without passing a null warhead into each cell occupant's damage path or replacing the debris type's configured `Damage` with zero.

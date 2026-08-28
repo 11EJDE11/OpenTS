@@ -35,11 +35,13 @@ the GPL, and OpenTS is built from that material:
 The additional GPL Section 7 terms covering that material are in
 [LICENSE.md](LICENSE.md).
 
-## ts-patches contributors
+## ts-patches and Vinifera contributors
 
 Years of community fixes for the original executable live in
-[ts-patches](https://github.com/CnCNet/ts-patches). Fixes OpenTS ports from
-that work credit the ts-patches contributors in the manual's change records.
+[ts-patches](https://github.com/CnCNet/ts-patches), and
+[Vinifera](https://github.com/Vinifera-Developers/Vinifera) carries that work
+into a source-level engine extension. Fixes OpenTS ports from either credit
+their authors by name when possible in the manual's change records.
 
 ## Artwork
 
