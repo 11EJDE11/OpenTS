@@ -398,9 +398,9 @@ void TerrainTypeClass::Post_Load(void)
 {
 	BASECLASS::Post_Load();
 
-		Fetch_Voxel_Image();
-		Fetch_Normal_Image();
-		Occupy = _OccupyLists[Foundation];
+	Fetch_Voxel_Image();
+	Fetch_Normal_Image();
+	Occupy = _OccupyLists[Foundation];
 }
 
 
