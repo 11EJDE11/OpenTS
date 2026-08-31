@@ -116,6 +116,7 @@
 #include "houstype.h"
 #include "incdec.h"
 #include "infatype.h"
+#include "intro.h"
 #include "ionblast.h"
 #include "ipxmgr.h"
 #include "keyboard.h"
@@ -1272,7 +1273,7 @@ restart:
 					if (Debug_Flag) {
 						Play_Intro(Debug_Flag);
 					} else {
-						Play_Movie("INTRO.VQA");
+						Choose_Side();
 						Clear_Option(OPTION_PLAY_FROM_MIXFILE);
 						Play_Movie("SIZZLE1.VQA");
 						Set_Option(OPTION_PLAY_FROM_MIXFILE);
