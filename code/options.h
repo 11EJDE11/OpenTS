@@ -121,6 +121,12 @@ class OptionsClass {
 		bool ToolTips;
 
 		/*
+		 * The palette index drawn behind each glyph of the in-game message list, or zero for
+		 * none. The CnCNet client writes 12, black, for its chat background option.
+		 */
+		int TextBackgroundColor;
+
+		/*
 		 * These are the dimensions of the game screen, expressed in pixels. The tactical
 		 * view, the sidebar and the tabs are all laid out against them.
 		 */

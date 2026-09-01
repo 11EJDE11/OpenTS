@@ -39,10 +39,10 @@
 #include "_surface.h"
 #include "dialog.h"
 #include "dsurface.h"
+#include "globals.h"
+#include "goptions.h"
 #include "scheme.h"
 #include "vector.h"
-
-#include "color.hh"
 
 
 /***********************************************************************************************
@@ -96,10 +96,10 @@ int TextLabelClass::Draw_Me(int forced)
 {
 	if (BASECLASS::Draw_Me(forced)) {
 		if (PixWidth == -1) {
-			Simple_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], TBLACK, Style, 1);
+			Simple_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], Options.TextBackgroundColor, Style, 1);
 //			Fancy_Text_Print(Text, X, Y, Color, TBLACK, Style);
 		} else {
-			Conquer_Clip_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], TBLACK, Style, PixWidth);
+			Conquer_Clip_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], Options.TextBackgroundColor, Style, PixWidth);
 		}
 		return(true);
 	}

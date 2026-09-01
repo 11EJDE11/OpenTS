@@ -19,7 +19,7 @@ fixed_controls:
       - { file: code/mainloop.cpp, function: Keyboard_Process, expression: KN_TAB }
   - id: fixed:multiplayer-message
     title: Multiplayer message recipient
-    description: Starts a message to the selected player or to all players.
+    description: Starts a private message to one connection, or a message to everyone.
     audience: player
     bindings: [F1 through the session player limit]
     context: Multiplayer match
@@ -514,14 +514,6 @@ launch_options:
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-STEALTH' }
-  - id: launch:messages
-    title: Disable network protection
-    syntax: -MESSAGES
-    description: Disables network protection.
-    audience: developer
-    availability: *all
-    sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-MESSAGES' }
   - id: launch:attract
     title: Attract mode
     syntax: -ATTRACT

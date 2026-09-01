@@ -42,7 +42,7 @@ An observer is given the whole map, and so is a defeated player outside [coach m
 | Hidden objects | A cloaked, submerged or subterranean object is drawn shadowy and plotted on the radar as its owner sees it, may be clicked and read, and never raises a [detection](/systems/cloaking/#on-the-radar) event or line |
 | Decorations | Condition pips, cargo pips, [rank insignia](/systems/veterancy/#rank-display), the healer's cross, a structure's power figures and the true name in a tooltip are drawn for every house, and a selected factory shows the cameo of what it is building |
 | Disguises | Kept, as from every player but the owner |
-| Chat | Messages to everyone only; the private message keys are refused |
+| Chat | Messages to everyone only, and for an observer to the other observers as well; a private or team message to a player is refused ([in-game chat](/systems/chat/)) |
 
 A player given the whole map owns nothing, so every click is a look rather than an order.
 
@@ -58,7 +58,7 @@ The [sidebar](/systems/sidebar/) stays up with nothing on either strip. Its cred
 
 `CoachMode=yes` in the launch file's `[Settings]` decides what a defeated player keeps. The CnCNet client writes it whenever two or more teams each hold two or more people; it is not a lobby option.
 
-Without coach mode a defeated player is given the whole map, as an observer is, and can only message everyone. With it the player keeps what their allies see: the map stays as it was at defeat, fog stays drawn, the regrowth passes keep running, the radar follows its ordinary tests, hidden objects and decorations stay hidden, and private messages stay open, so the player can keep talking to their allies. Either way the player stays in the score screen, the name list and the statistics report.
+Without coach mode a defeated player is given the whole map, as an observer is, and can only message everyone. With it the player keeps what their allies see: the map stays as it was at defeat, fog stays drawn, the regrowth passes keep running, the radar follows its ordinary tests, hidden objects and decorations stay hidden, and private and team messages stay open, so the player can keep talking to their allies. Either way the player stays in the score screen, the name list and the statistics report.
 
 ## When the match ends
 

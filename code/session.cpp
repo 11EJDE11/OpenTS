@@ -205,6 +205,8 @@ SessionClass::SessionClass(void)
 	LoadGame = 0;
 	EmergencySave = 0;
 
+	MessageScope = ChatScopeType::Everyone;
+	MessageTarget = -1;
 	LastMessage[0] = 0;
 
 	RecordFile.Set_Name("RECORD.BIN");  // always uses this name
@@ -213,7 +215,6 @@ SessionClass::SessionClass(void)
 	Attract = 0;                        // set via command line
 
 	NetStealth = 0;
-	NetProtect = 1;
 	NetOpen = 0;
 	GameName[0] = 0;
 	GProductID = 0;

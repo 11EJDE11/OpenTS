@@ -26,6 +26,8 @@ The table is cleared only once the file has been read, so a file that is missing
 
 A command that carries a forced binding is bound again once the file has been processed, taking that key back from whatever the file gave it. The file's own binding for that command is left alone, so it can end up answering to two keys.
 
+Two commands take a key by default instead: [`ChatToAll`](/commands/chattoall/) takes Enter and [`ChatToAllies`](/commands/chattoallies/) takes Backspace, each only when the file binds neither that command nor that key. A file that binds the command to another key, or gives the key to another command, is left as written.
+
 :::caution[Two commands on one key are both kept]
 Nothing rejects an entry for a key that is already bound. Both entries are added to the table, and the key runs one of the two commands without regard to the order they appear in the file.
 :::

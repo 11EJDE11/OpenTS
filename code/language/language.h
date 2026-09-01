@@ -800,6 +800,17 @@
 #define TXT_UNKNOWN_PING                1042
 #define TXT_MANUAL_PLACE                1043
 #define TXT_MANUAL_PLACE_DESC           1044
+#define TXT_TO_TEAM                     1045
+#define TXT_TO_OBSERVERS                1046
+#define TXT_CHAT_TAGGED                 1047
+#define TXT_CHAT_TO_TEAM                1048
+#define TXT_CHAT_TO_OBSERVERS           1049
+#define TXT_CHAT_TO_PLAYER              1050
+#define TXT_CHAT                        1051
+#define TXT_CHAT_TO_ALL                 1052
+#define TXT_CHAT_TO_ALL_DESC            1053
+#define TXT_CHAT_TO_ALLIES              1054
+#define TXT_CHAT_TO_ALLIES_DESC         1055
 #define IDC_LADDER_TYPE                 1043
 #define IDC_LADDER_LOCATION             1044
 #define IDC_FINDGAME_LOCATION           1046

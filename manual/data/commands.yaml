@@ -1276,6 +1276,36 @@ registered_commands:
     source: code/init.cpp
     class: ManualPlaceCommandClass
     guard: null
+- id: ChatToAll
+  route_id: chattoall
+  kind: registered
+  title: Message to All
+  description: Starts a message to every player.
+  category: Chat
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ChatToAllCommandClass
+    guard: null
+- id: ChatToAllies
+  route_id: chattoallies
+  kind: registered
+  title: Message to Team
+  description: Starts a message to your allies, or to the other observers while you watch.
+  category: Chat
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ChatToAlliesCommandClass
+    guard: null
 - id: DeleteWaypoint
   route_id: deletewaypoint
   kind: registered
@@ -1326,7 +1356,7 @@ fixed_controls:
   route_id: fixed-multiplayer-message
   kind: fixed
   title: Multiplayer message recipient
-  description: Starts a message to the selected player or to all players.
+  description: Starts a private message to one connection, or a message to everyone.
   audience: player
   availability: *id001
   bindings:
@@ -1813,17 +1843,6 @@ launch_options:
   audience: developer
   availability: *id001
   syntax: -STEALTH
-  _provenance:
-    source: code/init.cpp
-    guard: null
-- id: launch:messages
-  route_id: messages
-  kind: launch
-  title: Disable network protection
-  description: Disables network protection.
-  audience: developer
-  availability: *id001
-  syntax: -MESSAGES
   _provenance:
     source: code/init.cpp
     guard: null

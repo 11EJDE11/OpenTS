@@ -2424,6 +2424,17 @@ BEGIN
     TXT_UNKNOWN_PING        "Unknown Ping"
     TXT_MANUAL_PLACE        "Place Building"
     TXT_MANUAL_PLACE_DESC   "Enters placement mode for the completed building waiting on the sidebar."
+    TXT_TO_TEAM             "To Team:"
+    TXT_TO_OBSERVERS        "To Observers:"
+    TXT_CHAT_TAGGED         "%s [%s]"
+    TXT_CHAT_TO_TEAM        "to team"
+    TXT_CHAT_TO_OBSERVERS   "to observers"
+    TXT_CHAT_TO_PLAYER      "to %s"
+    TXT_CHAT                "Chat"
+    TXT_CHAT_TO_ALL         "Message to All"
+    TXT_CHAT_TO_ALL_DESC    "Starts a message to every player."
+    TXT_CHAT_TO_ALLIES      "Message to Team"
+    TXT_CHAT_TO_ALLIES_DESC "Starts a message to your allies, or to the other observers while you watch."
 END
 
 #endif    // English (U.S.) resources

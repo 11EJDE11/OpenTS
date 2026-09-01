@@ -77,6 +77,7 @@
 #include "_tooltip.h"
 #include "_wsproto.h"
 #include "cctooltip.h"
+#include "chat.h"
 #include "data.h"
 #include "dbgprint.h"
 #include "dsaudio.h"
@@ -576,48 +577,7 @@ void IPX_Call_Back(void)
 					*/
 					case NET_MESSAGE:
 					{
-						bool msg_ok = false;
-
-						/*
-						**	If NetProtect is set, make sure this message came from within
-						**	this game.
-						*/
-						if (!Session.NetProtect) {
-							msg_ok = true;
-						} else {
-							if (Session.GPacket.Message.NameCRC ==
-								Compute_Name_CRC(Session.GameName)) {
-								msg_ok = true;
-							} else {
-								msg_ok = false;
-							}
-						}
-
-						if (msg_ok) {
-							if (!Session.Messages.Concat_Message(Session.GPacket.Name,
-								Session.GPacket.Message.Color,
-								Session.GPacket.Message.Buf, int(Rule->MessageDelay * TICKS_PER_MINUTE))) {
-								Session.Messages.Add_Message (Session.GPacket.Name,
-									Session.GPacket.Message.Color,
-									Session.GPacket.Message.Buf,
-									Session.Color_Index_To_Scheme(Session.GPacket.Message.Color),
-									(TextPrintType)(TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW),
-									int(Rule->MessageDelay * TICKS_PER_MINUTE));
-
-								Sound_Effect(Rule->IncomingMessage);
-							}
-
-							/*
-							**	Tell the map to do a partial update (just to force the messages
-							**	to redraw).
-							*/
-							Map.Flag_To_Redraw(GS_REDRAW_ALL);
-
-							/*
-							**	Save this message in our last-message buffer
-							*/
-							strcpy(Session.LastMessage, Session.GPacket.Message.Buf);
-						}
+						Chat_Receive(Session.GPacket, Session.GAddress);
 						break;
 					}
 

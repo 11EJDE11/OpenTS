@@ -121,6 +121,7 @@ OptionsClass::OptionsClass(void) :
 	SidebarCameoText(true),
 	ActionLines(true),
 	ToolTips(true),
+	TextBackgroundColor(0),
 	ScreenWidth(-1),
 	ScreenHeight(-1),
 	ScrollMethod(0),
@@ -389,6 +390,9 @@ void OptionsClass::Load_Settings(void)
 	ToolTips = ConfigINI.Get_Bool("Options", "ToolTips", ToolTips);
 	DebugString("ToolTips are %s\n", ToolTips == true ? "ON" : "OFF");
 
+	TextBackgroundColor = ConfigINI.Get_Int("Options", "TextBackgroundColor", TextBackgroundColor);
+	DebugString("TextBackgroundColor = %d\n", TextBackgroundColor);
+
 	ScreenWidth = ConfigINI.Get_Int("Video", "ScreenWidth", ScreenWidth);
 	ScreenHeight = ConfigINI.Get_Int("Video", "ScreenHeight", ScreenHeight);
 	DebugString("Resolution = %d X %d\n", ScreenWidth, ScreenHeight);
@@ -457,6 +461,7 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Bool("Options", "SidebarCameoText", SidebarCameoText);
 	ConfigINI.Put_Bool("Options", "UnitActionLines", ActionLines);
 	ConfigINI.Put_Bool("Options", "ToolTips", ToolTips);
+	ConfigINI.Put_Int("Options", "TextBackgroundColor", TextBackgroundColor);
 	ConfigINI.Put_Int("Video", "ScreenWidth", ScreenWidth);
 	ConfigINI.Put_Int("Video", "ScreenHeight", ScreenHeight);
 	ConfigINI.Put_Bool("Video", "StretchMovies", StretchMovies);

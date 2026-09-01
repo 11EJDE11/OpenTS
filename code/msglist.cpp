@@ -359,7 +359,7 @@ TextLabelClass * MessageListClass::Add_Message(char const * name, int id, char c
 	// Combine the name & message text, if there's a name given
 	//------------------------------------------------------------------------
 	if (name) {
-		sprintf(message, "%s:%s", name, txt);
+		sprintf(message, "%s: %s", name, txt);
 	} else {
 		strcpy(message, txt);
 	}

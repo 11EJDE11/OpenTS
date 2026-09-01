@@ -21197,6 +21197,24 @@ TeslaZap:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+TextBackgroundColor:
+  key: TextBackgroundColor
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Options
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '0'
+      declared_in: OptionsClass
+      member: TextBackgroundColor
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 Theater:
   key: Theater
   scopes:

@@ -46,6 +46,7 @@
 
 #include <cstring>
 
+#include "chat.hh"
 #include "dialog.hh"
 #include "diff.hh"
 
@@ -311,6 +312,7 @@ struct GlobalPacketType {
 			char Buf[MAX_MESSAGE_LENGTH];		// inter-user message
 			int Color;							// color of sender of message
 			unsigned int NameCRC;				// CRC of sender's Game Name
+			ChatScopeType Scope;				// who the message is for
 		} Message;
 		struct {
 			int OneWay;							// one-way response time
@@ -666,6 +668,8 @@ class SessionClass
 		//.....................................................................
 		MessageListClass Messages;
 		IPXAddressClass MessageAddress;
+		ChatScopeType MessageScope;         // who the open edit goes to
+		int MessageTarget;                  // the house a private message goes to, else -1
 		char LastMessage[MAX_MESSAGE_LENGTH];
 
 		//.....................................................................
@@ -697,7 +701,6 @@ class SessionClass
 		// Network-specific variables
 		//.....................................................................
 		bool NetStealth;                                // makes us invisible
-		bool NetProtect;                                // keeps others from messaging us
 		bool NetOpen;                                   // 1 = game is open for joining
 		char GameName[MPLAYER_NAME_MAX];                // game's name
 		GlobalPacketType GPacket;                       // global packet

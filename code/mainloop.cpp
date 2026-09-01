@@ -26,6 +26,7 @@
 #include "_timer.h"
 #include "_xmouse.h"
 #include "bench.h"
+#include "chat.h"
 #include "command.h"
 #include "conquer.h"
 #include "data.h"
@@ -661,11 +662,7 @@ void Sync_Delay(void)
 void Message_Input(KeyNumType &input)
 {
 	int rc;
-	char txt[80+MAX_MESSAGE_LENGTH+32];
-	int id;
-	int i;
 	KeyNumType copy_input;
-	//char *msg;
 
 	/*
 	**	Check keyboard input for a request to send a message.
@@ -676,34 +673,16 @@ void Message_Input(KeyNumType &input)
 	**	message must be MAX_MESSAGE_LENGTH plus the size of "From: xxx (house)".
 	*/
 	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH && input >= KN_F1 && input < (KN_F1 + Session.MaxPlayers) && !Session.Messages.Is_Edit()) {
-		txt[0] = '\0'; //memset (txt, 0, 40);
-
-		if ((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && !Session.Messages.Is_Edit()) {
+		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
 			/*
 			**	For a network game:
 			**	F1-F7 = "To <name> (house):" (only allowed if we're not in ObiWan mode)
 			**	F8 = "To All:"
 			*/
 			if (input==(KN_F1 + Session.MaxPlayers - 1)) {
-
-				Session.MessageAddress = IPXAddressClass(); // set to broadcast
-				strcpy(txt, Fetch_String(TXT_TO_ALL));      // "To All:"
-
-				Session.Messages.Add_Edit(Session.ColorIdx,
-					TextPrintType(TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW), txt, 0, -1);
-
-				Map.Flag_To_Redraw();
-
-			} else if ((input - KN_F1) < Ipx.Num_Connections() && !Session.ObiWan) {
-
-				id = Ipx.Connection_ID(input - KN_F1);
-				Session.MessageAddress = (*(Ipx.Connection_Address (id)));
-				wsprintf(txt, Fetch_String(TXT_TO), Ipx.Connection_Name(id));
-
-				Session.Messages.Add_Edit(Session.ColorIdx,
-					TextPrintType(TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW), txt, 0, -1);
-
-				Map.Flag_To_Redraw();
+				Chat_Begin(ChatScopeType::Everyone);
+			} else if ((input - KN_F1) < Ipx.Num_Connections()) {
+				Chat_Begin(ChatScopeType::Player, Ipx.Connection_ID(input - KN_F1));
 			}
 		}
 	}
@@ -740,52 +719,12 @@ void Message_Input(KeyNumType &input)
 	*/
 	if ((rc==3 || rc==4) && Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
 		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
-
-			/*
-			**	Network game: fill in a GlobalPacketType & send it.
-			*/
-			Session.GPacket.Command = NET_MESSAGE;
-			strcpy (Session.GPacket.Name, Session.Players[0]->Name);
-			Session.GPacket.Message.Color = Session.ColorIdx;
-			Session.GPacket.Message.NameCRC = Compute_Name_CRC(Session.GameName);
-
 			if (rc==3) {
-				strcpy (Session.GPacket.Message.Buf, Session.Messages.Get_Edit_Buf());
+				Chat_Send(Session.Messages.Get_Edit_Buf());
 			} else {
-				strcpy (Session.GPacket.Message.Buf,
-					Session.Messages.Get_Overflow_Buf());
+				Chat_Send(Session.Messages.Get_Overflow_Buf());
 				Session.Messages.Clear_Overflow_Buf();
 			}
-
-			/*
-			**	If 'F4' was hit, MessageAddress will be a broadcast address; send
-			**	the message to every player we have a connection with.
-			*/
-			if (Session.MessageAddress.Is_Broadcast()) {
-				for (i = 0; i < Ipx.Num_Connections(); i++) {
-					Ipx.Send_Global_Message(&Session.GPacket,
-						sizeof(GlobalPacketType), 1,
-						Ipx.Connection_Address(Ipx.Connection_ID(i)));
-					Ipx.Service();
-				}
-			} else {
-
-				/*
-				**	Otherwise, MessageAddress contains the exact address to send to.
-				**	Send to that address only.
-				*/
-				Ipx.Send_Global_Message(&Session.GPacket,
-					sizeof(GlobalPacketType), 1,
-					&Session.MessageAddress);
-				Ipx.Service();
-
-			}
-
-			/*
-			**	Store this message in our LastMessage buffer; the computer may send
-			**	us a version of it later.
-			*/
-			strcpy(Session.LastMessage, Session.GPacket.Message.Buf);
 		}
 
 		/*

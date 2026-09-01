@@ -95,6 +95,7 @@
 #include "ccfile.h"
 #include "cctooltip.h"
 #include "cell.h"
+#include "chat.h"
 #include "command.h"
 #include "conquer.h"
 #include "data.h"
@@ -1692,14 +1693,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 		*/
 		if (strstr(string, "-STEALTH")) {
 			Session.NetStealth = true;
-			continue;
-		}
-
-		/*
-		**	Set the Net Protection option
-		*/
-		if (strstr(string, "-MESSAGES")) {
-			Session.NetProtect = false;
 			continue;
 		}
 
@@ -4741,6 +4734,51 @@ class ManualPlaceCommandClass : public CommandClass
 };
 
 
+class ChatToAllCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ChatToAll");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_CHAT_TO_ALL));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String(TXT_CHAT));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_CHAT_TO_ALL_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Chat_Begin(ChatScopeType::Everyone);
+		}
+};
+
+
+class ChatToAlliesCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ChatToAllies");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_CHAT_TO_ALLIES));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String(TXT_CHAT));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_CHAT_TO_ALLIES_DESC));
+		}
+
+		virtual void Execute(void) const {
+			// An observer holds no allies; its team is the other observers.
+			Chat_Begin(PlayerPtr->IsObserver ? ChatScopeType::Observers : ChatScopeType::Allies);
+		}
+};
+
+
 class DeleteWaypointCommandClass : public CommandClass
 {
 	public:
@@ -4780,10 +4818,28 @@ class DeleteWaypointCommandClass : public CommandClass
 
 
 /// <summary>
+/// Gives a command a key when the keyboard file bound neither the command nor the key.
+/// </summary>
+static void Claim_Free_Key(KeyNumType key, CommandClass const * command)
+{
+	if (HotkeyCommands.Is_Present(key)) {
+		return;
+	}
+	for (int index = 0; index < HotkeyCommands.Count(); index++) {
+		if (HotkeyCommands.Fetch_By_Position(index) == command) {
+			return;
+		}
+	}
+	HotkeyCommands.Add_Index(key, command);
+}
+
+
+/// <summary>
 /// Builds the list of every command the player may invoke.
 /// This routine is called once during startup to populate the command list, and then binds
 /// the hotkeys to it. The delete and escape keys are claimed afterwards, so that no
-/// keyboard file can take them away from the player.
+/// keyboard file can take them away from the player; the chat keys are claimed only when
+/// the file left them free.
 /// </summary>
 static void Init_Commands(void)
 {
@@ -4897,6 +4953,12 @@ static void Init_Commands(void)
 
 	AllCommands.Add(new ManualPlaceCommandClass);
 
+	const CommandClass * chatallcmd = new ChatToAllCommandClass;
+	AllCommands.Add(chatallcmd);
+
+	const CommandClass * chatteamcmd = new ChatToAlliesCommandClass;
+	AllCommands.Add(chatteamcmd);
+
 	const CommandClass * delwpcmd = new DeleteWaypointCommandClass;
 	AllCommands.Add(delwpcmd);
 
@@ -4911,6 +4973,9 @@ static void Init_Commands(void)
 		HotkeyCommands.Remove_Index(KN_ESC);
 	}
 	HotkeyCommands.Add_Index(KN_ESC, optcmd);
+
+	Claim_Free_Key(KN_RETURN, chatallcmd);
+	Claim_Free_Key(KN_BACKSPACE, chatteamcmd);
 }
 
 
