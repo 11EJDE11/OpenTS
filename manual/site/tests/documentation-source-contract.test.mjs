@@ -274,6 +274,54 @@ test('A chosen start position keeps its number and is claimed before the game pi
 	], 'every named position is held before the game picks for anybody who named none');
 });
 
+test('Starting units are placed from three to thirty-two cells out and are no longer scattered', () => {
+	const scenario = source('code/scenario.cpp');
+
+	assert.match(
+		source('code/scenario.h'),
+		/int Scan_Place_Object\(ObjectClass \* obj, Cell const & cell, int min_dist = 1, int max_dist = 31\);/,
+		'the base unit keeps the one-to-thirty-one search by default',
+	);
+
+	const scan = functionBody(
+		scenario,
+		'int Scan_Place_Object(ObjectClass * obj, Cell const & cell, int min_dist, int max_dist)',
+	);
+	assertOrdered(scan, [
+		'if (Map.In_Radar(cell)) {',
+		'for (dist = min_dist; dist <= max_dist; dist++) {',
+		'newcell = Clip_Move(cell, rot, dist);',
+		'newcell = Clip_Scatter(newcell, 1);',
+		'if (Map.In_Radar(newcell) && !skipit) {',
+	], 'the start cell is tried first, then each distance from min_dist to max_dist, inside the playfield only');
+
+	const create = functionBody(
+		scenario.slice(scenario.search(/static void Create_Units\(bool official\)\s*\{/)),
+		'static void Create_Units(bool official)',
+	);
+	assert.match(create, /int average_cost = total_objs > 0 \? total_cost \/ total_objs : 0;/, 'an empty pool gives a zero budget instead of dividing by zero');
+	assert.match(create, /constexpr int MIN_PLACEMENT_DISTANCE = 3;/);
+	assert.match(create, /constexpr int MAX_PLACEMENT_DISTANCE = 32;/);
+	assertOrdered(create, [
+		'tech = infantry[Random_Pick(0, infantry.Count() - 1)];',
+		'if (tech == NULL) {',
+		'break;',
+		'tech->Create_One_Of(hptr)',
+	], 'a house with nothing left to draw stops before calling through a type it never picked');
+	assertOrdered(create, [
+		'if (!Scan_Place_Object(obj, centroid)) {',
+		'Scan_Place_Object(obj, centroid, MIN_PLACEMENT_DISTANCE, MAX_PLACEMENT_DISTANCE)',
+		'DebugString("Finished unit generation. Random number is %d\\n", Random_Pick(0, 65535));',
+	], 'the base unit keeps the default search, the random objects use the ring, and the sync checkpoint stays last');
+	assert.equal(
+		(create.match(/Scan_Place_Object\(obj, centroid\)/g) ?? []).length,
+		1,
+		'only the base unit is placed with the default search',
+	);
+	assert.doesNotMatch(create, /->Scatter\(/, 'no starting object is scattered after placement');
+	assert.doesNotMatch(create, /deployed_list/, 'the list that existed only to scatter is gone');
+});
+
 test('The campaign handicap pair lives on the session, and the mission reader never asks the spawner', () => {
 	const scenario = source('code/scenario.cpp');
 

@@ -582,7 +582,7 @@ class ScenarioClass {
 void Write_Scenario_INI(char const * root, bool mplayer=false);
 bool Read_Scenario_INI(char const * root, bool fresh=true);
 bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen=false);
-int Scan_Place_Object(ObjectClass * obj, Cell const & cell);
+int Scan_Place_Object(ObjectClass * obj, Cell const & cell, int min_dist = 1, int max_dist = 31);
 void Assign_Houses(void);
 
 void Post_Load_Game(void);

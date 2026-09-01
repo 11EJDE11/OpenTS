@@ -1,7 +1,7 @@
 ---
 key: AllowedToStartInMultiplayer
 summary: Lets a vehicle or infantry type appear among the units each house is handed at a multiplayer start.
-see_also: [BaseUnit, Cost, TechLevel, Owner]
+see_also: [BaseUnit, Cost, TechLevel, Owner, "system:starting-forces"]
 when_omitted:
   kind: value
   value: "yes"
@@ -14,10 +14,8 @@ AllowedToStartInMultiplayer=no
 
 Only a UnitType's and an InfantryType's value is read; a BuildingType or AircraftType stores it and is never asked. The pass that reads it runs once, as a multiplayer or skirmish scenario finishes loading, and never in a campaign.
 
-The setting is spent twice in that pass. First, every allowed vehicle except the [`BaseUnit`](/keys/baseunit/) and every allowed infantry type contributes its [`Cost`](/keys/cost/#scope-aircrafttype) to one game-wide average price. Each house is then given a budget of that average multiplied by the lobby's unit count, one less than the lobby figure when bases are enabled, because the base unit is paid for out of it.
+Allowing a type does two things. Every allowed vehicle except the [`BaseUnit`](/keys/baseunit/) and every allowed infantry type contributes its [`Cost`](/keys/cost/#scope-aircrafttype) to the one average price that sets every house's budget, and the type joins the shortlist of each house whose [`TechLevel`](/keys/techlevel/#scope-aircrafttype) reaches it and whose [`Owner`](/keys/owner/) admits it. Denying a type therefore both removes it from every shortlist and moves the average that decides how many objects everybody gets. [Starting forces](/systems/starting-forces/) owns the budget, the shortlist, and the order the budget is spent in.
 
-Second, each house builds its own shortlist from the same allowed types, keeping only those its [`TechLevel`](/keys/techlevel/#scope-aircrafttype) reaches and its [`Owner`](/keys/owner/) admits. The budget is then spent one object at a time, at that object's own cost: a vehicle drawn at random while the spend is still under two thirds of the budget, and an infantry type after that. Denying a type therefore does two separate things — it removes the type from every shortlist, and it moves the average price that decides how many objects everybody gets.
-
-:::danger[Something must remain allowed]
-The average price divides by the number of allowed types with no zero check, so denying every InfantryType and every UnitType but the base unit divides by zero as the match sets up. Denying every InfantryType alone is the same hazard by another route: once a house has spent two thirds of its budget the vehicle branch closes and only infantry may be drawn, so the spending loop calls through a type it never picked. A house whose own shortlist comes out empty while it still has budget fails the same way.
+:::caution[A house can end up short of its budget]
+Denying every type at once gives every house a zero budget, so each is placed with its base unit alone. Denying every InfantryType while a vehicle stays allowed leaves each house with the vehicles it drew before two thirds of its budget was spent, since only infantry may be drawn after that; [Starting forces](/systems/starting-forces/#when-placement-fails) covers the other shortlists that come up empty.
 :::

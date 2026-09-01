@@ -2460,8 +2460,11 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool ke
  *=============================================================================================*/
 static void Create_Units(bool official)
 {
+	// Keep the cells within two of the start clear so the base unit can deploy in place.
+	constexpr int MIN_PLACEMENT_DISTANCE = 3;
+	constexpr int MAX_PLACEMENT_DISTANCE = 32;
+
 	Cell centroid;			// centroid of this house's stuff
-	DynamicVectorClass <TechnoClass*> deployed_list;
 	int unit_count = Session.Options.UnitCount;
 
 	if (Session.Options.Bases) {
@@ -2491,7 +2494,7 @@ static void Create_Units(bool official)
 		}
 	}
 
-	int average_cost = total_cost / total_objs;
+	int average_cost = total_objs > 0 ? total_cost / total_objs : 0;
 	int max_value = unit_count * average_cost;
 
 	/*
@@ -2712,7 +2715,6 @@ static void Create_Units(bool official)
 		}
 
 		int deployed_value = 0;
-		deployed_list.Clear();
 
 		/*
 		**	Place objects; loop through all unit in this category
@@ -2727,6 +2729,11 @@ static void Create_Units(bool official)
 				tech = infantry[Random_Pick(0, infantry.Count() - 1)];
 			}
 
+			if (tech == NULL) {
+				DebugString("House %s has nothing left to draw\n", (char const *)hptr->Class->IniName);
+				break;
+			}
+
 			/*
 			 * Create units (Note: Unlimbo calls Enter_Idle_Mode(), which
 			 * assigns the unit to HUNT; we must use Set_Mission() to override
@@ -2735,13 +2742,12 @@ static void Create_Units(bool official)
 			ObjectClass * obj = tech->Create_One_Of(hptr);
 			TechnoClass * tobj = Dynamic_Cast<TechnoClass *>(obj);
 
-			if (!Scan_Place_Object(obj, centroid)) {
+			if (!Scan_Place_Object(obj, centroid, MIN_PLACEMENT_DISTANCE, MAX_PLACEMENT_DISTANCE)) {
 				delete obj;
 			} else {
 				DebugString("House %s deployed object %s\n", (char const *)hptr->Class->IniName, (char const *)tech->IniName);
 
 				deployed_value += tech->Raw_Cost();
-				deployed_list.Add(tobj);
 
 				if (Scen->Special.IsInitialVeteran) {
 					tobj->Veterancy.Set_Elite(true);
@@ -2754,13 +2760,6 @@ static void Create_Units(bool official)
 				}
 			}
 		}
-
-		if (hptr->Is_Human_Player()) {
-			for (int depl = 0; depl < deployed_list.Count(); depl++) {
-				deployed_list[depl]->Scatter(COORD_NONE);
-			}
-		}
-		deployed_list.Clear();
 	}
 
 	/*
@@ -2797,6 +2796,8 @@ static void Create_Units(bool official)
  * INPUT:                                                                                      *
  *      obj      ptr to object to Unlimbo                                                      *
  *      cell      center of search area                                                        *
+ *      min_dist  nearest ring of cells around the center to try                               *
+ *      max_dist  farthest ring of cells around the center to try                              *
  *                                                                                             *
  * OUTPUT:                                                                                     *
  *      true = object was placed; false = it wasn't                                            *
@@ -2807,7 +2808,7 @@ static void Create_Units(bool official)
  * HISTORY:                                                                                    *
  *   06/09/1995 BRR : Created.                                                                 *
  *=============================================================================================*/
-int Scan_Place_Object(ObjectClass * obj, Cell const & cell)
+int Scan_Place_Object(ObjectClass * obj, Cell const & cell, int min_dist, int max_dist)
 {
 	int dist;               // for object placement
 	FacingType rot;         // for object placement
@@ -2837,7 +2838,7 @@ int Scan_Place_Object(ObjectClass * obj, Cell const & cell)
 	**	If that fails, go to the next distance.
 	**	This ensures that the closest coordinates are filled first.
 	*/
-	for (dist = 1; dist < 32; dist++) {
+	for (dist = min_dist; dist <= max_dist; dist++) {
 
 		/*
 		**	Pick a random starting direction
@@ -2877,7 +2878,7 @@ int Scan_Place_Object(ObjectClass * obj, Cell const & cell)
 					skipit = true;
 				}
 
-				if (!skipit) {
+				if (Map.In_Radar(newcell) && !skipit) {
 					/*
 					**	Only attempt to Unlimbo the object if:
 					**	- there is no techno in the cell
