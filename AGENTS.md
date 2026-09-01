@@ -40,7 +40,9 @@ useful distinction, qualification, or example merely to make a document
 shorter.
 
 Treat AI-assisted prose as a draft. Verify every claim, then rewrite and trim
-it before submission. The contrasts below illustrate the style; they are not
+it before submission. These rules bind every edit path, including files
+written through scripts or shell commands; review the final diff against them
+before handing off. The contrasts below illustrate the style; they are not
 project facts or templates to copy.
 
 - Reference prose: avoid "This option is used in order to select which output
