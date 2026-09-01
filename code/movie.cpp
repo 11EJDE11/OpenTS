@@ -101,15 +101,16 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 
 		bool dostretch = (stretch == true && Options.StretchMovies == true);
 
-		if (DSurface::AllowStretchBlits == true && dostretch == true) {
-			if (vqa->InitialRect.Width < VisibleRect.Width && vqa->InitialRect.Height < VisibleRect.Height) {
-				float ratio = ((float)VisibleRect.Width / (float)vqa->InitialRect.Width);
-				vqa->StretchRect.Width = VisibleRect.Width;
-				vqa->StretchRect.Height = (int)(vqa->InitialRect.Height * ratio);
-				vqa->StretchRect.X = 0;
-				vqa->StretchRect.Y = (VisibleRect.Height - vqa->StretchRect.Height) / 2;
-				DebugString("Stretching movie %dx%d -> %dx%d\n", vqa->InitialRect.Width, vqa->InitialRect.Height, vqa->StretchRect.Width, vqa->StretchRect.Height);
-			}
+		if (DSurface::AllowStretchBlits == true && dostretch == true && vqa->InitialRect.Is_Valid()) {
+			double scalex = (double)VisibleRect.Width / (double)vqa->InitialRect.Width;
+			double scaley = (double)VisibleRect.Height / (double)vqa->InitialRect.Height;
+			double scale = (scalex < scaley) ? scalex : scaley;
+
+			vqa->StretchRect.Width = (int)(vqa->InitialRect.Width * scale);
+			vqa->StretchRect.Height = (int)(vqa->InitialRect.Height * scale);
+			vqa->StretchRect.X = (VisibleRect.Width - vqa->StretchRect.Width) / 2;
+			vqa->StretchRect.Y = (VisibleRect.Height - vqa->StretchRect.Height) / 2;
+			DebugString("Stretching movie %dx%d -> %dx%d\n", vqa->InitialRect.Width, vqa->InitialRect.Height, vqa->StretchRect.Width, vqa->StretchRect.Height);
 		}
 
 		/*
@@ -118,7 +119,8 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 		**	When the palette has finished fading, wait until the score has finished fading
 		**	before launching the movie.
 		*/
-		if (clrscrn_before) {
+		// The screen around a movie that does not cover the display has to be cleared too.
+		if (clrscrn_before || vqa->StretchRect != VisibleRect) {
 			HiddenSurface->Fill(0);
 			Update_Visible_Surface(HiddenSurface);
 		}
