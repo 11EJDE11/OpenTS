@@ -66,6 +66,33 @@ files to `TS_RUN_DIR`, which defaults to `Run/`:
 built configuration replaces the previous copy in `Run/`. Compiler and linker
 intermediates stay in the selected build directory.
 
+## Experimental clang-cl cross-build
+
+An unsupported Linux cross-build is available for compiler-portability work. It
+uses native `clang-cl`, LLD, LLVM library and resource tools, and UASM with the
+MSVC headers and libraries. It does not expand the supported build matrix or
+establish runtime behavior.
+
+The reconstructed codebase may still contain undefined behavior that the
+supported MSVC build happens not to expose. A successful clang-cl build may
+therefore run incorrectly or fail at runtime; validate any result separately.
+
+Provide a directory containing a Visual Studio layout and Windows SDK. The
+cross-build uses the layout's default MSVC toolset and newest complete SDK.
+Configure a single-configuration Ninja build:
+
+```bash
+cmake -S . -B build/clang-cl -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake \
+  -DOPENTS_MSVC_ROOT=/path/to/msvc
+cmake --build build/clang-cl
+```
+
+The toolchain requires `clang-cl`, `lld-link`, `llvm-lib`, `llvm-mt`, `llvm-rc`,
+and `uasm` on `PATH`. It exports `compile_commands.json`; one configuration in
+`.vscode/c_cpp_properties.clang.example.json` reads that file for IntelliSense.
+
 ## Build from Visual Studio Code
 
 With the recommended extensions installed, the repository provides:

@@ -11,9 +11,27 @@ set(OPENTS_VERSION_PRERELEASE "")
 # alone. Every other build names the commit it came from as well.
 option(OPENTS_OFFICIAL_BUILD "Build as an official release of the declared version" OFF)
 
-if(NOT MSVC OR MSVC_VERSION LESS 1930)
-    message(FATAL_ERROR "OpenTS requires the Visual Studio 2022 MSVC toolchain.")
+option(OPENTS_EXPERIMENTAL_CLANG_CL "Build with clang-cl using the MSVC ABI" OFF)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+   AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    if(NOT OPENTS_EXPERIMENTAL_CLANG_CL)
+        message(FATAL_ERROR
+            "The unsupported clang-cl experiment must be configured with "
+            "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake.")
+    endif()
+elseif(MSVC)
+    if(MSVC_VERSION LESS 1930)
+        message(FATAL_ERROR "OpenTS requires MSVC 19.30 or newer.")
+    endif()
+else()
+    message(FATAL_ERROR
+        "OpenTS requires the Visual Studio 2022 MSVC toolchain. "
+        "For the unsupported clang-cl experiment, configure with "
+        "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake.")
 endif()
+
+enable_language(RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

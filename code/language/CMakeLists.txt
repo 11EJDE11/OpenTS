@@ -12,7 +12,7 @@ target_compile_definitions(Language PRIVATE NOMINMAX)
 target_include_directories(Language PRIVATE "${OPENTS_GENERATED_DIR}")
 add_dependencies(Language OpenTSBuildStamp)
 
-if (MSVC)
+if(MSVC)
     target_link_options(Language PRIVATE "/NOENTRY" "/NODEFAULTLIB")
 endif()
 

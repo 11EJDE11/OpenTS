@@ -101,17 +101,17 @@ set(OPENTS_COMPILE_OPTIONS
         # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
         # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /Od /RTC1 /GR /MP /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise
+            /Zi /Od /RTC1 /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
         $<$<COMPILE_LANGUAGE:C>:
-            /Zi /Od /RTC1 /MP /Oy- /arch:SSE2 /fp:precise
+            /Zi /Od /RTC1 $<$<C_COMPILER_ID:MSVC>:/MP> /Oy- /arch:SSE2 /fp:precise
         >
 
         # ---------- MASM ----------
         $<$<COMPILE_LANGUAGE:ASM_MASM>:
-            /Zi /c /coff /Cx /safeseh
+            -Zi -c -coff -Cx -safeseh
         >
     >
 
@@ -122,17 +122,17 @@ set(OPENTS_COMPILE_OPTIONS
         # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
         # /fp:precise -- no reassociation of the engine's accumulations.
         $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /O2 /GF /GR /MP /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise
+            /Zi /O2 /GF /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise
         >
 
         # ---------- C ----------
         $<$<COMPILE_LANGUAGE:C>:
-            /Zi /O2 /GF /MP /arch:SSE2 /fp:precise
+            /Zi /O2 /GF $<$<C_COMPILER_ID:MSVC>:/MP> /arch:SSE2 /fp:precise
         >
 
         # ---------- MASM ----------
         $<$<COMPILE_LANGUAGE:ASM_MASM>:
-            /Zi /c /coff /Cx /safeseh
+            -Zi -c -coff -Cx -safeseh
         >
     >
 )
@@ -167,6 +167,15 @@ set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/bgfxbackend.cpp" PROPER
         "BX_CONFIG_DEBUG=$<IF:$<CONFIG:Debug>,1,$<BOOL:${BX_CONFIG_DEBUG}>>"
     COMPILE_OPTIONS "/Zc:preprocessor"
 )
+
+# bx rewrites __stdcall while its headers are being parsed by clang-cl.  Force the
+# compatibility header into the renderer translation unit as well as bx/bgfx so the
+# MSVC standard-library headers that follow still see the Win32 calling convention.
+if(OPENTS_EXPERIMENTAL_CLANG_CL AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/bgfxbackend.cpp" APPEND PROPERTY
+        COMPILE_OPTIONS "/FI${CMAKE_SOURCE_DIR}/thirdparty/bx-clang-compat.h"
+    )
+endif()
 
 message(STATUS "${PROJECT_NAME}: Adding compilier definitions...")
 target_compile_definitions(OpenTS PRIVATE
@@ -220,7 +229,7 @@ target_link_libraries(OpenTS PRIVATE
     ole32 oleaut32 uuid odbc32 odbccp32
 )
 
-if (MSVC)
+if(MSVC)
     target_link_options(OpenTS PRIVATE
         /SUBSYSTEM:WINDOWS
         /DEBUG
@@ -245,7 +254,7 @@ message(STATUS "${PROJECT_NAME}: Adding MASM support...")
 
 enable_language(ASM_MASM)
 
-# All .asm files compile automatically using ML.EXE with appropriate flags.
+# Dash-form options assemble under both ML.EXE and the clang-cl toolchain's UASM.
 foreach(f ${OPENTS_SRC})
     if(f MATCHES "\\.asm$")
         set_source_files_properties(${f} PROPERTIES
