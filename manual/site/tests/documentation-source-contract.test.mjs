@@ -192,3 +192,264 @@ test('Building main-shape Image is additive to the inherited ObjectType Image re
 	], 'Building main-shape selection');
 	assert.doesNotMatch(fetchImage, /\bGraphicName\s*=/);
 });
+
+test('Every field the launch file reader carries is bound or named as unhonored', () => {
+	const header = source('code/spawnerconfig.h');
+	const spawner = source('code/spawner.cpp');
+
+	assert.match(
+		spawner,
+		/Read, not honored/,
+		'the binding step keeps its ledger of fields it deliberately leaves alone',
+	);
+
+	const fields = [];
+	for (const line of header.split('\n')) {
+		const declaration = /^\t{2,3}(?!static |enum |struct |\/)[A-Za-z_][^;(]*?[\s>*&]([A-Za-z_]\w*)\s*(?:=[^;]*)?;\s*$/.exec(line);
+		if (declaration) fields.push(declaration[1]);
+	}
+	assert.ok(fields.length > 30, `expected the reader to carry many fields, found ${fields.length}`);
+
+	for (const field of fields) {
+		assert.match(
+			spawner,
+			new RegExp(String.raw`\b${field}\b`),
+			`${field} is read from a launch file but code/spawner.cpp neither binds it nor names it in the "Read, not honored" ledger`,
+		);
+	}
+});
+
+test('A session node is left to its own constructor rather than zeroed by hand', () => {
+	assert.doesNotMatch(
+		source('code/netdlg2.cpp'),
+		/memset\(who, 0, sizeof\(\*who\)\)/,
+		'zeroing a node by hand would wipe the defaults its constructor sets',
+	);
+});
+
+test('House assignment takes each seat as written before the neutral houses exist', () => {
+	const assign = functionBody(source('code/scenario.cpp'), 'void Assign_Houses(void)');
+
+	assertOrdered(assign, [
+		'housep->SpawnWaypoint = player->Player.SpawnChoice;',
+		'seat->Player.House != -1',
+		'seat->Player.Color != -1',
+		'seat->Player.Handicap >= 0',
+		'housep->SpawnWaypoint = seat->Player.SpawnChoice;',
+		'seat->Player.ID = housep->HeapID;',
+	], 'a seated house takes its country, color, difficulty and start position');
+
+	assertOrdered(assign, [
+		'Seated_Node(seatnum)',
+		'Make_Ally',
+		'HouseTypeClass::From_Name("Neutral")',
+	], 'the alliance table names seats, so it is applied before any house that is not one');
+});
+
+test('A chosen start position keeps its number and is claimed before the game picks', () => {
+	const scenario = source('code/scenario.cpp');
+
+	const build = functionBody(
+		scenario,
+		'static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity)',
+	);
+	assertOrdered(build, [
+		'if (keep_identity) {',
+		'waypts.Add(declared ? Scen->Get_Waypoint_Cell(waycount) : CELL_NONE);',
+		'Append_Open_Start_Positions(',
+		'return(waypts);',
+	], 'the numbered list keeps an undeclared position as a hole and appends any shortfall past it');
+
+	const create = functionBody(
+		scenario.slice(scenario.search(/static void Create_Units\(bool official\)\s*\{/)),
+		'static void Create_Units(bool official)',
+	);
+	assertOrdered(create, [
+		'Houses[index]->SpawnWaypoint >= 0',
+		'Build_Start_Waypoint_List(official, choices)',
+		'taken[index] = choices && index < waypts.Count() && waypts[index] == CELL_NONE;',
+		'reserved[spot] = index;',
+		'reserved[hptr->SpawnWaypoint] == (int)house',
+		'} else if (numtaken == 0) {',
+	], 'every named position is held before the game picks for anybody who named none');
+});
+
+test('The campaign handicap pair lives on the session, and the mission reader never asks the spawner', () => {
+	const scenario = source('code/scenario.cpp');
+
+	assertOrdered(
+		functionBody(scenario, 'bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)'),
+		[
+			'Scen->Difficulty = Session.CampaignDifficulty;',
+			'Scen->CDifficulty = Session.CampaignCDifficulty;',
+		],
+		'the mission takes the pair the session carries',
+	);
+	assert.doesNotMatch(
+		scenario,
+		/#include "spawner\.h"/,
+		'the mission reader has no line to the spawner',
+	);
+
+	assertOrdered(
+		functionBody(source('code/init.cpp'), 'bool Select_Game(bool )'),
+		[
+			'Session.CampaignDifficulty = (DiffType)Options.Difficulty;',
+			'Session.CampaignCDifficulty = (DiffType)(DIFF_COUNT - 1 - Options.Difficulty);',
+		],
+		'the menu derives the pair the mission reader used to compute, ahead of the start',
+	);
+});
+
+test('A campaign spawn writes the game its own state and nothing more', () => {
+	const spawner = source('code/spawner.cpp');
+
+	assertOrdered(functionBody(spawner, 'static bool Spawner_Setup_Campaign(void)'), [
+		'Session.Type = GAME_NORMAL;',
+		'Session.CampaignDifficulty = (DiffType)SpawnConfig.CampaignDifficulty;',
+		'Session.CampaignCDifficulty = (DiffType)SpawnConfig.CampaignCDifficulty;',
+		'Scen->Campaign = (CampaignType)SpawnConfig.CampaignID;',
+		'new (&Environment) EnvironmentClass;',
+		'Environment.Globals[index] = SpawnConfig.GlobalFlags[index];',
+	], 'a campaign launch lands in the game’s own state');
+
+	assertOrdered(functionBody(source('code/init.cpp'), 'bool Select_Game(bool )'), [
+		'Spawner_Is_Active() ? Scen->Campaign : CAMPAIGN_NONE',
+		'Scen->Set_Global_To(index, Environment.Globals[index]);',
+	], 'a spawned mission is named by the file and starts with the flags it carried');
+});
+
+test('A resume is judged before it is loaded, and the save answers for the rest', () => {
+	assertOrdered(functionBody(source('code/spawner.cpp'), 'static bool Spawner_Resume(bool & gameloaded)'), [
+		'SpawnConfig.SaveGameName.empty()',
+		'Get_Savefile_Info(SpawnConfig.SaveGameName.c_str(), &info)',
+		'info.Get_Internal_Version() != ExpectedGameVersion',
+		'type == GAME_IPX',
+		'SpawnConfig.Is_Playable(HouseTypes.Count(), MAX_MPLAYER_COLORS, fault)',
+		'Spawner_Seat_Humans();',
+		'Spawner_Wire_Network()',
+		'Session.LoadGame = true;',
+		'LoadOptionsClass().Load_File(SpawnConfig.SaveGameName.c_str())',
+		'Reconcile_Players()',
+		'gameloaded = true;',
+	], 'a network resume seats the players and opens the network before the save is read');
+
+	for (const dialog of ['IDD_OPT_CTRL_WOL']) {
+		const template = source('code/language/language.rc');
+		const body = template.slice(template.indexOf(dialog + ' DIALOG'));
+		assert.match(
+			body.slice(0, body.indexOf('END')),
+			/IDC_SAVE_GAME/,
+			`${dialog} offers the synchronized save the options handler has always known`,
+		);
+	}
+
+	assertOrdered(functionBody(source('code/saveload.cpp'), 'bool Reconcile_Players(void)'), [
+		'stricmp(Session.Players[i]->Name, Houses[house]->IniName) == 0',
+		'Session.Players[i]->Player.ID = found->HeapID;',
+		'Houses[Session.Players[0]->Player.ID] != PlayerPtr',
+		'housep->IsHuman = false;',
+		'housep->IniName = Fetch_String(TXT_COMPUTER);',
+	], 'every seat is matched and this machine identified before any house changes hands');
+
+	assertOrdered(functionBody(source('code/saveload.cpp'), 'bool Load_Game(const char *file_name)'), [
+		'Session.Type = (GameType)info.Get_Game_Type();',
+		'Post_Load_Game();',
+		'Session.CampaignDifficulty = Scen->Difficulty;',
+		'Session.CampaignCDifficulty = Scen->CDifficulty;',
+	], 'a load takes the kind of game and the campaign pair from the save');
+});
+
+test('Saved games are named in one folder rather than searched for', () => {
+	const gamedirs = source('code/gamedirs.cpp');
+
+	assertOrdered(functionBody(gamedirs, 'std::string Saved_Game_Name(char const * filename)'), [
+		'UserDirectory + SavedGamesFolder',
+		'CreateDirectory(folder.c_str(), NULL);',
+	], 'a saved game is named inside the user directory, and the folder is made on the way');
+
+	for (const [file, signature] of [
+		['code/saveload.cpp', 'static bool Save_Game(const char *file_name, char const * descr)'],
+		['code/saveload.cpp', 'bool Load_Game(const char *file_name)'],
+		['code/saveload.cpp', 'bool Get_Savefile_Info(char const * name, SaveVersionInfo * info)'],
+		['code/loaddlg.cpp', 'void LoadOptionsClass::Fill_List(HWND window)'],
+		['code/loaddlg.cpp', 'bool LoadOptionsClass::Files_Present(void)'],
+		['code/loaddlg.cpp', 'bool LoadOptionsClass::Delete_File(const char * file_name)'],
+	]) {
+		assert.match(
+			functionBody(source(file), signature),
+			/Saved_Game_Name\(/,
+			`${signature} names the folder saved games are kept in`,
+		);
+	}
+
+	assert.doesNotMatch(
+		functionBody(source('code/loaddlg.cpp'), 'void LoadOptionsClass::Fill_List(HWND window)') +
+			functionBody(source('code/loaddlg.cpp'), 'bool LoadOptionsClass::Files_Present(void)'),
+		/Search_Files\(/,
+		'the listing no longer scans the folders the game reads from',
+	);
+});
+
+test('A match against other machines is assembled whole and wired to its network last', () => {
+	const spawner = source('code/spawner.cpp');
+
+	assertOrdered(functionBody(spawner, 'bool Spawner_Prepare(bool & gameloaded)'), [
+		'SpawnConfig.Is_Playable(HouseTypes.Count(), MAX_MPLAYER_COLORS, fault)',
+		'Spawner_Setup_Session();',
+		'SpawnConfig.Session_Identity_CRC()',
+		'Session.Type == GAME_INTERNET && !Spawner_Wire_Network()',
+	], 'the match is judged, assembled and named before its network is opened');
+
+	assertOrdered(functionBody(spawner, 'static bool Spawner_Wire_Network(void)'), [
+		'Ipx.Configure_Tunnel(',
+		'Ipx.Configure_Direct_Peers(',
+		'Ipx.Add_Peer(Session.Players[index]->Address);',
+		'if (!Ipx.Init()) {',
+	], 'the transport is chosen, the peers named, and only then the network opened');
+
+	assertOrdered(functionBody(source('code/scenario.cpp'), 'static NodeNameType * Seated_Node(int seat)'), [
+		'Session.Players[i]->Player.ID == seat',
+		'Session.Computers[i]->Player.ID == seat',
+	], 'a seat is found by the house it was assigned, not by its place in the list');
+
+
+	assert.match(
+		functionBody(spawner, 'static void Spawner_Setup_Session(void)'),
+		/LaunchType::Multiplayer\s*\n?\s*\?\s*GAME_INTERNET : GAME_SKIRMISH;/,
+		'one assembly serves both kinds of match',
+	);
+
+	assertOrdered(functionBody(spawner, 'static void Spawner_Seat_Human(int index)'), [
+		'if (SpawnConfig.TunnelPort != 0) {',
+		'node->Address.Set_Address(0, htons((unsigned short)seat.Port));',
+		'inet_addr(seat.Address.c_str())',
+	], 'a tunnelled machine is named by its tunnel number before an address is read');
+
+	assertOrdered(functionBody(spawner, 'static void Spawner_Seat_Humans(void)'), [
+		'Spawner_Seat_Human(SpawnConfig.LocalSlot);',
+		'if (index != SpawnConfig.LocalSlot) {',
+	], 'the local seat leads the player list the rest of the game reads');
+
+	assertOrdered(functionBody(spawner, 'static void Spawner_Setup_Session(void)'), [
+		'GAME_INTERNET : GAME_SKIRMISH;',
+		'Seed = SpawnConfig.Seed;',
+	], 'one seed is taken as written, since no lobby hands one around');
+
+	assertOrdered(
+		functionBody(
+			source('code/spawnerconfig.cpp'),
+			'bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fault) const',
+		),
+		[
+			'kind == LaunchType::Multiplayer ||',
+			'(kind == LaunchType::Resume && HumanCount > 1)',
+			'if (human && multiplayer) {',
+			'slot.Name.empty()',
+			'_stricmp(Slots[other].Name.c_str(), slot.Name.c_str()) == 0',
+			'Slots[other].Color == slot.Color',
+			'slot.Port < 1 || slot.Port > 65535',
+		],
+		'the seat order the machines share is what the name and color rules are held for',
+	);
+});

@@ -83,8 +83,6 @@ class ObjectTypeClass;
 class SaveStreamClass;
 template<class T> class DynamicVectorClass;
 
-#define HOUSE_NAME_MAX	20
-
 
 /****************************************************************************
 **	Certain aspects of the house "country" are initially set by the scenario
@@ -565,6 +563,7 @@ class HouseClass : public AbstractClass
 		**	the base.
 		*/
 		Coord Center;			// Center of the base.
+		int SpawnWaypoint;		// starting waypoint this house was placed at; -1 = never placed
 		int Radius;				// Average building distance from center (leptons).
 		struct {
 			int AirDefense;

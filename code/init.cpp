@@ -154,6 +154,7 @@
 #include "scheme.h"
 #include "script.h"
 #include "session.h"
+#include "spawner.h"
 #include "side.h"
 #include "skirmish.h"
 #include "smudtype.h"
@@ -413,18 +414,20 @@ int Init_Game(int , char * [])
 	/*
 	**	Play the startup animation.
 	*/
-	if (Special.IsFromInstall == true) {
-		DebugString("Playing first time intro sequence.\n");
-		Play_Movie("EVA.VQA", THEME_NONE, false);
-	}
+	if (!Spawner_Is_Requested()) {
+		if (Special.IsFromInstall == true) {
+			DebugString("Playing first time intro sequence.\n");
+			Play_Movie("EVA.VQA", THEME_NONE, false);
+		}
 
-	DebugString("Playing startup movies.\n");
-	Play_Movie("WWLOGO.VQA", THEME_NONE);
-	if (!Get_New_Menu()->MixFile) {
-		if (CCFileClass("FS_TITLE.VQA").Is_Available() == true) {
-			Play_Movie("FS_TITLE.VQA", THEME_NONE, false);
-		} else {
-			Play_Movie("STARTUP.VQA", THEME_NONE, false);
+		DebugString("Playing startup movies.\n");
+		Play_Movie("WWLOGO.VQA", THEME_NONE);
+		if (!Get_New_Menu()->MixFile) {
+			if (CCFileClass("FS_TITLE.VQA").Is_Available() == true) {
+				Play_Movie("FS_TITLE.VQA", THEME_NONE, false);
+			} else {
+				Play_Movie("STARTUP.VQA", THEME_NONE, false);
+			}
 		}
 	}
 
@@ -644,6 +647,21 @@ void Init_Campaigns(void)
 			Read_Battle_INI(*ini);
 			delete ini;
 		}
+	}
+}
+
+
+/// <summary>
+/// Reads the countries and the sides they belong to from the rules, so a house's side is
+/// known before anything asks for it.
+/// </summary>
+void Prepare_Side_Roster(void)
+{
+	Rule->Do_HouseTypes(*RuleINI);
+	Rule->Do_Sides(*RuleINI);
+
+	for (int index = 0; index < HouseTypes.Count(); index++) {
+		HouseTypes[index]->Read_INI(*RuleINI);
 	}
 }
 
@@ -1072,6 +1090,18 @@ restart:
 			}
 		}
 
+		/*
+		 * A launch replaces the menu once. An ended match or a refusal answers false, so the
+		 * process exits and the client sees it go.
+		 */
+		if (Spawner_Is_Requested()) {
+			if (!Spawner_Prepare(gameloaded)) {
+				return(false);
+			}
+			process = false;
+			Theme.Stop(true);
+		}
+
 		while (process) {
 
 			/*
@@ -1116,33 +1146,6 @@ restart:
 						process = true;
 						selection = SEL_NONE;
 						break;
-					}
-
-					switch (Options.Difficulty) {
-						case 0:
-							Scen->CDifficulty = DIFF_HARD;
-							Scen->Difficulty = DIFF_EASY;
-							break;
-
-						case 1:
-							Scen->CDifficulty = DIFF_HARD;
-							Scen->Difficulty = DIFF_NORMAL;
-							break;
-
-						case 2:
-							Scen->CDifficulty = DIFF_NORMAL;
-							Scen->Difficulty = DIFF_NORMAL;
-							break;
-
-						case 3:
-							Scen->CDifficulty = DIFF_EASY;
-							Scen->Difficulty = DIFF_NORMAL;
-							break;
-
-						case 4:
-							Scen->CDifficulty = DIFF_EASY;
-							Scen->Difficulty = DIFF_HARD;
-							break;
 					}
 
 					Theme.Stop(true);
@@ -1387,8 +1390,14 @@ restart:
 			Session.PlayerIsGDI = stricmp(HouseTypes[Session.Players[0]->Player.House]->Name(), "GDI") == 0;
 		}
 
-		if (Session.Type != GAME_NORMAL || Debug_ForceScenario || Session.Play) {
-			if (!Start_Scenario(Scen->ScenarioName, true, CAMPAIGN_NONE)) {
+		// The menu sets the difficulty pair on every path but a client launch, which chose it.
+		if (!Spawner_Is_Active()) {
+			Session.CampaignDifficulty = (DiffType)Options.Difficulty;
+			Session.CampaignCDifficulty = (DiffType)(DIFF_COUNT - 1 - Options.Difficulty);
+		}
+
+		if (Session.Type != GAME_NORMAL || Debug_ForceScenario || Session.Play || Spawner_Is_Active()) {
+			if (!Start_Scenario(Scen->ScenarioName, true, Spawner_Is_Active() ? Scen->Campaign : CAMPAIGN_NONE)) {
 				if (Debug_Map) {
 					return(false);
 				} else {
@@ -1402,6 +1411,13 @@ restart:
 				} else {
 					goto restart;
 				}
+			}
+		}
+
+		// The mission read clears these, so a launch file's carried-over flags are set after it.
+		if (Spawner_Is_Active() && Session.Type == GAME_NORMAL) {
+			for (int index = 0; index < ARRAY_SIZE(Environment.Globals); index++) {
+				Scen->Set_Global_To(index, Environment.Globals[index]);
 			}
 		}
 
@@ -1656,6 +1672,12 @@ bool Parse_Command_Line(int argc, char * argv[])
 			continue;
 		}
 
+		// A client asking the game to launch what SPAWN.INI describes.
+		if (stricmp(string, "-SPAWN") == 0) {
+			Spawner_Request();
+			continue;
+		}
+
 		if (memcmp(string, "-TIME=", 6) == 0) {
 			sscanf(&string[6], "%d", &TournamentTime);
 		}
@@ -1831,7 +1853,11 @@ void Init_Random(void)
 	**	a recording; the random number generator is initialized by loading
 	**	the game.
 	*/
-	if (Session.LoadGame || Session.Play) {
+	if (Session.LoadGame) {
+		return;
+	}
+
+	if (Session.Play) {
 		Scen->RandomNumber = Seed;
 		NonCriticalRandomNumber = Seed;
 		DebugString("Seed is %08x\n", Seed);

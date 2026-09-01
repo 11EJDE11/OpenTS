@@ -115,6 +115,7 @@
 #include "shapeset.h"
 #include "side.h"
 #include "sidebar.h"
+#include "spawner.h"
 #include "smudge.h"
 #include "smudtype.h"
 #include "sun.h"
@@ -660,7 +661,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int command_sho
 		**	Check for forced intro movie run disabling. If the conquer
 		**	configuration file says "no", then don't run the intro.
 		*/
-		if (!Special.IsFromInstall) {
+		if (!Special.IsFromInstall && !Spawner_Is_Requested()) {
 			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", "PlayIntro", true);
 		}
 
@@ -668,7 +669,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int command_sho
 		**	Regardless of whether we should run it or not, here we're
 		**	gonna change it to say "no" in the future.
 		*/
-		if (Special.IsFromInstall == true) {
+		if (Special.IsFromInstall == true && !Spawner_Is_Requested()) {
 			ConfigINI.Put_Bool("Intro", "PlayIntro", false);
 
 			// Left closed, so that saving opens it for writing itself.

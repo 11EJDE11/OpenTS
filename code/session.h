@@ -44,6 +44,8 @@
 #include "version.h"
 #include "win.h"
 
+#include <cstring>
+
 #include "dialog.hh"
 #include "diff.hh"
 
@@ -217,6 +219,9 @@ struct NodeNameType {
 			int ProcessTime;			// Length of time to process players main loop
 			int Status;					//
 			int SquadID;				//
+			int SpawnChoice;			// starting waypoint asked for; -1 = the engine picks
+			int Handicap;				// difficulty asked for; -1 = the session default
+			unsigned AlliesMask;		// seats allied with, one bit per seat index
 		} Player;
 		struct {
 			unsigned int LastTime;		// last time we heard from this guy
@@ -224,6 +229,17 @@ struct NodeNameType {
 			int Color;					// chat player's color
 		} Chat;
 	};
+
+	// A new node asks for nothing, leaving the start position and difficulty to the game.
+	NodeNameType(void)
+	{
+		memset(this, 0, sizeof(*this));
+		Player.SpawnChoice = -1;
+		Player.Handicap = -1;
+
+		// The memset above wipes the broadcast address the default constructor supplies.
+		Address = IPXAddressClass();
+	}
 };
 
 
@@ -511,6 +527,13 @@ class SessionClass
 		int Solo;                           // 1 = player can play alone
 
 		/*
+		 * The pair a campaign mission is played at. It lives here because the scenario's own
+		 * copy is wiped before each mission, while a restart or the next one must keep it.
+		 */
+		DiffType CampaignDifficulty;
+		DiffType CampaignCDifficulty;
+
+		/*
 		 * If the local player is playing a GDI house, then this flag will be true. A starting
 		 * multiplayer scenario takes its side and its speech set from it.
 		 */
@@ -683,6 +706,9 @@ class SessionClass
 		DynamicVectorClass <NodeNameType *> Games;      // list of games
 		DynamicVectorClass <NodeNameType *> Players;    // list of players
 		DynamicVectorClass <NodeNameType *> Chat;       // list of chat nodes
+
+		// The computer players a launch file seated, after the humans; the menu leaves this empty.
+		DynamicVectorClass <NodeNameType *> Computers;
 		int Suspended;
 
 		/*

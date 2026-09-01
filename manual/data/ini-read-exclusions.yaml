@@ -136,3 +136,14 @@ site_exclusions:
     keys: [SearchPaths]
     classification: excluded
     reason: The folder list belongs to the deployment file that describes where a distribution keeps its own files, and is documented as part of that format rather than as game data.
+
+  - path: code/spawnerconfig.cpp
+    function: SpawnerConfigClass::Read_Slots
+    keys: [Color, Side, Port]
+    classification: excluded
+    reason: Each names one seat of a match inside a section the CnCNet client numbers per seat, not an authored game-data setting.
+  - path: code/spawnerconfig.cpp
+    function: SpawnerConfigClass::Read_INI
+    keys: [AIDifficulty, AIPlayers, AlliesAllowed, AttackNeutralUnits, AutoSaveGame, AutoSurrender, Bases, BridgeDestroy, BuildOffAlly, CampaignID, CoachMode, ContinueWithoutHumans, Crates, Credits, DifficultyBasedAINames, DifficultyModeComputer, DifficultyModeHuman, Firestorm, FogOfWar, GameID, GameSpeed, HarvesterTruce, Host, IsSinglePlayer, LoadSaveGame, MCVRedeploy, MultiEngineer, NextSPAutoSaveId, NextSkirmishAutoSaveId, PlayMoviesInMultiplayer, Port, QuickMatch, ScrapMetal, Seed, ShortGame, SkipScoreScreen, TechLevel, Tournament, UnitCount, WriteStatistics]
+    classification: excluded
+    reason: The CnCNet client writes these per launch to describe one match, so they are not part of the authored game-data key catalog.

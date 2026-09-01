@@ -23,7 +23,11 @@ source_files:
 
 The save dialog creates `.SAV` files. Each file is an OLE compound document: the listing details live in the document's own property set, and the game state goes into a single `CONTENTS` stream that is compressed as it is written.
 
-The dialog names a new save `SAVE` followed by four hexadecimal digits, drawing again until it finds a name no existing file answers to; saving over a listed game reuses that game's name. A multiplayer save is written under one fixed name instead and is never offered in the list.
+## Where the files are
+
+Saved games keep to a `Saved Games` folder of their own, beside the game or inside the [user directory](/using/game-data/) when one is named, created the first time the game asks for a saved game. Every save, load, listing and deletion names that folder outright: unlike the files the game reads, a saved game is never looked for anywhere else. A client that browses saved games therefore finds them in one place, whichever layout the game was installed in.
+
+The dialog names a new save `SAVE` followed by four hexadecimal digits, drawing again until it finds a name no existing file answers to; saving over a listed game reuses that game's name. A multiplayer save is written under one fixed name instead and is never offered in the list. The random map generator keeps its saved settings in the same folder, under names of its own; the map a host generates for a match is not one of them, and stays with the game's files so that it can travel to the other machines.
 
 ## When the file is written
 
@@ -41,12 +45,14 @@ The `CONTENTS` stream is a fixed sequence of records — the scenario, the envir
 
 The project-version stamp decides whether a file is offered at all, and only
 the running version's stamp is accepted. The load dialog reads the property set
-of every `.SAV` in the game directory and skips every file stamped by anything
-else, including the Tiberian Sun release and another OpenTS release-cycle
-version. A save that reaches the engine without passing through the dialog, as
-a network save does, is checked the same way and refused. Development snapshots
-within one cycle share the stamp, and their save layouts may still differ. A listed save that was not
-made in a campaign is marked with a leading `*`.
+of every `.SAV` in the saved-games folder and skips every file stamped by
+anything else, including the Tiberian Sun release and another OpenTS
+release-cycle version. A save that reaches the engine without passing through
+the dialog, as a network save or one resumed from a
+[launch file](/formats/spawn-ini/) does, is checked the same way and refused.
+Development snapshots within one cycle share the stamp, and their save layouts
+may still differ. A listed save that was not made in a campaign is marked with a
+leading `*`.
 
 Beyond that stamp and the add-on the scenario declares, nothing about a save is measured against the game it is being loaded into. A save made under one set of rules and loaded under another is not detected, and the type definitions stored in the file are simply restored over the ones the rules built.
 
