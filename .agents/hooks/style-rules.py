@@ -3,22 +3,21 @@
 
 Claude Code and Codex call this script with a hook payload on stdin.  A
 Markdown edit gets the ``## Writing prose`` section of the root ``AGENTS.md``
-as nonblocking context.  A C or C++ edit under ``code/`` gets the ``##
-Comments`` section of ``code/AGENTS.md`` whenever it touches comments, and a
-small set of mechanical comment checks may block the tool result.
+as context.  A C or C++ edit under ``code/`` gets the ``## Comments``
+section of ``code/AGENTS.md`` whenever it touches comments, and a small set
+of mechanical comment checks reports violations alongside it.  Nothing the
+script emits blocks a tool call or a turn.
 
-Edits arrive on two paths.  Edit and apply-patch payloads carry both sides of
-the change, so only newly added text is checked.  Everything else -- shell
-commands, scripts, and full-file writes -- is covered by a git-based scan: a
-SessionStart hook snapshots the worktree under ``.git/style-scan/<session>/``,
-and later hooks diff the tree against that baseline, so the checks see only
-what the session itself changed, whatever tool changed it.
+Edits are checked from their own payloads, so only newly added text is
+checked.  Shell commands and scripts are not scanned as they run.  A
+SessionStart hook snapshots the worktree under ``.git/style-scan/<session>/``
+so the end-of-turn scan can diff against it and see only what the session
+itself changed, whatever tool changed it.
 
-Stop and SubagentStop run the same scan as a completion gate.  Outstanding
-mechanical violations always block.  When a session changed Markdown or
-source comments without tripping a check, Stop blocks once to require a
-review of the diff against the rule sections; a per-session flag and the
-``stop_hook_active`` field keep that from looping.
+Stop and SubagentStop run that scan and report to the user through
+``systemMessage``.  Each mechanical violation surfaces once, and a session
+that changed Markdown or source comments gets one reminder to review the
+diff against the rule sections.
 
 Runtime failures stay fail-open for the edit but are appended to
 ``.git/style-scan/errors.log``.  ``--check`` is the strict mode for tests: it
@@ -47,8 +46,6 @@ COMMENT_RULES = (Path("code/AGENTS.md"), "Comments")
 MARKDOWN_SUFFIXES = {".md", ".mdx"}
 SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".inl", ".c", ".cpp", ".cc"}
 
-# Tools whose edits do not arrive as old/new payloads and need the git scan.
-SHELL_TOOLS = {"bash", "powershell", "shell", "local_shell", "exec_command"}
 STATE_DIR_NAME = "style-scan"
 STATE_MAX_AGE = 7 * 24 * 3600
 GIT_TIMEOUT = 10
@@ -603,9 +600,6 @@ def _load_state(session_dir: Path) -> dict:
         state = json.loads((session_dir / "state.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         state = {}
-    state.setdefault("prose_files", [])
-    state.setdefault("comment_files", [])
-    state.setdefault("reported", [])
     state.setdefault("stop_reported", [])
     state.setdefault("final_review_done", False)
     return state
@@ -703,25 +697,19 @@ def _finding_key(finding: tuple[str, str, str]) -> str:
     return "|".join(finding)
 
 
-def _findings_block(findings: list[tuple[str, str, str]]) -> dict:
+def _findings_note(findings: list[tuple[str, str, str]]) -> str:
     bullets = "\n".join(
         f'- {path}: "{excerpt}" — {message}' for path, excerpt, message in findings[:8]
     )
-    return {
-        "decision": "block",
-        "reason": (
-            "Comments added by this edit break the objective checks derived from "
-            f"`code/AGENTS.md`.\n{bullets}\nFix each flagged comment before continuing."
-        ),
-    }
+    return (
+        "These comments break the objective checks derived from "
+        f"`code/AGENTS.md`.\n{bullets}\nFix each flagged comment."
+    )
 
 
 def post_tool_result(payload: dict, root: Path = ROOT) -> dict | None:
     edits = payload_edits(payload, root)
     if not edits:
-        tool = str(payload.get("tool_name") or "").lower()
-        if tool in SHELL_TOOLS:
-            return scan_tool_result(payload, root)
         return None
 
     # A full-file write carries no old content; the session baseline supplies
@@ -754,92 +742,37 @@ def post_tool_result(payload: dict, root: Path = ROOT) -> dict | None:
         contexts.append(prose_context(root, markdown))
     if comment_paths:
         contexts.append(comment_context(root))
-    if not contexts and not findings:
-        return None
-
-    result = {}
-    if contexts:
-        result["hookSpecificOutput"] = {
-            "hookEventName": "PostToolUse",
-            "additionalContext": "\n\n".join(contexts),
-        }
     if findings:
-        result.update(_findings_block(findings))
-    return result
-
-
-def scan_tool_result(payload: dict, root: Path = ROOT) -> dict | None:
-    """Check the session's whole delta after a tool the edit path cannot see."""
-    session_dir = record_baseline(root, _session_id(payload))
-    if session_dir is None:
-        return None
-    state = _load_state(session_dir)
-    markdown, comment_paths, findings = scan_worktree(root, session_dir)
-
-    new_markdown = [
-        path for path in markdown if _display_path(path, root) not in state["prose_files"]
-    ]
-    new_comments = [
-        path for path in comment_paths if _display_path(path, root) not in state["comment_files"]
-    ]
-    new_findings = [
-        finding for finding in findings if _finding_key(finding) not in state["reported"]
-    ]
-
-    state["prose_files"] = sorted(
-        set(state["prose_files"]) | {_display_path(path, root) for path in markdown}
-    )
-    state["comment_files"] = sorted(
-        set(state["comment_files"]) | {_display_path(path, root) for path in comment_paths}
-    )
-    state["reported"] = sorted(
-        set(state["reported"]) | {_finding_key(finding) for finding in findings}
-    )
-    _save_state(session_dir, state)
-
-    contexts = []
-    if new_markdown:
-        contexts.append(prose_context(root, markdown))
-    if new_comments:
-        contexts.append(comment_context(root))
-    if not contexts and not new_findings:
+        contexts.append(_findings_note(findings))
+    if not contexts:
         return None
 
-    result = {}
-    if contexts:
-        result["hookSpecificOutput"] = {
+    return {
+        "hookSpecificOutput": {
             "hookEventName": "PostToolUse",
             "additionalContext": "\n\n".join(contexts),
         }
-    if new_findings:
-        result.update(_findings_block(new_findings))
-    return result
+    }
 
 
 def stop_result(payload: dict, root: Path = ROOT) -> dict | None:
-    """Gate the end of a turn on the session delta being clean."""
+    """Report the session delta to the user without holding the turn open."""
     session_dir = record_baseline(root, _session_id(payload))
     if session_dir is None:
         return None
     state = _load_state(session_dir)
     markdown, comment_paths, findings = scan_worktree(root, session_dir)
-    keys = {_finding_key(finding) for finding in findings}
 
-    if payload.get("stop_hook_active"):
-        fresh = [
-            finding for finding in findings
-            if _finding_key(finding) not in state["stop_reported"]
-        ]
-        if not fresh:
-            return None
-        state["stop_reported"] = sorted(set(state["stop_reported"]) | keys)
-        _save_state(session_dir, state)
-        return _findings_block(fresh)
-
-    if findings:
-        state["stop_reported"] = sorted(set(state["stop_reported"]) | keys)
-        _save_state(session_dir, state)
-        return _findings_block(findings)
+    notes = []
+    fresh = [
+        finding for finding in findings
+        if _finding_key(finding) not in state["stop_reported"]
+    ]
+    if fresh:
+        state["stop_reported"] = sorted(
+            set(state["stop_reported"]) | {_finding_key(item) for item in findings}
+        )
+        notes.append(_findings_note(fresh))
 
     if (
         payload.get("hook_event_name") == "Stop"
@@ -847,24 +780,22 @@ def stop_result(payload: dict, root: Path = ROOT) -> dict | None:
         and not state["final_review_done"]
     ):
         state["final_review_done"] = True
-        _save_state(session_dir, state)
         head = (_manifest(session_dir).get("head") or "")[:12]
         names = sorted(
             _display_path(path, root) for path in [*markdown, *comment_paths]
         )
         listing = "\n".join(f"- {name}" for name in names[:20])
-        return {
-            "decision": "block",
-            "reason": (
-                "This session changed documentation or source comments. Before "
-                "finishing, re-read `## Writing prose` in `AGENTS.md` and "
-                "`## Comments` in `code/AGENTS.md`, review the changes to the "
-                f"files below against those rules (`git diff {head} -- <file>`), "
-                "and fix what the review finds. This gate fires once per "
-                f"session.\n{listing}"
-            ),
-        }
-    return None
+        notes.append(
+            "This session changed documentation or source comments. Review the "
+            f"diff (`git diff {head} -- <file>`) against `## Writing prose` in "
+            "`AGENTS.md` and `## Comments` in `code/AGENTS.md`. This notice "
+            f"fires once per session.\n{listing}"
+        )
+
+    if not notes:
+        return None
+    _save_state(session_dir, state)
+    return {"systemMessage": "\n\n".join(notes)}
 
 
 def handle_payload(payload: dict, root: Path = ROOT) -> dict | None:
@@ -881,17 +812,9 @@ def handle_payload(payload: dict, root: Path = ROOT) -> dict | None:
             }
         }
     if event == "SessionStart":
-        session_dir = record_baseline(root, _session_id(payload))
+        record_baseline(root, _session_id(payload))
         if payload.get("source") != "compact":
             return None
-        if session_dir is not None:
-            # Compaction wipes the conversation, so let the next scan inject
-            # the rules and outstanding findings again.
-            state = _load_state(session_dir)
-            state["prose_files"] = []
-            state["comment_files"] = []
-            state["reported"] = []
-            _save_state(session_dir, state)
         return {
             "hookSpecificOutput": {
                 "hookEventName": "SessionStart",

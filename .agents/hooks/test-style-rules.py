@@ -115,7 +115,7 @@ class HookTests(unittest.TestCase):
         self.assertNotIn("decision", result)
         self.assertIn("## Comments", result["hookSpecificOutput"]["additionalContext"])
 
-    def test_prose_triple_slash_blocks(self) -> None:
+    def test_prose_triple_slash_is_reported(self) -> None:
         result = self.post(
             "Edit",
             {
@@ -125,10 +125,10 @@ class HookTests(unittest.TestCase):
             },
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-        self.assertIn("without XML tags", result["reason"])
+        self.assertNotIn("decision", result)
+        self.assertIn("without XML tags", result["hookSpecificOutput"]["additionalContext"])
 
-    def test_edit_narration_blocks(self) -> None:
+    def test_edit_narration_is_reported(self) -> None:
         result = self.post(
             "Edit",
             {
@@ -138,10 +138,10 @@ class HookTests(unittest.TestCase):
             },
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-        self.assertIn("narrates the edit", result["reason"])
+        self.assertNotIn("decision", result)
+        self.assertIn("narrates the edit", result["hookSpecificOutput"]["additionalContext"])
 
-    def test_comment_that_restates_code_blocks(self) -> None:
+    def test_comment_that_restates_code_is_reported(self) -> None:
         result = self.post(
             "Edit",
             {
@@ -151,8 +151,10 @@ class HookTests(unittest.TestCase):
             },
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-        self.assertIn("restates the adjacent code", result["reason"])
+        self.assertNotIn("decision", result)
+        self.assertIn(
+            "restates the adjacent code", result["hookSpecificOutput"]["additionalContext"]
+        )
 
     def test_write_without_old_content_reminds_but_does_not_block(self) -> None:
         result = self.post(
@@ -176,7 +178,8 @@ class HookTests(unittest.TestCase):
             tool_response={"old_content": "void Run();\n"},
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
+        self.assertNotIn("decision", result)
+        self.assertIn("without XML tags", result["hookSpecificOutput"]["additionalContext"])
 
     def test_multiple_edit_payloads_are_checked(self) -> None:
         result = self.post(
@@ -196,7 +199,7 @@ class HookTests(unittest.TestCase):
             },
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
+        self.assertIn("narrates the edit", result["hookSpecificOutput"]["additionalContext"])
 
     def test_apply_patch_extracts_multiple_files_and_context(self) -> None:
         command = """*** Begin Patch
@@ -218,7 +221,7 @@ class HookTests(unittest.TestCase):
         self.assertIn("## Comments", context)
         self.assertNotIn("decision", result)
 
-    def test_apply_patch_comment_violation_blocks(self) -> None:
+    def test_apply_patch_comment_violation_is_reported(self) -> None:
         command = """*** Begin Patch
 *** Update File: code/example.cpp
 @@
@@ -227,7 +230,8 @@ class HookTests(unittest.TestCase):
 *** End Patch"""
         result = self.post("apply_patch", {"command": command})
         assert result is not None
-        self.assertEqual(result["decision"], "block")
+        self.assertNotIn("decision", result)
+        self.assertIn("without XML tags", result["hookSpecificOutput"]["additionalContext"])
 
     def test_add_file_patch_without_hunk_marker_is_parsed(self) -> None:
         command = """*** Begin Patch
@@ -344,28 +348,29 @@ class ScanTests(unittest.TestCase):
         assert session_dir is not None
         manifest = json.loads((session_dir / "manifest.json").read_text())
         self.assertEqual(set(manifest["files"]), {"notes.md", "extra.md"})
-        result = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        self.assertIsNone(result)
+        self.assertIsNone(self.event("Stop"))
 
-    def test_shell_write_is_scanned_and_blocks(self) -> None:
+    def test_shell_write_is_caught_by_the_end_scan(self) -> None:
         self.baseline()
         (self.root / "code" / "example.cpp").write_text(
             "/// Runs the operation.\nvoid Run();\n", encoding="utf-8"
         )
-        result = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "python x"})
+        during = self.event(
+            "PostToolUse", tool_name="Bash", tool_input={"command": "python x"}
+        )
+        self.assertIsNone(during)
+        result = self.event("Stop")
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-        self.assertIn("without XML tags", result["reason"])
+        self.assertIn("without XML tags", result["systemMessage"])
 
     def test_preexisting_dirt_is_not_flagged(self) -> None:
         (self.root / "code" / "example.cpp").write_text(
             "/// Runs the operation.\nvoid Run();\n", encoding="utf-8"
         )
         self.baseline()
-        result = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        self.assertIsNone(result)
+        self.assertIsNone(self.event("Stop"))
 
-    def test_full_write_blocks_using_baseline_old_content(self) -> None:
+    def test_full_write_is_checked_against_the_baseline(self) -> None:
         self.baseline()
         (self.root / "code" / "example.cpp").write_text(
             "/// Runs the operation.\nvoid Run();\n", encoding="utf-8"
@@ -379,7 +384,7 @@ class ScanTests(unittest.TestCase):
             },
         )
         assert result is not None
-        self.assertEqual(result["decision"], "block")
+        self.assertIn("without XML tags", result["hookSpecificOutput"]["additionalContext"])
 
     def test_commit_does_not_hide_session_changes(self) -> None:
         self.baseline()
@@ -389,30 +394,29 @@ class ScanTests(unittest.TestCase):
         self.git("commit", "-q", "-am", "mid-session")
         result = self.event("Stop")
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-        self.assertIn("narrates the edit", result["reason"])
+        self.assertNotIn("decision", result)
+        self.assertIn("narrates the edit", result["systemMessage"])
 
-    def test_scan_context_is_injected_once_per_file(self) -> None:
+    def test_shell_commands_are_not_scanned_as_they_run(self) -> None:
         self.baseline()
         (self.root / "notes.md").write_text("Session change.\n", encoding="utf-8")
-        first = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        assert first is not None
-        self.assertIn("## Writing prose", first["hookSpecificOutput"]["additionalContext"])
-        second = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        self.assertIsNone(second)
+        for command in ("true", "python x"):
+            result = self.event(
+                "PostToolUse", tool_name="Bash", tool_input={"command": command}
+            )
+            self.assertIsNone(result)
 
-    def test_stop_forces_a_single_review_pass(self) -> None:
+    def test_stop_reports_the_review_once(self) -> None:
         self.baseline()
         (self.root / "notes.md").write_text("Session change.\n", encoding="utf-8")
         first = self.event("Stop")
         assert first is not None
-        self.assertEqual(first["decision"], "block")
-        self.assertIn("## Writing prose", first["reason"])
-        self.assertIn("notes.md", first["reason"])
+        self.assertNotIn("decision", first)
+        self.assertIn("## Writing prose", first["systemMessage"])
+        self.assertIn("notes.md", first["systemMessage"])
         self.assertIsNone(self.event("Stop"))
-        self.assertIsNone(self.event("Stop", stop_hook_active=True))
 
-    def test_subagent_stop_blocks_findings_but_skips_review_pass(self) -> None:
+    def test_subagent_stop_reports_findings_but_skips_review_pass(self) -> None:
         self.baseline()
         (self.root / "notes.md").write_text("Session change.\n", encoding="utf-8")
         self.assertIsNone(self.event("SubagentStop"))
@@ -421,18 +425,8 @@ class ScanTests(unittest.TestCase):
         )
         result = self.event("SubagentStop")
         assert result is not None
-        self.assertEqual(result["decision"], "block")
-
-    def test_compact_resets_scan_context_flags(self) -> None:
-        self.baseline()
-        (self.root / "notes.md").write_text("Session change.\n", encoding="utf-8")
-        self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        result = self.event("SessionStart", source="compact")
-        assert result is not None
-        self.assertIn("## Comments", result["hookSpecificOutput"]["additionalContext"])
-        again = self.event("PostToolUse", tool_name="Bash", tool_input={"command": "true"})
-        assert again is not None
-        self.assertIn("## Writing prose", again["hookSpecificOutput"]["additionalContext"])
+        self.assertNotIn("decision", result)
+        self.assertIn("without XML tags", result["systemMessage"])
 
     def test_failures_are_logged(self) -> None:
         STYLE._log_failure("boom", self.root)
@@ -465,7 +459,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(
             hooks["PostToolUse"][0]["matcher"],
-            "Edit|Write|NotebookEdit|Bash|PowerShell",
+            "Edit|Write|NotebookEdit",
         )
         for groups in hooks.values():
             for group in groups:
