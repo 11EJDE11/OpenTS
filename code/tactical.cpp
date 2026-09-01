@@ -2449,11 +2449,9 @@ Point2D Tactical::Clamp_Pixel_To_Tactical(Point2D const & pixel)
 }
 
 
-/// <summary>
-/// Scrolls the tactical map in the direction specified.
-/// This routine nudges the desired view position rather than the view itself; the tactical
-/// AI eases the view toward it over the frames that follow.
-/// </summary>
+/// <summary>Scrolls the tactical map in the direction specified.
+/// This routine moves the desired view position rather than the view itself; the tactical AI
+/// commits the view to it on its next pass.</summary>
 /// <param name="facing">The direction to scroll the view in.</param>
 /// <param name="distance">The number of pixels to scroll by.</param>
 void Tactical::Scroll_Map(FacingType facing, int distance)
