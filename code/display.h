@@ -97,6 +97,13 @@ class DisplayClass: public MapClass
 		ObjectClass * FollowingObjectPtr;
 
 		/*
+		 * This records the object under the mouse on the tactical view. It backs the
+		 * condition indicator drawn on hover, and the object clears it as it leaves the
+		 * map.
+		 */
+		ObjectClass * HoverObject;
+
+		/*
 		**	This holds the building type that is about to be placed upon the map.
 		**	It is only valid during the building placement state. The PendingLegal
 		**	flag is updated as the cursor moves and it reflects the legality of

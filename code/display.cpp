@@ -201,6 +201,7 @@ DisplayClass::DisplayClass(void) :
 	ShroudCheck(false),
 	FollowingObject(false),
 	FollowingObjectPtr(NULL),
+	HoverObject(NULL),
 	PendingObjectPtr(0),
 	PendingObject(0),
 	PendingHouse(HOUSE_NONE),
@@ -287,6 +288,7 @@ void DisplayClass::Init_Clear(void)
 	PendingObjectPtr = 0;
 	PendingObject = 0;
 	PendingHouse = HOUSE_NONE;
+	HoverObject = NULL;
 	CursorSize = 0;
 	IsTargettingMode = SUPER_NONE;
 	IsRepairMode = false;
@@ -3859,6 +3861,8 @@ void DisplayClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(ShroudCheck);
 	stream.Serialize(FollowingObject);
 	stream.Serialize(FollowingObjectPtr);
+	// HoverObject -- the mouse position is not restored with the game, and the next input poll
+	// names whatever the pointer has come to rest over.
 	stream.Serialize(PendingObjectPtr);
 	stream.Serialize(PendingObject);
 	stream.Serialize(PendingHouse);

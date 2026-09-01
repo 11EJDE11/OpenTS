@@ -1187,9 +1187,12 @@ void TechnoClass::Per_Cell_Process(PCPType why)
 
 /// <summary>
 /// Draws the decorations that appear after the object's body.
-/// A selected object -- or a submerged one the player's sensors have picked up -- gets its
-/// selection box and its condition indicator drawn over it. The talk bubble, when the
-/// object has something to say, is drawn whether the object is selected or not.
+/// A selected object, or a submerged one the player's sensors have picked up, gets its
+/// selection box and its condition indicator drawn over it, plus its pips when the player
+/// is allied to its owner or spying on that house. Without a selection, the object under
+/// the mouse still shows its condition, and an allied or spied-on object still wears its
+/// insignia. The talk bubble, when the object has something to say, is drawn whether the
+/// object is selected or not.
 /// </summary>
 void TechnoClass::Draw_Post_Render(Point2D const & point, Rect const & cliprect) const
 {
@@ -1200,6 +1203,8 @@ void TechnoClass::Draw_Post_Render(Point2D const & point, Rect const & cliprect)
 			sensed_underground = true;
 		}
 	}
+
+	bool allied = House->Is_Ally(PlayerPtr) || (SpiedBy & (1<<(PlayerPtr->Class->House)));
 
 	if (IsSelected || sensed_underground) {
 
@@ -1243,7 +1248,23 @@ void TechnoClass::Draw_Post_Render(Point2D const & point, Rect const & cliprect)
 			}
 		}
 
-		Draw_Health_Bar(point, cliprect, sensed_underground);
+		Draw_Health_Bar(point, cliprect);
+		if (allied) {
+			Draw_Pips(Pip_Origin(point), point, cliprect);
+		}
+
+	} else {
+
+		bool hovered = Map.HoverObject == this && Class_Of()->IsSelectable && !IsALoaner;
+
+		if ((hovered || allied) && Is_Decoration_Visible()) {
+			if (hovered) {
+				Draw_Health_Bar(point, cliprect);
+			}
+			if (allied) {
+				Draw_Insignia(Pip_Origin(point), point, cliprect);
+			}
+		}
 	}
 
 	if (TalkBubbleOwner == this && TalkBubbleType > 0 && (int)TalkBubbleTimer > 0) {
@@ -1338,13 +1359,67 @@ void TechnoClass::Draw_Pre_Render(Point2D const & point, Rect const & cliprect) 
 
 
 /// <summary>
+/// Checks whether the player may be shown indicators drawn over this object.
+/// This mirrors the entitlement the mouse applies when it resolves what it is pointing at, so
+/// that an indicator drawn without a selection never reveals more than a selection would.
+/// </summary>
+bool TechnoClass::Is_Decoration_Visible(void) const
+{
+	if (!IsOwnedByPlayer) {
+		if ((Cloak == CLOAKED && !Is_Sensed_By_Player()) || TClass->IsInvisible) {
+			return(false);
+		}
+	}
+
+	if (Map.Is_Shrouded(Center_Coord()) && MainWindow != NULL) {
+		return(false);
+	}
+
+	if (RTTI == RTTI_BUILDING) {
+		BuildingClass const * building = (BuildingClass const *)this;
+
+		if (!IsOwnedByPlayer && ((building->TranslucencyLevel == 15 && !Is_Sensed_By_Player()) || building->Class->IsInvisibleInGame)) {
+			return(false);
+		}
+
+		// Buildings reach the post render hook even while fogged, unlike the mobile objects the
+		// renderer skips outright.
+		if (Scen->Special.IsFogOfWar && building->IsFogged) {
+			return(false);
+		}
+	}
+
+	return(true);
+}
+
+
+/// <summary>
+/// Returns the point this object's pips run from: the near corner of the footprint for a
+/// building or core defender, and a fixed offset below the center for anything else.
+/// </summary>
+Point2D TechnoClass::Pip_Origin(Point2D const & point) const
+{
+	UnitClass const * unit = (RTTI == RTTI_UNIT) ? dynamic_cast<UnitClass const *>(this) : NULL;
+
+	if (RTTI == RTTI_BUILDING || (unit != NULL && unit->Class->IsCoreDefender)) {
+		Point3D dim = TClass->Lepton_Dimensions();
+		Coord corner = dim - Point3D(dim.X / 2, dim.Y / 2, dim.Z / 2);
+		corner.X = -corner.X;
+		corner.Z = 0;
+		return(point + TacticalMap->Coord_To_Pixel_Absolute(corner));
+	}
+
+	return(point + Point2D(-10, 10));
+}
+
+
+/// <summary>
 /// Draws this object's condition indicator.
 /// Buildings and core defenders get a pip bar laid along the near edge of their footprint;
-/// everything else gets the familiar select box graphic with a row of health pips beneath
-/// it. An ally, or a house that has spied on the object, is also shown its cargo pips.
+/// everything else gets a row of health pips, framed by the familiar select box graphic
+/// while the object is selected.
 /// </summary>
-/// <param name="sensed_underground">Should the select graphic be drawn only when the object is selected?</param>
-void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect, bool sensed_underground) const
+void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect) const
 {
 	UnitClass const * unit = (RTTI == RTTI_UNIT) ? dynamic_cast<UnitClass const *>(this) : NULL;
 
@@ -1376,12 +1451,6 @@ void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect,
 		coord.Y = -coord.Y;
 		coord.X = -coord.X;
 		Point2D p1 = TacticalMap->Coord_To_Pixel_Absolute(coord);
-		coord.Z = 0;
-		coord.Y = -coord.Y;
-		Point2D p2 = TacticalMap->Coord_To_Pixel_Absolute(coord);
-		coord.X = -coord.X;
-		coord.Y = -coord.Y;
-		coord.X = -coord.X;
 
 		int barlen = (p0.Y - p1.Y) / 2;
 
@@ -1430,10 +1499,6 @@ void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect,
 			yoff -= 2;
 		}
 
-		if (House->Is_Ally(PlayerPtr) || (SpiedBy & (1<<(PlayerPtr->Class->House)))) {
-			Draw_Pips(xpoint + p2, xpoint, cliprect);
-		}
-
 	} else {
 
 		bool powerup = false;
@@ -1445,13 +1510,13 @@ void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect,
 		int health_bar_count;
 
 		if (RTTI == RTTI_INFANTRY) {
-			if (!sensed_underground || IsSelected) {
+			if (IsSelected) {
 				Draw_Shape(*LogicalSurface, *NormalDrawer, (ShapeSet const *)ObjectTypeClass::SelectShapes, powerup ? 6 : 2, xpoint, cliprect, ShapeFlags_Type(SHAPE_ALPHA|SHAPE_WIN_REL|SHAPE_CENTER));
 			}
 			offset = Point2D(-5, -24);
 			health_bar_count = 8;
 		} else {
-			if (!sensed_underground || IsSelected) {
+			if (IsSelected) {
 				Draw_Shape(*LogicalSurface, *NormalDrawer, (ShapeSet const *)ObjectTypeClass::SelectShapes, (LimpetType != 0 ? 8 : 0) + (powerup ? 4 : 0) + 3, xpoint, cliprect, ShapeFlags_Type(SHAPE_ALPHA|SHAPE_WIN_REL|SHAPE_CENTER));
 			}
 			offset = Point2D(-15, -25);
@@ -1480,10 +1545,6 @@ void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect,
 			point.Y = offset.Y + xpoint.Y;
 			point.X += 2 * index;
 			Draw_Shape(*LogicalSurface, *NormalDrawer, (ShapeSet const *)ObjectTypeClass::PipShapes, shapenum, point, cliprect, ShapeFlags_Type(SHAPE_WIN_REL|SHAPE_CENTER));
-		}
-
-		if (House->Is_Ally(PlayerPtr) || (SpiedBy & (1<<(PlayerPtr->Class->House)))) {
-			Draw_Pips(xpoint + Point2D(-10, +10), xpoint, cliprect);
 		}
 	}
 }
@@ -7400,6 +7461,44 @@ bool TechnoClass::Enter_Idle_Mode(bool, bool)
 }
 
 
+/// <summary>
+/// Draws the marks that stand for what the object is rather than what state it is in: the
+/// cross worn by a healer and the insignia of a veteran or an elite. These are drawn whether
+/// or not the object is selected, so the caller is responsible for testing that the player is
+/// allied to its owner and may see it.
+/// </summary>
+/// <param name="bottomleft">The point the cargo pips would run from.</param>
+/// <param name="center">The point the insignia is placed beside.</param>
+void TechnoClass::Draw_Insignia(Point2D const & bottomleft, Point2D const & center, Rect const & rect) const
+{
+	ShapeSet const * pips1 = (ShapeSet const *)Class_Of()->PipShapes;
+
+	// A weapon that averages negative damage is what marks the object out as a healer.
+	if (RTTI == RTTI_INFANTRY && Combat_Damage() < 0) {
+		Point2D xy = bottomleft + Point2D(-5, 0);
+		Draw_Shape(*LogicalSurface, *NormalDrawer, pips1, PIP_MEDIC, xy+Point2D(0,-8), rect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL));
+	}
+
+	PipEnum veterancy_shape = PIP_NONE;
+	if (Veterancy.Is_Veteran()) {
+		veterancy_shape = PIP_VETERAN;
+	}
+	if (Veterancy.Is_Elite()) {
+		veterancy_shape = PIP_ELITE;
+	}
+	if (Veterancy.Is_Dumbass()) {
+		veterancy_shape = PIP_COUNT;
+	}
+	if (veterancy_shape != PIP_NONE) {
+		Point2D drawpoint = center + Point2D(5, 2);
+		if (RTTI != RTTI_INFANTRY) {
+			drawpoint += Point2D(5, 4);
+		}
+		Draw_Shape(*LogicalSurface, *NormalDrawer, pips1, veterancy_shape, drawpoint, rect, ShapeFlags_Type(SHAPE_WIN_REL|SHAPE_CENTER));
+	}
+}
+
+
 /***********************************************************************************************
  * TechnoClass::Draw_Pips -- Draws the transport pips and other techno graphics.               *
  *                                                                                             *
@@ -7427,7 +7526,6 @@ void TechnoClass::Draw_Pips(Point2D const & bottomleft, Point2D const & center, 
 	Point2D xy = bottomleft + Point2D(6, -1);
 
 	ShapeSet const * pip_shapes = (ShapeSet const *)Class_Of()->PipShapes;
-	ShapeSet const * pips1 = (ShapeSet const *)Class_Of()->PipShapes;
 	ShapeSet const * pips2 = (ShapeSet const *)Class_Of()->Pip2Shapes;
 
 	if (RTTI != RTTI_BUILDING) {
@@ -7525,36 +7623,13 @@ void TechnoClass::Draw_Pips(Point2D const & bottomleft, Point2D const & center, 
 		}
 	}
 
-	/*
-	**	Special hack to display a red pip on the medic.
-	*/
-	if (RTTI == RTTI_INFANTRY && Combat_Damage() < 0) {
-		Draw_Shape(*LogicalSurface, *NormalDrawer, pips1, PIP_MEDIC, xy+Point2D(0,-8), rect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL));
-	}
+	Draw_Insignia(bottomleft, center, rect);
 
 	/*
 	**	Display whether this unit is a leader unit or not.
 	*/
 	if (RTTI != RTTI_BUILDING) {
 		Draw_Text_Overlay(bottomleft + Point2D(-10, 10), bottomleft, rect);
-	}
-
-	PipEnum veterancy_shape = PIP_NONE;
-	if (Veterancy.Is_Veteran()) {
-		veterancy_shape = PIP_VETERAN;
-	}
-	if (Veterancy.Is_Elite()) {
-		veterancy_shape = PIP_ELITE;
-	}
-	if (Veterancy.Is_Dumbass()) {
-		veterancy_shape = PIP_COUNT;
-	}
-	if (veterancy_shape != PIP_NONE) {
-		Point2D drawpoint = center + Point2D(5, 2);
-		if (RTTI != RTTI_INFANTRY) {
-			drawpoint += Point2D(5, 4);
-		}
-		Draw_Shape(*LogicalSurface, *NormalDrawer, pips1, veterancy_shape, drawpoint, rect, ShapeFlags_Type(SHAPE_WIN_REL|SHAPE_CENTER));
 	}
 
 	/*

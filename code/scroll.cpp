@@ -568,7 +568,10 @@ void ScrollClass::Scroll_AI(void)
 			bool			fog;						/// is the cell in fog or not
 			bool			shadow;						// is the cell in shadow or not
 			if (Resolve_Point(point, cell, coord, object, fog, shadow)) {
+				HoverObject = object;
 				Map.Mouse_Left_Up(cell, shadow, object, What_Action(cell, object, true));
+			} else {
+				HoverObject = NULL;
 			}
 			if (IsEdgeScrollAllowed && !Debug_Map) {
 				Scroll_Edge(point);

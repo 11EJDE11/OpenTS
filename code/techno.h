@@ -664,9 +664,12 @@ class TechnoClass :	public RadioClass,
 		SurfaceRegion Techno_Render_Voxel_Object(VoxelDataStruct const & voxeldata, Matrix3D const & matrix, Point2D const & point, Rect const & cliprect, int frame, ShapeFlags_Type flags, int brightness) const;
 		SurfaceRegion Techno_Render_Voxel_Shadow(VoxelDataStruct const & voxeldata, Matrix3D const & matrix, Point2D const & point, Rect const & cliprect, int layer_index, ShapeFlags_Type flags, bool cached) const;
 
+		bool Is_Decoration_Visible(void) const;
+		Point2D Pip_Origin(Point2D const & point) const;
 		virtual void Draw_Health_Bar_Old(Point2D const & point, Rect const & rect) const;
-		virtual void Draw_Health_Bar(Point2D const & point, Rect const & rect, bool sensed_underground) const;
+		virtual void Draw_Health_Bar(Point2D const & point, Rect const & rect) const;
 		virtual void Draw_Pips(Point2D const & bottomleft, Point2D const & bottomright, Rect const & rect) const;
+		virtual void Draw_Insignia(Point2D const & bottomleft, Point2D const & center, Rect const & rect) const;
 		virtual void Draw_Text_Overlay(Point2D const & point1, Point2D const & point2, Rect const & rect) const;
 		virtual void Hidden(void) override;
 		virtual bool Mark(MarkType mark=MARK_CHANGE) override;

@@ -102,6 +102,10 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		Map.Set_Cursor_Shape(NULL);
 	}
 
+	if (Map.HoverObject == target) {
+		Map.HoverObject = NULL;
+	}
+
 	if (target->RTTI == RTTI_PARTICLESYSTEM && target == GasSystem) {
 		GasSystem = NULL;
 	}
