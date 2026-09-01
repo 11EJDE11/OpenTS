@@ -33,6 +33,10 @@ concrete claims and familiar words. Cut restatement, stock caveats,
 meta-commentary about the writing or edit, and ceremonial conclusions that
 only recap the preceding text.
 
+These prose rules apply to repository files and durable project communication.
+They do not constrain chat-only execution plans or status updates. Plans should
+prioritize clarity, dependencies, risks, and verification over brevity.
+
 Keep reference and workflow documents dense and easy to scan. History,
 rationale, and other narrative documents may keep the context, detail, and
 transitions needed to explain why events or decisions matter. Never remove a
