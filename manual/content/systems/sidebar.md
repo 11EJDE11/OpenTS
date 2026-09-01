@@ -21,7 +21,7 @@ related:
     id: ToggleRadar
 ---
 
-The panel fills a fixed-width column against the right edge of the screen and carries, from the top down, the credit readout, the radar pane, four mode buttons, and the power bar running down the left of two strips of cameos. Outside the map editor it is switched on again on every update, so it stays up for the whole match.
+The panel fills a fixed-width column against the right edge of the screen and carries, from the top down, the credit readout, the radar pane, four mode buttons, and the power bar running down the left of two strips of cameos. Outside the map editor it is switched on again on every update, so it stays up for the whole match. An observer keeps the panel with nothing on either strip.
 
 ## What the strips list
 
@@ -118,7 +118,7 @@ The bar's height grows toward the full height of the strip area as the player's 
 
 ### The credit readout
 
-The readout carries a running figure that walks toward the house's actual money rather than jumping to it. Each step closes an eighth of the remaining gap, with a floor of 1 and a ceiling of 143, and a step is taken on every update while the figure rises but only every third while it falls, so money drains from the display three times more slowly than it fills. Every step plays a [`CreditTicks`](/keys/creditticks/) sound at half volume, the first entry while rising and the second while falling. The figure never shows less than zero. A scenario's mission timer prints beside it while it runs and speaks a reminder at exactly 20, 10, 5, 4, 3, 2 and 1 minutes remaining.
+The readout carries a running figure that walks toward the house's actual money rather than jumping to it. Each step closes an eighth of the remaining gap, with a floor of 1 and a ceiling of 143, and a step is taken on every update while the figure rises but only every third while it falls, so money drains from the display three times more slowly than it fills. Every step plays a [`CreditTicks`](/keys/creditticks/) sound at half volume, the first entry while rising and the second while falling. The figure never shows less than zero. A scenario's mission timer prints beside it while it runs and speaks a reminder at exactly 20, 10, 5, 4, 3, 2 and 1 minutes remaining. For an observer the readout shows the elapsed match time instead and plays no tick; [observers and coach mode](/systems/observers/) owns that display.
 
 ### The radar pane
 

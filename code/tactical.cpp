@@ -3191,7 +3191,7 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 
 			if (tech != NULL) {
 				if (obj->IsActive && !tech->IsInLimbo) {
-					if (tech->IsOwnedByPlayer || tech->Cloak != CLOAKED || Map[tech->Center_Coord()].Is_Sensed(PlayerPtr->HeapID)) {
+					if (tech->IsOwnedByPlayer || tech->Cloak != CLOAKED || tech->Is_Sensed_By_Player()) {
 						pass = true;
 					}
 				}

@@ -2488,7 +2488,7 @@ void CellClass::Wipe_Depth(Point2D const & point, Rect const & cliprect)
 /// Draws the shroud and the fog covering this cell.
 /// This routine asks the tactical map which shroud and fog frames the cell currently needs and
 /// then renders them into the alpha buffer. The fog pass is skipped when fog of war is not in
-/// play, or once the player has been defeated and the map is laid bare.
+/// play, or once the player has been given the whole map.
 /// </summary>
 /// <param name="point">The pixel position to draw the cell at.</param>
 /// <param name="cliprect">The clipping rectangle to draw within.</param>
@@ -2507,7 +2507,7 @@ void CellClass::Draw_Shroud_And_Fog(Point2D const & point, Rect const & cliprect
 
 	FogFrame = TacticalMap->Cell_Shadow(CellID, true);
 
-	if (!Scen->Special.IsFogOfWar || PlayerPtr->IsDefeated) {
+	if (!Scen->Special.IsFogOfWar || Session.ObiWan) {
 		return;
 	}
 

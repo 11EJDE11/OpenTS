@@ -244,6 +244,7 @@ HouseClass::HouseClass(HouseTypeClass const * type) :
 	IsBaseBuilding(false),
 	IsDiscovered(false),
 	IsDefeated(false),
+	IsObserver(false),
 	IsToDie(false),
 	IsToLose(false),
 	IsToWin(false),
@@ -2080,6 +2081,16 @@ bool HouseClass::Is_Ally(AbstractClass const * target) const
 }
 
 
+/// <summary>
+/// Does this house see the other as its owner does? True for an ally, and either way round
+/// once the local player has the whole map. Display only; never a simulation rule.
+/// </summary>
+bool HouseClass::Shares_View_With(HouseClass const * house) const
+{
+	return(Is_Ally(house) || (Session.ObiWan && (this == PlayerPtr || house == PlayerPtr)));
+}
+
+
 /***********************************************************************************************
  * HouseClass::Make_Ally -- Make the specified house an ally.                                  *
  *                                                                                             *
@@ -2256,6 +2267,20 @@ void HouseClass::Make_Enemy(HouseClass * house)
 			}
 		}
 	}
+}
+
+
+/// <summary>
+/// Gives the local player the whole map for the rest of the match: shroud and fog are lifted
+/// everywhere, the radar stays up, and messages can only go to everyone.
+/// </summary>
+void HouseClass::Become_ObiWan(void)
+{
+	Session.ObiWan = 1;
+	Map.Reveal_The_Map(true);
+	HiddenSurface->Fill(TBLACK);
+	Map.Flag_To_Redraw(GS_REDRAW_ALL);
+	RecalcRadar = true;
 }
 
 
@@ -3228,6 +3253,7 @@ void HouseClass::MPlayer_Defeated(void)
 	int num_alive;
 	int num_humans;
 	bool all_allies;
+	bool foe_fell;
 
 	/*
 	**	Set the defeat flag for this house
@@ -3270,15 +3296,14 @@ void HouseClass::MPlayer_Defeated(void)
 	/*
 	**	If this is me:
 	**	- Set MPlayerObiWan, so I can only send messages to all players, and
-	**	not just one (so I can't be obnoxiously omnipotent)
-	**	- Reveal the map
+	**	not just one (so I can't be obnoxiously omnipotent), and reveal the
+	**	map -- unless coach mode leaves me with my allies' vision instead
 	**	- Add my defeat message
 	*/
 	if (PlayerPtr == this) {
-		Session.ObiWan = 1;
-		Map.Reveal_The_Map();
-		HiddenSurface->Fill(TBLACK);
-		Map.Flag_To_Redraw(GS_REDRAW_ALL);
+		if (!Session.Options.CoachMode) {
+			Become_ObiWan();
+		}
 
 		/*
 		**	Pop up a message showing that I was defeated
@@ -3312,11 +3337,15 @@ void HouseClass::MPlayer_Defeated(void)
 	*/
 	num_alive = 0;
 	num_humans = 0;
+	foe_fell = false;
 	for (i = 0; i < Houses.Count(); i++) {
 		hptr = Houses[i];
 		if (hptr && !hptr->IsDefeated && !hptr->Class->IsMultiplayPassive) {
 			if (hptr->Is_Human_Player()) {
 				num_humans++;
+			}
+			if (!Is_Ally(hptr) || !hptr->Is_Ally(this)) {
+				foe_fell = true;
 			}
 			num_alive++;
 		}
@@ -3368,13 +3397,16 @@ void HouseClass::MPlayer_Defeated(void)
 	}
 
 	/*
-	**	If there's only one human player left or no humans left, the game is over:
+	**	If there's only one human player left or no humans left, the game is over.
+	**	With nobody but the computer playing, only the fall of the survivors' last
+	**	enemy ends it, so a match that only ever had one side never ends. Then:
 	**	- Determine whether this player wins or loses, based on the state of the
 	**	player's IsDefeated flag
 	**	- Find all players' indices in the Session.Score array
 	**	- Tally up scores for this game
 	*/
-	if (num_alive == 1 || num_humans == 0) {
+	bool game_over = Session.AIOnly ? (num_alive == 1 && foe_fell) : (num_alive == 1 || num_humans == 0);
+	if (game_over) {
 		IsToDie = false;
 
 		if (PlayerPtr->IsDefeated) {
@@ -3566,7 +3598,7 @@ bool HouseClass::Flag_To_Win(bool silent)
 			TacticalMap->Set_Caption_Text(TXT_SCENARIO_WON);
 			Speak(VOX_ACCOMPLISHED);
 			Map.Flag_To_Redraw();
-		} else if (Is_Player_Control()) {
+		} else if (Is_Player_Control() && !IsObserver) {
 			TacticalMap->Set_Caption_Text(TXT_VICTORIOUS);
 			Speak(VOX_YOU_ARE_VICTORIOUS);
 			Map.Flag_To_Redraw();
@@ -3610,7 +3642,7 @@ bool HouseClass::Flag_To_Lose(bool silent)
 			TacticalMap->Set_Caption_Text(TXT_SCENARIO_LOST);
 			Speak(VOX_FAIL);
 			Map.Flag_To_Redraw();
-		} else if (Is_Player_Control()) {
+		} else if (Is_Player_Control() && !IsObserver) {
 			TacticalMap->Set_Caption_Text(TXT_LOST);
 			Speak(VOX_YOU_HAVE_LOST);
 			Map.Flag_To_Redraw();
@@ -5701,6 +5733,11 @@ bool HouseClass::Is_Allowed_To_Ally(HouseClass * house) const
 		return(false);
 	}
 
+	// An observer takes no side.
+	if (house != NULL && house->IsObserver) {
+		return(false);
+	}
+
 	/*
 	**	Count the number of active houses in the game as well as the
 	**	number of existing allies with this house.
@@ -6275,6 +6312,7 @@ void HouseClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsAlerted);
 	crc(IsAITriggersOn);
 	crc(IsDefeated);
+	crc(IsObserver);
 	crc(IQ);
 	crc(State);
 	crc(Blockage);
@@ -6350,6 +6388,7 @@ void HouseClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(IsBaseBuilding);
 	stream.Serialize(IsDiscovered);
 	stream.Serialize(IsDefeated);
+	stream.Serialize(IsObserver);
 	stream.Serialize(IsToDie);
 	stream.Serialize(IsToWin);
 	stream.Serialize(IsToLose);
@@ -7840,9 +7879,10 @@ void HouseClass::Recalc_Radar_Availability(void)
 	RecalcRadar = false;
 
 	if (this == PlayerPtr) {
-		bool radar_on = false;
+		// A player given the whole map keeps the radar through storms, blackouts and losses.
+		bool radar_on = Session.ObiWan != 0;
 
-		if (!IonStormClass::Is_Ion_Storm_Active() && Power >= Drain) {
+		if (!radar_on && !IonStormClass::Is_Ion_Storm_Active() && Power >= Drain) {
 			if (Scen->IsFreeRadar) {
 				radar_on = true;
 			} else {

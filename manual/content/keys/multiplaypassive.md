@@ -23,4 +23,6 @@ Everything else the flag does is confined to skirmish and multiplayer games, whe
 - Its objects do not reveal the map, and its buildings are never marked for automatic repair.
 - It is skipped by the score screen, by the starting-unit generator, and by the pass that thins out surplus computer players.
 
+An [observer's](/systems/observers/) house is left out of the same counts, lists and scores without being passive: it plays a country chosen at random and simply starts defeated.
+
 Setup also rewrites two things on its behalf. [`WallOwner`](/keys/wallowner/) is forced off on every passive country and on for every other one, and every house in the game is allied to the house of the country named `Special`.

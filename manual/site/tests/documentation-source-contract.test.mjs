@@ -251,7 +251,7 @@ test('A chosen start position keeps its number and is claimed before the game pi
 
 	const build = functionBody(
 		scenario,
-		'static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity)',
+		'static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity, int wanted)',
 	);
 	assertOrdered(build, [
 		'if (keep_identity) {',
@@ -265,8 +265,8 @@ test('A chosen start position keeps its number and is claimed before the game pi
 		'static void Create_Units(bool official)',
 	);
 	assertOrdered(create, [
-		'Houses[index]->SpawnWaypoint >= 0',
-		'Build_Start_Waypoint_List(official, choices)',
+		'housep->SpawnWaypoint >= 0',
+		'Build_Start_Waypoint_List(official, choices, wanted)',
 		'taken[index] = choices && index < waypts.Count() && waypts[index] == CELL_NONE;',
 		'reserved[spot] = index;',
 		'reserved[hptr->SpawnWaypoint] == (int)house',

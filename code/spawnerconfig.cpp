@@ -258,6 +258,7 @@ int SpawnerConfigClass::Session_Identity_CRC(void) const
 	crc(Firestorm);
 	crc(AttackNeutralUnits);
 	crc(ScrapMetal);
+	crc(CoachMode);
 
 	for (bool flag : GlobalFlags) {
 		crc(flag);
@@ -332,6 +333,20 @@ bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fa
 	}
 
 	/*
+	 * Somebody has to play: a match of watchers alone has nothing to watch. A resume is left to
+	 * the save, which carries the players.
+	 */
+	if (kind != LaunchType::Campaign && kind != LaunchType::Resume && AIPlayers == 0) {
+		bool plays = false;
+		for (SlotType const & slot : Slots) {
+			plays = plays || (slot.Occupancy == OccupancyType::Human && !slot.IsSpectator);
+		}
+		if (!plays) {
+			return(Fault(fault, "The file seats nobody who plays: every seat watches and no computer plays."));
+		}
+	}
+
+	/*
 	 * These reach the network as sixteen bit values, so a wider number would be truncated
 	 * without a word.
 	 */
@@ -387,11 +402,6 @@ bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fa
 				return(Fault(fault, "Seat %d is allied to seat %d, which the match does not hold.",
 					index + 1, ally + 1));
 			}
-		}
-
-		if (slot.IsSpectator) {
-			return(Fault(fault, "Seat %d watches rather than plays, which this game cannot yet do.",
-				index + 1));
 		}
 
 		/*

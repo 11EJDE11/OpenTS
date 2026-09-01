@@ -185,7 +185,7 @@ A human house's own cloaking objects do not acquire targets by themselves either
 
 An object part way through a fade is drawn through the five bands set out under [the four states](#the-four-states). Its owner never sees it drawn fainter than shadowy: for the player who owns it, both the ripple and the disappearance are drawn shadowy instead. A structure runs its own fifteen-level version: indistinct for the first five levels, darkened to the tenth, and out of sight from the eleventh — four levels before its cloak is complete.
 
-A hidden object is still drawn shadowy, rather than not at all, for the player that owns it, for a house that senses its cell, and — outside a campaign game — between players who are each other's allies. Selection follows the same rule: an object of another house is dropped from the player's selection as it starts to hide unless the player senses its cell.
+A hidden object is still drawn shadowy, rather than not at all, for the player that owns it, for a house that senses its cell, for a player who has been given the whole map, and — outside a campaign game — between players who are each other's allies. Selection follows the same rule: an object of another house is dropped from the player's selection as it starts to hide unless the player senses its cell.
 
 [`Invisible=yes`](/keys/invisible/) sits outside all of this. It hides the object from every machine but its owner's whatever its cloak state, and [`InvisibleInGame=yes`](/keys/invisibleingame/) hides a structure from its owner as well.
 
@@ -199,7 +199,7 @@ The local player's radar asks these questions in order and takes the first answe
 4. Anything else — plotted while it is not fogged, not hidden, not more than 20 leptons below ground level, not carrying the `RADAR_INVISIBLE` [veteran ability](/systems/veterancy/#abilities), and not under shroud.
 5. Otherwise — plotted only while the player senses its cell.
 
-An object of a house the player is not allied to that reaches the last step counts as a detection rather than a sighting. A radar event is raised at its cell, and EVA speaks the hard-coded `00-I172` line for a hidden object or `00-I174` for one more than 20 leptons below ground. An object traveling through a tunnel raises no announcement, and a detection close to an enemy-sensed event already on the radar is dropped rather than repeated.
+An object of a house the player is not allied to that reaches the last step counts as a detection rather than a sighting. A player who has been given the whole map senses every cell and never counts a sighting as a detection; [observers and coach mode](/systems/observers/) owns who that is. A radar event is raised at its cell, and EVA speaks the hard-coded `00-I172` line for a hidden object or `00-I174` for one more than 20 leptons below ground. An object traveling through a tunnel raises no announcement, and a detection close to an enemy-sensed event already on the radar is dropped rather than repeated.
 
 A structure is asked the same questions, with its own fade level added to the hidden test and without the height and ability tests, and always reports the hidden line rather than the underground one.
 

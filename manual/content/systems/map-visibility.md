@@ -132,7 +132,8 @@ An aircraft of the local player's house that fires from or at shrouded ground re
 - [Reveal around waypoint...](/mapping/actions/taction-reveal-some/) reveals [`RevealTriggerRadius`](/keys/revealtriggerradius/) cells around a waypoint, with the height test on.
 - [Reveal zone of waypoint...](/mapping/actions/taction-reveal-zone/) walks the playable area and reveals two cells around every cell sharing the waypoint's crusher [movement zone](/glossary/#movement-zone).
 - [Reveal all map](/mapping/actions/taction-reveal-all/) reveals every cell of the playfield and marks the player as seeing everything, after which the two actions above do nothing.
-- [Reveal map](/mapping/missions/tmission-reveal/) and the local player's own defeat lift the shroud alone, leaving the fog where it is. Both are refused once the player already sees everything.
+- [Reveal map](/mapping/missions/tmission-reveal/) lifts the shroud alone, leaving the fog where it is, and is refused once the player already sees everything.
+- The local player's own defeat outside coach mode, and an observer's seat, lift both covers from every cell and discard the fog stand-ins. [Observers and coach mode](/systems/observers/) owns that view; under coach mode defeat changes nothing.
 - The reveal and darkness crate results are owned by [crates](/systems/crates/#results-that-reach-the-whole-map).
 
 ## The fog of war
@@ -143,9 +144,11 @@ A cell passing under the fog photographs what stands on it. A structure whose ev
 
 The two covers are not symmetric. A shroud reveal always lifts the fog from the same cell, but an unfog pass only touches cells that are already out of the shroud, so nothing that lifts fog can ever lift shroud.
 
-A defeated player in a skirmish or network game is told that nothing is fogged, and the fog pass is not drawn for them at all.
+A player who has been given the whole map — an observer, or a defeated player outside coach mode — is told that nothing is fogged, and the fog pass is not drawn for them at all.
 
 ## Losing ground again
+
+Neither pass below runs for a player who has been given the whole map; [observers and coach mode](/systems/observers/) says who that is.
 
 ### Shroud regrowth
 

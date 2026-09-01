@@ -222,6 +222,7 @@ struct NodeNameType {
 			int SpawnChoice;			// starting waypoint asked for; -1 = the engine picks
 			int Handicap;				// difficulty asked for; -1 = the session default
 			unsigned AlliesMask;		// seats allied with, one bit per seat index
+			bool IsObserver;			// watches rather than plays; the house it becomes starts defeated
 		} Player;
 		struct {
 			unsigned int LastTime;		// last time we heard from this guy
@@ -422,6 +423,7 @@ struct GameOptionsType {
 	bool		CTF;				/// Play as capture the flag.
 	bool		FogOfWar;			/// Ground the player can no longer see fogs back over.
 	bool		MCVRedeploy;		/// A construction yard can be sold back into an MCV.
+	bool		CoachMode;			// A defeated player keeps allied vision and private chat, and gets no map reveal.
 	char		ScenarioDescription [DESCRIP_MAX];	//Used on client machines only
 
 	bool Save(IStream * stream);
@@ -524,6 +526,7 @@ class SessionClass
 		int ColorIdx;                       // actual color index
 		int House;                          // GDI / NOD
 		int ObiWan;                         // 1 = player can see all
+		bool AIOnly;                        // no human seat plays; only the last enemy falling ends the match
 		int Solo;                           // 1 = player can play alone
 
 		/*

@@ -1129,6 +1129,9 @@ void EventClass::Execute(void)
 			index = Data.General.Value;
 
 			house = Houses[index];
+			if (house->IsObserver) {
+				break;
+			}
 			if (Session.Type == GAME_INTERNET && WestwoodOnline_Tournament) {
 				house->Flag_To_Die();
 			} else {

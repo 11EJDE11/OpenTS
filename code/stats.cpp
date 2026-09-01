@@ -305,7 +305,7 @@ void Send_Statistics_Packet(void)
 	HouseClass *houses[MAX_PLAYERS];
 	for (int h = 0; h < Houses.Count(); h++) {
 		HouseClass *ptr = Houses[h];
-		if (ptr->IsHuman){
+		if (ptr->IsHuman && !ptr->IsObserver) {
 			houses[playercount] = ptr;
 			playercount++;
 		}

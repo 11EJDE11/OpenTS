@@ -1268,6 +1268,8 @@ static void Serialize_Misc_Values(SaveStreamClass & stream)
 	stream.Serialize(CrateAnims);
 	stream.Serialize(CrateData);
 	stream.Serialize(MissionControl);
+	stream.Serialize(Session.ObiWan);
+	stream.Serialize(Session.AIOnly);
 
 	/*
 	 * Speech is reached through a pair of accessors rather than a variable of its own,
@@ -1372,7 +1374,7 @@ bool Reconcile_Players(void)
 			}
 		}
 
-		if (found == NULL) {
+		if (found == NULL || found->IsObserver != Session.Players[i]->Player.IsObserver) {
 			return(false);
 		}
 
@@ -1398,8 +1400,9 @@ bool Reconcile_Players(void)
 			}
 		}
 
-		// A player who did not return leaves their house fighting on under the computer.
-		if (!seated) {
+		// A player who did not return leaves their house fighting on under the computer. An
+		// observer's house has nothing to hand over.
+		if (!seated && !housep->IsObserver) {
 			housep->IsHuman = false;
 			housep->IsStarted = true;
 			housep->IQ = Rule->MaxIQ;

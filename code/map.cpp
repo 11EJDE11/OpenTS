@@ -6501,16 +6501,21 @@ void MapClass::Shroud_The_Map(void)
 /// Reveals the whole map to the player.
 /// This routine is used by the reveal crate, by the reveal team mission, and by the
 /// player's own defeat, which leaves them free to watch the rest of the game play out.
-/// A player who can see everything already is left alone.
+/// A player who can see everything already is left alone, unless the fog is to go as well.
 /// </summary>
-void MapClass::Reveal_The_Map(void)
+/// <param name="unfog">Lift the fog of war too, and discard the stand-ins fogged structures leave behind.</param>
+void MapClass::Reveal_The_Map(bool unfog)
 {
-	if (!PlayerPtr->IsVisionary) {
+	if (!PlayerPtr->IsVisionary || unfog) {
 		PlayerPtr->IsVisionary = true;
 		Map.Reset_Iterator();
 		CellClass *cellptr = Map.Iterate();
 		while (cellptr != NULL) {
-			Map.Shadow_Map_Cell(cellptr->CellID, PlayerPtr);
+			if (unfog) {
+				Map.Map_Cell(cellptr->CellID, PlayerPtr);
+			} else {
+				Map.Shadow_Map_Cell(cellptr->CellID, PlayerPtr);
+			}
 			cellptr = Map.Iterate();
 		}
 
@@ -11667,15 +11672,16 @@ bool MapClass::Is_Shrouded(Coord const & coord)
 /// <summary>
 /// Determines if a coordinate is hidden under the fog of war.
 /// Which cell a coordinate appears over depends on how high it is, so the height is folded
-/// into the lookup before the fog is consulted. A defeated player watching a multiplayer game
-/// under ObiWan sees through the fog, and nothing is reported as hidden from them.
+/// into the lookup before the fog is consulted. A player given the whole map, an observer or
+/// a defeated player outside coach mode, sees through the fog, and nothing is reported as
+/// hidden from them.
 /// </summary>
 /// <returns>bool; Is the coordinate under the fog?</returns>
 bool MapClass::Is_Fogged(Coord const & coord)
 {
 	CellClass * cptr;
 
-	if (Session.Type == GAME_NORMAL || !PlayerPtr->IsDefeated || !Session.ObiWan) {
+	if (!Session.ObiWan) {
 		int level_height = coord.Z / LEVEL_LEPTON_H;
 		if ((level_height & 1) != 0) {
 			int offset = level_height / 2 + 1;

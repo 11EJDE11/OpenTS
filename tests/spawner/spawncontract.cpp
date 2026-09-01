@@ -355,6 +355,11 @@ int main(void)
 		Check(one.Session_Identity_CRC() != four.Session_Identity_CRC(),
 			"a scenario flag moves the identity");
 
+		SpawnerConfigClass ten = Read(_Skirmish, sizeof(_Skirmish) - 1);
+		ten.CoachMode = !ten.CoachMode;
+		Check(one.Session_Identity_CRC() != ten.Session_Identity_CRC(),
+			"coach mode moves the identity");
+
 		/*
 		 * A resume is a match of its own: the saved game decides everything the fields above
 		 * would otherwise have decided, so which save is being resumed is part of the identity.
@@ -836,11 +841,26 @@ int main(void)
 			"Name=Commander\n"
 			"Side=0\n"
 			"Color=0\n"
+			"AIPlayers=1\n"
 			"\n"
 			"[IsSpectator]\n"
 			"Multi1=Yes\n";
-		Check(!Judge(watcher, sizeof(watcher) - 1, 2, 8, fault),
-			"a seat that watches rather than plays is refused");
+		Check(Judge(watcher, sizeof(watcher) - 1, 2, 8, fault),
+			"a seat that watches a computer match is accepted");
+
+		Check(Judge(_Network, sizeof(_Network) - 1, 2, 8, fault),
+			"a seat that watches another machine play is accepted");
+
+		char const watchers_alone[] =
+			"[Settings]\n"
+			"Name=Commander\n"
+			"Side=0\n"
+			"Color=0\n"
+			"\n"
+			"[IsSpectator]\n"
+			"Multi1=Yes\n";
+		Check(!Judge(watchers_alone, sizeof(watchers_alone) - 1, 2, 8, fault),
+			"a match of watchers alone is refused");
 
 		Check(!Judge(_Skirmish, sizeof(_Skirmish) - 1, 0, 8, fault),
 			"a match is refused rather than read against countries the rules never declared");

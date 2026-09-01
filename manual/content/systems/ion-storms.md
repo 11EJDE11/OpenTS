@@ -183,7 +183,7 @@ Both are taken out of the air, but a crashing aircraft goes through the ordinary
 
 ### Radar
 
-The player's house loses radar outright for the duration. The radar availability pass refuses the radar while a storm is running, before it looks at power or at radar buildings, and switches the map's radar off. Only the player's own house is evaluated, and coverage is recalculated on the first house pass after the storm ends.
+The player's house loses radar outright for the duration. The radar availability pass refuses the radar while a storm is running, before it looks at power or at radar buildings, and switches the map's radar off. Only the player's own house is evaluated, and coverage is recalculated on the first house pass after the storm ends. A player who has been given the whole map keeps the radar through the storm; [observers and coach mode](/systems/observers/) owns that rule.
 
 ### Weapons, production, and repair
 

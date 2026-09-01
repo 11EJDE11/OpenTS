@@ -46,6 +46,7 @@
 #include "dsurface.h"
 #include "globals.h"
 #include "house.h"
+#include "language\language.h"
 #include "rules.h"
 #include "scenario.h"
 #include "scheme.h"
@@ -126,7 +127,18 @@ void CreditClass::Graphic_Logic(bool forced)
 		*/
 		TabClass::Draw_Credits_Tab();
 
-		Fancy_Text_Print("%ld", *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 0), ColorSchemes[0], TBLACK, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), Current);
+		if (PlayerPtr->IsObserver) {
+			int hours = Current / 3600;
+			int minutes = (Current / 60) % 60;
+			int seconds = Current % 60;
+			if (hours != 0) {
+				Fancy_Text_Print(TXT_TIME_FORMAT_HOURS, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 0), ColorSchemes[0], TBLACK, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), hours, minutes, seconds);
+			} else {
+				Fancy_Text_Print(TXT_TIME_FORMAT_NO_HOURS, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 0), ColorSchemes[0], TBLACK, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), minutes, seconds);
+			}
+		} else {
+			Fancy_Text_Print("%ld", *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 0), ColorSchemes[0], TBLACK, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), Current);
+		}
 
 		if (Scen->MissionTimer.Is_Active()) {
 			int secs = Scen->MissionTimer / TICKS_PER_SECOND;
@@ -199,6 +211,22 @@ void CreditClass::AI(bool forced)
 
 	if (!forced && Frame == _last) return;
 	_last = Frame;
+
+	/*
+	 * An observer has no money to count; the readout keeps the elapsed match time instead,
+	 * silently and to the second.
+	 */
+	if (PlayerPtr->IsObserver) {
+		Credits = Scen->ElapsedTimer / TIMER_SECOND;
+		if (Current != Credits) {
+			Current = Credits;
+			IsAudible = false;
+			IsToRedraw = true;
+			Map.Flag_To_Redraw();
+			Map.IsToRedrawCredits = true;
+		}
+		return;
+	}
 
 	Credits = PlayerPtr->Available_Money();
 

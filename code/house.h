@@ -263,6 +263,12 @@ class HouseClass : public AbstractClass
 		bool IsDefeated;
 
 		/*
+		 * If this house watches the match rather than plays it, then this flag will be true.
+		 * It starts defeated, owns nothing, and is left out of every count, list and score.
+		 */
+		bool IsObserver;
+
+		/*
 		**	These flags are used in conjunction with the BorrowedTime timer. When
 		**	that timer expires and one of these flags are set, then that event is
 		**	applied to the house. This allows a dramatic pause between the event
@@ -791,10 +797,12 @@ class HouseClass : public AbstractClass
 		void Make_Enemy(HouseClass * house);
 		void Make_Enemy(HousesType house);
 		void Make_Enemy(ObjectClass * object);
+		void Become_ObiWan(void);
 		bool Is_Ally(HousesType house) const;
 		bool Is_Ally(HouseClass const * house) const;
 		bool Is_Ally(ObjectClass const * object) const;
 		bool Is_Ally(AbstractClass const * target) const;
+		bool Shares_View_With(HouseClass const * house) const;
 #ifdef _DEBUG
 		void Debug_Dump(MonoClass *mono) const;
 		void Print_Zone_Stats(int x, int y, ZoneType zone, MonoClass * mono) const;

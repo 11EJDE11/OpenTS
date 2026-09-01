@@ -2615,6 +2615,9 @@ void DisplayClass::Compute_Start_Pos(void)
 	*/
 	if (num != 0) {
 		coord /= num;
+	} else if (PlayerPtr->IsObserver) {
+		coord = PlayerPtr->Center;
+		coord.Z = 0;
 	}
 
 	/*
@@ -2894,6 +2897,11 @@ bool DisplayClass::Is_Spot_Free(Coord const & coord, bool bridge) const
  *=============================================================================================*/
 void DisplayClass::Encroach_Shadow(void)
 {
+	// A player given the whole map keeps it.
+	if (Session.ObiWan) {
+		return;
+	}
+
 	int x;
 	int y;
 	Cell cell;
@@ -2944,6 +2952,10 @@ void DisplayClass::Encroach_Shadow(void)
 /// </summary>
 void DisplayClass::Encroach_Fog(void)
 {
+	if (Session.ObiWan) {
+		return;
+	}
+
 	Reset_Iterator();
 	CellClass *cellptr = Iterate();
 	while (cellptr) {
@@ -3724,7 +3736,7 @@ char const * DisplayClass::Help_Text(int id)
 
 	TechnoClass * techno = Dynamic_Cast<TechnoClass *>(object);
 	if (techno != NULL && !techno->IsOwnedByPlayer) {
-		if (techno->Cloak == CLOAKED && !Map[techno->Center_Coord()].Is_Sensed(PlayerPtr->HeapID)) {
+		if (techno->Cloak == CLOAKED && !techno->Is_Sensed_By_Player()) {
 			return(NULL);
 		}
 		if (techno->TClass->IsInvisible) {
@@ -3750,7 +3762,7 @@ char const * DisplayClass::Help_Text(int id)
 			if (object->RTTI != RTTI_BUILDING || !((BuildingClass *)object)->IsNominal) {
 				if (!dynamic_cast<TechnoTypeClass const *>(object->Class_Of())->IsNominal) {
 
-					if (!techno->House->Is_Ally(PlayerPtr)) {
+					if (!techno->House->Shares_View_With(PlayerPtr)) {
 						switch ((RTTIType)object->RTTI) {
 							case RTTI_INFANTRY:
 								text = Fetch_String(TXT_ENEMY_SOLDIER);

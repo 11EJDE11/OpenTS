@@ -1989,6 +1989,10 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 		Map.Init_Fog_System();
 	}
 
+	if (Session.Type != GAME_NORMAL && PlayerPtr->IsObserver) {
+		PlayerPtr->Become_ObiWan();
+	}
+
 	RadarEventClass::Clear();
 
 	Map.Complete_Radar_Refresh();
@@ -2191,12 +2195,25 @@ void Assign_Houses(void)
 
 		housep->SpawnWaypoint = player->Player.SpawnChoice;
 
+		if (player->Player.IsObserver) {
+			housep->IsObserver = true;
+			housep->IsDefeated = true;
+		}
+
 		//.....................................................................
 		// Record where we placed this player
 		//.....................................................................
 		player->Player.ID = housep->HeapID;
 
 //		DebugString( "Assigned ID of %i to %s\n", house, player->Name );
+	}
+
+	// With nobody playing, only the computer's last enemy falling can end the match.
+	Session.AIOnly = true;
+	for (i = 0; i < Session.Players.Count(); i++) {
+		if (!Session.Players[i]->Player.IsObserver) {
+			Session.AIOnly = false;
+		}
 	}
 
 	//------------------------------------------------------------------------
@@ -2265,11 +2282,11 @@ void Assign_Houses(void)
 		}
 	}
 
-	// A seat's mask names other seats, not the houses they became.
+	// A seat's mask names other seats, not the houses they became. An observer takes no side.
 	int seated = Session.Players.Count() + Session.Computers.Count();
 	for (int seatnum = 0; seatnum < seated; seatnum++) {
 		NodeNameType * node = Seated_Node(seatnum);
-		if (node == NULL || node->Player.AlliesMask == 0) {
+		if (node == NULL || node->Player.AlliesMask == 0 || node->Player.IsObserver) {
 			continue;
 		}
 
@@ -2279,7 +2296,7 @@ void Assign_Houses(void)
 			}
 
 			NodeNameType * other = Seated_Node(target);
-			if (other != NULL) {
+			if (other != NULL && !other->Player.IsObserver) {
 				Houses[node->Player.ID]->Make_Ally(Houses[other->Player.ID]);
 			}
 		}
@@ -2361,8 +2378,9 @@ static void Append_Open_Start_Positions(DynamicVectorClass<Cell> & waypts, int &
 /// </summary>
 /// <param name="official">Is this one of the maps that shipped with the game?</param>
 /// <param name="keep_identity">Must an entry's place in the list be its waypoint number?</param>
+/// <param name="wanted">How many houses need a position.</param>
 /// <returns>Returns with the list of cells that players may be started from.</returns>
-static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity)
+static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity, int wanted)
 {
 	DynamicVectorClass<Cell> waypts;
 
@@ -2380,7 +2398,7 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool ke
 		 * Spots making up a shortfall are appended past the numbered ones, so no number comes to
 		 * mean a place the map never declared.
 		 */
-		Append_Open_Start_Positions(waypts, usable, Session.Players.Count() + Session.Options.AIPlayers);
+		Append_Open_Start_Positions(waypts, usable, wanted);
 
 		return(waypts);
 	}
@@ -2400,7 +2418,7 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool ke
 	**	if there are 4 or fewer players. Unofficial maps will pick from all the
 	**	available waypoints.
 	*/
-	int look_for = std::max(num_waypts, Session.Players.Count()+Session.Options.AIPlayers);
+	int look_for = std::max(num_waypts, wanted);
 	if (!official) {
 		look_for = MAX_PLAYERS;
 	}
@@ -2478,13 +2496,19 @@ static void Create_Units(bool official)
 
 	/*
 	 * A house only asks for a position by number when a launch file chose one for it, which is
-	 * what decides whether the numbers must keep their identity.
+	 * what decides whether the numbers must keep their identity. An observer holds no position.
 	 */
 	bool choices = false;
+	int wanted = Session.Players.Count() + Session.Options.AIPlayers;
 	for (int index = 0; index < Houses.Count(); index++) {
-		if (Houses[index] != NULL && Houses[index]->SpawnWaypoint >= 0) {
+		HouseClass * housep = Houses[index];
+		if (housep == NULL) {
+			continue;
+		}
+		if (housep->IsObserver) {
+			wanted--;
+		} else if (housep->SpawnWaypoint >= 0) {
 			choices = true;
-			break;
 		}
 	}
 
@@ -2494,7 +2518,7 @@ static void Create_Units(bool official)
 	**	valid locations to the first N waypoints, but just in case, this
 	**	loop verifies that.
 	*/
-	DynamicVectorClass<Cell> waypts = Build_Start_Waypoint_List(official, choices);
+	DynamicVectorClass<Cell> waypts = Build_Start_Waypoint_List(official, choices, wanted);
 	bool taken[MAX_PLAYERS * 2];
 	for (int index = 0; index < ARRAY_SIZE(taken); index++) {
 		taken[index] = choices && index < waypts.Count() && waypts[index] == CELL_NONE;
@@ -2512,7 +2536,7 @@ static void Create_Units(bool official)
 	if (choices) {
 		for (int index = 0; index < Houses.Count(); index++) {
 			HouseClass * housep = Houses[index];
-			if (housep == NULL || housep->Class->IsMultiplayPassive) {
+			if (housep == NULL || housep->Class->IsMultiplayPassive || housep->IsObserver) {
 				continue;
 			}
 
@@ -2537,7 +2561,7 @@ static void Create_Units(bool official)
 		*/
 		HouseClass * hptr = Houses[house];
 
-		if (hptr->Class->IsMultiplayPassive) continue;
+		if (hptr->Class->IsMultiplayPassive || hptr->IsObserver) continue;
 
 		DebugString("Generating units for house %d (%s)\n", (int)house, (char const *)hptr->Class->IniName);
 
@@ -2737,6 +2761,30 @@ static void Create_Units(bool official)
 			}
 		}
 		deployed_list.Clear();
+	}
+
+	/*
+	 * An observer starts looking at somebody's start position, or at the middle of the map when
+	 * nobody plays, and never holds a position of its own.
+	 */
+	for (HousesType house = HOUSE_FIRST; house < Houses.Count(); house++) {
+		HouseClass * hptr = Houses[house];
+		if (hptr == NULL || !hptr->IsObserver) continue;
+
+		DynamicVectorClass<Cell> homes;
+		for (int index = 0; index < waypts.Count(); index++) {
+			if (taken[index] && waypts[index] != CELL_NONE) {
+				homes.Add(waypts[index]);
+			}
+		}
+
+		centroid = Cell(Map.MapRect.X + Map.MapRect.Width / 2, Map.MapRect.Y + Map.MapRect.Height / 2);
+		if (homes.Count() > 0) {
+			centroid = homes[Random_Pick(0, homes.Count() - 1)];
+		}
+
+		hptr->SpawnWaypoint = -1;
+		hptr->Center = Coord(centroid);
 	}
 	DebugString("Finished unit generation. Random number is %d\n", Random_Pick(0, 65535));
 

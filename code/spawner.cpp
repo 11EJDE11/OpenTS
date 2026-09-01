@@ -140,6 +140,7 @@ static void Spawner_Seat_Human(int index)
 	node->Player.ProcessTime = -1;
 	node->Player.SpawnChoice = seat.StartingPosition;
 	node->Player.AlliesMask = Spawner_Allies_Mask(seat);
+	node->Player.IsObserver = seat.IsSpectator;
 
 	// Through a tunnel a machine is addressed by its tunnel number, written where the port goes.
 	if (SpawnConfig.TunnelPort != 0) {
@@ -223,6 +224,7 @@ static void Spawner_Bind_Options(void)
 	Session.Options.AlliesAllowed = SpawnConfig.AlliesAllowed;
 	Session.Options.FogOfWar = SpawnConfig.FogOfWar;
 	Session.Options.MCVRedeploy = SpawnConfig.MCVRedeploy;
+	Session.Options.CoachMode = SpawnConfig.CoachMode;
 
 	/*
 	 * Only a match against other machines commits this to the simulation; a skirmish never does.
@@ -243,7 +245,6 @@ static void Spawner_Bind_Options(void)
 	 *   MapName                       - shown while loading; bound with the scenario below.
 	 *   IsCampaign, LoadSaveGame,
 	 *   SaveGameName                  - read to decide the kind of launch and name the save.
-	 *   Slots[].IsSpectator           - read to refuse a launch.
 	 *   IsHost                        - which machine hosts matters once one can leave.
 	 *   Tournament, GameID,
 	 *   WriteStatistics               - naming a match and reporting how it went.
@@ -253,7 +254,6 @@ static void Spawner_Bind_Options(void)
 	 *   BuildOffAlly, AttackNeutralUnits,
 	 *   ScrapMetal, AutoSurrender,
 	 *   ContinueWithoutHumans         - options the game has no setting of its own for yet.
-	 *   CoachMode                     - watching and advising rather than playing.
 	 *   QuickMatch, SkipScoreScreen,
 	 *   PlayMoviesInMultiplayer,
 	 *   CustomLoadScreen,

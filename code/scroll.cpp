@@ -217,7 +217,7 @@ bool ScrollClass::Resolve_Point(Point2D const & point, Cell & cell, Coord & coor
 				/*
 				**	Special case check to ignore cloaked object if not owned by the player.
 				*/
-				if (!techno->IsOwnedByPlayer && ((techno->Cloak == CLOAKED && !Map[techno->Center_Coord()].Is_Sensed(PlayerPtr->HeapID)) || techno->TClass->IsInvisible)) {
+				if (!techno->IsOwnedByPlayer && ((techno->Cloak == CLOAKED && !techno->Is_Sensed_By_Player()) || techno->TClass->IsInvisible)) {
 					object = NULL;
 				}
 			}
@@ -228,7 +228,7 @@ bool ScrollClass::Resolve_Point(Point2D const & point, Cell & cell, Coord & coor
 				/*
 				**	Special case check to ignore cloaked object if not owned by the player.
 				*/
-				if (!building->IsOwnedByPlayer && ((building->TranslucencyLevel == 15 && !Map[techno->Center_Coord()].Is_Sensed(PlayerPtr->HeapID)) || building->Class->IsInvisibleInGame)) {
+				if (!building->IsOwnedByPlayer && ((building->TranslucencyLevel == 15 && !techno->Is_Sensed_By_Player()) || building->Class->IsInvisibleInGame)) {
 					object = NULL;
 				}
 			}
@@ -273,7 +273,7 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 		/*
 		**	Special case check to ignore cloaked object if not owned by the player.
 		*/
-		if (techno != NULL && !techno->IsOwnedByPlayer && ((techno->Cloak == CLOAKED && !Map[techno->Center_Coord()].Is_Sensed(PlayerPtr->HeapID)) || techno->TClass->IsInvisible)) {
+		if (techno != NULL && !techno->IsOwnedByPlayer && ((techno->Cloak == CLOAKED && !techno->Is_Sensed_By_Player()) || techno->TClass->IsInvisible)) {
 			visible = false;
 		}
 
@@ -283,7 +283,7 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 			/*
 			**	Special case check to ignore cloaked object if not owned by the player.
 			*/
-			if (!building->IsOwnedByPlayer && (building->TranslucencyLevel == 15 && !Map[techno->Center_Coord()].Is_Sensed(PlayerPtr->HeapID))) {
+			if (!building->IsOwnedByPlayer && (building->TranslucencyLevel == 15 && !techno->Is_Sensed_By_Player())) {
 				visible = false;
 			}
 		}

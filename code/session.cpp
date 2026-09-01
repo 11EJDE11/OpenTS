@@ -164,6 +164,7 @@ SessionClass::SessionClass(void)
 	Options.CTF=0;
 	Options.FogOfWar=false;
 	Options.MCVRedeploy=false;
+	Options.CoachMode = false;
 	Options.AIDifficulty = DIFF_NORMAL;
 
 	UniqueID = 0;
@@ -174,6 +175,7 @@ SessionClass::SessionClass(void)
 	House = HOUSE_FIRST;
 
 	ObiWan = 0;
+	AIOnly = false;
 	Solo = 0;
 	CampaignDifficulty = DIFF_NORMAL;
 	CampaignCDifficulty = DIFF_NORMAL;
@@ -551,7 +553,9 @@ bool SessionClass::Log_To_File(FILE *out)
 	fprintf(out,"Options.UnitCount = %d\n", Options.UnitCount);
 	fprintf(out,"Options.AIPlayers = %d\n", Options.AIPlayers);
 	fprintf(out,"Options.AIDifficulty = %d\n", Options.AIDifficulty);
+	fprintf(out,"Options.CoachMode = %d\n", Options.CoachMode);
 	fprintf(out,"ObiWan = %d\n", ObiWan);
+	fprintf(out,"AIOnly = %d\n", AIOnly);
 
 	if (Session.Type == GAME_IPX) {
 		fprintf(out, "Type = IPX\n");
@@ -1328,6 +1332,7 @@ void GameOptionsType::Serialize(SaveStreamClass & stream)
 	stream.Serialize(CTF);
 	stream.Serialize(FogOfWar);
 	stream.Serialize(MCVRedeploy);
+	stream.Serialize(CoachMode);
 	stream.Serialize(ScenarioDescription);
 }
 

@@ -1025,6 +1025,7 @@ restart:
 	PlayerRestarts = false;
 	PlayerAborts = false;
 	Session.ObiWan = false;
+	Session.AIOnly = false;
 #ifdef _DEBUG
 	Debug_Unshroud = false;
 #endif

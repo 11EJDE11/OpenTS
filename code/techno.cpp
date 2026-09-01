@@ -1204,7 +1204,7 @@ void TechnoClass::Draw_Post_Render(Point2D const & point, Rect const & cliprect)
 		}
 	}
 
-	bool allied = House->Is_Ally(PlayerPtr) || (SpiedBy & (1<<(PlayerPtr->Class->House)));
+	bool allied = House->Shares_View_With(PlayerPtr) || (SpiedBy & (1<<(PlayerPtr->Class->House)));
 
 	if (IsSelected || sensed_underground) {
 
@@ -5530,8 +5530,8 @@ VisualType TechnoClass::Visual_Character(bool raw, HouseClass const * house) con
 		if (raw && house != NULL && Map[Get_Coord().As_Cell()].Is_Sensed(house->HeapID)) return(VISUAL_SHADOWY);
 		if (!raw && !MainWindow) return(VISUAL_SHADOWY);
 		if (!raw && IsOwnedByPlayer) return(VISUAL_SHADOWY);
-		if (!raw && Map[Get_Coord().As_Cell()].Is_Sensed(PlayerPtr->HeapID)) return(VISUAL_SHADOWY);
-		if (!raw && (Session.Type != GAME_NORMAL && House != NULL && PlayerPtr != NULL && PlayerPtr->Is_Ally(House) && House->Is_Ally(PlayerPtr))) return(VISUAL_SHADOWY);
+		if (!raw && Is_Sensed_By_Player()) return(VISUAL_SHADOWY);
+		if (!raw && (Session.Type != GAME_NORMAL && House != NULL && PlayerPtr != NULL && PlayerPtr->Shares_View_With(House) && House->Shares_View_With(PlayerPtr))) return(VISUAL_SHADOWY);
 		return(VISUAL_HIDDEN);
 	}
 
@@ -8707,7 +8707,7 @@ bool TechnoClass::Is_Radar_Visible(DetectedType & detected) const
 			return(false);
 		}
 
-		if (!PlayerPtr->Is_Ally(House) && !ability_radar_invisible && !is_fogged && !is_shrouded && !IsSinking) {
+		if (!PlayerPtr->Shares_View_With(House) && !ability_radar_invisible && !is_fogged && !is_shrouded && !IsSinking) {
 			detected = (height < -20) ? DETECTED_SUBTERRANEAN : DETECTED_CLOAKED;
 		}
 		return(true);
@@ -8723,6 +8723,10 @@ bool TechnoClass::Is_Radar_Visible(DetectedType & detected) const
 bool TechnoClass::Is_Sensed_By_Player(void) const
 {
 	if (PlayerPtr != NULL) {
+		// A player given the whole map senses every cell, so hidden objects show as their owners see them.
+		if (Session.ObiWan) {
+			return(true);
+		}
 		CellClass * cptr = &Map[Center_Coord()];
 		return(cptr->Is_Sensed(PlayerPtr->HeapID));
 	}

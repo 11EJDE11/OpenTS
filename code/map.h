@@ -119,7 +119,7 @@ class MapClass: public GScreenClass
 		bool Place_Random_Crate(void);
 		bool Remove_Crate(Cell const & cell);
 		void Shroud_The_Map(void);
-		void Reveal_The_Map(void);
+		void Reveal_The_Map(bool unfog = false);
 		virtual void Detach(AbstractClass const * , bool all = true);
 
 		/*

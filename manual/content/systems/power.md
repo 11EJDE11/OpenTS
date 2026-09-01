@@ -146,7 +146,7 @@ Only the local player's house has a radar map to lose. It is raised while all of
   - the scenario sets [`FreeRadar=yes`](/keys/freeradar/);
   - the house owns a [`Radar=yes`](/keys/radar/) structure that is **All of:** switched on, out of limbo, on the map, and not being deconstructed.
 
-The campaign discovery skip applies to that search too.
+The campaign discovery skip applies to that search too. A player who has been given the whole map keeps the radar whatever these tests say; [observers and coach mode](/systems/observers/) owns that rule.
 
 :::caution[The search stops at the first radar it finds]
 Structures are scanned in creation order and the scan ends at the first eligible one, which supplies the radar only if it is not stunned. A stunned radar reached first therefore keeps the map dark while a second, working one stands beside it.

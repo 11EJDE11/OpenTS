@@ -1154,14 +1154,15 @@ void BuildingClass::Draw_Overlays(Point2D const & point, Rect const & cliprect) 
 		}
 	}
 
-	if (IsSelected && (House->Is_Ally(PlayerPtr) || SpiedBy & (1<<(PlayerPtr->Class->House)))) {
+	if (IsSelected && (House->Shares_View_With(PlayerPtr) || SpiedBy & (1<<(PlayerPtr->Class->House)))) {
 		Draw_Text_Overlay(point + Point2D(-10, 10), point, cliprect);
 	}
 
 	/*
-	**	If this is a factory that we're spying on, show what it's producing
+	**	If this is a factory that we're spying on, or the player has the whole map, show what
+	**	it's producing
 	*/
-	if (SpiedBy & (1<<(PlayerPtr->Class->House)) && IsSelected) {
+	if ((SpiedBy & (1<<(PlayerPtr->Class->House)) || Session.ObiWan) && IsSelected) {
 
 		/*
 		**	Fetch the factory that is associate with this building. For computer controlled buildings, the
@@ -8915,7 +8916,7 @@ VisualType BuildingClass::Visual_Character(bool raw, HouseClass const * house) c
 					}
 				}
 			} else {
-				if (IsOwnedByPlayer || Is_Sensed_By_Player() || !MainWindow || (Session.Type != GAME_NORMAL && House != NULL && PlayerPtr != NULL && PlayerPtr->Is_Ally(House) && House->Is_Ally(PlayerPtr))) {
+				if (IsOwnedByPlayer || Is_Sensed_By_Player() || !MainWindow || (Session.Type != GAME_NORMAL && House != NULL && PlayerPtr != NULL && PlayerPtr->Shares_View_With(House) && House->Shares_View_With(PlayerPtr))) {
 					return(VISUAL_SHADOWY);
 				}
 			}
@@ -9907,7 +9908,7 @@ bool BuildingClass::Is_Radar_Visible(DetectedType & detected) const
 		if (!Is_Sensed_By_Player()) {
 			return(false);
 		}
-		if (!PlayerPtr->Is_Ally(House) && !IsFogged && !shrouded) {
+		if (!PlayerPtr->Shares_View_With(House) && !IsFogged && !shrouded) {
 			detected = DETECTED_CLOAKED;
 		}
 		return(true);

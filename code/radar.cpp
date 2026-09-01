@@ -781,7 +781,7 @@ void RadarClass::Draw_Names(void)
 	for (house = HOUSE_FIRST; house < Houses.Count(); house++) {
 		ptr = Houses[house];
 
-		if (!ptr || !ptr->Class->IsMultiplay) continue;
+		if (!ptr || !ptr->Class->IsMultiplay || ptr->IsObserver) continue;
 
 		/*
 		**	Decode this house's color

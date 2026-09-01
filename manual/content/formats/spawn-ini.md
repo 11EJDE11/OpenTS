@@ -81,7 +81,10 @@ game's startup movies are skipped.
 
 Read from `[Settings]`: `Bases`, `Credits`, `BridgeDestroy`, `Crates`, `ShortGame`,
 `GameSpeed`, `MultiEngineer`, `UnitCount`, `AIPlayers`, `AIDifficulty`, `AlliesAllowed`,
-`FogOfWar`, `MCVRedeploy`, `TechLevel`, `Firestorm`, and `Seed`.
+`FogOfWar`, `MCVRedeploy`, `TechLevel`, `Firestorm`, `Seed`, and `CoachMode`.
+
+`CoachMode` decides what a defeated player keeps;
+[observers and coach mode](/systems/observers/#coach-mode) owns it.
 
 A written `Seed` makes a launch repeatable: the same file played twice places every house
 the same way. A seed of `0` leaves the placement to chance, which is also what an absent
@@ -116,11 +119,14 @@ color — and everything below that names a seat by number means that order.
 | --- | --- | --- |
 | `[SpawnLocations]` | `Multi1`–`Multi8` | The map start position that seat begins at. |
 | `[Multi1_Alliances]`–`[Multi8_Alliances]` | `HouseAllyOne`–`HouseAllyEight` | The seats that seat is allied with. |
+| `[IsSpectator]` | `Multi1`–`Multi8` | Whether that seat watches rather than plays. |
 
 A start position the map does not declare, or one another seat has already taken, is left
 to the game to choose, which is also what writing no position means. Alliances are made
 exactly as written, before the first frame: a match whose file forbids new alliances still
-starts with the ones it wrote.
+starts with the ones it wrote. A seat that watches holds no alliances: its own entries and
+any naming it are ignored. [Observers and coach mode](/systems/observers/) owns what a
+watching seat is shown and how the match treats it.
 
 A computer player may share the color a person plays; in a game against other machines, two
 people may not. The client keys each seat by an order no other machine can rebuild, so two
@@ -164,7 +170,7 @@ when it
 - asks for a game speed the game does not have;
 - gives a seat a difficulty outside `-1` to `6`;
 - allies a seat with one the match does not hold;
-- asks for a seat that watches rather than plays.
+- seats nobody who plays, because every person watches and no computer plays.
 
 A match against other machines is refused as well when
 
@@ -189,6 +195,6 @@ settles the same question for themselves.
 
 These keys are read but change nothing yet: `IsHost`, `Tournament`, `GameID`,
 `WriteStatistics`, the automatic-save scheduling keys, `BuildOffAlly`,
-`AttackNeutralUnits`, `ScrapMetal`, `AutoSurrender`, `ContinueWithoutHumans`, `CoachMode`,
+`AttackNeutralUnits`, `ScrapMetal`, `AutoSurrender`, `ContinueWithoutHumans`,
 `QuickMatch`, `SkipScoreScreen`, `PlayMoviesInMultiplayer`, `CustomLoadScreen`,
 `CustomLoadScreenPos`, and `DifficultyName`.
