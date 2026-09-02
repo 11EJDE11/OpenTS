@@ -2141,7 +2141,7 @@ void HouseClass::Make_Ally(HouseClass * house)
 			Control.Allies |= (1L << house->HeapID);
 		}
 
-		if (Session.Type == GAME_INTERNET || !ScenarioInit) {
+		if (!ScenarioInit) {
 
 			/*
 			**	An alliance with another human player will cause the computer
