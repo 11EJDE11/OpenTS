@@ -908,5 +908,4 @@ void ScrollClass::Abort_Drag_Select(void)
 	if (hwnd == MainWindow) {
 		ReleaseCapture();
 	}
-	DebugString("Scroll: Abort_Drag_Select()\n");
 }
