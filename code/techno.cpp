@@ -868,11 +868,13 @@ bool TechnoClass::Revealed(HouseClass * house)
 				**	Alert the enemy house to presence of the friendly side.
 				*/
 				House->IsDiscovered = true;
-			} else {
+			}
 
-				/*
-				**	A newly revealed object will always perform a look operation.
-				*/
+			// Outside a campaign every object looks and Sight_From decides whose shroud
+			// lifts, so an ally's placed structure reveals for the player; a campaign keeps
+			// the look to the player's own objects so discovery does not chain through an
+			// allied base.
+			if (IsOwnedByPlayer || Session.Type != GAME_NORMAL) {
 				Look();
 			}
 		} else {

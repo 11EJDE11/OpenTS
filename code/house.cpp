@@ -2176,10 +2176,10 @@ void HouseClass::Make_Ally(HouseClass * house)
 			*/
 			if (Rule->IsAllyReveal && house == PlayerPtr) {
 				for (int index = 0; index < Technos.Count(); index++) {
-					TechnoClass const * t = Technos[index];
+					TechnoClass * t = Technos[index];
 
 					if (!t->IsInLimbo && t->House == this) {
-						Map.Sight_From(t->Center_Coord(), t->TClass->SightRange, PlayerPtr, false);
+						t->Look();
 					}
 				}
 			}
@@ -8035,7 +8035,7 @@ void HouseClass::Update_Spied_Radar(HouseClass * house)
 		for (int index = 0; index < Technos.Count(); index++) {
 			TechnoClass * obj = Technos[index];
 			if (obj && !obj->IsInLimbo && obj->House == this) {
-				Map.Sight_From(obj->PositionCoord, obj->TClass->SightRange, this);
+				obj->Look();
 			}
 		}
 		Map.Flag_To_Redraw(GS_REDRAW_ALL);
