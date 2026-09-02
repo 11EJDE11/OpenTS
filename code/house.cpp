@@ -2237,7 +2237,7 @@ void HouseClass::Make_Enemy(HouseClass * house)
 			Allies &= ~(1L << house->HeapID);
 
 			if (ScenarioInit) {
-				Control.Allies &= !(1L << house->HeapID);
+				Control.Allies &= ~(1L << house->HeapID);
 			}
 
 			Recalc_Threat_Regions();
@@ -2249,7 +2249,7 @@ void HouseClass::Make_Enemy(HouseClass * house)
 				house->Allies &= ~(1L << HeapID);
 
 				if (ScenarioInit) {
-					Control.Allies &= ~(1L << HeapID);
+					house->Control.Allies &= ~(1L << HeapID);
 				}
 				house->Recalc_Threat_Regions();
 				house->Add_Anger(1, house);
