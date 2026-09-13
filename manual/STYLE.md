@@ -28,6 +28,13 @@ condition. Replace vague words such as "safe," "normal," "available," and
 "works" with the exact condition or result. Avoid marketing, personification,
 and editorial status.
 
+Name an operation with the word the engine and the page already use for it.
+Mounting, caching, loading, reading, and writing are distinct operations, and a
+verb chosen for tone in place of one of them hides which one ran. Reuse an
+established verb's grammar as well as the verb: "answers for a name" does not
+license a bare "answers." Where no engine term applies, a plain "is" beats an
+elevated substitute.
+
 Describe the engine and its inputs, not how the manual was produced. Do not
 label public material as generated, extracted, authored, or contract-backed.
 The site may carry one brief notice about AI assistance and possible errors;
