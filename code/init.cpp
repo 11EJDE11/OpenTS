@@ -6398,16 +6398,25 @@ bool Prep_For_Side(SideType side)
 
 	if (Session.Type == GAME_NORMAL) {
 
-		if (Addon_Enabled(ADDON_ANY) == false) {
-			sprintf(name, "SIDECD%02d.MIX", id);
-		} else {
+		if (Addon_Enabled(ADDON_ANY) == true) {
 			sprintf(name, "E%02dSCD%02d.MIX", Get_Required_Addon(), id);
+
+			DebugString("     Initializing %s\n", name);
+			if (CCFileClass(name).Is_Available()) {
+				SideCDMix = new MFCD(name, &FastKey);
+			}
 		}
 
-		DebugString("     Initializing %s\n", name);
-		if (CCFileClass(name).Is_Available()) {
-			SideCDMix = new MFCD(name, &FastKey);
+		// An installation may keep the expansion's copies in the base archive instead.
+		if (SideCDMix == NULL) {
+			sprintf(name, "SIDECD%02d.MIX", id);
+
+			DebugString("     Initializing %s\n", name);
+			if (CCFileClass(name).Is_Available()) {
+				SideCDMix = new MFCD(name, &FastKey);
+			}
 		}
+
 		if (SideCDMix == NULL) {
 			DebugString("     FAILED!\n");
 			return(false);
