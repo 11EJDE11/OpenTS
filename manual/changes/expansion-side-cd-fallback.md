@@ -10,7 +10,7 @@ credit:
 - ZivDero
 ---
 
-A mission in an expansion campaign refused to start unless the installation carried that
+A mission in an expansion campaign refused to start unless the installation had that
 expansion's side CD archive, `E01SCD01.MIX` or `E01SCD02.MIX`. An installation holding
 those members in `SIDECD01.MIX` and `SIDECD02.MIX` instead has every file the mission
 asks for, but the game looked for the expansion archive alone and stopped with

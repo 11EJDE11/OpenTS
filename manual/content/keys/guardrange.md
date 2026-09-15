@@ -8,7 +8,7 @@ when_omitted:
   note: Zero is the instruction to use the object's own weapon range instead, so an omitted value costs nothing.
 ---
 
-The value is written in cells and fractions are accepted. It supplies all three scan radii: the guard radius is this value outright, while the area radius used by Guard Area and the patrol radius used by Patrol are twice it, the first clamped to at most 16 cells and the second to between 7 and 16. At `0` the area and patrol radii fall back to twice the longer of the object's two weapon ranges, while the guard radius becomes a live test against the range of the weapon chosen per candidate.
+The value is written in cells and fractions are accepted. It supplies all three scan radii. The guard radius is this value outright. The area radius used by Guard Area and the patrol radius used by Patrol are twice it, the first clamped to at most 16 cells and the second to between 7 and 16. At `0` the area and patrol radii fall back to twice the longer of the object's two weapon ranges, while the guard radius becomes a live test against the range of the weapon chosen per candidate.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType

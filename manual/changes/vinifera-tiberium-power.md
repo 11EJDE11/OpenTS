@@ -10,7 +10,4 @@ targets:
 credit: [ZivDero, AlexB, Rampastring]
 ---
 
-A Tiberium section named `Vinifera` now keeps the damage its section states. The value was
-overwritten with `17` once the section had been read, whatever the rules said, so that one
-type could not be tuned at all. A section that states nothing falls to the same `0` as every
-other Tiberium type.
+A Tiberium section named `Vinifera` in `rules.ini` now keeps the damage its section states. The value was overwritten with `17` once the section had been read, whatever the rules said, so that one type could not be tuned at all. A Tiberium section that states nothing falls to the same `0` as every other type.

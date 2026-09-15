@@ -7,7 +7,7 @@ when_omitted:
   value: "1"
 ---
 
-The scaling is applied only to an infantryman that is lying down, only to damage above zero, and only to damage that is not forced — forced damage passes at its full figure however low the fraction. The scaled figure is truncated to a whole number and then raised to at least one, so any positive hit still costs a prone soldier a point of strength.
+The scaling is applied only to an infantryman that is lying down, only to damage above zero, and only to damage that is not [forced](/keys/c4warhead/). Forced damage passes at its full figure however low the fraction. The fraction comes off before the [`Verses`](/keys/verses/) table is applied, so the table multiplies the figure that is left. The scaled figure is truncated to a whole number and then raised to at least one, so any positive hit still costs a prone soldier a point of strength.
 
 ```ini title="rules.ini"
 [MyGasWH] ; example WarheadType

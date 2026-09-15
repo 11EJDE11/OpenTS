@@ -8,8 +8,8 @@ when_omitted:
 ---
 
 ```ini title="rules.ini"
-[GAPOWR]
-Strength=800
+[ORCA]
+Strength=200
 ```
 
 This scope sets the type's maximum-strength value. A damageable runtime instance created from the type starts with that value as its current strength, and damage reduces the current value.
