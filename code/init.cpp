@@ -2368,7 +2368,7 @@ static void Init_Patch_Mixfiles(void)
 
 
 /// <summary>
-/// Reads a palette out of the mounted archives and expands it to the game's colour range.
+/// Reads a palette out of the mounted archives and expands it to the game's color range.
 /// </summary>
 /// <param name="palette">The palette to fill, left unchanged if the file is not there.</param>
 /// <param name="name">The palette file to read.</param>
@@ -3182,7 +3182,7 @@ int Main_Menu(unsigned int timeout)
 /// <summary>
 /// Handles the messages for the main menu dialog.
 /// This routine records the button the player pressed into the result that Main_Menu is
-/// waiting upon, and greys out the load button when there is nothing to load.
+/// waiting upon, and grays out the load button when there is nothing to load.
 /// </summary>
 INT_PTR CALLBACK Main_Menu_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
