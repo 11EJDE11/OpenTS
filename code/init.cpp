@@ -200,6 +200,7 @@
 #include <ctime>
 #include <dos.h>
 #include <unordered_set>
+#include <string>
 #include <vector>
 
 extern VoxelDataStruct DropPodVoxel;
@@ -3305,7 +3306,17 @@ void Draw_Version_Text(Surface * surface)
 }
 
 
-static char _cmd_buffer[128];
+// A team command builds its names from its number. Each instance keeps its own copies,
+// because one shared buffer cannot answer two of these accessors at once.
+static char const * Team_Command_String(std::string & cache, char const * format, int team)
+{
+	if (cache.empty()) {
+		char buffer[128];
+		snprintf(buffer, sizeof(buffer), format, team);
+		cache = buffer;
+	}
+	return(cache.c_str());
+}
 
 
 static void Select_Team_Members(int team)
@@ -3344,19 +3355,16 @@ class CreateTeamCommandClass : public CommandClass
 		CreateTeamCommandClass(int team) : Team(team) {}
 
 		virtual char const * Get_Unique_Name(void) const {
-			sprintf(_cmd_buffer, "TeamCreate_%d", Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(UniqueName, "TeamCreate_%d", Team));
 		}
 		virtual char const * Get_Display_Name(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_CREATE_TEAM), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(DisplayName, Fetch_String(TXT_CREATE_TEAM), Team));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_TEAM)));
 		}
 		virtual char const * Get_Description(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_CREATE_TEAM_DESC), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(Description, Fetch_String(TXT_CREATE_TEAM_DESC), Team));
 		}
 
 		virtual void Execute(void) const {
@@ -3365,6 +3373,10 @@ class CreateTeamCommandClass : public CommandClass
 
 	private:
 		int Team;
+
+		mutable std::string UniqueName;
+		mutable std::string DisplayName;
+		mutable std::string Description;
 };
 
 
@@ -3374,19 +3386,16 @@ class SelectTeamCommandClass : public CommandClass
 		SelectTeamCommandClass(int team) : Team(team) {}
 
 		virtual char const * Get_Unique_Name(void) const {
-			sprintf(_cmd_buffer, "TeamSelect_%d", Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(UniqueName, "TeamSelect_%d", Team));
 		}
 		virtual char const * Get_Display_Name(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_SELECT_TEAM), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(DisplayName, Fetch_String(TXT_SELECT_TEAM), Team));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_TEAM)));
 		}
 		virtual char const * Get_Description(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_SELECT_TEAM_DESC), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(Description, Fetch_String(TXT_SELECT_TEAM_DESC), Team));
 		}
 
 		virtual void Execute(void) const {
@@ -3420,6 +3429,10 @@ class SelectTeamCommandClass : public CommandClass
 	private:
 		int Team;
 
+		mutable std::string UniqueName;
+		mutable std::string DisplayName;
+		mutable std::string Description;
+
 		inline static int LastTeam = -1;
 		inline static int LastTick = -1;
 };
@@ -3431,19 +3444,16 @@ class AddTeamCommandClass : public CommandClass
 		AddTeamCommandClass(int team) : Team(team) {}
 
 		virtual char const * Get_Unique_Name(void) const {
-			sprintf(_cmd_buffer, "TeamAddSelect_%d", Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(UniqueName, "TeamAddSelect_%d", Team));
 		}
 		virtual char const * Get_Display_Name(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_ADD_SELECT_TEAM), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(DisplayName, Fetch_String(TXT_ADD_SELECT_TEAM), Team));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_TEAM)));
 		}
 		virtual char const * Get_Description(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_ADD_SELECT_TEAM_DESC), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(Description, Fetch_String(TXT_ADD_SELECT_TEAM_DESC), Team));
 		}
 
 		virtual void Execute(void) const {
@@ -3457,6 +3467,10 @@ class AddTeamCommandClass : public CommandClass
 
 	private:
 		int Team;
+
+		mutable std::string UniqueName;
+		mutable std::string DisplayName;
+		mutable std::string Description;
 };
 
 
@@ -3466,19 +3480,16 @@ class AddToTeamCommandClass : public CommandClass
 		AddToTeamCommandClass(int team) : Team(team) {}
 
 		virtual char const * Get_Unique_Name(void) const {
-			sprintf(_cmd_buffer, "TeamAddTo_%d", Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(UniqueName, "TeamAddTo_%d", Team));
 		}
 		virtual char const * Get_Display_Name(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_ADD_TO_TEAM), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(DisplayName, Fetch_String(TXT_ADD_TO_TEAM), Team));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_TEAM)));
 		}
 		virtual char const * Get_Description(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_ADD_TO_TEAM_DESC), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(Description, Fetch_String(TXT_ADD_TO_TEAM_DESC), Team));
 		}
 
 		virtual void Execute(void) const {
@@ -3494,6 +3505,10 @@ class AddToTeamCommandClass : public CommandClass
 
 	private:
 		int Team;
+
+		mutable std::string UniqueName;
+		mutable std::string DisplayName;
+		mutable std::string Description;
 };
 
 
@@ -3503,19 +3518,16 @@ class CenterTeamCommandClass : public CommandClass
 		CenterTeamCommandClass(int team) : Team(team) {}
 
 		virtual char const * Get_Unique_Name(void) const {
-			sprintf(_cmd_buffer, "TeamCenter_%d", Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(UniqueName, "TeamCenter_%d", Team));
 		}
 		virtual char const * Get_Display_Name(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_CENTER_TEAM), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(DisplayName, Fetch_String(TXT_CENTER_TEAM), Team));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_TEAM)));
 		}
 		virtual char const * Get_Description(void) const {
-			sprintf(_cmd_buffer, Fetch_String(TXT_CENTER_TEAM_DESC), Team);
-			return(_cmd_buffer);
+			return(Team_Command_String(Description, Fetch_String(TXT_CENTER_TEAM_DESC), Team));
 		}
 
 		virtual void Execute(void) const {
@@ -3537,6 +3549,10 @@ class CenterTeamCommandClass : public CommandClass
 
 	private:
 		int Team;
+
+		mutable std::string UniqueName;
+		mutable std::string DisplayName;
+		mutable std::string Description;
 };
 
 
