@@ -2420,7 +2420,7 @@ static void Get_Join_Responses(void)
 									Session.GPacket.Name);
 								Sound_Effect(Rule->GameClosed);
 							}
-							PMessagePrintf(ColorSystem, txt);
+							PMessagePrintf(ColorSystem, "%s", txt);
 						}
 					}
 					break;
@@ -2461,7 +2461,7 @@ static void Get_Join_Responses(void)
 				if (Session.GPacket.GameInfo.IsOpen && JoinState < JOIN_CONFIRMED) {
 					snprintf(txt, sizeof(txt), Fetch_String(TXT_S_FORMED_NEW_GAME),
 						Session.GPacket.Name);
-					PMessagePrintf(ColorSystem, txt);
+					PMessagePrintf(ColorSystem, "%s", txt);
 					Sound_Effect(Rule->GameForming);
 				}
 

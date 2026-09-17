@@ -139,7 +139,7 @@ void __cdecl PMessagePrintf(int color, const char * fmt, ...)
 	memset(buffer, 0, sizeof(buffer));
 
 	va_start(va, fmt);
-	vsprintf(buffer, fmt, va);
+	vsnprintf(buffer, sizeof(buffer), fmt, va);
 	va_end(va);
 
 	if (WS_Top_Window() != 0) {
@@ -176,7 +176,7 @@ void __cdecl SMessagePrintf(int color, const char * fmt, ...)
 	memset(buffer, 0, sizeof(buffer));
 
 	va_start(va, fmt);
-	vsprintf(buffer, fmt, va);
+	vsnprintf(buffer, sizeof(buffer), fmt, va);
 	va_end(va);
 
 	if (WS_Top_Window() != 0) {
